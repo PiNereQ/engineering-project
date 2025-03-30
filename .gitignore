@@ -11,6 +11,9 @@ windows/
 metadata/
 .metadata
 analysis_options.yaml
+firebase.json
+/lib/firebase_options.dart
+/android/app/google-services.json
 
 # Miscellaneous
 *.class
