@@ -10,11 +10,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthRepository authRepository;
 
   AuthBloc({required this.authRepository}) : super(UnAuthenticated()) {
-    on<SingUpRequested>(_onSignUp);
+    on<SignUpRequested>(_onSignUp);
     on<SignInRequested>(_onSignIn);
     on<SignOutRequested>(_onSignOut);
   }
-  void _onSignUp(SingUpRequested event, Emitter<AuthState> emit) async {
+  void _onSignUp(SignUpRequested event, Emitter<AuthState> emit) async {
     emit(AuthLoading());
     try {
       await authRepository.singUp(
@@ -24,7 +24,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(AuthSignedIn());
     } catch (e) {
       emit(UnAuthenticated());
-      print(e);
     }
   }
 
