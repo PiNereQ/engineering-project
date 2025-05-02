@@ -20,6 +20,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       await authRepository.singUp(
         email: event.email,
         password: event.password,
+        confirmPassword: event.confirmPassword,
       );
       emit(AuthSignedIn());
     } catch (e) {

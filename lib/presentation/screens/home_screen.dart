@@ -22,7 +22,6 @@ class _HomeScreenState extends State<HomeScreen> {
     Center(child: AddScreen()),
     Center(child: ChatScreen()),
     Center(child: ProfileScreen()),
-
   ];
 
   void _onItemTapped(int index) {

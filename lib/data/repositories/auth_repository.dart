@@ -4,7 +4,10 @@ class AuthRepository {
 
   final _firebaseAuth = FirebaseAuth.instance;
 
-  Future<void> singUp({required String email, required String password}) async {
+  Future<void> singUp({required String email, required String password, required String confirmPassword}) async {
+    if (password != confirmPassword) {
+      throw Exception('Passwords do not match');
+    }
     try {
       await _firebaseAuth.createUserWithEmailAndPassword(
         email: email,

@@ -14,6 +14,7 @@ class AuthScreen extends StatefulWidget {
 class _AuthScreenState extends State<AuthScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
   bool isLogin = true; // Toggle between login/register
 
   @override
@@ -89,7 +90,7 @@ class _AuthScreenState extends State<AuthScreen> {
                               if (!isLogin) ...[
                                 CustomTextField(
                                   label: "Confirm Password",
-                                  controller: _passwordController,
+                                  controller: _confirmPasswordController,
                                   isPassword: true,
                                 ),
                               ],
@@ -109,6 +110,7 @@ class _AuthScreenState extends State<AuthScreen> {
                                                 SignUpRequested(
                                                   email: _emailController.text.trim(),
                                                   password: _passwordController.text.trim(),
+                                                  confirmPassword: _confirmPasswordController.text.trim(),
                                                 ),
                                               );
                                         }
