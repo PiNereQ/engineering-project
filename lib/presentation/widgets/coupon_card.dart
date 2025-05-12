@@ -1,37 +1,30 @@
 import 'package:flutter/material.dart';
+
 import 'package:proj_inz/core/utils.dart';
+import 'package:proj_inz/data/models/coupon_model.dart';
 
-class Coupon extends StatelessWidget {
-  final num reduction;
-  final bool reductionIsPercentage; 
-  final num price;
-  final num pricePoints;
-  final String shopName;
-  final Color shopNameColor;
-  final Color shopBgColor;
-  final bool hasLimits;
-  final int reputation;
-  final bool isOnline;
-  final DateTime expiryDate;
+class CouponHorizontalCard extends StatelessWidget {
+  final Coupon coupon;
 
-  const Coupon({
+  const CouponHorizontalCard({
     super.key,
-    required this.reduction,
-    required this.reductionIsPercentage,
-    required this.price,
-    required this.pricePoints,
-    required this.shopName,
-    required this.shopNameColor,
-    required this.shopBgColor,
-    required this.hasLimits,
-    required this.reputation,
-    required this.isOnline,
-    required this.expiryDate,
+    required this.coupon
   });
 
   @override
   Widget build(BuildContext context) {
-    
+    final num reduction = coupon.reduction;
+    final bool reductionIsPercentage = coupon.reductionIsPercentage;
+    final num price = coupon.price;
+    final String shopName = coupon.shopName;
+    final Color shopNameColor = coupon.shopNameColor;
+    final Color shopBgColor = coupon.shopBgColor;
+    final bool hasLimits = coupon.hasLimits;
+    final int sellerReputation = coupon.sellerReputation;
+    final bool isOnline = coupon.isOnline;
+    final DateTime expiryDate = coupon.expiryDate;
+
+
     final reductionText = isInteger(reduction)
       ? reduction.toString()
       : reductionIsPercentage
@@ -46,9 +39,9 @@ class Coupon extends StatelessWidget {
       ? 'z ograniczeniami'
       : 'na wszystko';
 
-    final priceText = 'Cena: ${price}zł/${pricePoints}pkt';
+    final priceText = 'Cena: ${price}zł';
 
-    final reputationText = 'Reputacja: $reputation';
+    final reputationText = 'Reputacja: $sellerReputation';
     
     final locationText = 'Do wykorzystania w sklepach ${isOnline ? 'intenetowych' : 'stacjonarnych'}';
 
