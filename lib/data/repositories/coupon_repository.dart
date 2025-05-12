@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:proj_inz/data/models/coupon_model.dart';
 
-abstract class CouponRepository {
+class CouponRepository {
 
   Future<List<Coupon>> fetchCoupons() async {
     await Future.delayed(const Duration(seconds: 1));

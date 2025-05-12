@@ -9,6 +9,8 @@ sealed class CouponState extends Equatable {
 
 final class CouponInitial extends CouponState {}
 
+final class CouponLoading extends CouponState {}
+
 class CouponLoaded extends CouponState {
   final List<Coupon> coupons;
 
