@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -10,6 +11,9 @@ import 'package:proj_inz/presentation/screens/auth_screen.dart';
 import 'package:proj_inz/presentation/screens/main_screen.dart';
 
 import 'firebase_options.dart';
+
+// Global debugging flags
+bool debugSkipAuth = false; // Skip authentication in debug mode; Default to false
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -42,7 +46,7 @@ class MainApp extends StatelessWidget {
           theme: ThemeData(
             primarySwatch: Colors.blue,
           ),
-            home: const AuthScreen(),
+            home: (kDebugMode && debugSkipAuth) ? const MainScreen() : const AuthScreen(),
         ),
       ),
     );
