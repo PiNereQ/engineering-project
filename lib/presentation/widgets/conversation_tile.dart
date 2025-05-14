@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class ConversationTile extends StatelessWidget {
   final String username;
@@ -111,7 +112,7 @@ class ConversationTile extends StatelessWidget {
                   left: 95,
                   top: 67,
                   child: SizedBox(
-                    width: 185,
+                    width: 250,
                     height: 36,
                     child: Text(
                       message,
@@ -121,6 +122,40 @@ class ConversationTile extends StatelessWidget {
                         fontFamily: 'Itim',
                         fontWeight: FontWeight.w400,
                       ),
+                    ),
+                  ),
+                ),
+
+                // Separator (SVG)
+                Positioned(
+                  left: 370, // Adjust position as necessary
+                  top: 0,
+                  child: Container(
+                    width: 5,
+                    height: 112, // Adjust height as necessary
+                    child: SvgPicture.asset(
+                      'icons/Separator.svg',
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                ),
+
+                // Message icon (SVG)
+                Positioned(
+                  left: 400, // Adjust position as necessary
+                  top: 42, // Adjust position as necessary
+                  child: Container(
+                    width: 32,
+                    height: 32,
+                    child: Stack(
+                      children: [
+                        SvgPicture.asset(
+                          isRead
+                              ? 'icons/chat-outline-rounded.svg'
+                              : 'icons/mark-unread-chat-alt-outline-rounded.svg',
+                          fit: BoxFit.contain,
+                        ),
+                      ],
                     ),
                   ),
                 ),
