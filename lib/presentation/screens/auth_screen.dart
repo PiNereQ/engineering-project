@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:proj_inz/bloc/auth/auth_bloc.dart';
-import 'package:proj_inz/presentation/screens/home_screen.dart';
+import 'package:proj_inz/presentation/screens/main_screen.dart';
 import 'package:proj_inz/presentation/widgets/custom_text_field.dart';
 
 class AuthScreen extends StatefulWidget {
@@ -42,14 +42,13 @@ class _AuthScreenState extends State<AuthScreen> {
                       const SnackBar(content: Text("Authentication Successful!")),
                     );
                     Navigator.of(context).pushAndRemoveUntil(
-                      MaterialPageRoute(builder: (context) => const HomeScreen()),
+                      MaterialPageRoute(builder: (context) => const MainScreen()),
                       (route) => false,
                     );
                     // Navigate to Home Screen (Replace with your home screen)
                   } else if (state is UnAuthenticated) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Authentication Failed")),
-
+                      SnackBar(content: Text(state.errorMessage)),
                     );
                   }
                 },

@@ -9,8 +9,11 @@ class AuthLoading extends AuthState {
 }
 
 class UnAuthenticated extends AuthState {
+  final String errorMessage;
+  UnAuthenticated({required this.errorMessage});
+
   @override
-  List<Object?> get props => [];
+  List<Object?> get props => [errorMessage];
 }
 
 class AuthInitial extends AuthState {
