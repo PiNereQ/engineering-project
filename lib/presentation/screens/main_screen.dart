@@ -4,7 +4,7 @@ import 'package:proj_inz/bloc/navbar/navbar_bloc.dart';
 import 'package:proj_inz/bloc/navbar/navbar_event.dart';
 import 'package:proj_inz/bloc/navbar/navbar_state.dart';
 import 'package:proj_inz/presentation/screens/add_screen.dart';
-import 'package:proj_inz/presentation/screens/chats_screen.dart';
+import 'package:proj_inz/presentation/screens/chat_screen.dart';
 import 'package:proj_inz/presentation/screens/coupons_screen.dart';
 import 'package:proj_inz/presentation/screens/home_screen.dart';
 import 'package:proj_inz/presentation/screens/profile_screen.dart';
