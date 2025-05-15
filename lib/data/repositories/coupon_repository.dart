@@ -14,7 +14,7 @@ class CouponRepository {
     )).toList();
   }
 
-  Future<Coupon> fetchCouponDetail(String id) async {
+  Future<Coupon> fetchCouponDetails(String id) async {
     await Future.delayed(const Duration(milliseconds: 100));
     return _mockCoupons.firstWhere((coupon) => coupon.id == id);
   }
