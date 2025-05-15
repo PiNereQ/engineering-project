@@ -5,27 +5,27 @@ import 'package:flutter/widgets.dart';
 import 'package:proj_inz/data/models/coupon_model.dart';
 import 'package:proj_inz/data/repositories/coupon_repository.dart';
 
-part 'coupon_event.dart';
-part 'coupon_state.dart';
+part 'coupon_list_event.dart';
+part 'coupon_list_state.dart';
 
 
-class CouponBloc extends Bloc<CouponEvent, CouponState> {
+class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
   final CouponRepository couponRepository;
 
-  CouponBloc(this.couponRepository) : super(CouponInitial()) {
+  CouponListBloc(this.couponRepository) : super(CouponListInitial()) {
     on<FetchCoupons>((event, emit) async{
-      emit(CouponLoading());
+      emit(CouponListLoading());
       await Future.delayed(const Duration(seconds: 1));
 
-      emit(const CouponLoaded(coupons: <Coupon>[]));
+      emit(const CouponListLoaded(coupons: <Coupon>[]));
 
 
       try {
         final coupons = await couponRepository.fetchCoupons();
         debugPrint('Fetched coupons: $coupons'); // Debugging line
-        emit(CouponLoaded(coupons: coupons));
+        emit(CouponListLoaded(coupons: coupons));
       } catch (e) {
-        emit(CouponError(message: e.toString()));
+        emit(CouponListError(message: e.toString()));
       }
 
     });

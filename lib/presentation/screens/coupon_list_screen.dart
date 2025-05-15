@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import 'package:proj_inz/bloc/coupon/coupon_bloc.dart';
+import 'package:proj_inz/bloc/coupon_list/coupon_list_bloc.dart';
 import 'package:proj_inz/data/repositories/coupon_repository.dart';
 import 'package:proj_inz/presentation/widgets/coupon_card.dart';
 
@@ -13,14 +13,14 @@ class CouponsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => CouponBloc(context.read<CouponRepository>())
+      create: (context) => CouponListBloc(context.read<CouponRepository>())
         ..add(FetchCoupons()),
       child: Scaffold(
-        body: BlocBuilder<CouponBloc, CouponState>(
+        body: BlocBuilder<CouponListBloc, CouponListState>(
           builder: (context, state) {
-            if (state is CouponLoading) {
+            if (state is CouponListLoading) {
               return const Center(child: CircularProgressIndicator());
-            } else if (state is CouponLoaded) {
+            } else if (state is CouponListLoaded) {
               return ListView.separated(
                 separatorBuilder: (context, index) => const SizedBox(height: 16),
                 itemBuilder: (context, index) {
