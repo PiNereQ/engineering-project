@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../widgets/chat_bubble.dart';
 
 class ChatDetailScreen extends StatelessWidget {
   const ChatDetailScreen({super.key});
@@ -19,13 +20,25 @@ class ChatDetailScreen extends StatelessWidget {
                   alignment: Alignment.centerLeft,
                   child: ChatBubble(
                     text: 'Hej! Czy masz jeszcze ten kupon?',
+                    time: '10:10',
                     isMine: false,
+                    isRead: true,
+                  ),
+                ),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: ChatBubble(
+                    text: 'Daj znać jak coś :)',
+                    time: '10:11',
+                    isMine: false,
+                    isRead: false,
                   ),
                 ),
                 Align(
                   alignment: Alignment.centerRight,
                   child: ChatBubble(
                     text: 'Tak, jest dostępny!',
+                    time: '10:12',
                     isMine: true,
                   ),
                 ),
@@ -56,26 +69,6 @@ class ChatDetailScreen extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-class ChatBubble extends StatelessWidget {
-  final String text;
-  final bool isMine;
-
-  const ChatBubble({super.key, required this.text, required this.isMine});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 4),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: isMine ? Colors.purple[200] : Colors.grey[300],
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Text(text),
     );
   }
 }
