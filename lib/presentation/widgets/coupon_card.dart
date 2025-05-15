@@ -14,6 +14,7 @@ class CouponHorizontalCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final String couponId = coupon.id;
     final num reduction = coupon.reduction;
     final bool reductionIsPercentage = coupon.reductionIsPercentage;
     final num price = coupon.price;
@@ -117,11 +118,11 @@ class CouponHorizontalCard extends StatelessWidget {
       child: InkWell(
         onTap: () {
           Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const CouponDetailsScreen(),
-                      ),
-                    );
+            context,
+            MaterialPageRoute(
+              builder: (context) => CouponDetailsScreen(couponId: couponId),
+            ),
+          );
         },
         child: Container(
           width: 364.0,

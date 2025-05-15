@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 class CouponDetailsScreen extends StatelessWidget {
-  const CouponDetailsScreen({super.key});
+  final String couponId;
+  
+  const CouponDetailsScreen({super.key, required this.couponId});
 
   @override
   Widget build(BuildContext context) {
@@ -9,10 +11,10 @@ class CouponDetailsScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Coupon Details'),
       ),
-      body: const Center(
+      body: Center(
         child: Text(
-          'Coupon Details',
-          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          'Details of coupon with id: $couponId',
+          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
         ),
       ),
     );
