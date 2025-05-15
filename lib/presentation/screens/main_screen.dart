@@ -25,9 +25,9 @@ class MainScreen extends StatelessWidget {
     return BlocProvider(
       create: (_) => NavbarBloc(),
       child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Home Screen'),
-        ),
+        // appBar: AppBar(
+        //   title: const Text('Home Screen'),
+        // ),
         body: BlocBuilder<NavbarBloc, NavbarState>(
           builder: (context, state) {
             return _screens[state.selectedIndex];
