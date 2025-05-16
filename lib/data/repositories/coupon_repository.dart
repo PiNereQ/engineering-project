@@ -4,9 +4,19 @@ import 'package:proj_inz/data/models/coupon_model.dart';
 
 class CouponRepository {
 
+  // used for fetching coupons for displaying on the list
   Future<List<Coupon>> fetchCoupons() async {
     await Future.delayed(const Duration(seconds: 1));
-    return _mockCoupons;
+    return _mockCoupons.map((c) => c.copyWith(
+      description: null,
+      sellerUsername: null,
+      sellerJoinDate: null
+    )).toList();
+  }
+
+  Future<Coupon> fetchCouponDetails(String id) async {
+    await Future.delayed(const Duration(milliseconds: 100));
+    return _mockCoupons.firstWhere((coupon) => coupon.id == id);
   }
 
   final List<Coupon> _mockCoupons = [
@@ -15,30 +25,34 @@ class CouponRepository {
       reduction: 50.5,
       reductionIsPercentage: false,
       price: 30,
+      hasLimits: false,
+      isOnline: true,
+      expiryDate: DateTime(2025, 12, 31),
       shopName: 'MediaMarkt',
       shopNameColor: Colors.white,
       shopBgColor: Colors.red,
-      hasLimits: false,
+      description: 'Lorem ipsum dolor sit amet',
       sellerId: '0',
       sellerReputation: 90,
       sellerUsername: 'Jan Kowalski',
-      isOnline: true,
-      expiryDate: DateTime(2025, 12, 31),
+      sellerJoinDate: DateTime(2024, 12, 31)
     ),
     Coupon(
       id: '1',
       reduction: 20,
       reductionIsPercentage: true,
       price: 50,
+      hasLimits: true,
+      isOnline: false,
+      expiryDate: DateTime(2025, 11, 30),
       shopName: 'MediaMarkt',
       shopNameColor: Colors.white,
       shopBgColor: Colors.red,
-      hasLimits: true,
+      description: 'Lorem ipsum dolor sit amet',
       sellerId: '0',
       sellerReputation: 90,
       sellerUsername: 'Coupidyn',
-      isOnline: false,
-      expiryDate: DateTime(2025, 11, 30),
+      sellerJoinDate: DateTime(2025, 01, 01)
     ),
   ];
 }

@@ -8,26 +8,22 @@ import 'package:proj_inz/data/repositories/coupon_repository.dart';
 part 'coupon_event.dart';
 part 'coupon_state.dart';
 
-
 class CouponBloc extends Bloc<CouponEvent, CouponState> {
   final CouponRepository couponRepository;
+  final String couponId;
 
-  CouponBloc(this.couponRepository) : super(CouponInitial()) {
-    on<FetchCoupons>((event, emit) async{
-      emit(CouponLoading());
-      await Future.delayed(const Duration(seconds: 1));
-
-      emit(const CouponLoaded(coupons: <Coupon>[]));
-
+  CouponBloc(this.couponRepository, this.couponId) : super(CouponInitial()) {
+    on<FetchCouponDetails>((event, emit) async {
+      emit(const CouponLoading());
+      await Future.delayed(const Duration(milliseconds: 100));
 
       try {
-        final coupons = await couponRepository.fetchCoupons();
-        debugPrint('Fetched coupons: $coupons'); // Debugging line
-        emit(CouponLoaded(coupons: coupons));
+        final coupon = await couponRepository.fetchCouponDetails(couponId);
+        debugPrint('Fetched coupon with id: $couponId'); // Debugging line
+        emit(CouponLoaded(coupon: coupon));
       } catch (e) {
         emit(CouponError(message: e.toString()));
       }
-
     });
   }
 }

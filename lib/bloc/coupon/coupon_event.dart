@@ -7,4 +7,4 @@ sealed class CouponEvent extends Equatable {
   List<Object> get props => [];
 }
 
-class FetchCoupons extends CouponEvent {}
+class FetchCouponDetails extends CouponEvent {}

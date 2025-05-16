@@ -19,12 +19,12 @@ final class CouponLoading extends CouponState {
 }
 
 class CouponLoaded extends CouponState {
-  final List<Coupon> coupons;
+  final Coupon coupon;
 
-  const CouponLoaded({required this.coupons});
+  const CouponLoaded({required this.coupon});
 
   @override
-  List<Object> get props => [coupons];
+  List<Object> get props => [coupon];
 }
 
 class CouponError extends CouponState {
