@@ -7,7 +7,8 @@ class Coupon extends Equatable {
   final bool reductionIsPercentage;
   final double price;
   final bool hasLimits;
-  final bool isOnline;
+  final bool worksOnline;
+  final bool worksInStore;
   final DateTime expiryDate;
 
   final String shopName;
@@ -31,7 +32,8 @@ class Coupon extends Equatable {
     required this.shopBgColor,
     required this.hasLimits,
     
-    required this.isOnline,
+    required this.worksOnline,
+    required this.worksInStore,
     required this.expiryDate,
     this.description,
 
@@ -54,7 +56,8 @@ class Coupon extends Equatable {
     sellerId,
     sellerUsername,
     sellerReputation,
-    isOnline,
+    worksOnline,
+    worksInStore,
     expiryDate,
   ];
 
@@ -67,7 +70,8 @@ class Coupon extends Equatable {
     Color? shopNameColor,
     Color? shopBgColor,
     bool? hasLimits,
-    bool? isOnline,
+    bool? worksOnline,
+    bool? worksInStore,
     DateTime? expiryDate,
     String? description,
     String? sellerId,
@@ -84,7 +88,8 @@ class Coupon extends Equatable {
       shopNameColor: shopNameColor ?? this.shopNameColor,
       shopBgColor: shopBgColor ?? this.shopBgColor,
       hasLimits: hasLimits ?? this.hasLimits,
-      isOnline: isOnline ?? this.isOnline,
+      worksOnline: worksOnline ?? this.worksOnline,
+      worksInStore: worksInStore ?? this.worksInStore,
       expiryDate: expiryDate ?? this.expiryDate,
       description: description ?? this.description,
       sellerId: sellerId ?? this.sellerId,

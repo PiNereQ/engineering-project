@@ -23,7 +23,8 @@ class CouponHorizontalCard extends StatelessWidget {
     final Color shopBgColor = coupon.shopBgColor;
     final bool hasLimits = coupon.hasLimits;
     final int sellerReputation = coupon.sellerReputation;
-    final bool isOnline = coupon.isOnline;
+    final bool worksOnline = coupon.worksOnline;
+    final bool worksInStore = coupon.worksInStore;
     final DateTime expiryDate = coupon.expiryDate;
 
 
@@ -93,7 +94,13 @@ class CouponHorizontalCard extends StatelessWidget {
     );
 
     final locationText = TextSpan(
-      text: 'Do wykorzystania w sklepach ${isOnline ? 'intenetowych' : 'stacjonarnych'}',
+      text: 'Do wykorzystania ${
+        worksInStore && worksOnline
+        ? 'stacjonarnie i online'  
+        : worksOnline
+          ? 'w sklepach internetowych'
+          : 'w sklepach stacjonarnie'
+      }',
       style: const TextStyle(
         color: Colors.black,
         fontSize: 12,

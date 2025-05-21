@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:proj_inz/bloc/coupon/coupon_bloc.dart';
 import 'package:proj_inz/core/utils.dart';
+import 'package:proj_inz/data/models/coupon_model.dart';
 import 'package:proj_inz/data/repositories/coupon_repository.dart';
 
 class CouponDetailsScreen extends StatelessWidget {
@@ -18,9 +19,6 @@ class CouponDetailsScreen extends StatelessWidget {
       child: Scaffold(
         body: BlocBuilder<CouponBloc, CouponState>(
           builder: (context, state) {
-            
-
-
             if (state is CouponLoading) {
               return const Center(child: CircularProgressIndicator());
             } else if (state is CouponLoaded) {
@@ -50,21 +48,14 @@ class CouponDetailsScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 16,),
                     Text('id: $couponId'),
-                    CouponDetails(
-                      couponId: state.coupon.id,
-                      shopName: state.coupon.shopName,
-                      shopNameColor: state.coupon.shopNameColor,
-                      shopBgColor: state.coupon.shopBgColor,
-                      reduction: state.coupon.reduction,
-                      reductionIsPercentage: state.coupon.reductionIsPercentage,
-                      price: state.coupon.price,
-                      hasLimits: state.coupon.hasLimits,
-                      isOnline: state.coupon.isOnline,
-                      expiryDate: state.coupon.expiryDate,
-                      description: state.coupon.description,
-                    ),
+                    CouponDetails(coupon: state.coupon,),
                     const SizedBox(height: 24),
-                    SellerDetails(),
+                    SellerDetails(
+                      sellerId: state.coupon.sellerId,
+                      sellerUsername: state.coupon.sellerUsername.toString(),
+                      sellerReputation: state.coupon.sellerReputation,
+                      sellerJoinDate: state.coupon.sellerJoinDate ?? DateTime(1970, 1, 1),
+                    ),
                   ],
                 ));
             }
@@ -83,33 +74,25 @@ class CouponDetailsScreen extends StatelessWidget {
 class CouponDetails extends StatelessWidget {
   const CouponDetails({
     super.key,
-    required this.couponId,
-    required this.shopBgColor,
-    required this.shopName,
-    required this.shopNameColor,
-    required this.reduction,
-    required this.reductionIsPercentage,
-    required this.price,
-    required this.hasLimits,
-    required this.isOnline,
-    required this.expiryDate,
-    this.description,
+    required this.coupon,
   });
 
-  final String couponId;
-  final Color shopBgColor;
-  final String shopName;
-  final Color shopNameColor;
-  final num reduction;
-  final bool reductionIsPercentage;
-  final num price;
-  final bool hasLimits;
-  final bool isOnline;
-  final DateTime expiryDate;
-  final String? description;
+  final Coupon coupon;
 
   @override
   Widget build(BuildContext context) {
+    final Color shopBgColor = coupon.shopBgColor;
+    final String shopName = coupon.shopName;
+    final Color shopNameColor = coupon.shopNameColor;
+    final num reduction = coupon.reduction;
+    final bool reductionIsPercentage = coupon.reductionIsPercentage;
+    final num price = coupon.price;
+    final bool hasLimits = coupon.hasLimits;
+    final bool worksOnline = coupon.worksOnline;
+    final bool worksInStore = coupon.worksInStore;
+    final DateTime expiryDate = coupon.expiryDate;
+    final String? description = coupon.description;
+    
     final reductionText = isInteger(reduction)
     ? reduction.toString()
     : reductionIsPercentage
@@ -166,7 +149,11 @@ class CouponDetails extends StatelessWidget {
     );
 
     final locationText = Text(
-      isOnline ? 'sklepy intenetowe' : 'sklepy stacjonarne',
+      worksInStore && worksOnline
+        ? 'stacjonarnie i online'  
+        : worksOnline
+          ? 'w sklepach internetowych'
+          : 'w sklepach online',
       style: const TextStyle(
         color: Color(0xFF646464),
         fontSize: 18,
@@ -263,15 +250,15 @@ class CouponDetails extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
-              spacing: 2,
+              spacing: 4,
               children:[
                 const Text(
                   'Szczegóły',
                   style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 20,
-                  fontFamily: 'Itim',
-                  fontWeight: FontWeight.w400,
+                    color: Colors.black,
+                    fontSize: 20,
+                    fontFamily: 'Itim',
+                    fontWeight: FontWeight.w400,
                   ),
                 ),
                 SizedBox(
@@ -284,11 +271,11 @@ class CouponDetails extends StatelessWidget {
                       const Text(
                         'Gdzie działa:',
                         style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 18,
-                        fontFamily: 'Itim',
-                        fontWeight: FontWeight.w400,
-                        height: 0.83,
+                          color: Colors.black,
+                          fontSize: 18,
+                          fontFamily: 'Itim',
+                          fontWeight: FontWeight.w400,
+                          height: 0.83,
                         ),
                       ),
                       locationText
@@ -296,6 +283,7 @@ class CouponDetails extends StatelessWidget {
                   ),
                 ),
                 const Divider(
+                  height: 8,
                   color: Colors.black,
                   thickness: 1,
                 ),
@@ -309,11 +297,11 @@ class CouponDetails extends StatelessWidget {
                       const Text(
                         'Ograniczenia:',
                         style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 18,
-                        fontFamily: 'Itim',
-                        fontWeight: FontWeight.w400,
-                        height: 0.83,
+                          color: Colors.black,
+                          fontSize: 18,
+                          fontFamily: 'Itim',
+                          fontWeight: FontWeight.w400,
+                          height: 0.83,
                         ),
                       ),
                       limitsText
@@ -321,6 +309,7 @@ class CouponDetails extends StatelessWidget {
                   ),
                 ),
                 const Divider(
+                  height: 8,
                   color: Colors.black,
                   thickness: 1,
                 ),
@@ -346,6 +335,7 @@ class CouponDetails extends StatelessWidget {
                   ),
                 ),
                 const Divider(
+                  height: 8,
                   color: Colors.black,
                   thickness: 1,
                 ),
@@ -381,7 +371,16 @@ class CouponDetails extends StatelessWidget {
 class SellerDetails extends StatelessWidget {
   const SellerDetails({
     super.key,
+    required this.sellerId,
+    required this.sellerUsername,
+    required this.sellerReputation,
+    required this.sellerJoinDate,
   });
+
+  final String sellerId;
+  final String sellerUsername;
+  final num sellerReputation;
+  final DateTime sellerJoinDate;
 
   @override
   Widget build(BuildContext context) {
@@ -405,8 +404,71 @@ class SellerDetails extends StatelessWidget {
         ],
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        spacing: 12,
         children: [
-          const Text('Seller:'),
+          const Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              'O sprzedającym',
+              style: TextStyle(
+                color: Colors.black,
+                fontSize: 20,
+                fontFamily: 'Itim',
+                fontWeight: FontWeight.w400,
+                height: 0.75,
+              ),
+            ),
+          ),
+          Row(
+            spacing: 16,
+            children: [
+              const CircleAvatar(
+                radius: 35,
+              ),
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  spacing: 8,
+                  children: [
+                    Text(
+                      sellerUsername,
+                      style: const TextStyle(
+                        color: Colors.black,
+                        fontSize: 20,
+                        fontFamily: 'Itim',
+                        fontWeight: FontWeight.w400,
+                        height: 0.75,
+                      ),
+                    ),
+                    Text(
+                      sellerReputation.toString(),
+                      style: const TextStyle(
+                        color: Colors.black,
+                        fontSize: 16,
+                        fontFamily: 'Itim',
+                        fontWeight: FontWeight.w400,
+                        height: 0.75,
+                      ),
+                    ),
+                    Text(
+                      'Na Coupidynie od ${sellerJoinDate.day}.${sellerJoinDate.month}.${sellerJoinDate.year} r.',
+                      style: const TextStyle(
+                        color: Color(0xFF646464),
+                        fontSize: 16,
+                        fontFamily: 'Itim',
+                        fontWeight: FontWeight.w400,
+                        height: 0.75,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          )
         ],
       ),
     );
