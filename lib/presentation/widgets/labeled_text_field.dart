@@ -9,6 +9,8 @@ class LabeledTextField extends StatelessWidget {
   final double iconRotationRadians;
   final bool iconOnLeft;
   final LabeledTextFieldWidth width;
+  final TextAlign textAlign;
+  final int maxLines;
 
   const LabeledTextField({
     super.key,
@@ -17,6 +19,8 @@ class LabeledTextField extends StatelessWidget {
     this.iconRotationRadians = 0.0,
     this.iconOnLeft = true,
     this.width = LabeledTextFieldWidth.full,
+    this.textAlign = TextAlign.left,
+    this.maxLines = 1,
   });
 
   @override
@@ -104,15 +108,18 @@ class LabeledTextField extends StatelessWidget {
                     )
                   ],
                 ),
-                child: Text(
-                  placeholder,
+                child: TextField(
+                  maxLines: maxLines,
+                  decoration: InputDecoration.collapsed(
+                    hintText: placeholder,
+                  ),
                   style: const TextStyle(
-                    color: Color(0xFF646464),
+                    color: Color(0xFF000000),
                     fontSize: 18,
                     fontFamily: 'Itim',
                     fontWeight: FontWeight.w400,
                   ),
-                  textAlign: TextAlign.left,
+                  textAlign: textAlign,
                 ),
               ),
             ],
