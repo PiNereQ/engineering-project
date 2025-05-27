@@ -54,7 +54,15 @@ class CustomCheckbox extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
-          Text(label),
+          Text(
+            label,
+            style: const TextStyle(
+              color: Colors.black,
+              fontSize: 18,
+              fontFamily: 'Itim',
+              fontWeight: FontWeight.w400,
+            ),
+          ),
         ],
       ),
     );
