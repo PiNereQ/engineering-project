@@ -23,6 +23,7 @@ class LabeledTextField extends StatelessWidget {
   Widget build(BuildContext context) {
     final labelRow = Row(
       mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: iconOnLeft ? MainAxisAlignment.start : MainAxisAlignment.end,
       children: iconOnLeft
           ? [
               Transform.rotate(
@@ -55,8 +56,9 @@ class LabeledTextField extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              Transform.rotate(
-                angle: iconRotationRadians,
+              Transform(
+                alignment: Alignment.center,
+                transform: Matrix4.rotationZ(iconRotationRadians)..scale(-1.0, 1.0),
                 child: SvgPicture.asset(
                   'icons/switch-access-shortcut-rounded.svg',
                   width: 18,
@@ -70,7 +72,7 @@ class LabeledTextField extends StatelessWidget {
       builder: (context, constraints) {
         final double calculatedWidth = width == LabeledTextFieldWidth.full
             ? constraints.maxWidth
-            : (constraints.maxWidth - 16) / 2; // odstęp 16 między 2 polami
+            : (constraints.maxWidth - 16) / 2;
 
         return Container(
           width: calculatedWidth,
@@ -110,6 +112,7 @@ class LabeledTextField extends StatelessWidget {
                     fontFamily: 'Itim',
                     fontWeight: FontWeight.w400,
                   ),
+                  textAlign: TextAlign.left,
                 ),
               ),
             ],

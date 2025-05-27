@@ -5,6 +5,7 @@ enum CustomComponentWidth { full, half }
 class SearchDropdownField extends StatefulWidget {
   final List<String> options;
   final String? selected;
+  final String? placeholder;
   final Function(String?) onChanged;
   final CustomComponentWidth widthType;
 
@@ -13,6 +14,7 @@ class SearchDropdownField extends StatefulWidget {
     required this.options,
     required this.selected,
     required this.onChanged,
+    this.placeholder,
     this.widthType = CustomComponentWidth.full,
   });
 
@@ -26,7 +28,7 @@ class _SearchDropdownFieldState extends State<SearchDropdownField> {
   @override
   void initState() {
     super.initState();
-    currentValue = widget.selected ?? (widget.options.isNotEmpty ? widget.options.first : null);
+    currentValue = widget.selected;
   }
 
   @override
@@ -35,7 +37,7 @@ class _SearchDropdownFieldState extends State<SearchDropdownField> {
       builder: (context, constraints) {
         double desiredWidth = constraints.maxWidth;
         if (widget.widthType == CustomComponentWidth.half) {
-          desiredWidth = (desiredWidth - 16) / 2; // np. zostawiamy 16px na przerwę między komponentami
+          desiredWidth = (desiredWidth - 16) / 2;
         }
 
         return SizedBox(
@@ -60,6 +62,17 @@ class _SearchDropdownFieldState extends State<SearchDropdownField> {
             child: DropdownButtonHideUnderline(
               child: DropdownButton<String>(
                 value: currentValue,
+                hint: widget.placeholder != null
+                    ? Text(
+                        widget.placeholder!,
+                        style: const TextStyle(
+                          color: Color(0xFF646464),
+                          fontSize: 18,
+                          fontFamily: 'Itim',
+                          fontWeight: FontWeight.w400,
+                        ),
+                      )
+                    : null,
                 isExpanded: true,
                 icon: const Icon(Icons.arrow_drop_down),
                 style: const TextStyle(
