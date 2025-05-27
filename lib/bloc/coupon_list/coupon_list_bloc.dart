@@ -15,7 +15,6 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
   CouponListBloc(this.couponRepository) : super(CouponListInitial()) {
     on<FetchCoupons>((event, emit) async{
       emit(const CouponListLoading());
-      await Future.delayed(const Duration(seconds: 1));
 
       try {
         final coupons = await couponRepository.fetchCoupons();

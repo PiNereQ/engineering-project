@@ -31,6 +31,8 @@ class CouponsScreen extends StatelessWidget {
                 },
                 itemCount: state.coupons.length,
               );
+            } else if (state is CouponListError) {
+              return Center(child: Text('Error: ${state.message}'));
             }
             
             return const Center(child: Text('No coupons available.'));

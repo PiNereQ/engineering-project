@@ -6,16 +6,17 @@ class Coupon extends Equatable {
   final double reduction;
   final bool reductionIsPercentage;
   final double price;
+  
   final bool hasLimits;
   final bool worksOnline;
   final bool worksInStore;
   final DateTime expiryDate;
+  final String? description;
 
+  final String shopId;
   final String shopName;
   final Color shopNameColor; 
   final Color shopBgColor;
-  
-  final String? description;
 
   final String sellerId;
   final String? sellerUsername;
@@ -27,15 +28,17 @@ class Coupon extends Equatable {
     required this.reduction,
     required this.reductionIsPercentage,
     required this.price,
-    required this.shopName,
-    required this.shopNameColor,
-    required this.shopBgColor,
+
     required this.hasLimits,
-    
     required this.worksOnline,
     required this.worksInStore,
     required this.expiryDate,
     this.description,
+
+    required this.shopId,
+    required this.shopName,
+    required this.shopNameColor,
+    required this.shopBgColor,
 
     required this.sellerId,
     this.sellerUsername,
@@ -49,6 +52,7 @@ class Coupon extends Equatable {
     reduction,
     reductionIsPercentage,
     price,
+    shopId,
     shopName,
     shopNameColor,
     shopBgColor,
@@ -66,14 +70,15 @@ class Coupon extends Equatable {
     double? reduction,
     bool? reductionIsPercentage,
     double? price,
-    String? shopName,
-    Color? shopNameColor,
-    Color? shopBgColor,
     bool? hasLimits,
     bool? worksOnline,
     bool? worksInStore,
     DateTime? expiryDate,
     String? description,
+    String? shopId,
+    String? shopName,
+    Color? shopNameColor,
+    Color? shopBgColor,
     String? sellerId,
     String? sellerUsername,
     int? sellerReputation,
@@ -84,14 +89,15 @@ class Coupon extends Equatable {
       reduction: reduction ?? this.reduction,
       reductionIsPercentage: reductionIsPercentage ?? this.reductionIsPercentage,
       price: price ?? this.price,
-      shopName: shopName ?? this.shopName,
-      shopNameColor: shopNameColor ?? this.shopNameColor,
-      shopBgColor: shopBgColor ?? this.shopBgColor,
       hasLimits: hasLimits ?? this.hasLimits,
       worksOnline: worksOnline ?? this.worksOnline,
       worksInStore: worksInStore ?? this.worksInStore,
       expiryDate: expiryDate ?? this.expiryDate,
       description: description ?? this.description,
+      shopId: shopId ?? this.shopId,
+      shopName: shopName ?? this.shopName,
+      shopNameColor: shopNameColor ?? this.shopNameColor,
+      shopBgColor: shopBgColor ?? this.shopBgColor,
       sellerId: sellerId ?? this.sellerId,
       sellerUsername: sellerUsername ?? this.sellerUsername,
       sellerReputation: sellerReputation ?? this.sellerReputation,
