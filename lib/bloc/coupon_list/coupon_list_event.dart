@@ -8,3 +8,5 @@ sealed class CouponListEvent extends Equatable {
 }
 
 class FetchCoupons extends CouponListEvent {}
+
+class FetchMoreCoupons extends CouponListEvent {}

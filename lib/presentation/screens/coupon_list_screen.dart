@@ -16,11 +16,22 @@ class CouponsScreen extends StatelessWidget {
       create: (context) => CouponListBloc(context.read<CouponRepository>())
         ..add(FetchCoupons()),
       child: Scaffold(
+        floatingActionButton: BlocBuilder<CouponListBloc, CouponListState>(
+          builder: (context, state) {
+              return FloatingActionButton(
+                onPressed: () {
+                  context.read<CouponListBloc>().add(FetchMoreCoupons());
+                },
+                tooltip: 'Load More Coupons',
+                child: const Icon(Icons.add),
+              );
+          },
+        ),
         body: BlocBuilder<CouponListBloc, CouponListState>(
           builder: (context, state) {
-            if (state is CouponListLoading) {
+            if (state is CouponListLoadInProgress) {
               return const Center(child: CircularProgressIndicator());
-            } else if (state is CouponListLoaded) {
+            } else if (state is CouponListLoadSuccess) {
               return ListView.separated(
                 separatorBuilder: (context, index) => const SizedBox(height: 16),
                 itemBuilder: (context, index) {
@@ -31,7 +42,7 @@ class CouponsScreen extends StatelessWidget {
                 },
                 itemCount: state.coupons.length,
               );
-            } else if (state is CouponListError) {
+            } else if (state is CouponListLoadFailure) {
               return Center(child: Text('Error: ${state.message}'));
             }
             
