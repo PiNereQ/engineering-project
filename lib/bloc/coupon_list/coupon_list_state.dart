@@ -9,28 +9,23 @@ sealed class CouponListState extends Equatable {
 
 final class CouponListInitial extends CouponListState {}
 
-final class CouponListLoading extends CouponListState {
-  final bool isLoading;
-
-  const CouponListLoading({this.isLoading = true});
-
-  @override
-  List<Object> get props => [isLoading];
+final class CouponListLoadInProgress extends CouponListState {
 }
 
-class CouponListLoaded extends CouponListState {
+class CouponListLoadSuccess extends CouponListState {
   final List<Coupon> coupons;
+  final bool hasMore;
 
-  const CouponListLoaded({required this.coupons});
+  const CouponListLoadSuccess({required this.coupons, required this.hasMore});
 
   @override
   List<Object> get props => [coupons];
 }
 
-class CouponListError extends CouponListState {
+class CouponListLoadFailure extends CouponListState {
   final String message;
 
-  const CouponListError({required this.message});
+  const CouponListLoadFailure({required this.message});
 
   @override
   List<Object> get props => [message];

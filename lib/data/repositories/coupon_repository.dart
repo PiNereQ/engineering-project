@@ -1,60 +1,143 @@
 import 'package:flutter/material.dart';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'package:proj_inz/data/models/coupon_model.dart';
 
+class PaginatedCouponsResult {
+  final List<Coupon> coupons;
+  final DocumentSnapshot? lastDocument;
+  PaginatedCouponsResult({required this.coupons, this.lastDocument});
+}
+
 class CouponRepository {
+  final _firestore = FirebaseFirestore.instance;
 
   // used for fetching coupons for displaying on the list
   Future<List<Coupon>> fetchCoupons() async {
-    await Future.delayed(const Duration(seconds: 1));
-    return _mockCoupons.map((c) => c.copyWith(
-      description: null,
-      sellerUsername: null,
-      sellerJoinDate: null
-    )).toList();
+    final query = _firestore
+      .collection('coupons');
+      
+    debugPrint('Fetching coupons');
+
+    final querySnapshot = await query.get();
+
+    return await Future.wait(querySnapshot.docs.map((doc) async {
+      // TODO: shop data caching
+      final shopDoc = await FirebaseFirestore.instance
+        .collection('shops')
+        .doc(doc['shopId'].toString())
+        .get();
+
+      // TODO: seller data caching
+      final sellerDoc = await FirebaseFirestore.instance
+        .collection('userProfileData')
+        .doc(doc['sellerId'].toString())
+        .get();
+      
+      return Coupon(
+        id: doc.id,
+        reduction: doc['reduction'],
+        reductionIsPercentage: doc['reductionIsPercentage'],
+        price: doc['pricePLN'],
+        hasLimits: doc['hasLimits'],
+        worksOnline: doc['worksOnline'],
+        worksInStore: doc['worksInStore'],
+        expiryDate: (doc['expiryDate'] as Timestamp).toDate(),
+        shopId: shopDoc.id,
+        shopName: shopDoc['name'],
+        shopNameColor: Color(shopDoc['nameColor']),
+        shopBgColor: Color(shopDoc['bgColor']),
+        sellerId: sellerDoc.id,
+        sellerReputation: sellerDoc['reputation'],
+      );
+    }).toList());
+  }
+
+  Future<PaginatedCouponsResult> fetchCouponsPaginated(
+    int limit,
+    DocumentSnapshot? startAfter
+  ) async {
+    var query = _firestore
+      .collection('coupons')
+      .orderBy('createdAt')
+      .limit(limit);
+
+    if (startAfter != null) {
+      query = query.startAfterDocument(startAfter);
+    }
+
+    final querySnapshot = await query.get();
+
+    final coupons = await Future.wait(querySnapshot.docs.map((doc) async {
+      // TODO: shop data caching
+      final shopDoc = await FirebaseFirestore.instance
+        .collection('shops')
+        .doc(doc['shopId'].toString())
+        .get();
+
+      // TODO: seller data caching
+      final sellerDoc = await FirebaseFirestore.instance
+        .collection('userProfileData')
+        .doc(doc['sellerId'].toString())
+        .get();
+      
+      return Coupon(
+        id: doc.id,
+        reduction: doc['reduction'],
+        reductionIsPercentage: doc['reductionIsPercentage'],
+        price: doc['pricePLN'],
+        hasLimits: doc['hasLimits'],
+        worksOnline: doc['worksOnline'],
+        worksInStore: doc['worksInStore'],
+        expiryDate: (doc['expiryDate'] as Timestamp).toDate(),
+        shopId: shopDoc.id,
+        shopName: shopDoc['name'],
+        shopNameColor: Color(shopDoc['nameColor']),
+        shopBgColor: Color(shopDoc['bgColor']),
+        sellerId: sellerDoc.id,
+        sellerReputation: sellerDoc['reputation'],
+      );
+    }).toList());
+
+    return PaginatedCouponsResult(
+      coupons: coupons,
+      lastDocument: querySnapshot.docs.isNotEmpty ? querySnapshot.docs.last : null
+    );
   }
 
   Future<Coupon> fetchCouponDetails(String id) async {
-    await Future.delayed(const Duration(milliseconds: 100));
-    return _mockCoupons.firstWhere((coupon) => coupon.id == id);
-  }
+    final doc = await FirebaseFirestore.instance
+      .collection('coupons').doc(id).get();
 
-  final List<Coupon> _mockCoupons = [
-    Coupon(
-      id: '0',
-      reduction: 50.5,
-      reductionIsPercentage: false,
-      price: 30,
-      hasLimits: false,
-      worksOnline: true,
-      worksInStore: true,
-      expiryDate: DateTime(2025, 12, 31),
-      shopName: 'MediaMarkt',
-      shopNameColor: Colors.white,
-      shopBgColor: const Color(0xFFDF0000),
-      description: 'Lorem ipsum dolor sit amet',
-      sellerId: '0',
-      sellerReputation: 90,
-      sellerUsername: 'Jan Kowalski',
-      sellerJoinDate: DateTime(2024, 12, 31)
-    ),
-    Coupon(
-      id: '1',
-      reduction: 20,
-      reductionIsPercentage: true,
-      price: 50,
-      hasLimits: true,
-      worksOnline: false,
-      worksInStore: true,
-      expiryDate: DateTime(2025, 11, 30),
-      shopName: 'MediaMarkt',
-      shopNameColor: Colors.white,
-      shopBgColor: const Color(0xFFDF0000),
-      description: 'Lorem ipsum dolor sit amet',
-      sellerId: '0',
-      sellerReputation: 90,
-      sellerUsername: 'Coupidyn',
-      sellerJoinDate: DateTime(2025, 01, 01)
-    ),
-  ];
+    final shopDoc = await FirebaseFirestore.instance
+      .collection('shops')
+      .doc(doc['shopId'].toString())
+      .get();
+
+    final sellerDoc = await FirebaseFirestore.instance
+      .collection('userProfileData')
+      .doc(doc['sellerId'].toString())
+      .get();
+
+    return Coupon(
+      id: doc.id,
+      reduction: doc['reduction'],
+      reductionIsPercentage: doc['reductionIsPercentage'],
+      price: doc['pricePLN'],
+      hasLimits: doc['hasLimits'],
+      worksOnline: doc['worksOnline'],
+      worksInStore: doc['worksInStore'],
+      expiryDate: (doc['expiryDate'] as Timestamp).toDate(),
+      description: doc['description'],
+      shopId: shopDoc.id,
+      shopName: shopDoc['name'],
+      shopNameColor: Color(shopDoc['nameColor']),
+      shopBgColor: Color(shopDoc['bgColor']),
+      sellerId: sellerDoc.id,
+      sellerReputation: sellerDoc['reputation'],
+      sellerUsername: sellerDoc['username'],
+      sellerJoinDate: (sellerDoc['joinDate'] as Timestamp).toDate(),
+    );
+  }
 }
