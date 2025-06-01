@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:proj_inz/bloc/auth/auth_bloc.dart';
 import 'package:proj_inz/presentation/screens/main_screen.dart';
-import 'package:proj_inz/presentation/widgets/custom_text_field.dart';
+import 'package:proj_inz/presentation/widgets/input/text_fields/custom_text_field.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});

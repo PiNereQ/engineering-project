@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:proj_inz/presentation/widgets/simple_button.dart';
+import 'package:proj_inz/presentation/widgets/input/buttons/simple_button.dart';
 import 'package:proj_inz/presentation/widgets/ticket_button.dart';
 
 class ProfileScreen extends StatelessWidget {
