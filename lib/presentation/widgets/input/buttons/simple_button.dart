@@ -1,43 +1,61 @@
 import 'package:flutter/material.dart';
 
-class SimpleButton extends StatelessWidget {
+class SimpleTextButton extends StatefulWidget {
   final double height;
-  final double width;
+  final double? width;
   final double fontSize;
   final String label;
-  final bool isSelected;
   final VoidCallback onTap;
 
-  const SimpleButton({
+  const SimpleTextButton({
     super.key,
-    required this.height,
-    required this.width,
-    required this.fontSize,
+    this.height = 48,
+    this.width,
+    this.fontSize = 18,
     required this.label,
-    required this.isSelected,
     required this.onTap,
   });
 
   @override
+  State<SimpleTextButton> createState() => _SimpleTextButtonState();
+}
+  
+class _SimpleTextButtonState extends State<SimpleTextButton> {
+  bool _isPressed = false;
+
+  @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: widget.onTap,
+      onTapDown: (TapDownDetails details) {
+        setState(() {
+          _isPressed = true;
+        });
+      },
+      onTapUp: (TapUpDetails details) async {
+        await Future.delayed(const Duration(milliseconds: 80));
+        if (mounted) {
+          setState(() {
+            _isPressed = false;
+          });
+        }
+      },
       child: Container(
-        width: width,
-        height: height,
-        padding: isSelected
+        padding: _isPressed
             ? const EdgeInsets.only(top: 4, left: 4)
             : const EdgeInsets.only(right: 4, bottom: 4),
         child: Center(
           child: Container(
-            width: double.infinity,
+            width: widget.width,
+            height: widget.height,
+            constraints: const BoxConstraints(minWidth: 132),
             decoration: ShapeDecoration(
-              color: isSelected ? const Color(0xFFB2B2B2) : Colors.white,
+              color: _isPressed ? const Color(0xFFB2B2B2) : Colors.white,
               shape: RoundedRectangleBorder(
                 side: const BorderSide(width: 2),
                 borderRadius: BorderRadius.circular(1000),
               ),
-              shadows: isSelected
+              shadows: _isPressed
                   ? []
                   : [
                       const BoxShadow(
@@ -50,10 +68,10 @@ class SimpleButton extends StatelessWidget {
             ),
             child: Center(
               child: Text(
-                label,
+                widget.label,
                 style: TextStyle(
-                  color: isSelected ? const Color(0xFF646464) : Colors.black,
-                  fontSize: fontSize,
+                  color: _isPressed ? const Color(0xFF646464) : Colors.black,
+                  fontSize: widget.fontSize,
                   fontFamily: 'Itim',
                   fontWeight: FontWeight.w400,
                 ),

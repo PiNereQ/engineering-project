@@ -4,7 +4,7 @@ import '../widgets/labeled_text_field.dart';
 import '../widgets/search_dropdown_field.dart';
 import '../widgets/checkbox.dart';
 import '../widgets/radiobutton.dart';
-import '../widgets/simple_button.dart';
+import '../widgets/input/buttons/simple_button.dart';
 
 enum CouponType { percent, fixed }
 
@@ -161,12 +161,11 @@ class _AddScreenState extends State<AddScreen> {
                           ConstrainedBox(
                             constraints: const BoxConstraints(minWidth: 132),
                             child: Center(
-                              child: SimpleButton(
+                              child: SimpleTextButton(
                                 height: 51.86,
                                 width: 160,
                                 fontSize: 18,
                                 label: 'Dodaj zdjęcie',
-                                isSelected: false,
                                 onTap: () {
                                   print('Kliknięto: Dodaj zdjęcie');
                                 },
@@ -417,12 +416,11 @@ class _AddScreenState extends State<AddScreen> {
                       const SizedBox(height: 18),
 
                       // 11. Przycisk dodaj
-                      SimpleButton(
+                      SimpleTextButton(
                         height: 56,
                         width: double.infinity,
                         fontSize: 20,
                         label: 'Dodaj',
-                        isSelected: false,
                         onTap: () {
                           print('Kliknięto Dodaj');
                         },

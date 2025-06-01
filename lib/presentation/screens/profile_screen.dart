@@ -68,13 +68,13 @@ class ProfileScreen extends StatelessWidget {
             Row(
                 //mainAxisSize: MainAxisSize.min,
                 children: [
-                  SimpleButton(height: 40, width: 130, fontSize: 14, label: 'Kupione', isSelected: false, onTap: () {}),
+                  SimpleTextButton(height: 40, width: 130, fontSize: 14, label: 'Kupione', onTap: () {}),
                   const SizedBox(width: 24),            
-                  SimpleButton(height: 40, width: 130, fontSize: 14, label: 'Wystawione', isSelected: false, onTap: () {})
+                  SimpleTextButton(height: 40, width: 130, fontSize: 14, label: 'Wystawione', onTap: () {})
                 ],
               ),
             const SizedBox(height: 8),
-            SimpleButton(height: 40, width: 480, fontSize: 14, label: 'Obserwowane', isSelected: false, onTap: () {}),
+            SimpleTextButton(height: 40, width: 480, fontSize: 14, label: 'Obserwowane', onTap: () {}),
             const SizedBox(height: 16),
             const Text(
               'Twoje preferencje',
@@ -85,7 +85,7 @@ class ProfileScreen extends StatelessWidget {
                       ),
               ),
               const SizedBox(height: 8),
-            SimpleButton(height: 40, width: 480, fontSize: 14, label: 'Ulubione', isSelected: false, onTap: () {}),
+            SimpleTextButton(height: 40, width: 480, fontSize: 14, label: 'Ulubione', onTap: () {}),
             const SizedBox(height: 16),
             const Text(
               'Ranking',
@@ -104,7 +104,7 @@ class ProfileScreen extends StatelessWidget {
               fontSize: 14,
             ),
             const SizedBox(height: 8),
-            SimpleButton(height: 40, width: 480, fontSize: 14, label: 'Ustawienia', isSelected: false, onTap: () {}),
+            SimpleTextButton(height: 40, width: 480, fontSize: 14, label: 'Ustawienia', onTap: () {}),
           ],
         ),
       ),
