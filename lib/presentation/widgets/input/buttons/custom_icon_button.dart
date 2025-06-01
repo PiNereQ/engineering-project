@@ -1,26 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 
-class SimpleTextButton extends StatefulWidget {
-  final double height;
-  final double? width;
+class CustomIconButton extends StatefulWidget {
+  final double size;
   final double fontSize;
-  final String label;
+  final String icon;
   final VoidCallback onTap;
 
-  const SimpleTextButton({
+  const CustomIconButton({
     super.key,
-    this.height = 48,
-    this.width,
+    this.size = 48,
     this.fontSize = 18,
-    required this.label,
+    required this.icon,
     required this.onTap,
   });
 
   @override
-  State<SimpleTextButton> createState() => _SimpleTextButtonState();
+  State<CustomIconButton> createState() => _CustomIconButtonState();
 }
   
-class _SimpleTextButtonState extends State<SimpleTextButton> {
+class _CustomIconButtonState extends State<CustomIconButton> {
   bool _isPressed = false;
 
   @override
@@ -42,13 +41,12 @@ class _SimpleTextButtonState extends State<SimpleTextButton> {
       },
       child: Container(
         padding: _isPressed
-            ? const EdgeInsets.only(top: 4, left: 4)
-            : const EdgeInsets.only(right: 4, bottom: 4),
+            ? const EdgeInsets.only(top: 3, left: 3)
+            : const EdgeInsets.only(right: 3, bottom: 3),
         child: Center(
           child: Container(
-            width: widget.width,
-            height: widget.height,
-            constraints: const BoxConstraints(minWidth: 132),
+            width: widget.size,
+            height: widget.size,
             decoration: ShapeDecoration(
               color: _isPressed ? const Color(0xFFB2B2B2) : Colors.white,
               shape: RoundedRectangleBorder(
@@ -67,14 +65,14 @@ class _SimpleTextButtonState extends State<SimpleTextButton> {
                     ],
             ),
             child: Center(
-              child: Text(
-                widget.label,
-                style: TextStyle(
-                  color: _isPressed ? const Color(0xFF646464) : Colors.black,
-                  fontSize: widget.fontSize,
-                  fontFamily: 'Itim',
-                  fontWeight: FontWeight.w400,
+              child: SvgPicture.asset(
+                widget.icon,
+                colorFilter: ColorFilter.mode(
+                  _isPressed ? const Color(0xFF646464) : Colors.black,
+                  BlendMode.srcIn
                 ),
+                width: 24,
+                height: 24,
               ),
             ),
           ),

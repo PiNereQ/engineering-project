@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:proj_inz/presentation/widgets/input/buttons/simple_button.dart';
+import 'package:proj_inz/presentation/widgets/input/buttons/custom_text_button.dart';
 import 'package:proj_inz/presentation/widgets/ticket_button.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -68,13 +68,13 @@ class ProfileScreen extends StatelessWidget {
             Row(
                 //mainAxisSize: MainAxisSize.min,
                 children: [
-                  SimpleTextButton(height: 40, width: 130, fontSize: 14, label: 'Kupione', onTap: () {}),
+                  CustomTextButton(height: 40, width: 130, fontSize: 14, label: 'Kupione', onTap: () {}),
                   const SizedBox(width: 24),            
-                  SimpleTextButton(height: 40, width: 130, fontSize: 14, label: 'Wystawione', onTap: () {})
+                  CustomTextButton(height: 40, width: 130, fontSize: 14, label: 'Wystawione', onTap: () {})
                 ],
               ),
             const SizedBox(height: 8),
-            SimpleTextButton(height: 40, width: 480, fontSize: 14, label: 'Obserwowane', onTap: () {}),
+            CustomTextButton(height: 40, width: 480, fontSize: 14, label: 'Obserwowane', onTap: () {}),
             const SizedBox(height: 16),
             const Text(
               'Twoje preferencje',
@@ -85,7 +85,7 @@ class ProfileScreen extends StatelessWidget {
                       ),
               ),
               const SizedBox(height: 8),
-            SimpleTextButton(height: 40, width: 480, fontSize: 14, label: 'Ulubione', onTap: () {}),
+            CustomTextButton(height: 40, width: 480, fontSize: 14, label: 'Ulubione', onTap: () {}),
             const SizedBox(height: 16),
             const Text(
               'Ranking',
@@ -104,7 +104,7 @@ class ProfileScreen extends StatelessWidget {
               fontSize: 14,
             ),
             const SizedBox(height: 8),
-            SimpleTextButton(height: 40, width: 480, fontSize: 14, label: 'Ustawienia', onTap: () {}),
+            CustomTextButton(height: 40, width: 480, fontSize: 14, label: 'Ustawienia', onTap: () {}),
           ],
         ),
       ),

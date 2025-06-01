@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import '../widgets/labeled_text_field.dart';
-import '../widgets/search_dropdown_field.dart';
-import '../widgets/checkbox.dart';
-import '../widgets/radiobutton.dart';
-import '../widgets/input/buttons/simple_button.dart';
+import '../widgets/input/text_fields/labeled_text_field.dart';
+import '../widgets/input/search_dropdown_field.dart';
+import '../widgets/input/buttons/checkbox.dart';
+import '../widgets/input/buttons/radio_button.dart';
+import '../widgets/input/buttons/custom_text_button.dart';
 
 enum CouponType { percent, fixed }
 
@@ -161,7 +161,7 @@ class _AddScreenState extends State<AddScreen> {
                           ConstrainedBox(
                             constraints: const BoxConstraints(minWidth: 132),
                             child: Center(
-                              child: SimpleTextButton(
+                              child: CustomTextButton(
                                 height: 51.86,
                                 width: 160,
                                 fontSize: 18,
@@ -416,7 +416,7 @@ class _AddScreenState extends State<AddScreen> {
                       const SizedBox(height: 18),
 
                       // 11. Przycisk dodaj
-                      SimpleTextButton(
+                      CustomTextButton(
                         height: 56,
                         width: double.infinity,
                         fontSize: 20,
