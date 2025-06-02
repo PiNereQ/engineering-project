@@ -1,6 +1,8 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:proj_inz/presentation/screens/debug_screen.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_text_button.dart';
 import 'package:proj_inz/presentation/widgets/ticket_button.dart';
 
@@ -105,6 +107,18 @@ class ProfileScreen extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             CustomTextButton(height: 40, width: 480, fontSize: 14, label: 'Ustawienia', onTap: () {}),
+            const SizedBox(height: 16),
+            if (kDebugMode) CustomTextButton(
+              label: 'Debug',
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const DebugScreen(),
+                  ),
+                );
+              }
+            )
           ],
         ),
       ),
