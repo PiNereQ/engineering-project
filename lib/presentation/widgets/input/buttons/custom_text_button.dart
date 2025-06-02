@@ -25,30 +25,28 @@ class _CustomTextButtonState extends State<CustomTextButton> {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: widget.onTap,
-      onTapDown: (TapDownDetails details) {
-        setState(() {
-          _isPressed = true;
-        });
-      },
-      onTapUp: (TapUpDetails details) async {
-        await Future.delayed(const Duration(milliseconds: 80));
-        if (mounted) {
-          setState(() {
-            _isPressed = false;
-          });
-        }
-      },
-      child: Container(
-        padding: _isPressed
-            ? const EdgeInsets.only(top: 4, left: 4)
-            : const EdgeInsets.only(right: 4, bottom: 4),
-        child: Center(
+    return Material(
+      child: GestureDetector(
+        onTap: widget.onTap,
+        onTapDown: (TapDownDetails details) => (setState(() =>(_isPressed = true))),
+        onTapCancel: () => (setState(() =>(_isPressed = false))),
+        onTapUp: (TapUpDetails details) async {
+          await Future.delayed(const Duration(milliseconds: 80));
+          if (mounted) {
+            setState(() {
+              _isPressed = false;
+            });
+          }
+        },
+        child: Container(
+          padding: _isPressed
+              ? const EdgeInsets.only(top: 4, left: 4)
+              : const EdgeInsets.only(right: 4, bottom: 4),
           child: Container(
-            width: widget.width,
+            //width: widget.width,
             height: widget.height,
-            constraints: const BoxConstraints(minWidth: 132),
+            //constraints: const BoxConstraints(minWidth: 132),
+            padding: const EdgeInsets.symmetric(horizontal: 16),
             decoration: ShapeDecoration(
               color: _isPressed ? const Color(0xFFB2B2B2) : Colors.white,
               shape: RoundedRectangleBorder(
@@ -66,16 +64,21 @@ class _CustomTextButtonState extends State<CustomTextButton> {
                       )
                     ],
             ),
-            child: Center(
-              child: Text(
-                widget.label,
-                style: TextStyle(
-                  color: _isPressed ? const Color(0xFF646464) : Colors.black,
-                  fontSize: widget.fontSize,
-                  fontFamily: 'Itim',
-                  fontWeight: FontWeight.w400,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  widget.label,
+                  style: TextStyle(
+                    color: _isPressed ? const Color(0xFF646464) : Colors.black,
+                    fontSize: widget.fontSize,
+                    fontFamily: 'Itim',
+                    fontWeight: FontWeight.w400,
+                  ),
                 ),
-              ),
+              ],
             ),
           ),
         ),

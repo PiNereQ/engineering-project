@@ -26,11 +26,8 @@ class _CustomIconButtonState extends State<CustomIconButton> {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: widget.onTap,
-      onTapDown: (TapDownDetails details) {
-        setState(() {
-          _isPressed = true;
-        });
-      },
+      onTapDown: (TapDownDetails details) => (setState(() =>(_isPressed = true))),
+      onTapCancel: () => (setState(() =>(_isPressed = false))),
       onTapUp: (TapUpDetails details) async {
         await Future.delayed(const Duration(milliseconds: 80));
         if (mounted) {
@@ -71,8 +68,7 @@ class _CustomIconButtonState extends State<CustomIconButton> {
                   _isPressed ? const Color(0xFF646464) : Colors.black,
                   BlendMode.srcIn
                 ),
-                width: 24,
-                height: 24,
+                height: 18,
               ),
             ),
           ),
