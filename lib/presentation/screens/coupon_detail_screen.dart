@@ -22,42 +22,85 @@ class CouponDetailsScreen extends StatelessWidget {
             if (state is CouponLoading) {
               return const Center(child: CircularProgressIndicator());
             } else if (state is CouponLoaded) {
-              return Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  children: [
-                    SizedBox(
-                      width: double.infinity,
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          TextButton(
-                            onPressed: () {
-                            Navigator.of(context).pop();
-                            },
-                            child: const Text('back'),
-                          ),
-                          TextButton(
-                            onPressed: () {},
-                            child: const Text('share'),
-                          ),
-                        ],
+              return SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    children: [
+                      SizedBox(
+                        width: double.infinity,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            CustomIconButton(
+                              icon: 'icons/back.svg',
+                              onTap: () {
+                                Navigator.of(context).pop();
+                              },
+                            ),
+                            CustomIconButton(
+                              icon: 'icons/share.svg',
+                              onTap: () {},
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 16,),
-                    Text('id: $couponId'),
-                    CouponDetails(coupon: state.coupon,),
-                    const SizedBox(height: 24),
-                    SellerDetails(
-                      sellerId: state.coupon.sellerId,
-                      sellerUsername: state.coupon.sellerUsername.toString(),
-                      sellerReputation: state.coupon.sellerReputation,
-                      sellerJoinDate: state.coupon.sellerJoinDate ?? DateTime(1970, 1, 1),
-                    ),
-                  ],
-                ));
+                      const SizedBox(height: 16,),
+                      if (state.coupon.isSold == true)
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(16),
+                          clipBehavior: Clip.antiAlias,
+                          decoration: ShapeDecoration(
+                            color: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              side: const BorderSide(width: 2),
+                              borderRadius: BorderRadius.circular(24),
+                            ),
+                            shadows: const [
+                              BoxShadow(
+                                color: Color(0xFF000000),
+                                blurRadius: 0,
+                                offset: Offset(4, 4),
+                                spreadRadius: 0,
+                              )
+                            ],
+                          ),
+                          child: const Row(
+                            children: [
+                              Icon(
+                                Icons.report_outlined,
+                                color: Color(0xFFE32F2F),
+                                size: 32,
+                                ),
+                              SizedBox(width: 16,),
+                              Text(
+                                "Oferta sprzedaży tego kuponu\nzostała zakończona.",
+                                style: TextStyle(
+                                color: Color(0xFFE22E2E),
+                                fontSize: 18,
+                                fontFamily: 'Itim',
+                                fontWeight: FontWeight.w400,
+                                height: 1.2,
+                                ),
+                              ),
+                            ],
+                          )
+                        ),
+                      if (state.coupon.isSold == true) const SizedBox(height: 24,),
+                      CouponDetails(coupon: state.coupon,),
+                      const SizedBox(height: 24),
+                      SellerDetails(
+                        sellerId: state.coupon.sellerId,
+                        sellerUsername: state.coupon.sellerUsername.toString(),
+                        sellerReputation: state.coupon.sellerReputation,
+                        sellerJoinDate: state.coupon.sellerJoinDate ?? DateTime(1970, 1, 1),
+                      ),
+                    ],
+                  )),
+              );
             }
             else if (state is CouponError) {
               return Center(child: Text('Error: ${state.message}'));
@@ -92,6 +135,7 @@ class CouponDetails extends StatelessWidget {
     final bool worksInStore = coupon.worksInStore;
     final DateTime expiryDate = coupon.expiryDate;
     final String? description = coupon.description;
+    final bool isSold = coupon.isSold; 
     
     final reductionText = isInteger(reduction)
     ? reduction.toString()

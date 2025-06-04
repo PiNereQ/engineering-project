@@ -18,7 +18,7 @@ class CouponBloc extends Bloc<CouponEvent, CouponState> {
       await Future.delayed(const Duration(milliseconds: 100));
 
       try {
-        final coupon = await couponRepository.fetchCouponDetails(couponId);
+        final coupon = await couponRepository.fetchCouponDetailsById(couponId);
         debugPrint('Fetched coupon with id: $couponId'); // Debugging line
         emit(CouponLoaded(coupon: coupon));
       } catch (e) {

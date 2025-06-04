@@ -1,6 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:proj_inz/bloc/coupon/coupon_bloc.dart';
 
@@ -69,6 +70,7 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
 
       emit(CouponListLoadSuccess(coupons: _allCoupons, hasMore: _hasMore));
     } catch (e) {
+      if (kDebugMode) debugPrint(e.toString());
       emit(CouponListLoadFailure(message: e.toString()));
     } finally {
       _isFetching = false;

@@ -23,6 +23,8 @@ class Coupon extends Equatable {
   final int sellerReputation;
   final DateTime? sellerJoinDate; 
 
+  final bool isSold;
+
   const Coupon({
     required this.id,
     required this.reduction,
@@ -44,6 +46,8 @@ class Coupon extends Equatable {
     this.sellerUsername,
     required this.sellerReputation,
     this.sellerJoinDate,
+
+    required this.isSold,
   });
 
   @override
@@ -63,6 +67,7 @@ class Coupon extends Equatable {
     worksOnline,
     worksInStore,
     expiryDate,
+    isSold,
   ];
 
   Coupon copyWith({
@@ -83,6 +88,7 @@ class Coupon extends Equatable {
     String? sellerUsername,
     int? sellerReputation,
     DateTime? sellerJoinDate,
+    bool? isSold,
   }) {
     return Coupon(
       id: id ?? this.id,
@@ -102,6 +108,7 @@ class Coupon extends Equatable {
       sellerUsername: sellerUsername ?? this.sellerUsername,
       sellerReputation: sellerReputation ?? this.sellerReputation,
       sellerJoinDate: sellerJoinDate ?? this.sellerJoinDate,
+      isSold: isSold ?? this.isSold,
     );
   }
 }
