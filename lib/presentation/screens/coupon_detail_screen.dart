@@ -5,6 +5,7 @@ import 'package:proj_inz/bloc/coupon/coupon_bloc.dart';
 import 'package:proj_inz/core/utils.dart';
 import 'package:proj_inz/data/models/coupon_model.dart';
 import 'package:proj_inz/data/repositories/coupon_repository.dart';
+import 'package:proj_inz/presentation/widgets/input/buttons/custom_icon_button.dart';
 
 class CouponDetailsScreen extends StatelessWidget {
   final String couponId;

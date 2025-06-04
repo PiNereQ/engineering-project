@@ -3,7 +3,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
-import 'package:proj_inz/bloc/coupon/coupon_bloc.dart';
 
 import 'package:proj_inz/data/models/coupon_model.dart';
 import 'package:proj_inz/data/repositories/coupon_repository.dart';
@@ -14,7 +13,7 @@ part 'coupon_list_state.dart';
 
 class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
   final CouponRepository couponRepository;
-  final int limit = 1;
+  final int limit = 50;
 
   List<Coupon> _allCoupons = [];
   DocumentSnapshot? _lastDocument;
@@ -25,18 +24,6 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
     on<FetchCoupons>(_onFetchCoupons);
     on<FetchMoreCoupons>(_onFetchMoreCoupons);
   }
-
-  // _onFetchCoupons(FetchCoupons event, Emitter<CouponListState> emit) async {
-  //   emit(const CouponListLoadInProgress());
-
-  //   try {
-  //     final coupons = await couponRepository.fetchCoupons();
-  //     debugPrint('Fetched coupons: $coupons'); // Debugging line
-  //     emit(CouponListLoadSuccess(coupons: coupons));
-  //   } catch (e) {
-  //     emit(CouponListLoadFailure(message: e.toString()));
-  //   }
-  // }
 
   _onFetchCoupons(FetchCoupons event, Emitter<CouponListState> emit) async {
     emit(CouponListLoadInProgress());

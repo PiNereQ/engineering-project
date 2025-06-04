@@ -4,10 +4,10 @@ import 'package:proj_inz/core/utils.dart';
 import 'package:proj_inz/data/models/coupon_model.dart';
 import 'package:proj_inz/presentation/screens/coupon_detail_screen.dart';
 
-class CouponHorizontalCard extends StatelessWidget {
+class CouponCardHorizontal extends StatelessWidget {
   final Coupon coupon;
 
-  const CouponHorizontalCard({
+  const CouponCardHorizontal({
     super.key,
     required this.coupon
   });

@@ -11,7 +11,7 @@ windows/
 metadata/
 .metadata
 analysis_options.yaml
-devtool_options.yaml
+devtools_options.yaml
 firebase.json
 /lib/firebase_options.dart
 /android/app/google-services.json
