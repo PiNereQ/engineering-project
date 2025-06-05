@@ -14,15 +14,14 @@ class CouponBloc extends Bloc<CouponEvent, CouponState> {
 
   CouponBloc(this.couponRepository, this.couponId) : super(CouponInitial()) {
     on<FetchCouponDetails>((event, emit) async {
-      emit(const CouponLoading());
-      await Future.delayed(const Duration(milliseconds: 100));
+      emit(const CouponLoadInProgress());
 
       try {
         final coupon = await couponRepository.fetchCouponDetailsById(couponId);
         debugPrint('Fetched coupon with id: $couponId'); // Debugging line
-        emit(CouponLoaded(coupon: coupon));
+        emit(CouponLoadSuccess(coupon: coupon));
       } catch (e) {
-        emit(CouponError(message: e.toString()));
+        emit(CouponLoadFailure(message: e.toString()));
       }
     });
   }

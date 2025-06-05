@@ -20,9 +20,9 @@ class CouponDetailsScreen extends StatelessWidget {
       child: Scaffold(
         body: BlocBuilder<CouponBloc, CouponState>(
           builder: (context, state) {
-            if (state is CouponLoading) {
+            if (state is CouponLoadInProgress) {
               return const Center(child: CircularProgressIndicator());
-            } else if (state is CouponLoaded) {
+            } else if (state is CouponLoadSuccess) {
               return SingleChildScrollView(
                 child: Padding(
                   padding: const EdgeInsets.all(24),
@@ -103,7 +103,7 @@ class CouponDetailsScreen extends StatelessWidget {
                   )),
               );
             }
-            else if (state is CouponError) {
+            else if (state is CouponLoadFailure) {
               return Center(child: Text('Error: ${state.message}'));
             }
             return const Center(child: Text('Oops'));
