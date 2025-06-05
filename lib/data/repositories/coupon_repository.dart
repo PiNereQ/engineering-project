@@ -1,8 +1,10 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:proj_inz/data/models/coupon_model.dart';
+import 'package:proj_inz/data/models/coupon_offer_model.dart';
 
 class PaginatedCouponsResult {
   final List<Coupon> coupons;
@@ -11,6 +13,7 @@ class PaginatedCouponsResult {
 }
 
 class CouponRepository {
+  final _firebaseAuth = FirebaseAuth.instance;
   final _firestore = FirebaseFirestore.instance;
 
   Future<PaginatedCouponsResult> fetchCouponsPaginated(
@@ -31,13 +34,13 @@ class CouponRepository {
 
     final coupons = await Future.wait(querySnapshot.docs.map((doc) async {
       // TODO: shop data caching
-      final shopDoc = await FirebaseFirestore.instance
+      final shopDoc = await _firestore
         .collection('shops')
         .doc(doc['shopId'].toString())
         .get();
 
       // TODO: seller data caching
-      final sellerDoc = await FirebaseFirestore.instance
+      final sellerDoc = await _firestore
         .collection('userProfileData')
         .doc(doc['sellerId'].toString())
         .get();
@@ -68,12 +71,12 @@ class CouponRepository {
   }
 
   Future<Coupon> fetchCouponDetailsById(String id) async {
-    final doc = await FirebaseFirestore.instance
+    final doc = await _firestore
       .collection('couponOffers')
       .doc(id)
       .get();
 
-    final shopDoc = await FirebaseFirestore.instance
+    final shopDoc = await _firestore
       .collection('shops')
       .doc(doc['shopId'].toString())
       .get();
@@ -103,5 +106,25 @@ class CouponRepository {
       sellerJoinDate: (sellerDoc['joinDate'] as Timestamp).toDate(),
       isSold: doc['isSold'],
     );
+  }
+
+  
+  Future<void> postCouponOffer(CouponOffer coupon) async { 
+    // TODO: add posting coupon codes to Firestore 
+    // (perhaps move to Cloud Functions?)
+    await _firestore.collection('couponOffers').add({
+      'reduction': coupon.reduction,
+      'reductionIsPercentage': coupon.reductionIsPercentage,
+      'pricePLN': coupon.price,
+      'hasLimits': coupon.hasLimits,
+      'worksOnline': coupon.worksOnline,
+      'worksInStore': coupon.worksInStore,
+      'expiryDate': coupon.expiryDate,
+      'description': coupon.description,
+      'shopId': coupon.shopId,
+      'sellerId': _firebaseAuth.currentUser?.uid,
+      'isSold': false,
+      'createdAt': FieldValue.serverTimestamp(),
+    });
   }
 }

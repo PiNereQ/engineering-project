@@ -43,9 +43,9 @@ class _CustomTextButtonState extends State<CustomTextButton> {
               ? const EdgeInsets.only(top: 4, left: 4)
               : const EdgeInsets.only(right: 4, bottom: 4),
           child: Container(
-            //width: widget.width,
+            width: widget.width,
             height: widget.height,
-            //constraints: const BoxConstraints(minWidth: 132),
+            constraints: const BoxConstraints(minWidth: 132),
             padding: const EdgeInsets.symmetric(horizontal: 16),
             decoration: ShapeDecoration(
               color: _isPressed ? const Color(0xFFB2B2B2) : Colors.white,

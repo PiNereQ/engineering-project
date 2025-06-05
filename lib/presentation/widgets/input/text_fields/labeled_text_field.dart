@@ -3,6 +3,14 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 enum LabeledTextFieldWidth { full, half }
 
+// controller: _priceController,
+//                               keyboardType: TextInputType.number,
+//                               validator: (val) {
+//                                   if (val == null || val.isEmpty) return 'Wymagane';
+//                                   if (double.tryParse(val) == null) return 'Niepoprawna liczba';
+//                                   return null;
+//                               },
+
 class LabeledTextField extends StatelessWidget {
   final String label;
   final String placeholder;
@@ -11,6 +19,10 @@ class LabeledTextField extends StatelessWidget {
   final LabeledTextFieldWidth width;
   final TextAlign textAlign;
   final int maxLines;
+
+  final TextEditingController? controller;
+  final TextInputType? keyboardType;
+  final FormFieldValidator<String?>? validator;
 
   const LabeledTextField({
     super.key,
@@ -21,6 +33,9 @@ class LabeledTextField extends StatelessWidget {
     this.width = LabeledTextFieldWidth.full,
     this.textAlign = TextAlign.left,
     this.maxLines = 1,
+    this.controller,
+    this.keyboardType,
+    this.validator,
   });
 
   @override
@@ -108,7 +123,7 @@ class LabeledTextField extends StatelessWidget {
                     )
                   ],
                 ),
-                child: TextField(
+                child: TextFormField(
                   maxLines: maxLines,
                   decoration: InputDecoration.collapsed(
                     hintText: placeholder,
@@ -120,6 +135,9 @@ class LabeledTextField extends StatelessWidget {
                     fontWeight: FontWeight.w400,
                   ),
                   textAlign: textAlign,
+                  controller: controller,
+                  keyboardType: keyboardType,
+                  validator: validator
                 ),
               ),
             ],

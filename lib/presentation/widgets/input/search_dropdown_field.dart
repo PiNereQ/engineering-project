@@ -8,6 +8,7 @@ class SearchDropdownField extends StatefulWidget {
   final String? placeholder;
   final Function(String?) onChanged;
   final CustomComponentWidth widthType;
+  final FormFieldValidator<String?>? validator;
 
   const SearchDropdownField({
     super.key,
@@ -16,6 +17,7 @@ class SearchDropdownField extends StatefulWidget {
     required this.onChanged,
     this.placeholder,
     this.widthType = CustomComponentWidth.full,
+    this.validator
   });
 
   @override
@@ -60,7 +62,7 @@ class _SearchDropdownFieldState extends State<SearchDropdownField> {
               ],
             ),
             child: DropdownButtonHideUnderline(
-              child: DropdownButton<String>(
+              child: DropdownButtonFormField<String>(
                 value: currentValue,
                 hint: widget.placeholder != null
                     ? Text(
@@ -94,6 +96,7 @@ class _SearchDropdownFieldState extends State<SearchDropdownField> {
                   });
                   widget.onChanged(newValue);
                 },
+                validator: widget.validator,
               ),
             ),
           ),
