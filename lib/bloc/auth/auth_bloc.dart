@@ -1,6 +1,8 @@
 import 'package:equatable/equatable.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:proj_inz/data/repositories/auth_repository.dart';
+import 'package:proj_inz/data/repositories/user_repository.dart';
 
 part 'auth_event.dart';
 part 'auth_state.dart';
@@ -8,8 +10,9 @@ part 'auth_state.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthRepository authRepository;
+  final UserRepository userRepository;
 
-  AuthBloc({required this.authRepository}) : super(UnAuthenticated(errorMessage: '')) {
+  AuthBloc({required this.authRepository, required this.userRepository}) : super(UnAuthenticated(errorMessage: '')) {
     on<SignUpRequested>(_onSignUp);
     on<SignInRequested>(_onSignIn);
     on<SignOutRequested>(_onSignOut);
@@ -22,6 +25,15 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         password: event.password,
         confirmPassword: event.confirmPassword,
       );
+      final user = FirebaseAuth.instance.currentUser;
+
+      if (user != null) {
+        await userRepository.createUserProfile(
+          uid: user.uid,
+          email: user.email ?? event.email,
+        );
+      }
+
       emit(AuthSignedIn());
     } catch (e) {
       emit(UnAuthenticated(errorMessage: e.toString()));

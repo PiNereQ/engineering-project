@@ -2,9 +2,15 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:proj_inz/bloc/auth/auth_bloc.dart';
 import 'package:proj_inz/presentation/screens/debug_screen.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_text_button.dart';
 import 'package:proj_inz/presentation/widgets/ticket_button.dart';
+import 'package:provider/provider.dart';
+
+
+
+
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -86,8 +92,15 @@ class ProfileScreen extends StatelessWidget {
                         fontWeight: FontWeight.w700,
                       ),
               ),
-              const SizedBox(height: 8),
-            CustomTextButton(height: 40, width: 480, fontSize: 14, label: 'Ulubione', onTap: () {}),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                CustomTextButton(height: 40, width: 480, fontSize: 14, label: 'Ulubione', onTap: () {}),
+                CustomTextButton(height: 40, width: 480, fontSize: 14, label: 'Wyloguj', onTap: () {
+                  context.read<AuthBloc>().add(SignOutRequested());
+                }),
+              ],
+            ),
             const SizedBox(height: 16),
             const Text(
               'Ranking',
