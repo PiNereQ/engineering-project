@@ -108,7 +108,10 @@ class CouponRepository {
     );
   }
 
-  Future<void> postCouponOffer(CouponOffer coupon) async {
+  
+  Future<void> postCouponOffer(CouponOffer coupon) async { 
+    // TODO: add posting coupon codes to Firestore 
+    // (perhaps move to Cloud Functions?)
     await _firestore.collection('couponOffers').add({
       'reduction': coupon.reduction,
       'reductionIsPercentage': coupon.reductionIsPercentage,
