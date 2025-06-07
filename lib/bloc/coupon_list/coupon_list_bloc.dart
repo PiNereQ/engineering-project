@@ -12,7 +12,7 @@ part 'coupon_list_state.dart';
 
 class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
   final CouponRepository couponRepository;
-  final int limit = 5;
+  final int limit = 50;
   
   final List<Coupon> _allCoupons = [];
   DocumentSnapshot? _lastDocument;
