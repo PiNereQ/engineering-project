@@ -15,11 +15,23 @@ class PaginatedCouponsResult {
 class CouponRepository {
   final _firebaseAuth = FirebaseAuth.instance;
   final _firestore = FirebaseFirestore.instance;
+  
+  final shopCache = <String, DocumentSnapshot>{};
+  final sellerCache = <String, DocumentSnapshot>{};
 
   Future<PaginatedCouponsResult> fetchCouponsPaginated(
     int limit,
     DocumentSnapshot? startAfter
   ) async {
+
+    final user = _firebaseAuth.currentUser;
+    if (user == null) {
+      throw FirebaseAuthException(
+        code: 'not-authenticated',
+        message: 'User is not authenticated.',
+      );
+    }
+
     var query = _firestore
       .collection('couponOffers')
       .where('isSold', isEqualTo: false)
@@ -32,20 +44,30 @@ class CouponRepository {
 
     final querySnapshot = await query.get();
 
-    final coupons = await Future.wait(querySnapshot.docs.map((doc) async {
-      // TODO: shop data caching
-      final shopDoc = await _firestore
-        .collection('shops')
-        .doc(doc['shopId'].toString())
-        .get();
+    final coupons = <Coupon>[];
+    for (final doc in querySnapshot.docs) {
+      final shopId = doc['shopId'].toString();
+      final sellerId = doc['sellerId'].toString();
 
-      // TODO: seller data caching
-      final sellerDoc = await _firestore
-        .collection('userProfileData')
-        .doc(doc['sellerId'].toString())
-        .get();
-      
-      return Coupon(
+      // Shop data caching
+      DocumentSnapshot shopDoc;
+      if (shopCache.containsKey(shopId)) {
+        shopDoc = shopCache[shopId]!;
+      } else {
+        shopDoc = await _firestore.collection('shops').doc(shopId).get();
+        shopCache[shopId] = shopDoc;
+      }
+
+      // Seller data caching
+      DocumentSnapshot sellerDoc;
+      if (sellerCache.containsKey(sellerId)) {
+        sellerDoc = sellerCache[sellerId]!;
+      } else {
+        sellerDoc = await _firestore.collection('userProfileData').doc(sellerId).get();
+        sellerCache[sellerId] = sellerDoc;
+      }
+
+      coupons.add(Coupon(
         id: doc.id,
         reduction: doc['reduction'],
         reductionIsPercentage: doc['reductionIsPercentage'],
@@ -61,8 +83,8 @@ class CouponRepository {
         sellerId: sellerDoc.id,
         sellerReputation: sellerDoc['reputation'],
         isSold: doc['isSold'],
-      );
-    }).toList());
+      ));
+    }
 
     return PaginatedCouponsResult(
       coupons: coupons,
@@ -76,15 +98,23 @@ class CouponRepository {
       .doc(id)
       .get();
 
-    final shopDoc = await _firestore
-      .collection('shops')
-      .doc(doc['shopId'].toString())
-      .get();
+    // Shop data caching
+    DocumentSnapshot shopDoc;
+    if (shopCache.containsKey(id)) {
+      shopDoc = shopCache[id]!;
+    } else {
+      shopDoc = await _firestore.collection('shops').doc(id).get();
+      shopCache[id] = shopDoc;
+    }
 
-    final sellerDoc = await FirebaseFirestore.instance
-      .collection('userProfileData')
-      .doc(doc['sellerId'].toString())
-      .get();
+    // Seller data caching
+      DocumentSnapshot sellerDoc;
+    if (sellerCache.containsKey(id)) {
+      sellerDoc = sellerCache[id]!;
+    } else {
+      sellerDoc = await _firestore.collection('userProfileData').doc(id).get();
+      sellerCache[id] = sellerDoc;
+    }
 
     return Coupon(
       id: doc.id,
