@@ -16,12 +16,18 @@ class CouponRepository {
   final _firebaseAuth = FirebaseAuth.instance;
   final _firestore = FirebaseFirestore.instance;
   
-  final shopCache = <String, DocumentSnapshot>{};
-  final sellerCache = <String, DocumentSnapshot>{};
+  final _shopCache = <String, DocumentSnapshot>{};
+  final _sellerCache = <String, DocumentSnapshot>{};
+
+  bool? _reductionIsPercentage;
+  bool? _reductionIsFixed;
+  double? _minPrice;
+  double? _maxPrice;
+  num? _minReputation;
 
   Future<PaginatedCouponsResult> fetchCouponsPaginated(
     int limit,
-    DocumentSnapshot? startAfter
+    DocumentSnapshot? startAfter,
   ) async {
 
     final user = _firebaseAuth.currentUser;
@@ -34,62 +40,89 @@ class CouponRepository {
 
     var query = _firestore
       .collection('couponOffers')
-      .where('isSold', isEqualTo: false)
-      .orderBy('createdAt')
-      .limit(limit);
+      .where('isSold', isEqualTo: false);
+    
+    if (_reductionIsPercentage == true && _reductionIsFixed == false) {
+      // 'rabat %' is chosen, but not 'rabat zł'
+      query = query.where('reductionIsPercentage', isEqualTo: true);
+    } else if (_reductionIsFixed == true && _reductionIsPercentage == false) {
+      // 'rabat zł' is chosen, but not 'rabat %'
+      query = query.where('reductionIsPercentage', isEqualTo: false);
+    } else if (_reductionIsFixed == false && _reductionIsPercentage == false) {
+      // none are chosen -> no coupons
+      query = query.where('reductionIsPercentage', isEqualTo: true);
+      query = query.where('reductionIsPercentage', isEqualTo: false);
+    }
+
+    if (_minPrice != null) {
+      query = query.where('pricePLN', isGreaterThanOrEqualTo: _minPrice);
+    }
+    if (_maxPrice != null) {
+      query = query.where('pricePLN', isLessThanOrEqualTo: _maxPrice);
+    }
+
+    // TODO: filtering for reputation using _minReputation - might require denormalisation on Firestore
+
+    query = query.orderBy('createdAt').limit(limit);
 
     if (startAfter != null) {
       query = query.startAfterDocument(startAfter);
     }
 
-    final querySnapshot = await query.get();
+    try {
+      final querySnapshot = await query.get();
+    
 
-    final coupons = <Coupon>[];
-    for (final doc in querySnapshot.docs) {
-      final shopId = doc['shopId'].toString();
-      final sellerId = doc['sellerId'].toString();
+      final coupons = <Coupon>[];
+      for (final doc in querySnapshot.docs) {
+        final shopId = doc['shopId'].toString();
+        final sellerId = doc['sellerId'].toString();
 
-      // Shop data caching
-      DocumentSnapshot shopDoc;
-      if (shopCache.containsKey(shopId)) {
-        shopDoc = shopCache[shopId]!;
-      } else {
-        shopDoc = await _firestore.collection('shops').doc(shopId).get();
-        shopCache[shopId] = shopDoc;
+        // Shop data caching
+        DocumentSnapshot shopDoc;
+        if (_shopCache.containsKey(shopId)) {
+          shopDoc = _shopCache[shopId]!;
+        } else {
+          shopDoc = await _firestore.collection('shops').doc(shopId).get();
+          _shopCache[shopId] = shopDoc;
+        }
+
+        // Seller data caching
+        DocumentSnapshot sellerDoc;
+        if (_sellerCache.containsKey(sellerId)) {
+          sellerDoc = _sellerCache[sellerId]!;
+        } else {
+          sellerDoc = await _firestore.collection('userProfileData').doc(sellerId).get();
+          _sellerCache[sellerId] = sellerDoc;
+        }
+
+        coupons.add(Coupon(
+          id: doc.id,
+          reduction: doc['reduction'],
+          reductionIsPercentage: doc['reductionIsPercentage'],
+          price: doc['pricePLN'],
+          hasLimits: doc['hasLimits'],
+          worksOnline: doc['worksOnline'],
+          worksInStore: doc['worksInStore'],
+          expiryDate: (doc['expiryDate'] as Timestamp).toDate(),
+          shopId: shopDoc.id,
+          shopName: shopDoc['name'],
+          shopNameColor: Color(shopDoc['nameColor']),
+          shopBgColor: Color(shopDoc['bgColor']),
+          sellerId: sellerDoc.id,
+          sellerReputation: sellerDoc['reputation'],
+          isSold: doc['isSold'],
+        ));
       }
 
-      // Seller data caching
-      DocumentSnapshot sellerDoc;
-      if (sellerCache.containsKey(sellerId)) {
-        sellerDoc = sellerCache[sellerId]!;
-      } else {
-        sellerDoc = await _firestore.collection('userProfileData').doc(sellerId).get();
-        sellerCache[sellerId] = sellerDoc;
-      }
+      return PaginatedCouponsResult(
+        coupons: coupons,
+        lastDocument: querySnapshot.docs.isNotEmpty ? querySnapshot.docs.last : null
+      );
 
-      coupons.add(Coupon(
-        id: doc.id,
-        reduction: doc['reduction'],
-        reductionIsPercentage: doc['reductionIsPercentage'],
-        price: doc['pricePLN'],
-        hasLimits: doc['hasLimits'],
-        worksOnline: doc['worksOnline'],
-        worksInStore: doc['worksInStore'],
-        expiryDate: (doc['expiryDate'] as Timestamp).toDate(),
-        shopId: shopDoc.id,
-        shopName: shopDoc['name'],
-        shopNameColor: Color(shopDoc['nameColor']),
-        shopBgColor: Color(shopDoc['bgColor']),
-        sellerId: sellerDoc.id,
-        sellerReputation: sellerDoc['reputation'],
-        isSold: doc['isSold'],
-      ));
+    } catch (e) {
+      rethrow;
     }
-
-    return PaginatedCouponsResult(
-      coupons: coupons,
-      lastDocument: querySnapshot.docs.isNotEmpty ? querySnapshot.docs.last : null
-    );
   }
 
   Future<Coupon> fetchCouponDetailsById(String id) async {
@@ -100,20 +133,20 @@ class CouponRepository {
 
     // Shop data caching
     DocumentSnapshot shopDoc;
-    if (shopCache.containsKey(id)) {
-      shopDoc = shopCache[id]!;
+    if (_shopCache.containsKey(id)) {
+      shopDoc = _shopCache[id]!;
     } else {
       shopDoc = await _firestore.collection('shops').doc(id).get();
-      shopCache[id] = shopDoc;
+      _shopCache[id] = shopDoc;
     }
 
     // Seller data caching
       DocumentSnapshot sellerDoc;
-    if (sellerCache.containsKey(id)) {
-      sellerDoc = sellerCache[id]!;
+    if (_sellerCache.containsKey(id)) {
+      sellerDoc = _sellerCache[id]!;
     } else {
       sellerDoc = await _firestore.collection('userProfileData').doc(id).get();
-      sellerCache[id] = sellerDoc;
+      _sellerCache[id] = sellerDoc;
     }
 
     return Coupon(
@@ -138,7 +171,6 @@ class CouponRepository {
     );
   }
 
-  
   Future<void> postCouponOffer(CouponOffer coupon) async { 
     // TODO: add posting coupon codes to Firestore 
     // (perhaps move to Cloud Functions?)
@@ -156,5 +188,27 @@ class CouponRepository {
       'isSold': false,
       'createdAt': FieldValue.serverTimestamp(),
     });
+  }
+
+  void applyFilters({
+    bool? reductionIsPercentage,
+    bool? reductionIsFixed,
+    double? minPrice,
+    double? maxPrice,
+    num? minReputation
+  }) {
+    _reductionIsPercentage = reductionIsPercentage ?? _reductionIsPercentage;
+    _reductionIsFixed = reductionIsFixed ?? _reductionIsFixed;
+    _minPrice = minPrice ?? _minPrice;
+    _maxPrice = maxPrice ?? _maxPrice;
+    _minReputation = minReputation ?? _minReputation;
+  }
+
+  void clearFilters() {
+    _reductionIsPercentage = null;
+    _reductionIsFixed = null;
+    _minPrice = null;
+    _maxPrice = null;
+    _minReputation = null;
   }
 }

@@ -12,17 +12,22 @@ part 'coupon_list_state.dart';
 
 class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
   final CouponRepository couponRepository;
-  final int limit = 50;
+  final int _limit = 50;
   
   final List<Coupon> _allCoupons = [];
   DocumentSnapshot? _lastDocument;
   bool _hasMore = true;
   bool _isFetching = false;
 
+  // filters
+
+
   CouponListBloc(this.couponRepository) : super(CouponListInitial()) {
     on<FetchCoupons>(_onFetchCoupons);
     on<FetchMoreCoupons>(_onFetchMoreCoupons);
     on<RefreshCoupons>(_onRefreshCoupons);
+    on<ApplyCouponFilter>(_onApplyCouponFilter);
+    on<ClearCouponFilter>(_onClearCouponFilter);
   }
 
   _onFetchCoupons(FetchCoupons event, Emitter<CouponListState> emit) async {
@@ -47,16 +52,21 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
     emit(CouponListLoadInProgress());
 
     try {
-      final result = await couponRepository.fetchCouponsPaginated(limit, _lastDocument);
+      final result = await couponRepository.fetchCouponsPaginated(
+        _limit,
+        _lastDocument,
+      );
       final coupons = result.coupons;
       final lastDoc = result.lastDocument;
       debugPrint('Fetched ${coupons.length} coupons: $coupons');
 
-      _hasMore = coupons.length == limit;
+      _hasMore = coupons.length == _limit;
       _allCoupons.addAll(coupons);
       _lastDocument = lastDoc;
 
       emit(CouponListLoadSuccess(coupons: _allCoupons, hasMore: _hasMore));
+
+      if (_allCoupons.isEmpty) emit(const CouponListLoadFailure(message: 'Nie znaleziono kuponów.'));
     } catch (e) {
       if (kDebugMode) debugPrint(e.toString());
       emit(CouponListLoadFailure(message: e.toString()));
@@ -71,4 +81,16 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
     _hasMore = true;
     add(FetchCoupons());
   }
+
+  _onApplyCouponFilter(ApplyCouponFilter event, Emitter<CouponListState> emit) async {
+    couponRepository.applyFilters(
+      reductionIsFixed: event.reductionIsFixed,
+      reductionIsPercentage: event.reductionIsPercentage,
+      minPrice: event.minPrice,
+      maxPrice: event.maxPrice,
+      minReputation: event.minReputation
+    );
+  }
+
+  _onClearCouponFilter(ClearCouponFilter event, Emitter<CouponListState> emit) async => couponRepository.clearFilters();
 }

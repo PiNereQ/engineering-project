@@ -91,7 +91,7 @@ class _CouponListScreenContentState extends State<_CouponListScreenContent> {
                 );
               } else if (state is CouponListLoadFailure) {
                 return SliverFillRemaining(
-                  child: Center(child: Text('Error: ${state.message}')),
+                  child: Center(child: Text(state.message)),
                 );
               }
               return const SliverFillRemaining(
