@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:proj_inz/bloc/coupon_list/coupon_list_bloc.dart';
 import 'package:proj_inz/bloc/navbar/navbar_bloc.dart';
 import 'package:proj_inz/bloc/navbar/navbar_event.dart';
 import 'package:proj_inz/bloc/navbar/navbar_state.dart';
+import 'package:proj_inz/data/repositories/coupon_repository.dart';
 import 'package:proj_inz/presentation/screens/add_screen.dart';
 import 'package:proj_inz/presentation/screens/chat_screen.dart';
 import 'package:proj_inz/presentation/screens/coupon_list_screen.dart';
@@ -14,7 +16,7 @@ class MainScreen extends StatelessWidget {
 
   static const List<Widget> _screens = <Widget>[
     HomeScreen(),
-    CouponsScreen(),
+    CouponListScreen(),
     Placeholder(), // makes indexes check out
     ChatScreen(),
     ProfileScreen(),
@@ -22,8 +24,11 @@ class MainScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => NavbarBloc(),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (_) => NavbarBloc()),
+        BlocProvider(create: (context) => CouponListBloc(context.read<CouponRepository>())),
+      ],
       child: Scaffold(
         body: BlocBuilder<NavbarBloc, NavbarState>(
           builder: (context, state) {
@@ -48,10 +53,16 @@ class MainScreen extends StatelessWidget {
               type: BottomNavigationBarType.fixed,
               items: const [
                 BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-                BottomNavigationBarItem(icon: Icon(Icons.card_giftcard), label: 'Coupons'),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.card_giftcard),
+                  label: 'Coupons',
+                ),
                 BottomNavigationBarItem(icon: Icon(Icons.add), label: 'Add'),
                 BottomNavigationBarItem(icon: Icon(Icons.chat), label: 'Chats'),
-                BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.person),
+                  label: 'Profile',
+                ),
               ],
             );
           },
