@@ -2,7 +2,6 @@ import 'package:bloc/bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/widgets.dart';
 
 import 'package:proj_inz/data/models/coupon_model.dart';
 import 'package:proj_inz/data/repositories/coupon_repository.dart';
@@ -13,9 +12,9 @@ part 'coupon_list_state.dart';
 
 class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
   final CouponRepository couponRepository;
-  final int limit = 50;
-
-  List<Coupon> _allCoupons = [];
+  final int limit = 5;
+  
+  final List<Coupon> _allCoupons = [];
   DocumentSnapshot? _lastDocument;
   bool _hasMore = true;
   bool _isFetching = false;
@@ -23,6 +22,7 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
   CouponListBloc(this.couponRepository) : super(CouponListInitial()) {
     on<FetchCoupons>(_onFetchCoupons);
     on<FetchMoreCoupons>(_onFetchMoreCoupons);
+    on<RefreshCoupons>(_onRefreshCoupons);
   }
 
   _onFetchCoupons(FetchCoupons event, Emitter<CouponListState> emit) async {
@@ -32,6 +32,7 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
     _hasMore = true;
     add(FetchMoreCoupons());
   }
+
   _onFetchMoreCoupons(FetchMoreCoupons event, Emitter<CouponListState> emit) async {
     if (_isFetching) {
       debugPrint("Still loading");
@@ -62,5 +63,12 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
     } finally {
       _isFetching = false;
     }
+  }
+
+  _onRefreshCoupons(RefreshCoupons event, Emitter<CouponListState> emit) async {
+    _allCoupons.clear();
+    _lastDocument = null;
+    _hasMore = true;
+    add(FetchCoupons());
   }
 }
