@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:proj_inz/bloc/auth/auth_bloc.dart';
+import 'package:proj_inz/presentation/screens/bought_coupons.dart';
 import 'package:proj_inz/presentation/screens/debug_screen.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_text_button.dart';
 import 'package:proj_inz/presentation/widgets/ticket_button.dart';
@@ -76,7 +77,14 @@ class ProfileScreen extends StatelessWidget {
             Row(
                 //mainAxisSize: MainAxisSize.min,
                 children: [
-                  CustomTextButton(height: 40, width: 130, fontSize: 14, label: 'Kupione', onTap: () {}),
+                  CustomTextButton(height: 40, width: 130, fontSize: 14, label: 'Kupione', onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const BoughtCoupons(), 
+                      ),
+                    );
+                  }),
                   const SizedBox(width: 24),            
                   CustomTextButton(height: 40, width: 130, fontSize: 14, label: 'Wystawione', onTap: () {})
                 ],

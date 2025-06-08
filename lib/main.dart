@@ -32,7 +32,7 @@ class MainApp extends StatelessWidget {
       providers: [
         RepositoryProvider(create: (_) => AuthRepository()),
         RepositoryProvider(create: (_) => CouponRepository()),
-        RepositoryProvider(create: (_) => UserRepository()), // Assuming UserRepository is defined
+        RepositoryProvider(create: (_) => UserRepository()),
       ],
       child: MultiBlocProvider(
         providers: [

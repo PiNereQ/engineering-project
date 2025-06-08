@@ -1,8 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-
-import 'package:cloud_firestore/cloud_firestore.dart';
-
 import 'package:proj_inz/data/models/coupon_model.dart';
 import 'package:proj_inz/data/models/coupon_offer_model.dart';
 
@@ -155,6 +153,24 @@ class CouponRepository {
       'sellerId': _firebaseAuth.currentUser?.uid,
       'isSold': false,
       'createdAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+
+   Future<void> buyCoupon({
+    required String couponId,
+    required String code,
+    required String buyerId,
+  }) async {
+    await _firestore.collection('couponOffers').doc(couponId).update({
+      'isSold': true,
+    });
+
+    await _firestore.collection('couponCodeData').add({
+      'code': code,
+      'owner': buyerId,
+      'couponId': couponId,
+      'boughtAt': FieldValue.serverTimestamp(),
     });
   }
 }

@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
@@ -27,4 +28,8 @@ class UserRepository {
 
   Future<void> updateUserProfile(String uid, Map<String, dynamic> data) async {
     await _firestore.collection('userProfileData').doc(uid).update(data);
+  }
+
+  Future getCurrentUser() async {
+    return FirebaseAuth.instance.currentUser;
   }

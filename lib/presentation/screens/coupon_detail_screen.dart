@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
 import 'package:proj_inz/bloc/coupon/coupon_bloc.dart';
 import 'package:proj_inz/core/utils.dart';
 import 'package:proj_inz/data/models/coupon_model.dart';
 import 'package:proj_inz/data/repositories/coupon_repository.dart';
+import 'package:proj_inz/data/repositories/user_repository.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_icon_button.dart';
+import 'package:proj_inz/presentation/widgets/input/buttons/custom_text_button.dart';
 
 class CouponDetailsScreen extends StatelessWidget {
   final String couponId;
@@ -384,25 +385,45 @@ class CouponDetails extends StatelessWidget {
                   color: Colors.black,
                   thickness: 1,
                 ),
-                const Text(
-                  'Opis:',
-                  style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 18,
-                  fontFamily: 'Itim',
-                  fontWeight: FontWeight.w400,
-                  height: 0.83,
-                  ),
-                ),
-                Text(
-                  description.toString(),
-                  style: const TextStyle(
-                    color: Color(0xFF646464),
-                    fontSize: 18,
-                    fontFamily: 'Itim',
-                    fontWeight: FontWeight.w400,
-                    height: 0.83,
-                  ),
+                Row(
+                  children: [
+                    const Text(
+                      'Opis:',
+                      style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 18,
+                      fontFamily: 'Itim',
+                      fontWeight: FontWeight.w400,
+                      height: 0.83,
+                      ),
+                    ),
+                    Text(
+                      description.toString(),
+                      style: const TextStyle(
+                        color: Color(0xFF646464),
+                        fontSize: 18,
+                        fontFamily: 'Itim',
+                        fontWeight: FontWeight.w400,
+                        height: 0.83,
+                      ),
+                    ),
+                    CustomTextButton(
+                      label: 'Kup Kupon!',
+                      onTap: () async {
+                        final user = await getCurrentUser();
+                          context.read<CouponBloc>().add(
+                            BuyCouponRequested(
+                              couponId: coupon.id,
+                              code: '123456',
+                              userId: user.uid,
+                            )
+                          );
+                      },
+                      width: 120,
+                      height: 32,
+                      fontSize: 16,
+                    ),
+                  ],
                 ),
               ]
             ),
@@ -412,6 +433,8 @@ class CouponDetails extends StatelessWidget {
     );
   }
 }
+
+
 
 class SellerDetails extends StatelessWidget {
   const SellerDetails({
