@@ -13,14 +13,14 @@ class FetchMoreCoupons extends CouponListEvent {}
 
 class RefreshCoupons extends CouponListEvent {}
 
-class ApplyCouponFilter extends CouponListEvent {
+class ApplyCouponFilters extends CouponListEvent {
   final bool? reductionIsPercentage;
   final bool? reductionIsFixed;
   final double? minPrice;
   final double? maxPrice;
-  final num? minReputation;
+  final int? minReputation;
 
-  ApplyCouponFilter({
+  const ApplyCouponFilters({
     this.reductionIsPercentage,
     this.reductionIsFixed,
     this.minPrice,
@@ -29,4 +29,8 @@ class ApplyCouponFilter extends CouponListEvent {
   });
 }
 
-class ClearCouponFilter extends CouponListEvent {}
+class ClearCouponFilters extends CouponListEvent {}
+
+class ReadCouponFilters extends CouponListEvent {}
+
+class LeaveCouponFiltersPopUp extends CouponListEvent {}

@@ -20,14 +20,21 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
   bool _isFetching = false;
 
   // filters
+  bool? _reductionIsFixed;
+  bool? _reductionIsPercentage; 
+  double? _minPrice; 
+  double? _maxPrice; 
+  int? _minReputation; 
 
 
   CouponListBloc(this.couponRepository) : super(CouponListInitial()) {
     on<FetchCoupons>(_onFetchCoupons);
     on<FetchMoreCoupons>(_onFetchMoreCoupons);
     on<RefreshCoupons>(_onRefreshCoupons);
-    on<ApplyCouponFilter>(_onApplyCouponFilter);
-    on<ClearCouponFilter>(_onClearCouponFilter);
+    on<ApplyCouponFilters>(_onApplyCouponFilters);
+    on<ClearCouponFilters>(_onClearCouponFilters);
+    on<ReadCouponFilters>(_onReadCouponFilters);
+    on<LeaveCouponFiltersPopUp>(_onLeaveCouponFiltersPopUp);
   }
 
   _onFetchCoupons(FetchCoupons event, Emitter<CouponListState> emit) async {
@@ -55,6 +62,11 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
       final result = await couponRepository.fetchCouponsPaginated(
         _limit,
         _lastDocument,
+        reductionIsFixed: _reductionIsFixed,
+        reductionIsPercentage: _reductionIsPercentage,
+        minPrice: _minPrice,
+        maxPrice: _maxPrice,
+        minReputation: _minReputation
       );
       final coupons = result.coupons;
       final lastDoc = result.lastDocument;
@@ -82,15 +94,54 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
     add(FetchCoupons());
   }
 
-  _onApplyCouponFilter(ApplyCouponFilter event, Emitter<CouponListState> emit) async {
-    couponRepository.applyFilters(
-      reductionIsFixed: event.reductionIsFixed,
-      reductionIsPercentage: event.reductionIsPercentage,
-      minPrice: event.minPrice,
-      maxPrice: event.maxPrice,
-      minReputation: event.minReputation
-    );
+  _onApplyCouponFilters(ApplyCouponFilters event, Emitter<CouponListState> emit) {
+    if (kDebugMode) debugPrint('Applied filters:\n\t%:${event.reductionIsFixed}\tzł:${event.reductionIsPercentage}\n\tminPrice:${event.minPrice}\tmaxPrice:${event.maxPrice}\n\trep:${event.minReputation}');
+    emit(CouponListFilterApplyInProgress());
+    _reductionIsFixed = event.reductionIsFixed;
+    _reductionIsPercentage = event.reductionIsPercentage;
+    _minPrice = event.minPrice;
+    _maxPrice = event.maxPrice;
+    _minReputation = event.minReputation;
+    emit(CouponListFilterApplySuccess(
+      _reductionIsPercentage,
+      _reductionIsFixed,
+      _minPrice,
+      _maxPrice,
+      _minReputation
+    ));
+
+    add(FetchCoupons());
   }
 
-  _onClearCouponFilter(ClearCouponFilter event, Emitter<CouponListState> emit) async => couponRepository.clearFilters();
+  _onClearCouponFilters(ClearCouponFilters event, Emitter<CouponListState> emit) {
+    if (kDebugMode) debugPrint('Filters cleared.');
+    _reductionIsFixed = null;
+    _reductionIsPercentage = null;
+    _minPrice = null;
+    _maxPrice = null;
+    _minReputation = null;
+    emit(CouponListFilterApplySuccess(
+      _reductionIsPercentage,
+      _reductionIsFixed,
+      _minPrice,
+      _maxPrice,
+      _minReputation
+    ));
+
+    add(FetchCoupons());
+  }
+
+  _onReadCouponFilters(ReadCouponFilters event, Emitter<CouponListState> emit) {
+    emit(CouponListFilterRead(
+      reductionIsPercentage: _reductionIsPercentage,
+      reductionIsFixed: _reductionIsFixed,
+      minPrice: _minPrice,
+      maxPrice: _maxPrice, 
+      minReputation: _minReputation
+    ));
+  }
+
+  _onLeaveCouponFiltersPopUp(LeaveCouponFiltersPopUp event, Emitter<CouponListState> emit) {
+    emit(CouponListLoadSuccess(coupons: _allCoupons, hasMore: _hasMore));
+  }
 }

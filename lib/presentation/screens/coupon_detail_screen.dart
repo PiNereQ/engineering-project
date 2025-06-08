@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/svg.dart';
 
 import 'package:proj_inz/bloc/coupon/coupon_bloc.dart';
 import 'package:proj_inz/core/utils.dart';
@@ -36,13 +37,13 @@ class CouponDetailsScreen extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             CustomIconButton(
-                              icon: 'icons/back.svg',
+                              icon: SvgPicture.asset('icons/back.svg'),
                               onTap: () {
                                 Navigator.of(context).pop();
                               },
                             ),
                             CustomIconButton(
-                              icon: 'icons/share.svg',
+                              icon: SvgPicture.asset('icons/share.svg'),
                               onTap: () {},
                             ),
                           ],
@@ -136,6 +137,7 @@ class CouponDetails extends StatelessWidget {
     final bool worksInStore = coupon.worksInStore;
     final DateTime expiryDate = coupon.expiryDate;
     final String? description = coupon.description;
+    // ignore: unused_local_variable
     final bool isSold = coupon.isSold; 
     
     final reductionText = isInteger(reduction)

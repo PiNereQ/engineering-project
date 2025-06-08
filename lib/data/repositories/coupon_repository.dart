@@ -19,15 +19,14 @@ class CouponRepository {
   final _shopCache = <String, DocumentSnapshot>{};
   final _sellerCache = <String, DocumentSnapshot>{};
 
-  bool? _reductionIsPercentage;
-  bool? _reductionIsFixed;
-  double? _minPrice;
-  double? _maxPrice;
-  num? _minReputation;
-
   Future<PaginatedCouponsResult> fetchCouponsPaginated(
     int limit,
     DocumentSnapshot? startAfter,
+    {bool? reductionIsPercentage,
+    bool? reductionIsFixed,
+    double? minPrice,
+    double? maxPrice,
+    num? minReputation}
   ) async {
 
     final user = _firebaseAuth.currentUser;
@@ -42,23 +41,23 @@ class CouponRepository {
       .collection('couponOffers')
       .where('isSold', isEqualTo: false);
     
-    if (_reductionIsPercentage == true && _reductionIsFixed == false) {
+    if (reductionIsPercentage == true && reductionIsFixed == false) {
       // 'rabat %' is chosen, but not 'rabat zł'
       query = query.where('reductionIsPercentage', isEqualTo: true);
-    } else if (_reductionIsFixed == true && _reductionIsPercentage == false) {
+    } else if (reductionIsFixed == true && reductionIsPercentage == false) {
       // 'rabat zł' is chosen, but not 'rabat %'
       query = query.where('reductionIsPercentage', isEqualTo: false);
-    } else if (_reductionIsFixed == false && _reductionIsPercentage == false) {
+    } else if (reductionIsFixed == false && reductionIsPercentage == false) {
       // none are chosen -> no coupons
       query = query.where('reductionIsPercentage', isEqualTo: true);
       query = query.where('reductionIsPercentage', isEqualTo: false);
     }
 
-    if (_minPrice != null) {
-      query = query.where('pricePLN', isGreaterThanOrEqualTo: _minPrice);
+    if (minPrice != null) {
+      query = query.where('pricePLN', isGreaterThanOrEqualTo: minPrice);
     }
-    if (_maxPrice != null) {
-      query = query.where('pricePLN', isLessThanOrEqualTo: _maxPrice);
+    if (maxPrice != null) {
+      query = query.where('pricePLN', isLessThanOrEqualTo: maxPrice);
     }
 
     // TODO: filtering for reputation using _minReputation - might require denormalisation on Firestore
@@ -188,27 +187,5 @@ class CouponRepository {
       'isSold': false,
       'createdAt': FieldValue.serverTimestamp(),
     });
-  }
-
-  void applyFilters({
-    bool? reductionIsPercentage,
-    bool? reductionIsFixed,
-    double? minPrice,
-    double? maxPrice,
-    num? minReputation
-  }) {
-    _reductionIsPercentage = reductionIsPercentage ?? _reductionIsPercentage;
-    _reductionIsFixed = reductionIsFixed ?? _reductionIsFixed;
-    _minPrice = minPrice ?? _minPrice;
-    _maxPrice = maxPrice ?? _maxPrice;
-    _minReputation = minReputation ?? _minReputation;
-  }
-
-  void clearFilters() {
-    _reductionIsPercentage = null;
-    _reductionIsFixed = null;
-    _minPrice = null;
-    _maxPrice = null;
-    _minReputation = null;
   }
 }

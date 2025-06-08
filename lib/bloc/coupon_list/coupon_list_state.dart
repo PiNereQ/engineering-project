@@ -30,3 +30,44 @@ class CouponListLoadFailure extends CouponListState {
   @override
   List<Object> get props => [message];
 }
+
+class CouponListFilterApplyInProgress extends CouponListState {}
+
+class CouponListFilterApplySuccess extends CouponListState {
+  final bool? reductionIsPercentage;
+  final bool? reductionIsFixed;
+  final double? minPrice;
+  final double? maxPrice;
+  final int? minReputation;
+
+  const CouponListFilterApplySuccess(
+    this.reductionIsPercentage,
+    this.reductionIsFixed,
+    this.minPrice,
+    this.maxPrice, 
+    this.minReputation);
+}
+
+class CouponListFilterApplyFailure extends CouponListState {
+  final String message;
+
+  const CouponListFilterApplyFailure({required this.message});
+
+  @override
+  List<Object> get props => [message];
+}
+
+class CouponListFilterRead extends CouponListState {
+  final bool? reductionIsPercentage;
+  final bool? reductionIsFixed;
+  final double? minPrice;
+  final double? maxPrice;
+  final int? minReputation;
+
+  const CouponListFilterRead({
+    this.reductionIsPercentage,
+    this.reductionIsFixed,
+    this.minPrice,
+    this.maxPrice, 
+    this.minReputation});
+}
