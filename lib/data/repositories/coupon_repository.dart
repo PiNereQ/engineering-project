@@ -11,6 +11,12 @@ class PaginatedCouponsResult {
   PaginatedCouponsResult({required this.coupons, this.lastDocument});
 }
 
+class PaginatedOwnedCouponsResult {
+  final List<OwnedCoupon> coupons;
+  final DocumentSnapshot? lastDocument;
+  PaginatedOwnedCouponsResult({required this.coupons, this.lastDocument});
+}
+
 class CouponRepository {
   final _firebaseAuth = FirebaseAuth.instance;
   final _firestore = FirebaseFirestore.instance;
@@ -88,6 +94,86 @@ class CouponRepository {
     return PaginatedCouponsResult(
       coupons: coupons,
       lastDocument: querySnapshot.docs.isNotEmpty ? querySnapshot.docs.last : null
+    );
+  }
+
+  Future<PaginatedCouponsResult> fetchOwnedCouponsPaginated(
+    int limit,
+    DocumentSnapshot? startAfter
+  ) async {
+
+    final user = _firebaseAuth.currentUser;
+    if (user == null) {
+      throw FirebaseAuthException(
+        code: 'not-authenticated',
+        message: 'User is not authenticated.',
+      );
+    }
+
+    var ownershipQuery = _firestore
+      .collection('couponCodeData')
+      .where('owner', isEqualTo: user.uid)
+      .limit(limit);
+
+    if (startAfter != null) {
+      ownershipQuery = ownershipQuery.startAfterDocument(startAfter);
+    }
+    
+    final ownershipQuerySnapshot = await ownershipQuery.get();
+    print(ownershipQuerySnapshot.docs.length);
+
+    final coupons = <Coupon>[];
+    for (final codeDataDoc in ownershipQuerySnapshot.docs) {
+      final couponDoc = await _firestore
+        .collection('couponOffers')
+        .doc(codeDataDoc.id)
+        .get();
+
+      final shopId = couponDoc['shopId'].toString();
+      final sellerId = couponDoc['sellerId'].toString();
+
+      // Shop data caching
+      DocumentSnapshot shopDoc;
+      if (shopCache.containsKey(shopId)) {
+        shopDoc = shopCache[shopId]!;
+      } else {
+        shopDoc = await _firestore.collection('shops').doc(shopId).get();
+        shopCache[shopId] = shopDoc;
+      }
+
+      // Seller data caching
+      DocumentSnapshot sellerDoc;
+      if (sellerCache.containsKey(sellerId)) {
+        sellerDoc = sellerCache[sellerId]!;
+      } else {
+        sellerDoc = await _firestore.collection('userProfileData').doc(sellerId).get();
+        sellerCache[sellerId] = sellerDoc;
+      }
+
+      coupons.add(
+        Coupon(
+          id: codeDataDoc.id,
+          reduction: couponDoc['reduction'],
+          reductionIsPercentage: couponDoc['reductionIsPercentage'],
+          price: couponDoc['pricePLN'],
+          hasLimits: couponDoc['hasLimits'],
+          worksOnline: couponDoc['worksOnline'],
+          worksInStore: couponDoc['worksInStore'],
+          expiryDate: (couponDoc['expiryDate'] as Timestamp).toDate(),
+          shopId: shopDoc.id,
+          shopName: shopDoc['name'],
+          shopNameColor: Color(shopDoc['nameColor']),
+          shopBgColor: Color(shopDoc['bgColor']),
+          sellerId: sellerDoc.id,
+          sellerReputation: sellerDoc['reputation'],
+          isSold: true
+        ),
+      );
+    }
+
+    return PaginatedCouponsResult(
+      coupons: coupons,
+      lastDocument: ownershipQuerySnapshot.docs.isNotEmpty ? ownershipQuerySnapshot.docs.last : null
     );
   }
 

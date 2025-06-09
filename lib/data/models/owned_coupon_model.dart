@@ -19,9 +19,9 @@ class OwnedCoupon extends Equatable {
   final Color shopBgColor;
 
   final String sellerId;
-  final String sellerUsername;
+  final String? sellerUsername;
   final int sellerReputation;
-  final DateTime sellerJoinDate; 
+  final DateTime? sellerJoinDate; 
 
   final String code;
 
@@ -43,9 +43,9 @@ class OwnedCoupon extends Equatable {
     required this.shopBgColor,
 
     required this.sellerId,
-    required this.sellerUsername,
+    this.sellerUsername,
     required this.sellerReputation,
-    required this.sellerJoinDate,
+    this.sellerJoinDate,
 
     required this.code,
   });

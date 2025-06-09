@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:proj_inz/bloc/coupon/coupon_bloc.dart';
+import 'package:proj_inz/bloc/owned_coupon/owned_coupon_bloc.dart';
 import 'package:proj_inz/core/utils.dart';
-import 'package:proj_inz/data/models/coupon_model.dart';
+import 'package:proj_inz/data/models/owned_coupon_model.dart';
 import 'package:proj_inz/data/repositories/coupon_repository.dart';
-import 'package:proj_inz/data/repositories/user_repository.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_icon_button.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_text_button.dart';
 
-class CouponDetailsScreen extends StatelessWidget {
+class BoughtCouponDetailsScreen extends StatelessWidget {
   final String couponId;
   
-  const CouponDetailsScreen({super.key, required this.couponId});
+  const BoughtCouponDetailsScreen({super.key, required this.couponId});
 
   @override
   Widget build(BuildContext context) {
@@ -19,11 +18,11 @@ class CouponDetailsScreen extends StatelessWidget {
       create: (context) => OwnedCouponBloc(context.read<CouponRepository>(), couponId)
         ..add(FetchCouponDetails()),
       child: Scaffold(
-        body: BlocBuilder<OwnedCouponBloc, CouponState>(
+        body: BlocBuilder<OwnedCouponBloc, OwnedCouponState>(
           builder: (context, state) {
-            if (state is CouponLoadInProgress) {
+            if (state is OwnedCouponLoadInProgress) {
               return const Center(child: CircularProgressIndicator());
-            } else if (state is CouponLoadSuccess) {
+            } else if (state is OwnedCouponLoadSuccess) {
               return SingleChildScrollView(
                 child: Padding(
                   padding: const EdgeInsets.all(24),
@@ -50,48 +49,47 @@ class CouponDetailsScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 16,),
-                      if (state.coupon.isSold == true)
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.all(16),
-                          clipBehavior: Clip.antiAlias,
-                          decoration: ShapeDecoration(
-                            color: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              side: const BorderSide(width: 2),
-                              borderRadius: BorderRadius.circular(24),
-                            ),
-                            shadows: const [
-                              BoxShadow(
-                                color: Color(0xFF000000),
-                                blurRadius: 0,
-                                offset: Offset(4, 4),
-                                spreadRadius: 0,
-                              )
-                            ],
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(16),
+                        clipBehavior: Clip.antiAlias,
+                        decoration: ShapeDecoration(
+                          color: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            side: const BorderSide(width: 2),
+                            borderRadius: BorderRadius.circular(24),
                           ),
-                          child: const Row(
-                            children: [
-                              Icon(
-                                Icons.report_outlined,
-                                color: Color(0xFFE32F2F),
-                                size: 32,
-                                ),
-                              SizedBox(width: 16,),
-                              Text(
-                                "Oferta sprzedaży tego kuponu\nzostała zakończona.",
-                                style: TextStyle(
-                                color: Color(0xFFE22E2E),
-                                fontSize: 18,
-                                fontFamily: 'Itim',
-                                fontWeight: FontWeight.w400,
-                                height: 1.2,
-                                ),
-                              ),
-                            ],
-                          )
+                          shadows: const [
+                            BoxShadow(
+                              color: Color(0xFF000000),
+                              blurRadius: 0,
+                              offset: Offset(4, 4),
+                              spreadRadius: 0,
+                            )
+                          ],
                         ),
-                      if (state.coupon.isSold == true) const SizedBox(height: 24,),
+                        child: const Row(
+                          children: [
+                            Icon(
+                              Icons.redeem_outlined,
+                              color: Colors.black,
+                              size: 32,
+                              ),
+                            SizedBox(width: 16,),
+                            Text(
+                              "Ten kupon należy do Ciebie!",
+                              style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 18,
+                              fontFamily: 'Itim',
+                              fontWeight: FontWeight.w400,
+                              height: 1.2,
+                              ),
+                            ),
+                          ],
+                        )
+                      ),
+                      const SizedBox(height: 24,),
                       _CouponDetails(coupon: state.coupon,),
                       const SizedBox(height: 24),
                       _SellerDetails(
@@ -104,7 +102,7 @@ class CouponDetailsScreen extends StatelessWidget {
                   )),
               );
             }
-            else if (state is CouponLoadFailure) {
+            else if (state is OwnedCouponLoadFailure) {
               return Center(child: Text('Error: ${state.message}'));
             }
             return const Center(child: Text('Oops'));
@@ -121,7 +119,7 @@ class _CouponDetails extends StatelessWidget {
     required this.coupon,
   });
 
-  final Coupon coupon;
+  final OwnedCoupon coupon;
 
   @override
   Widget build(BuildContext context) {
@@ -136,7 +134,7 @@ class _CouponDetails extends StatelessWidget {
     final bool worksInStore = coupon.worksInStore;
     final DateTime expiryDate = coupon.expiryDate;
     final String? description = coupon.description;
-    final bool isSold = coupon.isSold; 
+    final String code = coupon.code; 
     
     final reductionText = isInteger(reduction)
     ? reduction.toString()
@@ -406,21 +404,9 @@ class _CouponDetails extends StatelessWidget {
                         height: 0.83,
                       ),
                     ),
-                    CustomTextButton(
-                      label: 'Kup Kupon!',
-                      onTap: () async {
-                        final user = await getCurrentUser();
-                          context.read<OwnedCouponBloc>().add(
-                            BuyCouponRequested(
-                              couponId: coupon.id,
-                              userId: user.uid,
-                            )
-                          );
-                      },
-                      width: 120,
-                      height: 32,
-                      fontSize: 16,
-                    ),
+                    Text(
+                      code
+                    )
                   ],
                 ),
               ]

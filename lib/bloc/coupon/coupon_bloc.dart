@@ -6,11 +6,11 @@ import 'package:proj_inz/data/repositories/coupon_repository.dart';
 part 'coupon_event.dart';
 part 'coupon_state.dart';
 
-class CouponBloc extends Bloc<CouponEvent, CouponState> {
+class OwnedCouponBloc extends Bloc<CouponEvent, CouponState> {
   final CouponRepository couponRepository;
   final String couponId;
 
-  CouponBloc(this.couponRepository, this.couponId) : super(CouponInitial()) {
+  OwnedCouponBloc(this.couponRepository, this.couponId) : super(CouponInitial()) {
     on<FetchCouponDetails>((event, emit) async {
       emit(const CouponLoadInProgress());
 

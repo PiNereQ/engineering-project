@@ -18,11 +18,9 @@ class OwnedCouponListBloc extends Bloc<OwnedCouponListEvent, OwnedCouponListStat
   bool _isFetching = false;
 
   OwnedCouponListBloc(this.couponRepository) : super(OwnedCouponListInitial()) {
-    on<OwnedCouponListEvent>((event, emit) {
-      on<FetchCoupons>(_onFetchCoupons);
-      on<FetchMoreCoupons>(_onFetchMoreCoupons);
-      on<RefreshCoupons>(_onRefreshCoupons);
-    });
+    on<FetchCoupons>(_onFetchCoupons);
+    on<FetchMoreCoupons>(_onFetchMoreCoupons);
+    on<RefreshCoupons>(_onRefreshCoupons);
   }
 
     _onFetchCoupons(FetchCoupons event, Emitter<OwnedCouponListState> emit) async {
@@ -47,7 +45,7 @@ class OwnedCouponListBloc extends Bloc<OwnedCouponListEvent, OwnedCouponListStat
     emit(OwnedCouponListLoadInProgress());
 
     try {
-      final result = await couponRepository.fetchCouponsPaginated(limit, _lastDocument);
+      final result = await couponRepository.fetchOwnedCouponsPaginated(limit, _lastDocument);
       final coupons = result.coupons;
       final lastDoc = result.lastDocument;
       debugPrint('Fetched ${coupons.length} coupons: $coupons');
