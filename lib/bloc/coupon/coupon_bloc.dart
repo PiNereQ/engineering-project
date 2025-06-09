@@ -29,7 +29,6 @@ class CouponBloc extends Bloc<CouponEvent, CouponState> {
         final coupon = await couponRepository.fetchCouponDetailsById(couponId);
         await couponRepository.buyCoupon(
           couponId: event.couponId,
-          code: event.code,
           buyerId: event.userId,
         );
         emit(CouponLoadSuccess(coupon: coupon));
