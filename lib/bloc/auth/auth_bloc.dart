@@ -1,5 +1,4 @@
 import 'package:equatable/equatable.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:proj_inz/data/repositories/auth_repository.dart';
 import 'package:proj_inz/data/repositories/user_repository.dart';
@@ -20,18 +19,30 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   void _onSignUp(SignUpRequested event, Emitter<AuthState> emit) async {
     emit(AuthLoading());
     try {
-      await authRepository.singUp(
+      final userCredential = await authRepository.singUp(
         email: event.email,
         password: event.password,
         confirmPassword: event.confirmPassword,
       );
-      final user = FirebaseAuth.instance.currentUser;
+      final user = userCredential.user;
 
-      if (user != null) {
-        await userRepository.createUserProfile(
-          uid: user.uid,
-          email: user.email ?? event.email,
-        );
+      try {
+      add(SignInRequested(
+        email: event.email,
+        password: event.password,
+      ));
+      } catch (e) {
+        emit(UnAuthenticated(errorMessage: e.toString()));
+        return;
+      } finally {
+
+        if (user != null) {
+          print(user.uid);
+          await userRepository.createUserProfile(
+            uid: user.uid,
+            email: user.email ?? event.email,
+          );
+        }
       }
 
       emit(AuthSignedIn());
