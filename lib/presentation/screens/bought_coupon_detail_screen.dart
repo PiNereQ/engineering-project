@@ -20,6 +20,7 @@ class BoughtCouponDetailsScreen extends StatelessWidget {
       child: Scaffold(
         body: BlocBuilder<OwnedCouponBloc, OwnedCouponState>(
           builder: (context, state) {
+            print("Building");
             if (state is OwnedCouponLoadInProgress) {
               return const Center(child: CircularProgressIndicator());
             } else if (state is OwnedCouponLoadSuccess) {

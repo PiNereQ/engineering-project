@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:proj_inz/bloc/owned_coupon_list/owned_coupon_list_bloc.dart';
 import 'package:proj_inz/data/repositories/coupon_repository.dart';
-import 'package:proj_inz/presentation/widgets/coupon_card.dart';
+import 'package:proj_inz/presentation/widgets/bought_coupon_card.dart';
+import 'package:proj_inz/presentation/widgets/input/buttons/custom_icon_button.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/search_button.dart';
 
 class BoughtCouponListScreen extends StatefulWidget {
@@ -48,6 +49,7 @@ class _BoughtCouponListScreenState extends State<BoughtCouponListScreen> {
           child: CustomScrollView(
             controller: _scrollController,
             slivers: [
+              const _Toolbar(),
               BlocBuilder<OwnedCouponListBloc, OwnedCouponListState>(
                 builder: (context, state) {
                   if (state is OwnedCouponListLoadInProgress) {
@@ -60,7 +62,7 @@ class _BoughtCouponListScreenState extends State<BoughtCouponListScreen> {
                         final coupon = state.coupons[index];
                         return Padding(
                           padding: const EdgeInsets.only(bottom: 16.0),
-                          child: CouponCardHorizontal(coupon: coupon),
+                          child: BoughtCouponCardHorizontal(coupon: coupon),
                         );
                       }, childCount: state.coupons.length),
                     );
@@ -90,6 +92,7 @@ class _Toolbar extends StatelessWidget {
     return SliverAppBar(
       floating: true,
       snap: true,
+      automaticallyImplyLeading: false, // removes back button
       backgroundColor: Colors.transparent,
       surfaceTintColor: Colors.transparent,
       elevation: 0,
@@ -123,9 +126,25 @@ class _Toolbar extends StatelessWidget {
                 ],
               ),
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: SearchButtonWide(
-                label: 'Wyszukaj sklep lub kategorię',
-                onTap: () {},
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.max,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                spacing: 12,
+                children: [
+                  CustomIconButton(
+                    icon: 'icons/back.svg',
+                    onTap: () {
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                  Expanded(
+                    child: SearchButtonWide(
+                      label: 'Wyszukaj...',
+                      onTap: () {},
+                    ),
+                  ),
+                ],
               ),
             ),
           ),

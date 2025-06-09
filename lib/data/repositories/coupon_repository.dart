@@ -183,22 +183,25 @@ class CouponRepository {
       .doc(id)
       .get();
 
+    final shopId = doc['shopId'].toString();
+    final sellerId = doc['sellerId'].toString();
+
     // Shop data caching
     DocumentSnapshot shopDoc;
-    if (shopCache.containsKey(id)) {
-      shopDoc = shopCache[id]!;
+    if (shopCache.containsKey(shopId)) {
+      shopDoc = shopCache[shopId]!;
     } else {
-      shopDoc = await _firestore.collection('shops').doc(id).get();
-      shopCache[id] = shopDoc;
+      shopDoc = await _firestore.collection('shops').doc(shopId).get();
+      shopCache[shopId] = shopDoc;
     }
 
     // Seller data caching
     DocumentSnapshot sellerDoc;
-    if (sellerCache.containsKey(id)) {
-      sellerDoc = sellerCache[id]!;
+    if (sellerCache.containsKey(sellerId)) {
+      sellerDoc = sellerCache[sellerId]!;
     } else {
-      sellerDoc = await _firestore.collection('userProfileData').doc(id).get();
-      sellerCache[id] = sellerDoc;
+      sellerDoc = await _firestore.collection('userProfileData').doc(sellerId).get();
+      sellerCache[sellerId] = sellerDoc;
     }
 
     return Coupon(
@@ -229,48 +232,51 @@ class CouponRepository {
       .doc(id)
       .get();
     
+    final shopId = publicDataDoc['shopId'].toString();
+    final sellerId = publicDataDoc['sellerId'].toString();
+
     // Shop data caching
     DocumentSnapshot shopDoc;
-    if (shopCache.containsKey(id)) {
-      shopDoc = shopCache[id]!;
+    if (shopCache.containsKey(shopId)) {
+      shopDoc = shopCache[shopId]!;
     } else {
-      shopDoc = await _firestore.collection('shops').doc(id).get();
-      shopCache[id] = shopDoc;
+      shopDoc = await _firestore.collection('shops').doc(shopId).get();
+      shopCache[shopId] = shopDoc;
     }
 
     DocumentSnapshot sellerDoc;
-    if (sellerCache.containsKey(id)) {
-      sellerDoc = sellerCache[id]!;
+    if (sellerCache.containsKey(sellerId)) {
+      sellerDoc = sellerCache[sellerId]!;
     } else {
-      sellerDoc = await _firestore.collection('userProfileData').doc(id).get();
-      sellerCache[id] = sellerDoc;
+      sellerDoc = await _firestore.collection('userProfileData').doc(sellerId).get();
+      sellerCache[sellerId] = sellerDoc;
     }
 
     final privateDataDoc = await _firestore
-      .collection('couponOffers')
+      .collection('couponCodeData')
       .doc(id)
       .get();
 
-      return OwnedCoupon(
-        id: publicDataDoc.id,
-        reduction: publicDataDoc['reduction'],
-        reductionIsPercentage: publicDataDoc['reductionIsPercentage'],
-        price: publicDataDoc['pricePLN'],
-        hasLimits: publicDataDoc['hasLimits'],
-        worksOnline: publicDataDoc['worksOnline'],
-        worksInStore: publicDataDoc['worksInStore'],
-        expiryDate: (publicDataDoc['expiryDate'] as Timestamp).toDate(),
-        description: publicDataDoc['description'],
-        shopId: shopDoc.id,
-        shopName: shopDoc['name'],
-        shopNameColor: Color(shopDoc['nameColor']),
-        shopBgColor: Color(shopDoc['bgColor']),
-        sellerId: sellerDoc.id,
-        sellerReputation: sellerDoc['reputation'],
-        sellerUsername: sellerDoc['username'],
-        sellerJoinDate: (sellerDoc['joinDate'] as Timestamp).toDate(),
-        code: privateDataDoc['code'],
-      );
+    return OwnedCoupon(
+      id: publicDataDoc.id,
+      reduction: publicDataDoc['reduction'],
+      reductionIsPercentage: publicDataDoc['reductionIsPercentage'],
+      price: publicDataDoc['pricePLN'],
+      hasLimits: publicDataDoc['hasLimits'],
+      worksOnline: publicDataDoc['worksOnline'],
+      worksInStore: publicDataDoc['worksInStore'],
+      expiryDate: (publicDataDoc['expiryDate'] as Timestamp).toDate(),
+      description: publicDataDoc['description'],
+      shopId: shopDoc.id,
+      shopName: shopDoc['name'],
+      shopNameColor: Color(shopDoc['nameColor']),
+      shopBgColor: Color(shopDoc['bgColor']),
+      sellerId: sellerDoc.id,
+      sellerReputation: sellerDoc['reputation'],
+      sellerUsername: sellerDoc['username'],
+      sellerJoinDate: (sellerDoc['joinDate'] as Timestamp).toDate(),
+      code: privateDataDoc['code'],
+    );
   }
 
   
