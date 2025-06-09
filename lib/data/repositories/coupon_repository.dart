@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:proj_inz/data/models/coupon_model.dart';
 import 'package:proj_inz/data/models/coupon_offer_model.dart';
+import 'package:proj_inz/data/models/owned_coupon_model.dart';
 
 class PaginatedCouponsResult {
   final List<Coupon> coupons;
@@ -106,7 +107,7 @@ class CouponRepository {
     }
 
     // Seller data caching
-      DocumentSnapshot sellerDoc;
+    DocumentSnapshot sellerDoc;
     if (sellerCache.containsKey(id)) {
       sellerDoc = sellerCache[id]!;
     } else {
@@ -134,6 +135,56 @@ class CouponRepository {
       sellerJoinDate: (sellerDoc['joinDate'] as Timestamp).toDate(),
       isSold: doc['isSold'],
     );
+  }
+
+  Future<OwnedCoupon> fetchOwnedCouponDetailsById(String id) async {
+    final publicDataDoc = await _firestore
+      .collection('couponOffers')
+      .doc(id)
+      .get();
+    
+    // Shop data caching
+    DocumentSnapshot shopDoc;
+    if (shopCache.containsKey(id)) {
+      shopDoc = shopCache[id]!;
+    } else {
+      shopDoc = await _firestore.collection('shops').doc(id).get();
+      shopCache[id] = shopDoc;
+    }
+
+    DocumentSnapshot sellerDoc;
+    if (sellerCache.containsKey(id)) {
+      sellerDoc = sellerCache[id]!;
+    } else {
+      sellerDoc = await _firestore.collection('userProfileData').doc(id).get();
+      sellerCache[id] = sellerDoc;
+    }
+
+    final privateDataDoc = await _firestore
+      .collection('couponOffers')
+      .doc(id)
+      .get();
+
+      return OwnedCoupon(
+        id: publicDataDoc.id,
+        reduction: publicDataDoc['reduction'],
+        reductionIsPercentage: publicDataDoc['reductionIsPercentage'],
+        price: publicDataDoc['pricePLN'],
+        hasLimits: publicDataDoc['hasLimits'],
+        worksOnline: publicDataDoc['worksOnline'],
+        worksInStore: publicDataDoc['worksInStore'],
+        expiryDate: (publicDataDoc['expiryDate'] as Timestamp).toDate(),
+        description: publicDataDoc['description'],
+        shopId: shopDoc.id,
+        shopName: shopDoc['name'],
+        shopNameColor: Color(shopDoc['nameColor']),
+        shopBgColor: Color(shopDoc['bgColor']),
+        sellerId: sellerDoc.id,
+        sellerReputation: sellerDoc['reputation'],
+        sellerUsername: sellerDoc['username'],
+        sellerJoinDate: (sellerDoc['joinDate'] as Timestamp).toDate(),
+        code: privateDataDoc['code'],
+      );
   }
 
   
