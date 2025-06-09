@@ -1,8 +1,9 @@
-import 'package:flutter/material.dart';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
-
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_text_button.dart';
+
+
 
 class DebugScreen extends StatefulWidget {
   const DebugScreen({super.key});
@@ -25,6 +26,10 @@ class _DebugScreenState extends State<DebugScreen> {
           CustomTextButton(
             label: '_deleteMockCoupons',
             onTap: _deleteMockCoupons
+          ),
+          CustomTextButton(
+            label: '_checkUser',
+            onTap: _checkUser
           ),
         ],
       )
@@ -67,4 +72,13 @@ void _deleteMockCoupons() {
       }
     }
   });
+}
+
+void _checkUser() {
+  final user = FirebaseAuth.instance.currentUser;
+  if (user != null) {
+    debugPrint('Logged in user ID: ${user.uid}');
+  } else {
+    debugPrint('No user is currently logged in.');
+  }
 }

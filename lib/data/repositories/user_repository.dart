@@ -10,9 +10,13 @@ class UserRepository {
     required String email,
   }) async {
     await _firestore.collection('userProfileData').doc(uid).set({
-      'email': email,
-      // Add more default fields as needed
+      'username': 'sample_username',
+      'reputation': 40, 
       'createdAt': FieldValue.serverTimestamp(),
+    });
+
+    await _firestore.collection('privateUserInfo').doc(uid).set({
+      'email': email,
     });
   }
 }
