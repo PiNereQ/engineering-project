@@ -138,9 +138,7 @@ class CouponRepository {
 
   
   Future<void> postCouponOffer(CouponOffer coupon) async { 
-    // TODO: add posting coupon codes to Firestore 
-    // (perhaps move to Cloud Functions?)
-    await _firestore.collection('couponOffers').add({
+    final docRef = await _firestore.collection('couponOffers').add({
       'reduction': coupon.reduction,
       'reductionIsPercentage': coupon.reductionIsPercentage,
       'pricePLN': coupon.price,
@@ -154,22 +152,28 @@ class CouponRepository {
       'isSold': false,
       'createdAt': FieldValue.serverTimestamp(),
     });
+
+    await _firestore.collection('couponCodeData').doc(docRef.id).set({
+      'code': coupon.code,      
+      'owner': null,
+      'boughtAt': null,
+    });
+
+
+
   }
 
 
    Future<void> buyCoupon({
     required String couponId,
-    required String code,
     required String buyerId,
   }) async {
     await _firestore.collection('couponOffers').doc(couponId).update({
       'isSold': true,
     });
 
-    await _firestore.collection('couponCodeData').add({
-      'code': code,
+    await _firestore.collection('couponCodeData').doc(couponId).update({
       'owner': buyerId,
-      'couponId': couponId,
       'boughtAt': FieldValue.serverTimestamp(),
     });
   }

@@ -414,7 +414,6 @@ class CouponDetails extends StatelessWidget {
                           context.read<CouponBloc>().add(
                             BuyCouponRequested(
                               couponId: coupon.id,
-                              code: '123456',
                               userId: user.uid,
                             )
                           );
