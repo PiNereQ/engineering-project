@@ -25,6 +25,7 @@ dependencies:
 
   # Auth
   google_sign_in: ^6.2.2
+  qr_flutter: ^4.1.0
   
 
 dev_dependencies:
@@ -38,4 +39,7 @@ flutter:
     - family: Itim
       fonts:
         - asset: assets/fonts/itim/Itim-Regular.ttf
+    - family: Roboto Mono
+      fonts:
+        - asset: assets/fonts/roboto_mono/RobotoMono-VariableFont_wght.ttf
 

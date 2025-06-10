@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import 'package:proj_inz/bloc/owned_coupon/owned_coupon_bloc.dart';
 import 'package:proj_inz/core/utils.dart';
 import 'package:proj_inz/data/models/owned_coupon_model.dart';
@@ -383,38 +385,141 @@ class _CouponDetails extends StatelessWidget {
                   color: Colors.black,
                   thickness: 1,
                 ),
-                Row(
-                  children: [
-                    const Text(
-                      'Opis:',
-                      style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 18,
-                      fontFamily: 'Itim',
-                      fontWeight: FontWeight.w400,
-                      height: 0.83,
-                      ),
-                    ),
-                    Text(
-                      description.toString(),
-                      style: const TextStyle(
-                        color: Color(0xFF646464),
-                        fontSize: 18,
-                        fontFamily: 'Itim',
-                        fontWeight: FontWeight.w400,
-                        height: 0.83,
-                      ),
-                    ),
-                    Text(
-                      code
-                    )
-                  ],
+                const Text(
+                  'Opis:',
+                  style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 18,
+                  fontFamily: 'Itim',
+                  fontWeight: FontWeight.w400,
+                  height: 0.83,
+                  ),
+                ),
+                Text(
+                  description ?? 'brak',
+                  style: const TextStyle(
+                    color: Color(0xFF646464),
+                    fontSize: 18,
+                    fontFamily: 'Itim',
+                    fontWeight: FontWeight.w400,
+                    height: 0.83,
+                  ),
                 ),
               ]
             ),
           ),
+          const Divider(
+            height: 32,
+            color: Colors.black,
+            thickness: 2,
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            spacing: 18,
+            children: [
+              const Text(
+                'Gotowy do wykorzystania!',
+                style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 20,
+                    fontFamily: 'Itim',
+                    fontWeight: FontWeight.w400,
+                    height: 0.75,
+                ),
+              ),
+              CustomTextButton(
+                label: 'Wyświetl kod',
+                onTap: () => _showCodeDialog(context, code),
+              )
+            ],
+          )
         ],
       ),
+    );
+  }
+
+  _showCodeDialog(BuildContext context, String code) {
+    return showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          child: Container(
+            decoration: ShapeDecoration(
+              color: Colors.white,
+              shape: RoundedRectangleBorder(
+                side: const BorderSide(width: 2),
+                borderRadius: BorderRadius.circular(24),
+              ),
+              shadows: const [
+                BoxShadow(
+                  color: Color(0xFF000000),
+                  blurRadius: 0,
+                  offset: Offset(4, 4),
+                  spreadRadius: 0,
+                ),
+              ],
+            ),
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              spacing: 18,
+              children: [
+                SizedBox(
+                  height: 200,
+                  width: 200,
+                  child: QrImageView(
+                    data: code,
+                    version: QrVersions.auto,
+                    size: 200.0,
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () async {
+                    await Clipboard.setData(ClipboardData(text: code));
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Skopiowano kod do schowka')),
+                      );
+                    }
+                  },
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    spacing: 8,
+                    children: [
+                      Text(
+                        code,
+                        style: const TextStyle(
+                          color: Colors.black,
+                          fontSize: 20,
+                          fontFamily: 'Roboto Mono',
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const Icon(
+                        Icons.copy_rounded,
+                        size: 32,
+                      )
+                    ],
+                  ),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CustomTextButton(
+                      label: 'Wróć',
+                      onTap: () => Navigator.of(context).pop(),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      }
     );
   }
 }

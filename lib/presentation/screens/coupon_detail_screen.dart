@@ -384,47 +384,45 @@ class _CouponDetails extends StatelessWidget {
                   color: Colors.black,
                   thickness: 1,
                 ),
-                Row(
-                  children: [
-                    const Text(
-                      'Opis:',
-                      style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 18,
-                      fontFamily: 'Itim',
-                      fontWeight: FontWeight.w400,
-                      height: 0.83,
-                      ),
-                    ),
-                    Text(
-                      description.toString(),
-                      style: const TextStyle(
-                        color: Color(0xFF646464),
-                        fontSize: 18,
-                        fontFamily: 'Itim',
-                        fontWeight: FontWeight.w400,
-                        height: 0.83,
-                      ),
-                    ),
-                    CustomTextButton(
-                      label: 'Kup Kupon!',
-                      onTap: () async {
-                        final user = await getCurrentUser();
-                          context.read<OwnedCouponBloc>().add(
-                            BuyCouponRequested(
-                              couponId: coupon.id,
-                              userId: user.uid,
-                            )
-                          );
-                      },
-                      width: 120,
-                      height: 32,
-                      fontSize: 16,
-                    ),
-                  ],
+                const Text(
+                  'Opis:',
+                  style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 18,
+                  fontFamily: 'Itim',
+                  fontWeight: FontWeight.w400,
+                  height: 0.83,
+                  ),
+                ),
+                Text(
+                  description ?? 'brak',
+                  style: const TextStyle(
+                    color: Color(0xFF646464),
+                    fontSize: 18,
+                    fontFamily: 'Itim',
+                    fontWeight: FontWeight.w400,
+                    height: 0.83,
+                  ),
                 ),
               ]
             ),
+          ),
+          const Divider(
+            height: 32,
+            color: Colors.black,
+            thickness: 2,
+          ),
+          CustomTextButton(
+            label: 'Kup teraz',
+            onTap: () async {
+              final user = await getCurrentUser();
+                context.read<OwnedCouponBloc>().add(
+                  BuyCouponRequested(
+                    couponId: coupon.id,
+                    userId: user.uid,
+                  )
+                );
+            },
           ),
         ],
       ),
