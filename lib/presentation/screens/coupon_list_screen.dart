@@ -8,6 +8,7 @@ import 'package:proj_inz/presentation/widgets/coupon_card.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/checkbox.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_icon_button.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_text_button.dart';
+import 'package:proj_inz/presentation/widgets/input/buttons/radio_button.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/search_button.dart';
 import 'package:proj_inz/presentation/widgets/input/text_fields/custom_text_field.dart';
 
@@ -172,10 +173,26 @@ class _Toolbar extends StatelessWidget {
                               ),
                             ).then((_) {
                               if (context.mounted) {
-                                context.read<CouponListBloc>().add(LeaveCouponFiltersPopUp());
+                                context.read<CouponListBloc>().add(LeaveCouponFilterPopUp());
                               }
                             }),
                         icon: const Icon(Icons.filter_alt),
+                      ),
+                      CustomTextButton.iconSmall(
+                        label: 'Sortuj',
+                        onTap:
+                            () => showDialog(
+                              context: context,
+                              builder: (dialogContext) => BlocProvider.value(
+                                value: context.read<CouponListBloc>(),
+                                child: const _CouponSortDialog(),
+                              ),
+                            ).then((_) {
+                              if (context.mounted) {
+                                context.read<CouponListBloc>().add(LeaveCouponSortPopUp());
+                              }
+                            }),
+                        icon: const Icon(Icons.sort),
                       ),
                     ],
                   ),
@@ -437,6 +454,243 @@ class _CouponFilterDialogState extends State<_CouponFilterDialog> {
                                     maxPrice: maxPriceController.text.isEmpty ? null : double.tryParse(maxPriceController.text),
                                     minReputation: minReputation.toInt(),
                                   ),
+                                );
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _CouponSortDialog extends StatefulWidget {
+  const _CouponSortDialog();
+
+  @override
+  State<_CouponSortDialog> createState() => _CouponSortDialogState();
+}
+
+class _CouponSortDialogState extends State<_CouponSortDialog> {
+
+  Ordering ordering = Ordering.creationDateDesc;
+
+  @override
+  void initState() {
+    super.initState();
+    context.read<CouponListBloc>().add(ReadCouponOrdering());
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocListener<CouponListBloc, CouponListState>(
+      listenWhen: (previous, current) => current is CouponListFilterRead,
+      listener: (context, state) {
+        if (state is CouponListOrderingRead) {
+          setState(() {
+            ordering = state.ordering;
+          });
+        }
+      },
+      child: Scaffold(
+        body: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                SizedBox(
+                  width: double.infinity,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      CustomIconButton(
+                        icon: SvgPicture.asset('icons/back.svg'),
+                        onTap: () {
+                          Navigator.of(context).pop();
+                        }
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16,),
+                Container(
+                  decoration: ShapeDecoration(
+                    color: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      side: const BorderSide(width: 2),
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                    shadows: const [
+                      BoxShadow(
+                        color: Color(0xFF000000),
+                        blurRadius: 0,
+                        offset: Offset(4, 4),
+                        spreadRadius: 0,
+                      ),
+                    ],
+                  ),
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    spacing: 18,
+                    children: [
+                        const Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          'Sortowanie',
+                          style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 24,
+                          fontFamily: 'Itim',
+                          fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                        ),
+                        const Divider(
+                        color: Colors.black,
+                        thickness: 2,
+                        height: 2,
+                        ),
+                
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          spacing: 8,
+                          children: [
+                            Column( // Data dodania 
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Text(
+                                      'Data dodania',
+                                      style: TextStyle(
+                                          color: Colors.black,
+                                          fontSize: 20,
+                                          fontFamily: 'Itim',
+                                          fontWeight: FontWeight.w400,
+                                      ),
+                                  )
+                                ),
+                                CustomRadioButton(
+                                  label: 'od najnowszych',
+                                  selected: (ordering == Ordering.creationDateDesc),
+                                  onTap: () => ordering = Ordering.creationDateDesc,
+                                ),
+                                CustomRadioButton(
+                                  label: 'od najstarszych',
+                                  selected: (ordering == Ordering.creationDateAsc),
+                                  onTap: () => ordering = Ordering.creationDateAsc,
+                                )
+                              ],
+                            ),
+                            Column( // Cena
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Text(
+                                      'Cena',
+                                      style: TextStyle(
+                                          color: Colors.black,
+                                          fontSize: 20,
+                                          fontFamily: 'Itim',
+                                          fontWeight: FontWeight.w400,
+                                      ),
+                                  )
+                                ),
+                                CustomRadioButton(
+                                  label: 'od najniższej',
+                                  selected: (ordering == Ordering.priceAsc),
+                                  onTap: () => ordering = Ordering.priceAsc,
+                                ),
+                                CustomRadioButton(
+                                  label: 'od najwyższej',
+                                  selected: (ordering == Ordering.priceDesc),
+                                  onTap: () => ordering = Ordering.priceDesc,
+                                )
+                              ],
+                            ),
+                            Column( // Reputacja
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Text(
+                                      'Reputacja sprzedającego',
+                                      style: TextStyle(
+                                          color: Colors.black,
+                                          fontSize: 20,
+                                          fontFamily: 'Itim',
+                                          fontWeight: FontWeight.w400,
+                                      ),
+                                  )
+                                ),
+                                CustomRadioButton(
+                                  label: 'od najniższej',
+                                  selected: (ordering == Ordering.reputationAsc),
+                                  onTap: () => ordering = Ordering.reputationAsc,
+                                ),
+                                CustomRadioButton(
+                                  label: 'od najwyższej',
+                                  selected: (ordering == Ordering.reputationDesc),
+                                  onTap: () => ordering = Ordering.reputationDesc,
+                                )
+                              ],
+                            ),
+                            Column( // Data ważności
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Text(
+                                      'Data ważności',
+                                      style: TextStyle(
+                                          color: Colors.black,
+                                          fontSize: 20,
+                                          fontFamily: 'Itim',
+                                          fontWeight: FontWeight.w400,
+                                      ),
+                                  )
+                                ),
+                                CustomRadioButton(
+                                  label: 'od najbliższej',
+                                  selected: (ordering == Ordering.expiryDateDesc),
+                                  onTap: () => ordering = Ordering.expiryDateDesc,
+                                ),
+                                CustomRadioButton(
+                                  label: 'od najbliższej',
+                                  selected: (ordering == Ordering.expiryDateAsc),
+                                  onTap: () => ordering = Ordering.expiryDateAsc,
+                                )
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            CustomTextButton.icon(
+                              label: 'Zastosuj',
+                              icon: const Icon(Icons.check),
+                              onTap: () {
+                                Navigator.of(context).pop();
+                                context.read<CouponListBloc>().add(
+                                  ApplyCouponOrdering(ordering),
                                 );
                               },
                             ),

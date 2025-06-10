@@ -33,4 +33,15 @@ class ClearCouponFilters extends CouponListEvent {}
 
 class ReadCouponFilters extends CouponListEvent {}
 
-class LeaveCouponFiltersPopUp extends CouponListEvent {}
+class LeaveCouponFilterPopUp extends CouponListEvent {}
+
+
+class ApplyCouponOrdering extends CouponListEvent {
+  final Ordering ordering;
+
+  const ApplyCouponOrdering(this.ordering);
+}
+
+class ReadCouponOrdering extends CouponListEvent {}
+
+class LeaveCouponSortPopUp extends CouponListEvent {}

@@ -71,3 +71,31 @@ class CouponListFilterRead extends CouponListState {
     this.maxPrice, 
     this.minReputation});
 }
+
+class CouponListOrderingApplyInProgress extends CouponListState {}
+
+class CouponListOrderingApplySuccess extends CouponListState {
+  final Ordering ordering;
+
+  const CouponListOrderingApplySuccess(this.ordering);
+
+  @override
+  List<Object> get props => [ordering];
+}
+class CouponListOrderingApplyFailure extends CouponListState {
+  final String message;
+
+  const CouponListOrderingApplyFailure({required this.message});
+
+  @override
+  List<Object> get props => [message];
+}
+
+class CouponListOrderingRead extends CouponListState {
+  final Ordering ordering;
+
+  const CouponListOrderingRead(this.ordering);
+
+  @override
+  List<Object> get props => [ordering];
+}

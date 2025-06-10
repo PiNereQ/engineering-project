@@ -9,6 +9,10 @@ import 'package:proj_inz/data/repositories/coupon_repository.dart';
 part 'coupon_list_event.dart';
 part 'coupon_list_state.dart';
 
+enum Ordering {creationDateAsc, creationDateDesc,
+                priceAsc, priceDesc,
+                reputationAsc, reputationDesc,
+                expiryDateAsc, expiryDateDesc}
 
 class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
   final CouponRepository couponRepository;
@@ -26,6 +30,8 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
   double? _maxPrice; 
   int? _minReputation; 
 
+  // sorting
+  Ordering _ordering = Ordering.creationDateDesc;
 
   CouponListBloc(this.couponRepository) : super(CouponListInitial()) {
     on<FetchCoupons>(_onFetchCoupons);
@@ -34,7 +40,10 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
     on<ApplyCouponFilters>(_onApplyCouponFilters);
     on<ClearCouponFilters>(_onClearCouponFilters);
     on<ReadCouponFilters>(_onReadCouponFilters);
-    on<LeaveCouponFiltersPopUp>(_onLeaveCouponFiltersPopUp);
+    on<LeaveCouponFilterPopUp>(_onLeaveCouponFilterPopUp);
+    on<ApplyCouponOrdering>(_onApplyCouponOrdering);
+    on<ReadCouponOrdering>(_onReadCouponOrdering);
+    on<LeaveCouponSortPopUp>(_onLeaveCouponSortPopUp);
   }
 
   _onFetchCoupons(FetchCoupons event, Emitter<CouponListState> emit) async {
@@ -141,7 +150,24 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
     ));
   }
 
-  _onLeaveCouponFiltersPopUp(LeaveCouponFiltersPopUp event, Emitter<CouponListState> emit) {
+  _onLeaveCouponFilterPopUp(LeaveCouponFilterPopUp event, Emitter<CouponListState> emit) {
+    emit(CouponListLoadSuccess(coupons: _allCoupons, hasMore: _hasMore));
+  }
+
+  _onApplyCouponOrdering(ApplyCouponOrdering event, Emitter<CouponListState> emit) {
+    if (kDebugMode) debugPrint('Applied order:\t%:${event.ordering}');
+    emit(CouponListOrderingApplyInProgress());
+    _ordering = event.ordering;
+    emit(CouponListOrderingApplySuccess(_ordering));
+
+    add(FetchCoupons());
+  }
+
+  _onReadCouponOrdering(ReadCouponOrdering event, Emitter<CouponListState> emit) {
+    emit(CouponListOrderingRead(_ordering));
+  }
+
+  _onLeaveCouponSortPopUp(LeaveCouponSortPopUp event, Emitter<CouponListState> emit) {
     emit(CouponListLoadSuccess(coupons: _allCoupons, hasMore: _hasMore));
   }
 }
