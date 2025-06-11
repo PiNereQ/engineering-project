@@ -30,3 +30,72 @@ class CouponListLoadFailure extends CouponListState {
   @override
   List<Object> get props => [message];
 }
+
+class CouponListFilterApplyInProgress extends CouponListState {}
+
+class CouponListFilterApplySuccess extends CouponListState {
+  final bool? reductionIsPercentage;
+  final bool? reductionIsFixed;
+  final double? minPrice;
+  final double? maxPrice;
+  final int? minReputation;
+
+  const CouponListFilterApplySuccess(
+    this.reductionIsPercentage,
+    this.reductionIsFixed,
+    this.minPrice,
+    this.maxPrice, 
+    this.minReputation);
+}
+
+class CouponListFilterApplyFailure extends CouponListState {
+  final String message;
+
+  const CouponListFilterApplyFailure({required this.message});
+
+  @override
+  List<Object> get props => [message];
+}
+
+class CouponListFilterRead extends CouponListState {
+  final bool? reductionIsPercentage;
+  final bool? reductionIsFixed;
+  final double? minPrice;
+  final double? maxPrice;
+  final int? minReputation;
+
+  const CouponListFilterRead({
+    this.reductionIsPercentage,
+    this.reductionIsFixed,
+    this.minPrice,
+    this.maxPrice, 
+    this.minReputation});
+}
+
+class CouponListOrderingApplyInProgress extends CouponListState {}
+
+class CouponListOrderingApplySuccess extends CouponListState {
+  final Ordering ordering;
+
+  const CouponListOrderingApplySuccess(this.ordering);
+
+  @override
+  List<Object> get props => [ordering];
+}
+class CouponListOrderingApplyFailure extends CouponListState {
+  final String message;
+
+  const CouponListOrderingApplyFailure({required this.message});
+
+  @override
+  List<Object> get props => [message];
+}
+
+class CouponListOrderingRead extends CouponListState {
+  final Ordering ordering;
+
+  const CouponListOrderingRead(this.ordering);
+
+  @override
+  List<Object> get props => [ordering];
+}

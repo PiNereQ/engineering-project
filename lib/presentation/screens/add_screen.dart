@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -79,18 +78,14 @@ class _AddScreenState extends State<AddScreen> {
           ),
           actionsPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           actions: [
-            CustomTextButton(
+            CustomTextButton.small(
               label: 'Anuluj',
               width: 100,
-              height: 44,
-              fontSize: 16,
               onTap: () => Navigator.of(context).pop(),
             ),
-            CustomTextButton(
+            CustomTextButton.small(
               label: 'Tak',
               width: 100,
-              height: 44,
-              fontSize: 16,
               onTap: () {
               Navigator.of(context).pop();
               Navigator.of(context).pop();
@@ -123,11 +118,11 @@ class _AddScreenState extends State<AddScreen> {
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           CustomIconButton(
-                            icon: 'icons/back.svg',
+                            icon: SvgPicture.asset('icons/back.svg'),
                             onTap: () => _backDialog(),
                           ),
                           CustomIconButton(
-                            icon: 'icons/share.svg',
+                            icon: const Icon(Icons.info),
                             onTap: () {},
                           ),
                         ],
