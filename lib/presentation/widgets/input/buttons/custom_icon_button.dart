@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 
 class CustomIconButton extends StatefulWidget {
   final double size;
   final double fontSize;
-  final String icon;
+  final Widget icon;
   final VoidCallback onTap;
 
   const CustomIconButton({
@@ -62,14 +61,7 @@ class _CustomIconButtonState extends State<CustomIconButton> {
                     ],
             ),
             child: Center(
-              child: SvgPicture.asset(
-                widget.icon,
-                colorFilter: ColorFilter.mode(
-                  _isPressed ? const Color(0xFF646464) : Colors.black,
-                  BlendMode.srcIn
-                ),
-                height: 18,
-              ),
+              child: widget.icon,
             ),
           ),
         ),

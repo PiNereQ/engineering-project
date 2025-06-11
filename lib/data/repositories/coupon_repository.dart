@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:proj_inz/data/models/coupon_model.dart';
 import 'package:proj_inz/data/models/coupon_offer_model.dart';
@@ -21,12 +22,18 @@ class CouponRepository {
   final _firebaseAuth = FirebaseAuth.instance;
   final _firestore = FirebaseFirestore.instance;
   
-  final shopCache = <String, DocumentSnapshot>{};
-  final sellerCache = <String, DocumentSnapshot>{};
+  final _shopCache = <String, DocumentSnapshot>{};
+  final _sellerCache = <String, DocumentSnapshot>{};
 
   Future<PaginatedCouponsResult> fetchCouponsPaginated(
-    int limit,
-    DocumentSnapshot? startAfter
+    {required int limit,
+    required DocumentSnapshot? startAfter,
+    bool? reductionIsPercentage,
+    bool? reductionIsFixed,
+    double? minPrice,
+    double? maxPrice,
+    num? minReputation,
+    required Ordering ordering}
   ) async {
 
     final user = _firebaseAuth.currentUser;
@@ -39,62 +46,115 @@ class CouponRepository {
 
     var query = _firestore
       .collection('couponOffers')
-      .where('isSold', isEqualTo: false)
-      .orderBy('createdAt')
-      .limit(limit);
+      .where('isSold', isEqualTo: false);
+    
+    if (reductionIsPercentage == true && reductionIsFixed == false) {
+      // 'rabat %' is chosen, but not 'rabat zł'
+      query = query.where('reductionIsPercentage', isEqualTo: true);
+    } else if (reductionIsFixed == true && reductionIsPercentage == false) {
+      // 'rabat zł' is chosen, but not 'rabat %'
+      query = query.where('reductionIsPercentage', isEqualTo: false);
+    } else if (reductionIsFixed == false && reductionIsPercentage == false) {
+      // none are chosen -> no coupons
+      query = query.where('reductionIsPercentage', isEqualTo: true);
+      query = query.where('reductionIsPercentage', isEqualTo: false);
+    }
+
+    if (minPrice != null) {
+      query = query.where('pricePLN', isGreaterThanOrEqualTo: minPrice);
+    }
+    if (maxPrice != null) {
+      query = query.where('pricePLN', isLessThanOrEqualTo: maxPrice);
+    }
+
+    // TODO: filtering for reputation using _minReputation - might require denormalisation on Firestore
+
+    switch (ordering) {
+      case Ordering.creationDateAsc:
+        query = query.orderBy('createdAt').limit(limit);
+        break;
+      case Ordering.creationDateDesc:
+        query = query.orderBy('createdAt', descending: true).limit(limit);
+        break;
+      case Ordering.expiryDateAsc:
+        query = query.orderBy('expiryDate').limit(limit);
+        break;
+      case Ordering.expiryDateDesc:
+        query = query.orderBy('expiryDate', descending: true).limit(limit);
+        break;
+      case Ordering.priceAsc:
+        query = query.orderBy('pricePLN').limit(limit);
+        break;
+      case Ordering.priceDesc:
+        query = query.orderBy('pricePLN', descending: true).limit(limit);
+        break;
+      // TODO: sorting by reputation - might require denormalisation on Firestore
+      default:
+        query = query.orderBy('createdAt', descending: true).limit(limit);
+    }
 
     if (startAfter != null) {
       query = query.startAfterDocument(startAfter);
     }
 
-    final querySnapshot = await query.get();
+    try {
+      final querySnapshot = await query.get();
+    
 
-    final coupons = <Coupon>[];
-    for (final doc in querySnapshot.docs) {
-      final shopId = doc['shopId'].toString();
-      final sellerId = doc['sellerId'].toString();
+      final coupons = <Coupon>[];
+      for (final doc in querySnapshot.docs) {
+        final shopId = doc['shopId'].toString();
+        final sellerId = doc['sellerId'].toString();
 
-      // Shop data caching
-      DocumentSnapshot shopDoc;
-      if (shopCache.containsKey(shopId)) {
-        shopDoc = shopCache[shopId]!;
-      } else {
-        shopDoc = await _firestore.collection('shops').doc(shopId).get();
-        shopCache[shopId] = shopDoc;
+        // Shop data caching
+        DocumentSnapshot shopDoc;
+        if (_shopCache.containsKey(shopId)) {
+          shopDoc = _shopCache[shopId]!;
+        } else {
+          shopDoc = await _firestore.collection('shops').doc(shopId).get();
+          _shopCache[shopId] = shopDoc;
+        }
+
+        // Seller data caching
+        DocumentSnapshot sellerDoc;
+        if (_sellerCache.containsKey(sellerId)) {
+          sellerDoc = _sellerCache[sellerId]!;
+        } else {
+          sellerDoc = await _firestore.collection('userProfileData').doc(sellerId).get();
+          _sellerCache[sellerId] = sellerDoc;
+        }
+
+        try {
+          coupons.add(Coupon(
+            id: doc.id,
+            reduction: doc['reduction'],
+            reductionIsPercentage: doc['reductionIsPercentage'],
+            price: doc['pricePLN'],
+            hasLimits: doc['hasLimits'],
+            worksOnline: doc['worksOnline'],
+            worksInStore: doc['worksInStore'],
+            expiryDate: (doc['expiryDate'] as Timestamp).toDate(),
+            shopId: shopDoc.id,
+            shopName: shopDoc['name'],
+            shopNameColor: Color(shopDoc['nameColor']),
+            shopBgColor: Color(shopDoc['bgColor']),
+            sellerId: sellerDoc.id,
+            sellerReputation: sellerDoc['reputation'],
+            isSold: doc['isSold'],
+          ));
+        } catch (e) {
+          if (kDebugMode) debugPrint('Error while getting coupon with id ${doc.id}: $e');
+        }
       }
 
-      // Seller data caching
-      DocumentSnapshot sellerDoc;
-      if (sellerCache.containsKey(sellerId)) {
-        sellerDoc = sellerCache[sellerId]!;
-      } else {
-        sellerDoc = await _firestore.collection('userProfileData').doc(sellerId).get();
-        sellerCache[sellerId] = sellerDoc;
-      }
+      return PaginatedCouponsResult(
+        coupons: coupons,
+        lastDocument: querySnapshot.docs.isNotEmpty ? querySnapshot.docs.last : null
+      );
 
-      coupons.add(Coupon(
-        id: doc.id,
-        reduction: doc['reduction'],
-        reductionIsPercentage: doc['reductionIsPercentage'],
-        price: doc['pricePLN'],
-        hasLimits: doc['hasLimits'],
-        worksOnline: doc['worksOnline'],
-        worksInStore: doc['worksInStore'],
-        expiryDate: (doc['expiryDate'] as Timestamp).toDate(),
-        shopId: shopDoc.id,
-        shopName: shopDoc['name'],
-        shopNameColor: Color(shopDoc['nameColor']),
-        shopBgColor: Color(shopDoc['bgColor']),
-        sellerId: sellerDoc.id,
-        sellerReputation: sellerDoc['reputation'],
-        isSold: doc['isSold'],
-      ));
+    } catch (e) {
+      rethrow;
     }
-
-    return PaginatedCouponsResult(
-      coupons: coupons,
-      lastDocument: querySnapshot.docs.isNotEmpty ? querySnapshot.docs.last : null
-    );
   }
 
   Future<PaginatedCouponsResult> fetchOwnedCouponsPaginated(
@@ -279,7 +339,6 @@ class CouponRepository {
     );
   }
 
-  
   Future<void> postCouponOffer(CouponOffer coupon) async { 
     final docRef = await _firestore.collection('couponOffers').add({
       'reduction': coupon.reduction,

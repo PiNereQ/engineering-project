@@ -37,13 +37,13 @@ class CouponDetailsScreen extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             CustomIconButton(
-                              icon: 'icons/back.svg',
+                              icon: SvgPicture.asset('icons/back.svg'),
                               onTap: () {
                                 Navigator.of(context).pop();
                               },
                             ),
                             CustomIconButton(
-                              icon: 'icons/share.svg',
+                              icon: SvgPicture.asset('icons/share.svg'),
                               onTap: () {},
                             ),
                           ],
@@ -136,6 +136,7 @@ class _CouponDetails extends StatelessWidget {
     final bool worksInStore = coupon.worksInStore;
     final DateTime expiryDate = coupon.expiryDate;
     final String? description = coupon.description;
+    // ignore: unused_local_variable
     final bool isSold = coupon.isSold; 
     
     final reductionText = isInteger(reduction)
