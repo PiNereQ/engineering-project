@@ -16,6 +16,8 @@ enum Ordering {creationDateAsc, creationDateDesc,
 
 class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
   final CouponRepository couponRepository;
+  CouponListState _previousListState = CouponListInitial();
+
   final int _limit = 50;
   
   final List<Coupon> _allCoupons = [];
@@ -69,13 +71,14 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
 
     try {
       final result = await couponRepository.fetchCouponsPaginated(
-        _limit,
-        _lastDocument,
+        limit: _limit,
+        startAfter: _lastDocument,
         reductionIsFixed: _reductionIsFixed,
         reductionIsPercentage: _reductionIsPercentage,
         minPrice: _minPrice,
         maxPrice: _maxPrice,
-        minReputation: _minReputation
+        minReputation: _minReputation,
+        ordering: _ordering
       );
       final coupons = result.coupons;
       final lastDoc = result.lastDocument;
@@ -85,12 +88,20 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
       _allCoupons.addAll(coupons);
       _lastDocument = lastDoc;
 
-      emit(CouponListLoadSuccess(coupons: _allCoupons, hasMore: _hasMore));
+      var successState = CouponListLoadSuccess(coupons: _allCoupons, hasMore: _hasMore);
+      _previousListState = successState;
+      emit(successState);
 
-      if (_allCoupons.isEmpty) emit(const CouponListLoadFailure(message: 'Nie znaleziono kuponów.'));
+      if (_allCoupons.isEmpty) {
+        var failureState = const CouponListLoadFailure(message: 'Nie znaleziono kuponów.');
+        _previousListState = failureState;
+        emit(failureState);
+      }
     } catch (e) {
       if (kDebugMode) debugPrint(e.toString());
-      emit(CouponListLoadFailure(message: e.toString()));
+      var failureState = CouponListLoadFailure(message: e.toString());
+      _previousListState = failureState;
+      emit(failureState);
     } finally {
       _isFetching = false;
     }
@@ -151,7 +162,7 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
   }
 
   _onLeaveCouponFilterPopUp(LeaveCouponFilterPopUp event, Emitter<CouponListState> emit) {
-    emit(CouponListLoadSuccess(coupons: _allCoupons, hasMore: _hasMore));
+    emit(_previousListState);
   }
 
   _onApplyCouponOrdering(ApplyCouponOrdering event, Emitter<CouponListState> emit) {
@@ -168,6 +179,6 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
   }
 
   _onLeaveCouponSortPopUp(LeaveCouponSortPopUp event, Emitter<CouponListState> emit) {
-    emit(CouponListLoadSuccess(coupons: _allCoupons, hasMore: _hasMore));
+    emit(_previousListState);
   }
 }

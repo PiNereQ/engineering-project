@@ -492,7 +492,7 @@ class _CouponSortDialogState extends State<_CouponSortDialog> {
   @override
   Widget build(BuildContext context) {
     return BlocListener<CouponListBloc, CouponListState>(
-      listenWhen: (previous, current) => current is CouponListFilterRead,
+      listenWhen: (previous, current) => current is CouponListOrderingRead,
       listener: (context, state) {
         if (state is CouponListOrderingRead) {
           setState(() {
@@ -586,12 +586,12 @@ class _CouponSortDialogState extends State<_CouponSortDialog> {
                                 CustomRadioButton(
                                   label: 'od najnowszych',
                                   selected: (ordering == Ordering.creationDateDesc),
-                                  onTap: () => ordering = Ordering.creationDateDesc,
+                                  onTap: () => setState(() {ordering = Ordering.creationDateDesc;}),
                                 ),
                                 CustomRadioButton(
                                   label: 'od najstarszych',
                                   selected: (ordering == Ordering.creationDateAsc),
-                                  onTap: () => ordering = Ordering.creationDateAsc,
+                                  onTap: () => setState(() {ordering = Ordering.creationDateAsc;}),
                                 )
                               ],
                             ),
@@ -613,12 +613,12 @@ class _CouponSortDialogState extends State<_CouponSortDialog> {
                                 CustomRadioButton(
                                   label: 'od najniższej',
                                   selected: (ordering == Ordering.priceAsc),
-                                  onTap: () => ordering = Ordering.priceAsc,
+                                  onTap: () => setState(() {ordering = Ordering.priceAsc;}),
                                 ),
                                 CustomRadioButton(
                                   label: 'od najwyższej',
                                   selected: (ordering == Ordering.priceDesc),
-                                  onTap: () => ordering = Ordering.priceDesc,
+                                  onTap: () => setState(() {ordering = Ordering.priceDesc;}),
                                 )
                               ],
                             ),
@@ -640,12 +640,12 @@ class _CouponSortDialogState extends State<_CouponSortDialog> {
                                 CustomRadioButton(
                                   label: 'od najniższej',
                                   selected: (ordering == Ordering.reputationAsc),
-                                  onTap: () => ordering = Ordering.reputationAsc,
+                                  onTap: () => setState(() {ordering = Ordering.reputationAsc;}),
                                 ),
                                 CustomRadioButton(
                                   label: 'od najwyższej',
                                   selected: (ordering == Ordering.reputationDesc),
-                                  onTap: () => ordering = Ordering.reputationDesc,
+                                  onTap: () => setState(() {ordering = Ordering.reputationDesc;}),
                                 )
                               ],
                             ),
@@ -665,14 +665,14 @@ class _CouponSortDialogState extends State<_CouponSortDialog> {
                                   )
                                 ),
                                 CustomRadioButton(
-                                  label: 'od najbliższej',
-                                  selected: (ordering == Ordering.expiryDateDesc),
-                                  onTap: () => ordering = Ordering.expiryDateDesc,
+                                  label: 'od najbliszej',
+                                  selected: (ordering == Ordering.expiryDateAsc),
+                                  onTap: () => setState(() {ordering = Ordering.expiryDateAsc;}),
                                 ),
                                 CustomRadioButton(
-                                  label: 'od najbliższej',
-                                  selected: (ordering == Ordering.expiryDateAsc),
-                                  onTap: () => ordering = Ordering.expiryDateAsc,
+                                  label: 'od najdalszej',
+                                  selected: (ordering == Ordering.expiryDateDesc),
+                                  onTap: () => setState(() {ordering = Ordering.expiryDateDesc;}),
                                 )
                               ],
                             ),

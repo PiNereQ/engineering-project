@@ -1,7 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:proj_inz/bloc/coupon_list/coupon_list_bloc.dart';
 
 import 'package:proj_inz/data/models/coupon_model.dart';
 import 'package:proj_inz/data/models/coupon_offer_model.dart';
@@ -20,13 +22,14 @@ class CouponRepository {
   final _sellerCache = <String, DocumentSnapshot>{};
 
   Future<PaginatedCouponsResult> fetchCouponsPaginated(
-    int limit,
-    DocumentSnapshot? startAfter,
-    {bool? reductionIsPercentage,
+    {required int limit,
+    required DocumentSnapshot? startAfter,
+    bool? reductionIsPercentage,
     bool? reductionIsFixed,
     double? minPrice,
     double? maxPrice,
-    num? minReputation}
+    num? minReputation,
+    required Ordering ordering}
   ) async {
 
     final user = _firebaseAuth.currentUser;
@@ -62,7 +65,29 @@ class CouponRepository {
 
     // TODO: filtering for reputation using _minReputation - might require denormalisation on Firestore
 
-    query = query.orderBy('createdAt').limit(limit);
+    switch (ordering) {
+      case Ordering.creationDateAsc:
+        query = query.orderBy('createdAt').limit(limit);
+        break;
+      case Ordering.creationDateDesc:
+        query = query.orderBy('createdAt', descending: true).limit(limit);
+        break;
+      case Ordering.expiryDateAsc:
+        query = query.orderBy('expiryDate').limit(limit);
+        break;
+      case Ordering.expiryDateDesc:
+        query = query.orderBy('expiryDate', descending: true).limit(limit);
+        break;
+      case Ordering.priceAsc:
+        query = query.orderBy('pricePLN').limit(limit);
+        break;
+      case Ordering.priceDesc:
+        query = query.orderBy('pricePLN', descending: true).limit(limit);
+        break;
+      // TODO: sorting by reputation - might require denormalisation on Firestore
+      default:
+        query = query.orderBy('createdAt', descending: true).limit(limit);
+    }
 
     if (startAfter != null) {
       query = query.startAfterDocument(startAfter);
@@ -95,23 +120,27 @@ class CouponRepository {
           _sellerCache[sellerId] = sellerDoc;
         }
 
-        coupons.add(Coupon(
-          id: doc.id,
-          reduction: doc['reduction'],
-          reductionIsPercentage: doc['reductionIsPercentage'],
-          price: doc['pricePLN'],
-          hasLimits: doc['hasLimits'],
-          worksOnline: doc['worksOnline'],
-          worksInStore: doc['worksInStore'],
-          expiryDate: (doc['expiryDate'] as Timestamp).toDate(),
-          shopId: shopDoc.id,
-          shopName: shopDoc['name'],
-          shopNameColor: Color(shopDoc['nameColor']),
-          shopBgColor: Color(shopDoc['bgColor']),
-          sellerId: sellerDoc.id,
-          sellerReputation: sellerDoc['reputation'],
-          isSold: doc['isSold'],
-        ));
+        try {
+          coupons.add(Coupon(
+            id: doc.id,
+            reduction: doc['reduction'],
+            reductionIsPercentage: doc['reductionIsPercentage'],
+            price: doc['pricePLN'],
+            hasLimits: doc['hasLimits'],
+            worksOnline: doc['worksOnline'],
+            worksInStore: doc['worksInStore'],
+            expiryDate: (doc['expiryDate'] as Timestamp).toDate(),
+            shopId: shopDoc.id,
+            shopName: shopDoc['name'],
+            shopNameColor: Color(shopDoc['nameColor']),
+            shopBgColor: Color(shopDoc['bgColor']),
+            sellerId: sellerDoc.id,
+            sellerReputation: sellerDoc['reputation'],
+            isSold: doc['isSold'],
+          ));
+        } catch (e) {
+          if (kDebugMode) debugPrint('Error while getting coupon with id ${doc.id}: $e');
+        }
       }
 
       return PaginatedCouponsResult(
