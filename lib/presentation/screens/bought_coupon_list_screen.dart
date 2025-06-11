@@ -1,0 +1,156 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:proj_inz/bloc/owned_coupon_list/owned_coupon_list_bloc.dart';
+import 'package:proj_inz/data/repositories/coupon_repository.dart';
+import 'package:proj_inz/presentation/widgets/bought_coupon_card.dart';
+import 'package:proj_inz/presentation/widgets/input/buttons/custom_icon_button.dart';
+import 'package:proj_inz/presentation/widgets/input/buttons/search_button.dart';
+
+class BoughtCouponListScreen extends StatefulWidget {
+  const BoughtCouponListScreen({super.key});
+
+  @override
+  State<BoughtCouponListScreen> createState() => _BoughtCouponListScreenState();
+}
+
+class _BoughtCouponListScreenState extends State<BoughtCouponListScreen> {
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(() {
+      if (_scrollController.position.pixels >=
+          _scrollController.position.maxScrollExtent - 150) {
+        debugPrint('Ładuj wincyj!');
+        if (mounted) {
+          context.read<OwnedCouponListBloc>().add(FetchMoreCoupons());
+        }
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (context) => OwnedCouponListBloc(context.read<CouponRepository>())
+        ..add(FetchCoupons()),
+      child: Scaffold(
+        body: RefreshIndicator(
+          onRefresh: () async {
+            context.read<OwnedCouponListBloc>().add(RefreshCoupons());
+          },
+          child: CustomScrollView(
+            controller: _scrollController,
+            slivers: [
+              const _Toolbar(),
+              BlocBuilder<OwnedCouponListBloc, OwnedCouponListState>(
+                builder: (context, state) {
+                  if (state is OwnedCouponListLoadInProgress) {
+                    return const SliverFillRemaining(
+                      child: Center(child: CircularProgressIndicator()),
+                    );
+                  } else if (state is OwnedCouponListLoadSuccess) {
+                    return SliverList(
+                      delegate: SliverChildBuilderDelegate((context, index) {
+                        final coupon = state.coupons[index];
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 16.0),
+                          child: BoughtCouponCardHorizontal(coupon: coupon),
+                        );
+                      }, childCount: state.coupons.length),
+                    );
+                  } else if (state is OwnedCouponListLoadFailure) {
+                    return SliverFillRemaining(
+                      child: Center(child: Text('Error: ${state.message}')),
+                    );
+                  }
+                  return const SliverFillRemaining(
+                    child: Center(child: Text('No coupons available.')),
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _Toolbar extends StatelessWidget {
+  const _Toolbar();
+
+  @override
+  Widget build(BuildContext context) {
+    return SliverAppBar(
+      floating: true,
+      snap: true,
+      automaticallyImplyLeading: false, // removes back button
+      backgroundColor: Colors.transparent,
+      surfaceTintColor: Colors.transparent,
+      elevation: 0,
+      flexibleSpace: Stack(
+        children: [
+          Positioned(
+            // hides coupons behind the toolbar
+            left: 0,
+            right: 0,
+            top: 0,
+            height: 60,
+            child: Container(color: Colors.white),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+            child: Container(
+              width: double.infinity,
+              decoration: ShapeDecoration(
+                color: Colors.white,
+                shape: RoundedRectangleBorder(
+                  side: const BorderSide(width: 2),
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                shadows: const [
+                  BoxShadow(
+                    color: Color(0xFF000000),
+                    blurRadius: 0,
+                    offset: Offset(4, 4),
+                    spreadRadius: 0,
+                  ),
+                ],
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.max,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                spacing: 12,
+                children: [
+                  CustomIconButton(
+                    icon: 'icons/back.svg',
+                    onTap: () {
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                  Expanded(
+                    child: SearchButtonWide(
+                      label: 'Wyszukaj...',
+                      onTap: () {},
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+      toolbarHeight: 126,
+    );
+  }
+}

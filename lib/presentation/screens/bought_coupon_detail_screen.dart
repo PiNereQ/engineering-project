@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:proj_inz/bloc/coupon/coupon_bloc.dart';
+import 'package:qr_flutter/qr_flutter.dart';
+import 'package:proj_inz/bloc/owned_coupon/owned_coupon_bloc.dart';
 import 'package:proj_inz/core/utils.dart';
-import 'package:proj_inz/data/models/coupon_model.dart';
+import 'package:proj_inz/data/models/owned_coupon_model.dart';
 import 'package:proj_inz/data/repositories/coupon_repository.dart';
-import 'package:proj_inz/data/repositories/user_repository.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_icon_button.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_text_button.dart';
 
-class CouponDetailsScreen extends StatelessWidget {
+class BoughtCouponDetailsScreen extends StatelessWidget {
   final String couponId;
   
-  const CouponDetailsScreen({super.key, required this.couponId});
+  const BoughtCouponDetailsScreen({super.key, required this.couponId});
 
   @override
   Widget build(BuildContext context) {
@@ -19,11 +20,12 @@ class CouponDetailsScreen extends StatelessWidget {
       create: (context) => OwnedCouponBloc(context.read<CouponRepository>(), couponId)
         ..add(FetchCouponDetails()),
       child: Scaffold(
-        body: BlocBuilder<OwnedCouponBloc, CouponState>(
+        body: BlocBuilder<OwnedCouponBloc, OwnedCouponState>(
           builder: (context, state) {
-            if (state is CouponLoadInProgress) {
+            print("Building");
+            if (state is OwnedCouponLoadInProgress) {
               return const Center(child: CircularProgressIndicator());
-            } else if (state is CouponLoadSuccess) {
+            } else if (state is OwnedCouponLoadSuccess) {
               return SingleChildScrollView(
                 child: Padding(
                   padding: const EdgeInsets.all(24),
@@ -37,61 +39,60 @@ class CouponDetailsScreen extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             CustomIconButton(
-                              icon: SvgPicture.asset('icons/back.svg'),
+                              icon: 'icons/back.svg',
                               onTap: () {
                                 Navigator.of(context).pop();
                               },
                             ),
                             CustomIconButton(
-                              icon: SvgPicture.asset('icons/share.svg'),
+                              icon: 'icons/share.svg',
                               onTap: () {},
                             ),
                           ],
                         ),
                       ),
                       const SizedBox(height: 16,),
-                      if (state.coupon.isSold == true)
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.all(16),
-                          clipBehavior: Clip.antiAlias,
-                          decoration: ShapeDecoration(
-                            color: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              side: const BorderSide(width: 2),
-                              borderRadius: BorderRadius.circular(24),
-                            ),
-                            shadows: const [
-                              BoxShadow(
-                                color: Color(0xFF000000),
-                                blurRadius: 0,
-                                offset: Offset(4, 4),
-                                spreadRadius: 0,
-                              )
-                            ],
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(16),
+                        clipBehavior: Clip.antiAlias,
+                        decoration: ShapeDecoration(
+                          color: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            side: const BorderSide(width: 2),
+                            borderRadius: BorderRadius.circular(24),
                           ),
-                          child: const Row(
-                            children: [
-                              Icon(
-                                Icons.report_outlined,
-                                color: Color(0xFFE32F2F),
-                                size: 32,
-                                ),
-                              SizedBox(width: 16,),
-                              Text(
-                                "Oferta sprzedaży tego kuponu\nzostała zakończona.",
-                                style: TextStyle(
-                                color: Color(0xFFE22E2E),
-                                fontSize: 18,
-                                fontFamily: 'Itim',
-                                fontWeight: FontWeight.w400,
-                                height: 1.2,
-                                ),
-                              ),
-                            ],
-                          )
+                          shadows: const [
+                            BoxShadow(
+                              color: Color(0xFF000000),
+                              blurRadius: 0,
+                              offset: Offset(4, 4),
+                              spreadRadius: 0,
+                            )
+                          ],
                         ),
-                      if (state.coupon.isSold == true) const SizedBox(height: 24,),
+                        child: const Row(
+                          children: [
+                            Icon(
+                              Icons.redeem_outlined,
+                              color: Colors.black,
+                              size: 32,
+                              ),
+                            SizedBox(width: 16,),
+                            Text(
+                              "Ten kupon należy do Ciebie!",
+                              style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 18,
+                              fontFamily: 'Itim',
+                              fontWeight: FontWeight.w400,
+                              height: 1.2,
+                              ),
+                            ),
+                          ],
+                        )
+                      ),
+                      const SizedBox(height: 24,),
                       _CouponDetails(coupon: state.coupon,),
                       const SizedBox(height: 24),
                       _SellerDetails(
@@ -104,7 +105,7 @@ class CouponDetailsScreen extends StatelessWidget {
                   )),
               );
             }
-            else if (state is CouponLoadFailure) {
+            else if (state is OwnedCouponLoadFailure) {
               return Center(child: Text('Error: ${state.message}'));
             }
             return const Center(child: Text('Oops'));
@@ -121,7 +122,7 @@ class _CouponDetails extends StatelessWidget {
     required this.coupon,
   });
 
-  final Coupon coupon;
+  final OwnedCoupon coupon;
 
   @override
   Widget build(BuildContext context) {
@@ -136,8 +137,7 @@ class _CouponDetails extends StatelessWidget {
     final bool worksInStore = coupon.worksInStore;
     final DateTime expiryDate = coupon.expiryDate;
     final String? description = coupon.description;
-    // ignore: unused_local_variable
-    final bool isSold = coupon.isSold; 
+    final String code = coupon.code; 
     
     final reductionText = isInteger(reduction)
     ? reduction.toString()
@@ -413,20 +413,113 @@ class _CouponDetails extends StatelessWidget {
             color: Colors.black,
             thickness: 2,
           ),
-          CustomTextButton(
-            label: 'Kup teraz',
-            onTap: () async {
-              final user = await getCurrentUser();
-                context.read<OwnedCouponBloc>().add(
-                  BuyCouponRequested(
-                    couponId: coupon.id,
-                    userId: user.uid,
-                  )
-                );
-            },
-          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            spacing: 18,
+            children: [
+              const Text(
+                'Gotowy do wykorzystania!',
+                style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 20,
+                    fontFamily: 'Itim',
+                    fontWeight: FontWeight.w400,
+                    height: 0.75,
+                ),
+              ),
+              CustomTextButton(
+                label: 'Wyświetl kod',
+                onTap: () => _showCodeDialog(context, code),
+              )
+            ],
+          )
         ],
       ),
+    );
+  }
+
+  _showCodeDialog(BuildContext context, String code) {
+    return showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          child: Container(
+            decoration: ShapeDecoration(
+              color: Colors.white,
+              shape: RoundedRectangleBorder(
+                side: const BorderSide(width: 2),
+                borderRadius: BorderRadius.circular(24),
+              ),
+              shadows: const [
+                BoxShadow(
+                  color: Color(0xFF000000),
+                  blurRadius: 0,
+                  offset: Offset(4, 4),
+                  spreadRadius: 0,
+                ),
+              ],
+            ),
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              spacing: 18,
+              children: [
+                SizedBox(
+                  height: 200,
+                  width: 200,
+                  child: QrImageView(
+                    data: code,
+                    version: QrVersions.auto,
+                    size: 200.0,
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () async {
+                    await Clipboard.setData(ClipboardData(text: code));
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Skopiowano kod do schowka')),
+                      );
+                    }
+                  },
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    spacing: 8,
+                    children: [
+                      Text(
+                        code,
+                        style: const TextStyle(
+                          color: Colors.black,
+                          fontSize: 20,
+                          fontFamily: 'Roboto Mono',
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const Icon(
+                        Icons.copy_rounded,
+                        size: 32,
+                      )
+                    ],
+                  ),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CustomTextButton(
+                      label: 'Wróć',
+                      onTap: () => Navigator.of(context).pop(),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      }
     );
   }
 }
