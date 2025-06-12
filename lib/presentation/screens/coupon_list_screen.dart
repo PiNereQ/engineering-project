@@ -98,6 +98,25 @@ class _CouponListScreenContentState extends State<_CouponListScreenContent> {
                     );
                   }, childCount: state.coupons.length),
                 );
+              } else if (state is CouponListLoadEmpty) {
+                return const SliverFillRemaining(
+                  child: Center(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 24),
+                      child: Text(
+                        "Nie znaleźliśmy kuponów pasujących do wybranych filtrów...",
+                        textAlign: TextAlign.left,
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 18,
+                          fontFamily: 'Itim',
+                          fontWeight: FontWeight.w400,
+                        ),
+                        softWrap: true,
+                      ),
+                    ),
+                  ),
+                );
               } else if (state is CouponListLoadFailure) {
                 if (kDebugMode) debugPrint(state.message);
                 return SliverFillRemaining(

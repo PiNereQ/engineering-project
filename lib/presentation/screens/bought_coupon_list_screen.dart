@@ -69,6 +69,25 @@ class _BoughtCouponListScreenState extends State<BoughtCouponListScreen> {
                         );
                       }, childCount: state.coupons.length),
                     );
+                  } else if (state is OwnedCouponListLoadEmpty) {
+                    return const SliverFillRemaining(
+                      child: Center(
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 24),
+                          child: Text(
+                            "Nie posiadasz jeszcze żadnych kuponów.",
+                            textAlign: TextAlign.left,
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 18,
+                              fontFamily: 'Itim',
+                              fontWeight: FontWeight.w400,
+                            ),
+                            softWrap: true,
+                          ),
+                        ),
+                      ),
+                    );
                   } else if (state is OwnedCouponListLoadFailure) {
                     if (kDebugMode) debugPrint(state.message);
                     return SliverFillRemaining(

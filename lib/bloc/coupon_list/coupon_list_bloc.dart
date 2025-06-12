@@ -93,9 +93,9 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
       emit(successState);
 
       if (_allCoupons.isEmpty) {
-        var failureState = const CouponListLoadFailure(message: 'Nie znaleziono kuponów.');
-        _previousListState = failureState;
-        emit(failureState);
+        var emptyState = CouponListLoadEmpty();
+        _previousListState = emptyState;
+        emit(emptyState);
       }
     } catch (e) {
       if (kDebugMode) debugPrint(e.toString());
