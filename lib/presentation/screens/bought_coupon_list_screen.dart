@@ -1,9 +1,11 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:proj_inz/bloc/owned_coupon_list/owned_coupon_list_bloc.dart';
 import 'package:proj_inz/data/repositories/coupon_repository.dart';
 import 'package:proj_inz/presentation/widgets/bought_coupon_card.dart';
+import 'package:proj_inz/presentation/widgets/error_card.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_icon_button.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/search_button.dart';
 
@@ -68,13 +70,21 @@ class _BoughtCouponListScreenState extends State<BoughtCouponListScreen> {
                       }, childCount: state.coupons.length),
                     );
                   } else if (state is OwnedCouponListLoadFailure) {
+                    if (kDebugMode) debugPrint(state.message);
                     return SliverFillRemaining(
-                      child: Center(child: Text('Error: ${state.message}')),
+                      child: Center(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          child: ErrorCard(
+                            text: "Przykro nam, wystąpił błąd w trakcie ładowania Twoich kuponów.",
+                            errorString: state.message,
+                            icon: const Icon(Icons.sentiment_dissatisfied),
+                          ),
+                        ),
+                      ),
                     );
                   }
-                  return const SliverFillRemaining(
-                    child: Center(child: Text('No coupons available.')),
-                  );
+                  return const SliverFillRemaining();
                 },
               ),
             ],
@@ -108,7 +118,7 @@ class _Toolbar extends StatelessWidget {
             child: Container(color: Colors.white),
           ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+            padding: const EdgeInsets.fromLTRB(16, 24, 16, 16),
             child: Container(
               width: double.infinity,
               decoration: ShapeDecoration(
