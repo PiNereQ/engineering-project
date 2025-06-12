@@ -6,7 +6,6 @@ import 'package:flutter_svg/svg.dart';
 import 'package:proj_inz/bloc/coupon_list/coupon_list_bloc.dart';
 import 'package:proj_inz/bloc/search_shops_categories/search_shops_categories_bloc.dart';
 import 'package:proj_inz/bloc/search_shops_categories/search_shops_categories_event.dart';
-import 'package:proj_inz/bloc/search_shops_categories/search_shops_categories_state.dart';
 import 'package:proj_inz/presentation/screens/search_results_screen.dart';
 import 'package:proj_inz/data/repositories/shop_repository.dart';
 import 'package:proj_inz/presentation/widgets/coupon_card.dart';
