@@ -4,12 +4,17 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 
 import 'package:proj_inz/bloc/coupon_list/coupon_list_bloc.dart';
+import 'package:proj_inz/bloc/search_shops_categories/search_shops_categories_bloc.dart';
+import 'package:proj_inz/bloc/search_shops_categories/search_shops_categories_event.dart';
+import 'package:proj_inz/bloc/search_shops_categories/search_shops_categories_state.dart';
+import 'package:proj_inz/presentation/screens/search_results_screen.dart';
+import 'package:proj_inz/data/repositories/shop_repository.dart';
 import 'package:proj_inz/presentation/widgets/coupon_card.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/checkbox.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_icon_button.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_text_button.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/radio_button.dart';
-import 'package:proj_inz/presentation/widgets/input/buttons/search_button.dart';
+import 'package:proj_inz/presentation/widgets/input/text_fields/search_bar.dart';
 import 'package:proj_inz/presentation/widgets/input/text_fields/custom_text_field.dart';
 
 // Local debugging flags
@@ -20,12 +25,20 @@ class CouponListScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider.value(
-      value: context.read<CouponListBloc>(),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider.value(
+          value: context.read<CouponListBloc>(),
+        ),
+        BlocProvider(
+          create: (_) => SearchBloc(shopRepository: context.read<ShopRepository>()),
+        ),
+      ],
       child: const _CouponListScreenContent(),
     );
   }
 }
+
 
 class _CouponListScreenContent extends StatefulWidget {
   const _CouponListScreenContent();
@@ -156,10 +169,25 @@ class _Toolbar extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.start,
                 spacing: 16,
                 children: [
-                  SearchButtonWide(
-                    label: 'Wyszukaj sklep lub kategorię',
-                    onTap: () {},
-                  ),
+SearchBarWide(
+  hintText: 'Wyszukaj sklep lub kategorię',
+  onSubmitted: (query) {
+  final searchBloc = context.read<SearchBloc>();
+  // Wyślij zapytanie do bloca
+  searchBloc.add(SearchQuerySubmitted(query));
+
+  // Nawiguj do ekranu wyników, przekazując istniejącego Bloca
+  Navigator.of(context).push(
+    MaterialPageRoute(
+      builder: (context) => BlocProvider.value(
+        value: searchBloc,
+        child: SearchResultsScreen(query: query),
+      ),
+    ),
+  );
+},
+
+),
                   Row(
                     children: [
                       CustomTextButton.iconSmall(

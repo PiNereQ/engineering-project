@@ -8,7 +8,6 @@ class ShopRepository {
 
   final _shopCache = <String, Shop>{};
 
-  /// Fetch a single shop by ID
   Future<Shop> fetchShopById(String shopId) async {
     if (_shopCache.containsKey(shopId)) {
       return _shopCache[shopId]!;
@@ -38,7 +37,6 @@ class ShopRepository {
     }
   }
 
-  /// Fetch all shops
   Future<List<Shop>> fetchAllShops() async {
     try {
       final querySnapshot = await _firestore.collection('shops').get();
@@ -54,7 +52,6 @@ class ShopRepository {
         );
       }).toList();
 
-      // Cache them
       for (final shop in shops) {
         _shopCache[shop.id] = shop;
       }
@@ -66,7 +63,43 @@ class ShopRepository {
     }
   }
 
-  /// Clear cache if needed
+  /// Search shops by name using Firestore queries on 'nameLowercase' field
+  Future<List<Shop>> searchShopsByName(String query) async {
+    if (query.isEmpty) {
+      return [];
+    }
+
+    final lowercaseQuery = query.toLowerCase();
+
+    try {
+      final querySnapshot = await _firestore
+          .collection('shops')
+          .where('nameLowercase', isGreaterThanOrEqualTo: lowercaseQuery)
+          .where('nameLowercase', isLessThan: lowercaseQuery + 'z')
+          .get();
+
+      final shops = querySnapshot.docs.map((doc) {
+        final data = doc.data();
+        return Shop(
+          id: doc.id,
+          name: data['name'] as String,
+          bgColor: data['bgColor'] as int,
+          nameColor: data['nameColor'] as int,
+          categoryIds: List<String>.from(data['categoryIds'] ?? []),
+        );
+      }).toList();
+
+      for (final shop in shops) {
+        _shopCache[shop.id] = shop;
+      }
+
+      return shops;
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error searching shops: $e');
+      rethrow;
+    }
+  }
+
   void clearCache() {
     _shopCache.clear();
   }
