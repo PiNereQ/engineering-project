@@ -21,28 +21,28 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
     try {
       final shopsByName = await shopRepository.searchShopsByName(event.query);
 
-      // Szukamy wszystkich pasujących kategorii prefixowo
+      // szukanie wszystkich pasujacych kategorii prefixowo
       final categories = await categoryRepository.searchCategoriesByName(event.query.toLowerCase());
       final matchedCategories = categories;
 
-      // Dla każdej znalezionej kategorii pobieramy sklepy i łączymy wyniki
+      // pobieranie sklepow dla kazdej pasujacej kategorii i laczenie
       List<Shop> shopsByCategory = [];
       for (final category in categories) {
         final shops = await categoryRepository.fetchShopsByCategory(category);
         shopsByCategory.addAll(shops);
       }
 
-      // Usuwamy duplikaty po id sklepu
+      // usuwanie duplikatow
       final uniqueShopsByCategory = {
         for (var shop in shopsByCategory) shop.id: shop,
       }.values.toList();
 
-      // Łączymy wyniki z wyszukiwania po nazwie i po kategorii
+      // laczenie wynikow z wyszukiwania po nazwie i po kategorii
       final allShopsMap = {
         for (var shop in [...shopsByName, ...uniqueShopsByCategory]) shop.id: shop,
       };
 
-      // Emituj nowy stan z rozdzielonymi danymi
+      // nowy stan z rozdzielonymi danymi
       emit(SearchLoaded(
         matchedShops: allShopsMap.values.toList(),
         matchedCategories: matchedCategories,

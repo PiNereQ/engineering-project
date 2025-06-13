@@ -12,16 +12,15 @@ class SearchResultsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // Dodajemy AppBar z paddingiem
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        automaticallyImplyLeading: false, // wyłącz domyślne back button
+        automaticallyImplyLeading: false,
         title: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Row(
             children: [
-              // Mały przycisk z ikoną strzałki wstecz
+              // przycisk wstecz
               InkWell(
                 borderRadius: BorderRadius.circular(1000),
                 onTap: () => Navigator.of(context).pop(),
@@ -47,7 +46,7 @@ class SearchResultsScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 16),
-              // Search bar z tekstem "Wyniki dla hasła: <query>"
+              // search bar
               Expanded(
                 child: Container(
                   height: 48,
@@ -90,9 +89,7 @@ class SearchResultsScreen extends StatelessWidget {
 
       body: Column(
         children: [
-          // --- Usuwamy poprzedni search bar z body, bo mamy go już w AppBar ---
-
-          // Dalej lista wyników - zajmuje resztę ekranu
+        // lista wynikow
           Expanded(
             child: BlocBuilder<SearchBloc, SearchState>(
               builder: (context, state) {

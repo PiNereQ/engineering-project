@@ -5,7 +5,7 @@ import 'package:proj_inz/data/models/shop_model.dart';
 class CategoryRepository {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  /// Szuka kategorii po nazwie (prefixowe dopasowanie po name)
+  // szukanie kategorii po nazwie (prefixowe dopasowanie po name)
   Future<List<Category>> searchCategoriesByName(String query) async {
     if (query.isEmpty) return [];
 
@@ -25,7 +25,7 @@ class CategoryRepository {
     }).toList();
   }
 
-  /// Pobiera sklepy przypisane do danej kategorii
+  // pobieranie sklepow przypisanych do danej kategorii
   Future<List<Shop>> fetchShopsByCategory(Category category) async {
     final querySnapshot = await _firestore
         .collection('shops')

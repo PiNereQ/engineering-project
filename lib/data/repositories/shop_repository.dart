@@ -63,7 +63,7 @@ class ShopRepository {
     }
   }
 
-  /// Search shops by name using Firestore queries on 'nameLowercase' field
+  // szukanie sklepow po nazwie (prefixowe dopasowanie po nameLowercase)
   Future<List<Shop>> searchShopsByName(String query) async {
     if (query.isEmpty) {
       return [];

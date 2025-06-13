@@ -179,35 +179,32 @@ class _AddScreenState extends State<AddScreen> {
                             const SizedBox(height: 18),
                         
                             // 2. Wybierz sklep (search dropdown) TODO: Lista sklepow z bazy
-BlocBuilder<ShopBloc, ShopState>(
-  builder: (context, state) {
-    if (state is ShopLoading) {
-      return const CircularProgressIndicator();
-    } else if (state is ShopLoaded) {
-      return SearchDropdownField(
-        options: state.shops.map((s) => s.name).toList(),
-        selected: _selectedShop?.name,
-        onChanged: (val) {
-          setState(() {
-            _selectedShop = state.shops.firstWhere((s) => s.name == val);
-          });
-        },
-        widthType: CustomComponentWidth.full,
-        placeholder: 'Wybierz sklep',
-        validator: (val) {
-          if (val == null || val.isEmpty) return 'Wymagane';
-          return null;
-        },
-      );
-    } else {
-      return const Text("Błąd podczas ładowania sklepów.");
-    }
-  },
-),
-
-
+                            BlocBuilder<ShopBloc, ShopState>(
+                              builder: (context, state) {
+                                if (state is ShopLoading) {
+                                  return const CircularProgressIndicator();
+                                } else if (state is ShopLoaded) {
+                                  return SearchDropdownField(
+                                    options: state.shops.map((s) => s.name).toList(),
+                                    selected: _selectedShop?.name,
+                                    onChanged: (val) {
+                                      setState(() {
+                                        _selectedShop = state.shops.firstWhere((s) => s.name == val);
+                                      });
+                                    },
+                                    widthType: CustomComponentWidth.full,
+                                    placeholder: 'Wybierz sklep',
+                                    validator: (val) {
+                                      if (val == null || val.isEmpty) return 'Wymagane';
+                                      return null;
+                                    },
+                                  );
+                                } else {
+                                  return const Text("Błąd podczas ładowania sklepów.");
+                                }
+                              },
+                            ),
                             const SizedBox(height: 18),
-                        
                             // 3. Cena i Data waznosci
                             Wrap(
                               spacing: 16,
