@@ -8,6 +8,7 @@ import 'package:proj_inz/data/repositories/auth_repository.dart';
 import 'package:proj_inz/data/repositories/coupon_repository.dart';
 import 'package:proj_inz/data/repositories/user_repository.dart';
 import 'package:proj_inz/data/repositories/shop_repository.dart';
+import 'package:proj_inz/data/repositories/category_repository.dart';
 import 'package:proj_inz/presentation/screens/auth_screen.dart';
 import 'package:proj_inz/presentation/screens/main_screen.dart';
 
@@ -35,6 +36,7 @@ class MainApp extends StatelessWidget {
         RepositoryProvider(create: (_) => CouponRepository()),
         RepositoryProvider(create: (_) => UserRepository()),
         RepositoryProvider(create: (_) => ShopRepository()),
+        RepositoryProvider(create: (_) => CategoryRepository()),
       ],
       child: MultiBlocProvider(
         providers: [

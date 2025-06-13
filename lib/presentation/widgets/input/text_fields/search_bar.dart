@@ -20,6 +20,7 @@ class SearchBarWide extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: width,
+      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
       decoration: ShapeDecoration(
         color: Colors.white,
         shape: RoundedRectangleBorder(
@@ -35,7 +36,6 @@ class SearchBarWide extends StatelessWidget {
           )
         ],
       ),
-      padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
       child: TextField(
         controller: controller,
         style: TextStyle(
@@ -48,7 +48,7 @@ class SearchBarWide extends StatelessWidget {
           hintText: hintText,
           border: InputBorder.none,
           isDense: true,
-          contentPadding: EdgeInsets.zero,
+          contentPadding: const EdgeInsets.symmetric(vertical: 5),
         ),
         onSubmitted: onSubmitted,
         textInputAction: TextInputAction.search,

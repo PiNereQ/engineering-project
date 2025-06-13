@@ -8,6 +8,7 @@ import 'package:proj_inz/bloc/search_shops_categories/search_shops_categories_bl
 import 'package:proj_inz/bloc/search_shops_categories/search_shops_categories_event.dart';
 import 'package:proj_inz/presentation/screens/search_results_screen.dart';
 import 'package:proj_inz/data/repositories/shop_repository.dart';
+import 'package:proj_inz/data/repositories/category_repository.dart';
 import 'package:proj_inz/presentation/widgets/coupon_card.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/checkbox.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_icon_button.dart';
@@ -30,7 +31,10 @@ class CouponListScreen extends StatelessWidget {
           value: context.read<CouponListBloc>(),
         ),
         BlocProvider(
-          create: (_) => SearchBloc(shopRepository: context.read<ShopRepository>()),
+          create: (_) => SearchBloc(
+            shopRepository: context.read<ShopRepository>(),
+            categoryRepository: context.read<CategoryRepository>()
+            )
         ),
       ],
       child: const _CouponListScreenContent(),
@@ -168,25 +172,25 @@ class _Toolbar extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.start,
                 spacing: 16,
                 children: [
-SearchBarWide(
-  hintText: 'Wyszukaj sklep lub kategorię',
-  onSubmitted: (query) {
-  final searchBloc = context.read<SearchBloc>();
-  // Wyślij zapytanie do bloca
-  searchBloc.add(SearchQuerySubmitted(query));
+                  SearchBarWide(
+                    hintText: 'Wyszukaj sklep lub kategorię',
+                    onSubmitted: (query) {
+                    final searchBloc = context.read<SearchBloc>();
+                    // Wyślij zapytanie do bloca
+                    searchBloc.add(SearchQuerySubmitted(query));
 
-  // Nawiguj do ekranu wyników, przekazując istniejącego Bloca
-  Navigator.of(context).push(
-    MaterialPageRoute(
-      builder: (context) => BlocProvider.value(
-        value: searchBloc,
-        child: SearchResultsScreen(query: query),
-      ),
-    ),
-  );
-},
+                    // Nawiguj do ekranu wyników, przekazując istniejącego Bloca
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => BlocProvider.value(
+                          value: searchBloc,
+                          child: SearchResultsScreen(query: query),
+                        ),
+                      ),
+                    );
+                  },
 
-),
+                  ),
                   Row(
                     children: [
                       CustomTextButton.iconSmall(

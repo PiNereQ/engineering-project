@@ -1,4 +1,6 @@
 import 'package:equatable/equatable.dart';
+import 'package:proj_inz/data/models/category_model.dart';
+import 'package:proj_inz/data/models/shop_model.dart';
 
 abstract class SearchState extends Equatable {
   @override
@@ -10,12 +12,16 @@ class SearchInitial extends SearchState {}
 class SearchLoading extends SearchState {}
 
 class SearchLoaded extends SearchState {
-  final List<dynamic> results; // np.  lista sklepow i kategorii
+  final List<Shop> matchedShops;
+  final List<Category> matchedCategories;
 
-  SearchLoaded(this.results);
+  SearchLoaded({
+    required this.matchedShops,
+    required this.matchedCategories,
+  });
 
   @override
-  List<Object?> get props => [results];
+  List<Object?> get props => [matchedShops, matchedCategories];
 }
 
 class SearchError extends SearchState {
