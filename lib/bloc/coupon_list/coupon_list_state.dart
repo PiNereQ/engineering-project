@@ -9,8 +9,7 @@ sealed class CouponListState extends Equatable {
 
 final class CouponListInitial extends CouponListState {}
 
-final class CouponListLoadInProgress extends CouponListState {
-}
+final class CouponListLoadInProgress extends CouponListState {}
 
 class CouponListLoadSuccess extends CouponListState {
   final List<Coupon> coupons;
@@ -30,6 +29,8 @@ class CouponListLoadFailure extends CouponListState {
   @override
   List<Object> get props => [message];
 }
+
+final class CouponListLoadEmpty extends CouponListState {}
 
 class CouponListFilterApplyInProgress extends CouponListState {}
 

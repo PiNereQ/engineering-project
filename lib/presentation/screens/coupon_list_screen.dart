@@ -1,10 +1,13 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 
 import 'package:proj_inz/bloc/coupon_list/coupon_list_bloc.dart';
 import 'package:proj_inz/presentation/widgets/coupon_card.dart';
+import 'package:proj_inz/presentation/widgets/error_card.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/checkbox.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_icon_button.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_text_button.dart';
@@ -95,14 +98,41 @@ class _CouponListScreenContentState extends State<_CouponListScreenContent> {
                     );
                   }, childCount: state.coupons.length),
                 );
+              } else if (state is CouponListLoadEmpty) {
+                return const SliverFillRemaining(
+                  child: Center(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 24),
+                      child: Text(
+                        "Nie znaleźliśmy kuponów pasujących do wybranych filtrów...",
+                        textAlign: TextAlign.left,
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 18,
+                          fontFamily: 'Itim',
+                          fontWeight: FontWeight.w400,
+                        ),
+                        softWrap: true,
+                      ),
+                    ),
+                  ),
+                );
               } else if (state is CouponListLoadFailure) {
+                if (kDebugMode) debugPrint(state.message);
                 return SliverFillRemaining(
-                  child: Center(child: Text(state.message)),
+                  child: Center(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: ErrorCard(
+                        text: "Przykro nam, wystąpił błąd w trakcie ładowania kuponów.",
+                        errorString: state.message,
+                        icon: const Icon(Icons.sentiment_dissatisfied),
+                      ),
+                    ),
+                  ),
                 );
               }
-              return const SliverFillRemaining(
-                child: Center(child: Text('Nie znaleźliśmy wyników pasujących do Twoich filtrów.')),
-              );
+              return const SliverFillRemaining();
             },
           ),
         ],

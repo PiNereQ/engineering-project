@@ -9,8 +9,7 @@ sealed class OwnedCouponListState extends Equatable {
 
 final class OwnedCouponListInitial extends OwnedCouponListState {}
 
-final class OwnedCouponListLoadInProgress extends OwnedCouponListState {
-}
+final class OwnedCouponListLoadInProgress extends OwnedCouponListState {}
 
 class OwnedCouponListLoadSuccess extends OwnedCouponListState {
   final List<Coupon> coupons;
@@ -30,3 +29,5 @@ class OwnedCouponListLoadFailure extends OwnedCouponListState {
   @override
   List<Object> get props => [message];
 }
+
+final class OwnedCouponListLoadEmpty extends OwnedCouponListState {}
