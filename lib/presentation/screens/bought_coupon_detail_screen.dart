@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:qr_flutter/qr_flutter.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:proj_inz/bloc/owned_coupon/owned_coupon_bloc.dart';
 import 'package:proj_inz/core/utils.dart';
 import 'package:proj_inz/data/models/owned_coupon_model.dart';
 import 'package:proj_inz/data/repositories/coupon_repository.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_icon_button.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_text_button.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 class BoughtCouponDetailsScreen extends StatelessWidget {
   final String couponId;
@@ -39,13 +40,13 @@ class BoughtCouponDetailsScreen extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             CustomIconButton(
-                              icon: 'icons/back.svg',
+                              icon: SvgPicture.asset('icons/back.svg'),
                               onTap: () {
                                 Navigator.of(context).pop();
                               },
                             ),
                             CustomIconButton(
-                              icon: 'icons/share.svg',
+                              icon: SvgPicture.asset('icons/share.svg'),
                               onTap: () {},
                             ),
                           ],

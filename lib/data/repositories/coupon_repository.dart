@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:proj_inz/bloc/coupon_list/coupon_list_bloc.dart';
 import 'package:proj_inz/data/models/coupon_model.dart';
 import 'package:proj_inz/data/models/coupon_offer_model.dart';
 import 'package:proj_inz/data/models/owned_coupon_model.dart';
@@ -194,20 +195,20 @@ class CouponRepository {
 
       // Shop data caching
       DocumentSnapshot shopDoc;
-      if (shopCache.containsKey(shopId)) {
-        shopDoc = shopCache[shopId]!;
+      if (_shopCache.containsKey(shopId)) {
+        shopDoc = _shopCache[shopId]!;
       } else {
         shopDoc = await _firestore.collection('shops').doc(shopId).get();
-        shopCache[shopId] = shopDoc;
+        _shopCache[shopId] = shopDoc;
       }
 
       // Seller data caching
       DocumentSnapshot sellerDoc;
-      if (sellerCache.containsKey(sellerId)) {
-        sellerDoc = sellerCache[sellerId]!;
+      if (_sellerCache.containsKey(sellerId)) {
+        sellerDoc = _sellerCache[sellerId]!;
       } else {
         sellerDoc = await _firestore.collection('userProfileData').doc(sellerId).get();
-        sellerCache[sellerId] = sellerDoc;
+        _sellerCache[sellerId] = sellerDoc;
       }
 
       coupons.add(
@@ -248,20 +249,20 @@ class CouponRepository {
 
     // Shop data caching
     DocumentSnapshot shopDoc;
-    if (shopCache.containsKey(shopId)) {
-      shopDoc = shopCache[shopId]!;
+    if (_shopCache.containsKey(shopId)) {
+      shopDoc = _shopCache[shopId]!;
     } else {
       shopDoc = await _firestore.collection('shops').doc(shopId).get();
-      shopCache[shopId] = shopDoc;
+      _shopCache[shopId] = shopDoc;
     }
 
     // Seller data caching
     DocumentSnapshot sellerDoc;
-    if (sellerCache.containsKey(sellerId)) {
-      sellerDoc = sellerCache[sellerId]!;
+    if (_sellerCache.containsKey(sellerId)) {
+      sellerDoc = _sellerCache[sellerId]!;
     } else {
       sellerDoc = await _firestore.collection('userProfileData').doc(sellerId).get();
-      sellerCache[sellerId] = sellerDoc;
+      _sellerCache[sellerId] = sellerDoc;
     }
 
     return Coupon(
@@ -297,19 +298,19 @@ class CouponRepository {
 
     // Shop data caching
     DocumentSnapshot shopDoc;
-    if (shopCache.containsKey(shopId)) {
-      shopDoc = shopCache[shopId]!;
+    if (_shopCache.containsKey(shopId)) {
+      shopDoc = _shopCache[shopId]!;
     } else {
       shopDoc = await _firestore.collection('shops').doc(shopId).get();
-      shopCache[shopId] = shopDoc;
+      _shopCache[shopId] = shopDoc;
     }
 
     DocumentSnapshot sellerDoc;
-    if (sellerCache.containsKey(sellerId)) {
-      sellerDoc = sellerCache[sellerId]!;
+    if (_sellerCache.containsKey(sellerId)) {
+      sellerDoc = _sellerCache[sellerId]!;
     } else {
       sellerDoc = await _firestore.collection('userProfileData').doc(sellerId).get();
-      sellerCache[sellerId] = sellerDoc;
+      _sellerCache[sellerId] = sellerDoc;
     }
 
     final privateDataDoc = await _firestore

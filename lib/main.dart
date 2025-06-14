@@ -3,6 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:proj_inz/bloc/auth/auth_bloc.dart';
 import 'package:proj_inz/data/repositories/auth_repository.dart';
 import 'package:proj_inz/data/repositories/coupon_repository.dart';
@@ -17,6 +18,7 @@ bool debugSkipAuth = false; // Skip authentication in debug mode; Default to fal
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  Stripe.publishableKey = 'pk_test_51RZ6Tm4DImOdy65uRnbKVa6pT1KzVub777bSf0keLjSfqeGxK4gQwfr23Vh7viegnfDqh5SVQza5rEnnIPt8HKUR00KKyHv98E';
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
