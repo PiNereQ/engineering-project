@@ -24,7 +24,8 @@ import 'package:proj_inz/presentation/widgets/input/text_fields/custom_text_fiel
 bool stopCouponLoading = false; // Default to false
 
 class CouponListScreen extends StatelessWidget {
-  const CouponListScreen({super.key});
+  final String? selectedShopId;
+  const CouponListScreen({super.key, this.selectedShopId});
 
   @override
   Widget build(BuildContext context) {
@@ -40,14 +41,15 @@ class CouponListScreen extends StatelessWidget {
             )
         ),
       ],
-      child: const _CouponListScreenContent(),
+      child: _CouponListScreenContent(selectedShopId: selectedShopId),
     );
   }
 }
 
 
 class _CouponListScreenContent extends StatefulWidget {
-  const _CouponListScreenContent();
+  final String? selectedShopId;
+  const _CouponListScreenContent({this.selectedShopId});
 
   @override
   State<_CouponListScreenContent> createState() =>
@@ -78,7 +80,7 @@ class _CouponListScreenContentState extends State<_CouponListScreenContent> {
     final state = bloc.state;
     // Only fetch if the state is initial (not loaded yet) and debug flag is off
     if (state is CouponListInitial && !stopCouponLoading) {
-      bloc.add(FetchCoupons());
+      bloc.add(FetchCoupons(shopId: widget.selectedShopId));
     }
   }
 
@@ -163,6 +165,7 @@ class _Toolbar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SliverAppBar(
+      automaticallyImplyLeading: false,
       floating: true,
       snap: true,
       backgroundColor: Colors.transparent,

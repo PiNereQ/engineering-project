@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:proj_inz/bloc/search_shops_categories/search_shops_categories_bloc.dart';
+import 'package:proj_inz/bloc/coupon_list/coupon_list_bloc.dart';
+import 'package:proj_inz/data/repositories/coupon_repository.dart';
 import 'package:proj_inz/bloc/search_shops_categories/search_shops_categories_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:proj_inz/presentation/screens/coupon_list_screen.dart';
 
 class SearchResultsScreen extends StatelessWidget {
   final String query;
@@ -226,76 +229,85 @@ class SearchResultsScreen extends StatelessWidget {
                                 children: [
                                   ConstrainedBox(
                                     constraints: const BoxConstraints(minHeight: 36),
-                                    child: InkWell(
-                                      onTap: () {
-                                        Navigator.pushNamed(
-                                          context,
-                                          '/coupons',
-                                          arguments: {'shopId': item.id, 'name': item.name},
-                                        );
-                                      },
-                                      borderRadius: BorderRadius.circular(1000),
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                                        clipBehavior: Clip.antiAlias,
-                                        decoration: ShapeDecoration(
-                                          color: Colors.white,
-                                          shape: RoundedRectangleBorder(
-                                            side: const BorderSide(width: 2),
-                                            borderRadius: BorderRadius.circular(1000),
-                                          ),
-                                          shadows: const [
-                                            BoxShadow(
-                                              color: Color(0xFF000000),
-                                              blurRadius: 0,
-                                              offset: Offset(3, 3),
-                                              spreadRadius: 0,
-                                            )
-                                          ],
-                                        ),
-                                        child: const Text(
-                                          'Pokaż kupony',
-                                          textAlign: TextAlign.center,
-                                          style: TextStyle(
-                                            color: Colors.black,
-                                            fontSize: 14,
-                                            fontFamily: 'Itim',
-                                            fontWeight: FontWeight.w400,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Container(
-                                    width: 36,
-                                    height: 36,
-                                    clipBehavior: Clip.antiAlias,
-                                    decoration: ShapeDecoration(
-                                      color: Colors.white,
-                                      shape: RoundedRectangleBorder(
-                                        side: const BorderSide(width: 2),
+                                    child: Material(
+                                      color: Colors.transparent,
+                                      child: InkWell(
+                                        onTap: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (_) => BlocProvider(
+                                                create: (context) => CouponListBloc(
+                                                  context.read<CouponRepository>(),
+                                                )..add(FetchCoupons(shopId: item.id)),
+                                                child: CouponListScreen(selectedShopId: item.id),
+                                              ),
+                                            ),
+                                          );
+                                        },
                                         borderRadius: BorderRadius.circular(1000),
-                                      ),
-                                      shadows: const [
-                                        BoxShadow(
-                                          color: Color(0xFF000000),
-                                          blurRadius: 0,
-                                          offset: Offset(2, 2),
-                                          spreadRadius: 0,
-                                        )
-                                      ],
-                                    ),
-                                    child: Center(
-                                      child: SvgPicture.asset(
-                                        'icons/favorite.svg',
-                                        width: 18,
-                                        height: 18,
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                          clipBehavior: Clip.antiAlias,
+                                          decoration: ShapeDecoration(
+                                            color: Colors.white,
+                                            shape: RoundedRectangleBorder(
+                                              side: const BorderSide(width: 2),
+                                              borderRadius: BorderRadius.circular(1000),
+                                            ),
+                                            shadows: const [
+                                              BoxShadow(
+                                                color: Color(0xFF000000),
+                                                blurRadius: 0,
+                                                offset: Offset(3, 3),
+                                                spreadRadius: 0,
+                                              ),
+                                            ],
+                                          ),
+                                          child: const Text(
+                                            'Pokaż kupony',
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(
+                                              color: Colors.black,
+                                              fontSize: 14,
+                                              fontFamily: 'Itim',
+                                              fontWeight: FontWeight.w400,
+                                            ),
+                                          ),
+                                        ),
                                       ),
                                     ),
                                   ),
-                                ],
-                              )
+                                    const SizedBox(width: 8),
+                                    Container(
+                                      width: 36,
+                                      height: 36,
+                                      clipBehavior: Clip.antiAlias,
+                                      decoration: ShapeDecoration(
+                                        color: Colors.white,
+                                        shape: RoundedRectangleBorder(
+                                          side: const BorderSide(width: 2),
+                                          borderRadius: BorderRadius.circular(1000),
+                                        ),
+                                        shadows: const [
+                                          BoxShadow(
+                                            color: Color(0xFF000000),
+                                            blurRadius: 0,
+                                            offset: Offset(2, 2),
+                                            spreadRadius: 0,
+                                          )
+                                        ],
+                                      ),
+                                      child: Center(
+                                        child: SvgPicture.asset(
+                                          'icons/favorite.svg',
+                                          width: 18,
+                                          height: 18,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                             ],
                           ),
                         );
