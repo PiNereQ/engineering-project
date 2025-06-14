@@ -25,7 +25,8 @@ bool stopCouponLoading = false; // Default to false
 
 class CouponListScreen extends StatelessWidget {
   final String? selectedShopId;
-  const CouponListScreen({super.key, this.selectedShopId});
+  final String? searchShopName;
+  const CouponListScreen({super.key, this.selectedShopId, this.searchShopName});
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +42,10 @@ class CouponListScreen extends StatelessWidget {
             )
         ),
       ],
-      child: _CouponListScreenContent(selectedShopId: selectedShopId),
+      child: _CouponListScreenContent(
+        selectedShopId: selectedShopId,
+        searchShopName: searchShopName,
+      ),
     );
   }
 }
@@ -49,7 +53,8 @@ class CouponListScreen extends StatelessWidget {
 
 class _CouponListScreenContent extends StatefulWidget {
   final String? selectedShopId;
-  const _CouponListScreenContent({this.selectedShopId});
+  final String? searchShopName;
+  const _CouponListScreenContent({this.selectedShopId, this.searchShopName});
 
   @override
   State<_CouponListScreenContent> createState() =>
@@ -99,7 +104,7 @@ class _CouponListScreenContentState extends State<_CouponListScreenContent> {
       child: CustomScrollView(
         controller: _scrollController,
         slivers: [
-          const _Toolbar(),
+          _Toolbar(searchShopName: widget.searchShopName),
           BlocBuilder<CouponListBloc, CouponListState>(
             builder: (context, state) {
               if (state is CouponListLoadInProgress) {
@@ -160,116 +165,184 @@ class _CouponListScreenContentState extends State<_CouponListScreenContent> {
 }
 
 class _Toolbar extends StatelessWidget {
-  const _Toolbar();
+  final String? searchShopName;
 
-  @override
-  Widget build(BuildContext context) {
-    return SliverAppBar(
-      automaticallyImplyLeading: false,
-      floating: true,
-      snap: true,
-      backgroundColor: Colors.transparent,
-      surfaceTintColor: Colors.transparent,
-      elevation: 0,
-      flexibleSpace: Stack(
-        children: [
-          Positioned(
-            // hides coupons behind the toolbar
-            left: 0,
-            right: 0,
-            top: 0,
-            height: 60,
-            child: Container(color: Colors.white),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 24, 16, 16),
-            child: Container(
-              width: double.infinity,
-              decoration: ShapeDecoration(
-                color: Colors.white,
-                shape: RoundedRectangleBorder(
-                  side: const BorderSide(width: 2),
-                  borderRadius: BorderRadius.circular(24),
-                ),
-                shadows: const [
-                  BoxShadow(
-                    color: Color(0xFF000000),
-                    blurRadius: 0,
-                    offset: Offset(4, 4),
-                    spreadRadius: 0,
-                  ),
-                ],
+  const _Toolbar({this.searchShopName});
+
+@override
+Widget build(BuildContext context) {
+  return SliverAppBar(
+    automaticallyImplyLeading: false, // automatyczna strzalka wstecz dla ekranow z navigator.push
+    floating: true,
+    snap: true,
+    backgroundColor: Colors.transparent,
+    surfaceTintColor: Colors.transparent,
+    elevation: 0,
+    flexibleSpace: Stack(
+      children: [
+        Positioned(
+          left: 0,
+          right: 0,
+          top: 0,
+          height: 60,
+          child: Container(color: Colors.white),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 24, 16, 16),
+          child: Container(
+            width: double.infinity,
+            decoration: ShapeDecoration(
+              color: Colors.white,
+              shape: RoundedRectangleBorder(
+                side: const BorderSide(width: 2),
+                borderRadius: BorderRadius.circular(24),
               ),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                spacing: 16,
-                children: [
-                  SearchBarWide(
-                    hintText: 'Wyszukaj sklep lub kategorię',
-                    onSubmitted: (query) {
-                    final searchBloc = context.read<SearchBloc>();
-                    // Wyślij zapytanie do bloca
-                    searchBloc.add(SearchQuerySubmitted(query));
-
-                    // Nawiguj do ekranu wyników, przekazując istniejącego Bloca
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => BlocProvider.value(
-                          value: searchBloc,
-                          child: SearchResultsScreen(query: query),
+              shadows: const [
+                BoxShadow(
+                  color: Color(0xFF000000),
+                  blurRadius: 0,
+                  offset: Offset(4, 4),
+                  spreadRadius: 0,
+                ),
+              ],
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (searchShopName != null)
+                  Padding(
+                  padding: const EdgeInsets.only(bottom: 12.0),
+                  child: Row(
+                    children: [
+                      // przycisk wstecz
+                      InkWell(
+                        borderRadius: BorderRadius.circular(1000),
+                        onTap: () => Navigator.of(context).pop(),
+                        child: Container(
+                          padding: const EdgeInsets.all(10),
+                          clipBehavior: Clip.antiAlias,
+                          decoration: ShapeDecoration(
+                            color: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              side: const BorderSide(width: 2),
+                              borderRadius: BorderRadius.circular(1000),
+                            ),
+                            shadows: const [
+                              BoxShadow(
+                                color: Color(0xFF000000),
+                                blurRadius: 0,
+                                offset: Offset(3, 3),
+                                spreadRadius: 0,
+                              )
+                            ],
+                          ),
+                          child: SvgPicture.asset(
+                            'icons/back.svg',
+                            width: 18,
+                            height: 18,
+                          ),
                         ),
                       ),
-                    );
-                  },
-
-                  ),
-                  Row(
-                    children: [
-                      CustomTextButton.iconSmall(
-                        label: 'Filtruj',
-                        onTap:
-                            () => showDialog(
-                              context: context,
-                              builder: (dialogContext) => BlocProvider.value(
-                                value: context.read<CouponListBloc>(),
-                                child: const _CouponFilterDialog(),
-                              ),
-                            ).then((_) {
-                              if (context.mounted) {
-                                context.read<CouponListBloc>().add(LeaveCouponFilterPopUp());
-                              }
-                            }),
-                        icon: const Icon(Icons.filter_alt),
-                      ),
-                      CustomTextButton.iconSmall(
-                        label: 'Sortuj',
-                        onTap:
-                            () => showDialog(
-                              context: context,
-                              builder: (dialogContext) => BlocProvider.value(
-                                value: context.read<CouponListBloc>(),
-                                child: const _CouponSortDialog(),
-                              ),
-                            ).then((_) {
-                              if (context.mounted) {
-                                context.read<CouponListBloc>().add(LeaveCouponSortPopUp());
-                              }
-                            }),
-                        icon: const Icon(Icons.sort),
+                      const SizedBox(width: 16),
+                      // "wyszukiwanie dla sklepu: <nazwa>"
+                      Expanded(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+                          decoration: ShapeDecoration(
+                            color: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              side: const BorderSide(width: 2),
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            shadows: const [
+                              BoxShadow(
+                                color: Color(0xFF000000),
+                                blurRadius: 0,
+                                offset: Offset(4, 4),
+                                spreadRadius: 0,
+                              )
+                            ],
+                          ),
+                          child: Text(
+                            'Wyniki dla sklepu: $searchShopName',
+                            style: const TextStyle(
+                              color: Colors.black,
+                              fontSize: 18,
+                              fontFamily: 'Itim',
+                              fontWeight: FontWeight.w400,
+                            ),
+                          ),
+                        ),
                       ),
                     ],
                   ),
-                ],
-              ),
+                )
+                else
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 12.0),
+                    child: SearchBarWide(
+                      hintText: 'Wyszukaj sklep lub kategorię',
+                      onSubmitted: (query) {
+                        final searchBloc = context.read<SearchBloc>();
+                        searchBloc.add(SearchQuerySubmitted(query));
+
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => BlocProvider.value(
+                              value: searchBloc,
+                              child: SearchResultsScreen(query: query),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                Row(
+                  children: [
+                    CustomTextButton.iconSmall(
+                      label: 'Filtruj',
+                      onTap: () => showDialog(
+                        context: context,
+                        builder: (dialogContext) => BlocProvider.value(
+                          value: context.read<CouponListBloc>(),
+                          child: const _CouponFilterDialog(),
+                        ),
+                      ).then((_) {
+                        if (context.mounted) {
+                          context.read<CouponListBloc>().add(LeaveCouponFilterPopUp());
+                        }
+                      }),
+                      icon: const Icon(Icons.filter_alt),
+                    ),
+                    CustomTextButton.iconSmall(
+                      label: 'Sortuj',
+                      onTap: () => showDialog(
+                        context: context,
+                        builder: (dialogContext) => BlocProvider.value(
+                          value: context.read<CouponListBloc>(),
+                          child: const _CouponSortDialog(),
+                        ),
+                      ).then((_) {
+                        if (context.mounted) {
+                          context.read<CouponListBloc>().add(LeaveCouponSortPopUp());
+                        }
+                      }),
+                      icon: const Icon(Icons.sort),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
-        ],
-      ),
-      toolbarHeight: 200,
-    );
-  }
+        ),
+      ],
+    ),
+    toolbarHeight: 200,
+  );
 }
+}
+
 
 class _CouponFilterDialog extends StatefulWidget {
   const _CouponFilterDialog();
