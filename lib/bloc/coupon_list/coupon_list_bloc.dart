@@ -35,6 +35,9 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
   // sorting
   Ordering _ordering = Ordering.creationDateDesc;
 
+  // shop filtering
+  String? _selectedShopId;
+
   CouponListBloc(this.couponRepository) : super(CouponListInitial()) {
     on<FetchCoupons>(_onFetchCoupons);
     on<FetchMoreCoupons>(_onFetchMoreCoupons);
@@ -53,6 +56,7 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
     _allCoupons.clear();
     _lastDocument = null;
     _hasMore = true;
+    _selectedShopId = event.shopId;
     add(FetchMoreCoupons());
   }
 
@@ -78,7 +82,8 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
         minPrice: _minPrice,
         maxPrice: _maxPrice,
         minReputation: _minReputation,
-        ordering: _ordering
+        ordering: _ordering,
+        shopId: _selectedShopId,
       );
       final coupons = result.coupons;
       final lastDoc = result.lastDocument;

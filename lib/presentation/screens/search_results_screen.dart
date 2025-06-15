@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:proj_inz/bloc/search_shops_categories/search_shops_categories_bloc.dart';
+import 'package:proj_inz/bloc/coupon_list/coupon_list_bloc.dart';
+import 'package:proj_inz/data/repositories/coupon_repository.dart';
 import 'package:proj_inz/bloc/search_shops_categories/search_shops_categories_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:proj_inz/presentation/screens/coupon_list_screen.dart';
 
 class SearchResultsScreen extends StatelessWidget {
   final String query;
@@ -12,81 +15,86 @@ class SearchResultsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        automaticallyImplyLeading: false,
-        title: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Row(
-            children: [
-              // przycisk wstecz
-              InkWell(
-                borderRadius: BorderRadius.circular(1000),
-                onTap: () => Navigator.of(context).pop(),
-                child: Container(
-                  padding: const EdgeInsets.all(10),
-                  clipBehavior: Clip.antiAlias,
-                  decoration: ShapeDecoration(
-                    color: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      side: const BorderSide(width: 2),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(80),
+        child: Padding(
+          padding: const EdgeInsets.only(top: 20),
+          child: AppBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            automaticallyImplyLeading: false,
+            title: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                child: Row(
+                  children: [
+                    // przycisk wstecz
+                    InkWell(
                       borderRadius: BorderRadius.circular(1000),
+                      onTap: () => Navigator.of(context).pop(),
+                      child: Container(
+                        padding: const EdgeInsets.all(10),
+                        clipBehavior: Clip.antiAlias,
+                        decoration: ShapeDecoration(
+                          color: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            side: const BorderSide(width: 2),
+                            borderRadius: BorderRadius.circular(1000),
+                          ),
+                          shadows: const [
+                            BoxShadow(
+                              color: Color(0xFF000000),
+                              blurRadius: 0,
+                              offset: Offset(3, 3),
+                              spreadRadius: 0,
+                            )
+                          ],
+                        ),
+                        child: SvgPicture.asset('icons/back.svg', width: 18, height: 18,),
+                      ),
                     ),
-                    shadows: const [
-                      BoxShadow(
-                        color: Color(0xFF000000),
-                        blurRadius: 0,
-                        offset: Offset(3, 3),
-                        spreadRadius: 0,
-                      )
-                    ],
-                  ),
-                  child: SvgPicture.asset('icons/back.svg', width: 18, height: 18,),
+                    const SizedBox(width: 16),
+                    // search bar
+                    Expanded(
+                      child: Container(
+                        height: 48,
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        clipBehavior: Clip.antiAlias,
+                        decoration: ShapeDecoration(
+                          color: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            side: const BorderSide(width: 2),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          shadows: const [
+                            BoxShadow(
+                              color: Color(0xFF000000),
+                              blurRadius: 0,
+                              offset: Offset(4, 4),
+                              spreadRadius: 0,
+                            ),
+                          ],
+                        ),
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            'Wyniki dla hasła: $query',
+                            style: const TextStyle(
+                              color: Colors.black,
+                              fontSize: 18,
+                              fontFamily: 'Itim',
+                              fontWeight: FontWeight.w400,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(width: 16),
-              // search bar
-              Expanded(
-                child: Container(
-                  height: 48,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  clipBehavior: Clip.antiAlias,
-                  decoration: ShapeDecoration(
-                    color: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      side: const BorderSide(width: 2),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    shadows: const [
-                      BoxShadow(
-                        color: Color(0xFF000000),
-                        blurRadius: 0,
-                        offset: Offset(4, 4),
-                        spreadRadius: 0,
-                      ),
-                    ],
-                  ),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      'Wyniki dla hasła: $query',
-                      style: const TextStyle(
-                        color: Colors.black,
-                        fontSize: 18,
-                        fontFamily: 'Itim',
-                        fontWeight: FontWeight.w400,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
+            ),
         ),
       ),
-
       body: Column(
         children: [
         // lista wynikow
@@ -226,76 +234,88 @@ class SearchResultsScreen extends StatelessWidget {
                                 children: [
                                   ConstrainedBox(
                                     constraints: const BoxConstraints(minHeight: 36),
-                                    child: InkWell(
-                                      onTap: () {
-                                        Navigator.pushNamed(
-                                          context,
-                                          '/coupons',
-                                          arguments: {'shopId': item.id, 'name': item.name},
-                                        );
-                                      },
-                                      borderRadius: BorderRadius.circular(1000),
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                                        clipBehavior: Clip.antiAlias,
-                                        decoration: ShapeDecoration(
-                                          color: Colors.white,
-                                          shape: RoundedRectangleBorder(
-                                            side: const BorderSide(width: 2),
-                                            borderRadius: BorderRadius.circular(1000),
-                                          ),
-                                          shadows: const [
-                                            BoxShadow(
-                                              color: Color(0xFF000000),
-                                              blurRadius: 0,
-                                              offset: Offset(3, 3),
-                                              spreadRadius: 0,
-                                            )
-                                          ],
-                                        ),
-                                        child: const Text(
-                                          'Pokaż kupony',
-                                          textAlign: TextAlign.center,
-                                          style: TextStyle(
-                                            color: Colors.black,
-                                            fontSize: 14,
-                                            fontFamily: 'Itim',
-                                            fontWeight: FontWeight.w400,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Container(
-                                    width: 36,
-                                    height: 36,
-                                    clipBehavior: Clip.antiAlias,
-                                    decoration: ShapeDecoration(
-                                      color: Colors.white,
-                                      shape: RoundedRectangleBorder(
-                                        side: const BorderSide(width: 2),
+                                    child: Material(
+                                      color: Colors.transparent,
+                                      child: InkWell(
+                                        onTap: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (_) => BlocProvider(
+                                                create: (context) => CouponListBloc(
+                                                  context.read<CouponRepository>(),
+                                                )..add(FetchCoupons(shopId: item.id,)),
+                                                child: CouponListScreen(
+                                                  selectedShopId: item.id,
+                                                  searchShopName: item.name,
+                                                  ),
+                                              ),
+                                            ),
+                                          );
+                                        },
                                         borderRadius: BorderRadius.circular(1000),
-                                      ),
-                                      shadows: const [
-                                        BoxShadow(
-                                          color: Color(0xFF000000),
-                                          blurRadius: 0,
-                                          offset: Offset(2, 2),
-                                          spreadRadius: 0,
-                                        )
-                                      ],
-                                    ),
-                                    child: Center(
-                                      child: SvgPicture.asset(
-                                        'icons/favorite.svg',
-                                        width: 18,
-                                        height: 18,
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                          clipBehavior: Clip.antiAlias,
+                                          decoration: ShapeDecoration(
+                                            color: Colors.white,
+                                            shape: RoundedRectangleBorder(
+                                              side: const BorderSide(width: 2),
+                                              borderRadius: BorderRadius.circular(1000),
+                                            ),
+                                            shadows: const [
+                                              BoxShadow(
+                                                color: Color(0xFF000000),
+                                                blurRadius: 0,
+                                                offset: Offset(3, 3),
+                                                spreadRadius: 0,
+                                              ),
+                                            ],
+                                          ),
+                                          child: const Text(
+                                            'Pokaż kupony',
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(
+                                              color: Colors.black,
+                                              fontSize: 14,
+                                              fontFamily: 'Itim',
+                                              fontWeight: FontWeight.w400,
+                                            ),
+                                          ),
+                                        ),
                                       ),
                                     ),
                                   ),
-                                ],
-                              )
+                                    const SizedBox(width: 8),
+                                    Container(
+                                      width: 36,
+                                      height: 36,
+                                      clipBehavior: Clip.antiAlias,
+                                      decoration: ShapeDecoration(
+                                        color: Colors.white,
+                                        shape: RoundedRectangleBorder(
+                                          side: const BorderSide(width: 2),
+                                          borderRadius: BorderRadius.circular(1000),
+                                        ),
+                                        shadows: const [
+                                          BoxShadow(
+                                            color: Color(0xFF000000),
+                                            blurRadius: 0,
+                                            offset: Offset(2, 2),
+                                            spreadRadius: 0,
+                                          )
+                                        ],
+                                      ),
+                                      child: Center(
+                                        child: SvgPicture.asset(
+                                          'icons/favorite.svg',
+                                          width: 18,
+                                          height: 18,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                             ],
                           ),
                         );

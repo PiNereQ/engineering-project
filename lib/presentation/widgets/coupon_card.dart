@@ -121,16 +121,18 @@ class CouponCardHorizontal extends StatelessWidget {
       ),
     );
 
-    return Center(
-      child: InkWell(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => CouponDetailsScreen(couponId: couponId),
-            ),
-          );
-        },
+return Center(
+  child: Material(  // <--- dodajemy Material tutaj
+    color: Colors.transparent,  // jeśli nie chcesz zmieniać koloru tła
+    child: InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => CouponDetailsScreen(couponId: couponId),
+          ),
+        );
+      },
         child: Container(
           width: 364.0,
           decoration: ShapeDecoration(
@@ -209,6 +211,7 @@ class CouponCardHorizontal extends StatelessWidget {
           )
         ),
       ),
+  ),
     );
   }
 }
