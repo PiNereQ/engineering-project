@@ -13,7 +13,7 @@ class UserRepository {
     await _firestore.collection('userProfileData').doc(uid).set({
       'username': 'sample_username',
       'reputation': 40, 
-      'createdAt': FieldValue.serverTimestamp(),
+      'joinDate': FieldValue.serverTimestamp(),
     });
 
     await _firestore.collection('privateUserInfo').doc(uid).set({

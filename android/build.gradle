@@ -1,3 +1,14 @@
+buildscript {
+    ext.kotlin_version = '2.1.21' // Update to the latest version
+    repositories {
+        google() // Add this to resolve dependencies from Google's Maven repository
+        mavenCentral() // Add this to resolve dependencies from Maven Central
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+
 allprojects {
     repositories {
         google()

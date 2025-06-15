@@ -26,6 +26,11 @@ dependencies:
   # Auth
   google_sign_in: ^6.2.2
   qr_flutter: ^4.1.0
+
+  # Stripe
+  flutter_dotenv: ^5.2.1
+  http: ^1.4.0
+  flutter_stripe: ^11.5.0
   
 
 dev_dependencies:
@@ -34,6 +39,8 @@ dev_dependencies:
   flutter_lints: ^3.0.0
 
 flutter:
+  assets:
+    - assets/.env
   uses-material-design: true
   fonts:
     - family: Itim
