@@ -34,7 +34,8 @@ class CouponRepository {
     double? minPrice,
     double? maxPrice,
     num? minReputation,
-    required Ordering ordering}
+    required Ordering ordering,
+    String? shopId}
   ) async {
 
     final user = _firebaseAuth.currentUser;
@@ -48,8 +49,11 @@ class CouponRepository {
     var query = _firestore
       .collection('couponOffers')
       .where('isSold', isEqualTo: false);
-    
-    if (reductionIsPercentage == true && reductionIsFixed == false) {
+      
+    if (shopId != null) {
+      query = query.where('shopId', isEqualTo: shopId);
+    }
+    else if (reductionIsPercentage == true && reductionIsFixed == false) {
       // 'rabat %' is chosen, but not 'rabat zł'
       query = query.where('reductionIsPercentage', isEqualTo: true);
     } else if (reductionIsFixed == true && reductionIsPercentage == false) {
