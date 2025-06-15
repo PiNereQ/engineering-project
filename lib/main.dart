@@ -22,6 +22,7 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  await Stripe.instance.applySettings();
   runApp(const MainApp());
 }
 

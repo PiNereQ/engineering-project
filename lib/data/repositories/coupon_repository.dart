@@ -128,9 +128,9 @@ class CouponRepository {
         try {
           coupons.add(Coupon(
             id: doc.id,
-            reduction: doc['reduction'],
+            reduction: doc['reduction'].toDouble(),
             reductionIsPercentage: doc['reductionIsPercentage'],
-            price: doc['pricePLN'],
+            price: doc['pricePLN'].toDouble(),
             hasLimits: doc['hasLimits'],
             worksOnline: doc['worksOnline'],
             worksInStore: doc['worksInStore'],
@@ -267,9 +267,9 @@ class CouponRepository {
 
     return Coupon(
       id: doc.id,
-      reduction: doc['reduction'],
+      reduction: doc['reduction'].toDouble(),
       reductionIsPercentage: doc['reductionIsPercentage'],
-      price: doc['pricePLN'],
+      price: doc['pricePLN'].toDouble(),
       hasLimits: doc['hasLimits'],
       worksOnline: doc['worksOnline'],
       worksInStore: doc['worksInStore'],

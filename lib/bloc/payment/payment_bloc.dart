@@ -18,8 +18,7 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
           Uri.parse('https://europe-west1-projektinzynierski-44c9d.cloudfunctions.net/createPaymentIntent'),
           headers: {'Content-Type': 'application/json'},
           body: jsonEncode({
-            'couponId': event.couponId,
-            'userId': event.userId,
+            'amount': event.amount,
           }),
         );
 
@@ -37,11 +36,13 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
             merchantDisplayName: 'Your App Name',
           ),
         );
-
         await Stripe.instance.presentPaymentSheet();
+        emit(PaymentSuccess());
       } catch (e) {
         emit(PaymentFailure(error: e.toString()));
       }
     });
   }
+
+
 }

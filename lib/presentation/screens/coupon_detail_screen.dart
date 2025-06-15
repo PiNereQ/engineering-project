@@ -431,11 +431,9 @@ class _CouponDetails extends StatelessWidget {
             CustomTextButton(
               label: 'Kup teraz',
               onTap: () async {
-                final user = await getCurrentUser();
                 context.read<PaymentBloc>().add(
                   StartPayment(
-                    couponId: coupon.id, 
-                    userId: user.uid
+                    amount: (coupon.price * 100).toInt(),
                     ),
                 );
               },
