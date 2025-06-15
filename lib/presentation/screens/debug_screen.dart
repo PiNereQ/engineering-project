@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_text_button.dart';
 
 
-
 class DebugScreen extends StatefulWidget {
   const DebugScreen({super.key});
 

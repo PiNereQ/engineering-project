@@ -4,6 +4,9 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:proj_inz/bloc/coupon_add/coupon_add_bloc.dart';
 import 'package:proj_inz/data/models/coupon_offer_model.dart';
 import 'package:proj_inz/data/repositories/coupon_repository.dart';
+import 'package:proj_inz/bloc/shop/shop_bloc.dart';
+import 'package:proj_inz/data/models/shop_model.dart';
+import 'package:proj_inz/data/repositories/shop_repository.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_icon_button.dart';
 import '../widgets/input/text_fields/labeled_text_field.dart';
 import '../widgets/input/search_dropdown_field.dart';
@@ -31,7 +34,7 @@ class _AddScreenState extends State<AddScreen> {
   final TextEditingController _descriptionController = TextEditingController();
 
   late DateTime _expiryDate;
-  String? _selectedShop;
+  Shop? _selectedShop;
   CouponType _selectedType = CouponType.percent;
   bool _inPhysicalStores = false;
   bool _inOnlineStore = false;
@@ -96,8 +99,16 @@ class _AddScreenState extends State<AddScreen> {
       );
     }
 
-    return BlocProvider(
-      create: (context) => CouponAddBloc(context.read<CouponRepository>()),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (context) => CouponAddBloc(context.read<CouponRepository>()),
+        ),
+        BlocProvider(
+          create: (context) =>
+              ShopBloc(context.read<ShopRepository>())..add(LoadShops()),
+        ),
+      ],
       child: Scaffold(
         backgroundColor: Colors.yellow[200],
         body: LayoutBuilder(
@@ -168,25 +179,32 @@ class _AddScreenState extends State<AddScreen> {
                             const SizedBox(height: 18),
                         
                             // 2. Wybierz sklep (search dropdown) TODO: Lista sklepow z bazy
-                              SearchDropdownField(
-                              options: [
-                                '0'
-                              ],
-                              selected: _selectedShop,
-                              onChanged: (val) {
-                                setState(() {
-                                _selectedShop = val ?? '';
-                                });
+                            BlocBuilder<ShopBloc, ShopState>(
+                              builder: (context, state) {
+                                if (state is ShopLoading) {
+                                  return const CircularProgressIndicator();
+                                } else if (state is ShopLoaded) {
+                                  return SearchDropdownField(
+                                    options: state.shops.map((s) => s.name).toList(),
+                                    selected: _selectedShop?.name,
+                                    onChanged: (val) {
+                                      setState(() {
+                                        _selectedShop = state.shops.firstWhere((s) => s.name == val);
+                                      });
+                                    },
+                                    widthType: CustomComponentWidth.full,
+                                    placeholder: 'Wybierz sklep',
+                                    validator: (val) {
+                                      if (val == null || val.isEmpty) return 'Wymagane';
+                                      return null;
+                                    },
+                                  );
+                                } else {
+                                  return const Text("Błąd podczas ładowania sklepów.");
+                                }
                               },
-                              widthType: CustomComponentWidth.full,
-                              placeholder: 'Wybierz sklep',
-                              validator: (val) {
-                                if (val == null || val.isEmpty) return 'Wymagane';
-                                return null;
-                              },
-                              ),
+                            ),
                             const SizedBox(height: 18),
-                        
                             // 3. Cena i Data waznosci
                             Wrap(
                               spacing: 16,
@@ -592,7 +610,7 @@ class _AddScreenState extends State<AddScreen> {
                                     worksOnline: _inOnlineStore,
                                     worksInStore: _inPhysicalStores,
                                     expiryDate: _expiryDate,
-                                    shopId: _selectedShop.toString(),
+                                    shopId: _selectedShop?.id ?? '',
                                   );
                                   context.read<CouponAddBloc>().add(AddCouponOffer(offer));
                                 } else {
