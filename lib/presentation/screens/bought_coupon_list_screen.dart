@@ -163,7 +163,9 @@ class _Toolbar extends StatelessWidget {
                 spacing: 12,
                 children: [
                   CustomIconButton(
-                    icon: SvgPicture.asset('icons/back.svg'),
+                    // icon: SvgPicture.asset('icons/back.svg'),
+                    // TODO: svg crash fix
+                    icon: const Icon(Icons.arrow_back),
                     onTap: () {
                       Navigator.of(context).pop();
                     },

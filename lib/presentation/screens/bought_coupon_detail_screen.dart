@@ -35,13 +35,17 @@ class BoughtCouponDetailsScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     CustomIconButton(
-                      icon: SvgPicture.asset('icons/back.svg'),
+                      // icon: SvgPicture.asset('icons/back.svg'),
+                      // TODO: svg crash fix
+                      icon: const Icon(Icons.arrow_back),
                       onTap: () {
                         Navigator.of(context).pop();
                       },
                     ),
                     CustomIconButton(
-                      icon: SvgPicture.asset('icons/share.svg'),
+                      // icon: SvgPicture.asset('icons/share.svg'),
+                      // TODO: svg crash fix
+                      icon: const Icon(Icons.share),
                       onTap: () {},
                     ),
                   ],

@@ -45,14 +45,15 @@ class LabeledTextField extends StatelessWidget {
       mainAxisAlignment: iconOnLeft ? MainAxisAlignment.start : MainAxisAlignment.end,
       children: iconOnLeft
           ? [
-              Transform.rotate(
-                angle: iconRotationRadians,
-                child: SvgPicture.asset(
-                  'icons/switch-access-shortcut-rounded.svg',
-                  width: 18,
-                  height: 18,
-                ),
-              ),
+              // Transform.rotate(
+              //   angle: iconRotationRadians,
+              //   child: SvgPicture.asset(
+              //     'icons/switch-access-shortcut-rounded.svg',
+              //     width: 18,
+              //     height: 18,
+              //   ),
+              // ),
+              // TODO: svg crash fix
               const SizedBox(width: 8),
               Text(
                 label,
@@ -75,15 +76,16 @@ class LabeledTextField extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              Transform(
-                alignment: Alignment.center,
-                transform: Matrix4.rotationZ(iconRotationRadians)..scale(-1.0, 1.0),
-                child: SvgPicture.asset(
-                  'icons/switch-access-shortcut-rounded.svg',
-                  width: 18,
-                  height: 18,
-                ),
-              ),
+              // Transform(
+              //   alignment: Alignment.center,
+              //   transform: Matrix4.rotationZ(iconRotationRadians)..scale(-1.0, 1.0),
+              //   child: SvgPicture.asset(
+              //     'icons/switch-access-shortcut-rounded.svg',
+              //     width: 18,
+              //     height: 18,
+              //   ),
+              // ),
+              // TODO: svg crash fix
             ],
     );
 

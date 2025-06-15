@@ -59,11 +59,12 @@ class TicketButton extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 8),
-                    SvgPicture.asset(
-                      "icons/ticketbutton_separator.svg",
-                      width: 48,
-                      height: 2,
-                    ),
+                    // SvgPicture.asset(
+                    //   "icons/ticketbutton_separator.svg",
+                    //   width: 48,
+                    //   height: 2,
+                    // ),
+                    // TODO: svg crash fix
                     const Spacer(),
                     Text(
                       rightText,
@@ -74,12 +75,16 @@ class TicketButton extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 8),
-                    SvgPicture.asset(
-                      "icons/heart.svg",
+                    // SvgPicture.asset(
+                    //   "icons/heart.svg",
+                    //   width: 20,
+                    //   height: 18.35,
+                    // ),
+                    // TODO: svg crash fix
+                    const SizedBox(
+                      height: 20,
                       width: 20,
-                      height: 18.35,
-                    ),
-                    
+                      child: Icon(Icons.favorite),)
                   ],
                 ),
               ),

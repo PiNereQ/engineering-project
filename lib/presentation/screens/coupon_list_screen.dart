@@ -320,7 +320,9 @@ class _CouponFilterDialogState extends State<_CouponFilterDialog> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       CustomIconButton(
-                        icon: SvgPicture.asset('icons/back.svg'),
+                        // icon: SvgPicture.asset('icons/back.svg'),
+                        // TODO: svg crash fix
+                        icon: const Icon(Icons.arrow_back),
                         onTap: () {
                           Navigator.of(context).pop();
                         }
@@ -575,7 +577,9 @@ class _CouponSortDialogState extends State<_CouponSortDialog> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       CustomIconButton(
-                        icon: SvgPicture.asset('icons/back.svg'),
+                        // icon: SvgPicture.asset('icons/back.svg'),
+                        // TODO: svg crash fix
+                        icon: const Icon(Icons.arrow_back),
                         onTap: () {
                           Navigator.of(context).pop();
                         }

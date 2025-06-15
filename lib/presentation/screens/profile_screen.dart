@@ -25,20 +25,22 @@ class ProfileScreen extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-              Row(
+              const Row(
                 //mainAxisSize: MainAxisSize.min,
                 children: [
                   CircleAvatar(
                     radius: 36,
                     backgroundColor: Colors.transparent,
-                      child: SvgPicture.asset(
-                        'icons/Awatar.svg',
-                        width: 100,
-                        height: 100,
-                      ),
+                      // child: SvgPicture.asset(
+                      //   'icons/Awatar.svg',
+                      //   width: 100,
+                      //   height: 100,
+                      // ),
+                      // TODO: svg crash fix
+                      child: Placeholder(),
                   ),
-                  const SizedBox(width: 12),
-                  const Text('Cześć, username', 
+                  SizedBox(width: 12),
+                  Text('Cześć, username', 
                       style: TextStyle(
                         fontSize: 16,
                         fontFamily: 'Itim',
