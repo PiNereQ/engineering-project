@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:proj_inz/bloc/coupon/coupon_bloc.dart';
 import 'package:proj_inz/bloc/payment/payment_bloc.dart';
 import 'package:proj_inz/core/utils.dart';

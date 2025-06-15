@@ -6,10 +6,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:proj_inz/bloc/auth/auth_bloc.dart';
 import 'package:proj_inz/data/repositories/auth_repository.dart';
-import 'package:proj_inz/data/repositories/coupon_repository.dart';
-import 'package:proj_inz/data/repositories/user_repository.dart';
-import 'package:proj_inz/data/repositories/shop_repository.dart';
 import 'package:proj_inz/data/repositories/category_repository.dart';
+import 'package:proj_inz/data/repositories/coupon_repository.dart';
+import 'package:proj_inz/data/repositories/shop_repository.dart';
+import 'package:proj_inz/data/repositories/user_repository.dart';
 import 'package:proj_inz/presentation/screens/auth_screen.dart';
 import 'package:proj_inz/presentation/screens/main_screen.dart';
 

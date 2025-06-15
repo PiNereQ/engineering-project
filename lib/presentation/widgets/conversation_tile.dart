@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 class ConversationTile extends StatelessWidget {
   final String username;
@@ -145,7 +144,7 @@ class ConversationTile extends StatelessWidget {
                 Positioned(
                   left: 400, // Adjust position as necessary
                   top: 42, // Adjust position as necessary
-                  child: Container(
+                  child: SizedBox(
                     width: 32,
                     height: 32,
                     child: Stack(
