@@ -76,7 +76,7 @@ class ProfileScreen extends StatelessWidget {
             Row(
                 //mainAxisSize: MainAxisSize.min,
                 children: [
-                  CustomTextButton(height: 40, width: 130, fontSize: 14, label: 'Kupione', onTap: () {
+                  CustomTextButton(height: 40, width: 130, label: 'Kupione', onTap: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -85,11 +85,11 @@ class ProfileScreen extends StatelessWidget {
                     );
                   }),
                   const SizedBox(width: 24),            
-                  CustomTextButton(height: 40, width: 130, fontSize: 14, label: 'Wystawione', onTap: () {})
+                  CustomTextButton(height: 40, width: 130, label: 'Wystawione', onTap: () {})
                 ],
               ),
             const SizedBox(height: 8),
-            CustomTextButton(height: 40, width: 480, fontSize: 14, label: 'Obserwowane', onTap: () {}),
+            CustomTextButton(height: 40, width: 480, label: 'Obserwowane', onTap: () {}),
             const SizedBox(height: 16),
             const Text(
               'Twoje preferencje',
@@ -102,8 +102,8 @@ class ProfileScreen extends StatelessWidget {
             const SizedBox(height: 8),
             Row(
               children: [
-                CustomTextButton(height: 40, width: 480, fontSize: 14, label: 'Ulubione', onTap: () {}),
-                CustomTextButton(height: 40, width: 480, fontSize: 14, label: 'Wyloguj', onTap: () {
+                CustomTextButton(height: 40, width: 480, label: 'Ulubione', onTap: () {}),
+                CustomTextButton(height: 40, width: 480, label: 'Wyloguj', onTap: () {
                   context.read<AuthBloc>().add(SignOutRequested());
                 }),
               ],
@@ -126,7 +126,7 @@ class ProfileScreen extends StatelessWidget {
               fontSize: 14,
             ),
             const SizedBox(height: 8),
-            CustomTextButton(height: 40, width: 480, fontSize: 14, label: 'Ustawienia', onTap: () {}),
+            CustomTextButton(height: 40, width: 480, label: 'Ustawienia', onTap: () {}),
             const SizedBox(height: 16),
             if (kDebugMode) CustomTextButton(
               label: 'Debug',

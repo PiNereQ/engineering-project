@@ -299,7 +299,7 @@ Widget build(BuildContext context) {
                   ),
                 Row(
                   children: [
-                    CustomTextButton.iconSmall(
+                    CustomTextButton.small(
                       label: 'Filtruj',
                       onTap: () => showDialog(
                         context: context,
@@ -314,7 +314,7 @@ Widget build(BuildContext context) {
                       }),
                       icon: const Icon(Icons.filter_alt),
                     ),
-                    CustomTextButton.iconSmall(
+                    CustomTextButton.small(
                       label: 'Sortuj',
                       onTap: () => showDialog(
                         context: context,
@@ -569,7 +569,7 @@ class _CouponFilterDialogState extends State<_CouponFilterDialog> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
-                            CustomTextButton.icon(
+                            CustomTextButton(
                               label: 'Wyczyść',
                               icon: const Icon(Icons.delete_outline),
                               onTap: () {
@@ -577,7 +577,7 @@ class _CouponFilterDialogState extends State<_CouponFilterDialog> {
                                 context.read<CouponListBloc>().add(ClearCouponFilters());
                               },
                             ),
-                            CustomTextButton.icon(
+                            CustomTextButton(
                               label: 'Zastosuj',
                               icon: const Icon(Icons.check),
                               onTap: () {
@@ -820,7 +820,7 @@ class _CouponSortDialogState extends State<_CouponSortDialog> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
-                            CustomTextButton.icon(
+                            CustomTextButton(
                               label: 'Zastosuj',
                               icon: const Icon(Icons.check),
                               onTap: () {

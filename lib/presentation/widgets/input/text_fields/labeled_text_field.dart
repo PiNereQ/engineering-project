@@ -5,12 +5,13 @@ enum LabeledTextFieldWidth { full, half }
 
 class LabeledTextField extends StatelessWidget {
   final String label;
-  final String placeholder;
+  final String? placeholder;
   final double iconRotationRadians;
   final bool iconOnLeft;
   final LabeledTextFieldWidth width;
   final TextAlign textAlign;
   final int maxLines;
+  final bool isPassword;
 
   final TextEditingController? controller;
   final TextInputType? keyboardType;
@@ -19,12 +20,13 @@ class LabeledTextField extends StatelessWidget {
   const LabeledTextField({
     super.key,
     required this.label,
-    required this.placeholder,
+    this.placeholder,
     this.iconRotationRadians = 0.0,
     this.iconOnLeft = true,
     this.width = LabeledTextFieldWidth.full,
     this.textAlign = TextAlign.left,
     this.maxLines = 1,
+    this.isPassword = false,
     this.controller,
     this.keyboardType,
     this.validator,
@@ -127,6 +129,8 @@ class LabeledTextField extends StatelessWidget {
                     fontWeight: FontWeight.w400,
                   ),
                   textAlign: textAlign,
+                  obscureText: isPassword,
+                  obscuringCharacter: '♡',
                   controller: controller,
                   keyboardType: keyboardType,
                   validator: validator

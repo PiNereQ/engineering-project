@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:proj_inz/bloc/auth/auth_bloc.dart';
 import 'package:proj_inz/presentation/screens/main_screen.dart';
+import 'package:proj_inz/presentation/widgets/dashed_separator.dart';
+import 'package:proj_inz/presentation/widgets/input/buttons/custom_text_button.dart';
+import 'package:proj_inz/presentation/widgets/input/buttons/google_sign_in_button.dart';
 import 'package:proj_inz/presentation/widgets/input/text_fields/custom_text_field.dart';
+import 'package:proj_inz/presentation/widgets/input/text_fields/labeled_text_field.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -20,80 +25,79 @@ class _AuthScreenState extends State<AuthScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       body: Stack(
         children: [
           // Background
-          Container(
-            decoration: const BoxDecoration(
-              color: Color(0xFFFFEC9C),
-            ),
-          ),
-          Center(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: BlocConsumer<AuthBloc, AuthState>(
-                listener: (context, state) {
-                  if (state is AuthSignedIn) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Authentication Successful!")),
-                    );
-                    Navigator.of(context).pushAndRemoveUntil(
-                      MaterialPageRoute(builder: (context) => const MainScreen()),
-                      (route) => false,
-                    );
-                  } else if (state is UnAuthenticated) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(state.errorMessage)),
-                    );
-                  }
-                },
-                builder: (context, state) {
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 64),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      spacing: 36,
-                      children: [
-                        const SizedBox(
-                          width: 176,
-                          height: 158,
-                          child: Placeholder(),
-                        ),
-                        isLogin
+          Container(decoration: const BoxDecoration(color: Color(0xFFFFEC9C))),
+          BlocConsumer<AuthBloc, AuthState>(
+            listener: (context, state) {
+              if (state is AuthSignedIn) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Authentication Successful!")),
+                );
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (context) => const MainScreen()),
+                  (route) => false,
+                );
+              } else if (state is UnAuthenticated) {
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(SnackBar(content: Text(state.errorMessage)));
+              }
+            },
+            builder: (context, state) {
+              return SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 72, 16, 0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    spacing: 36,
+                    children: [
+                      const SizedBox(
+                        width: 176,
+                        height: 158,
+                        child: Placeholder(),
+                      ),
+                      isLogin
                           ? _LoginCard(
-                              emailController: _emailController,
-                              passwordController: _passwordController,
-                              onToggle: () => setState(() => isLogin = false),
-                              onSubmit: () {
-                                context.read<AuthBloc>().add(SignInRequested(
-                                      email: _emailController.text.trim(),
-                                      password: _passwordController.text.trim(),
-                                    ));
-                              },
-                              isLoading: state is AuthLoading,
-                            )
+                            emailController: _emailController,
+                            passwordController: _passwordController,
+                            onToggle: () => setState(() => isLogin = false),
+                            onSubmit: () {
+                              context.read<AuthBloc>().add(
+                                SignInRequested(
+                                  email: _emailController.text.trim(),
+                                  password: _passwordController.text.trim(),
+                                ),
+                              );
+                            },
+                            isLoading: state is AuthLoading,
+                          )
                           : _RegistrationCard(
-                              emailController: _emailController,
-                              passwordController: _passwordController,
-                              confirmPasswordController: _confirmPasswordController,
-                              onToggle: () => setState(() => isLogin = true),
-                              onSubmit: () {
-                                context.read<AuthBloc>().add(SignUpRequested(
-                                      email: _emailController.text.trim(),
-                                      password: _passwordController.text.trim(),
-                                      confirmPassword: _confirmPasswordController.text.trim(),
-                                    ));
-                              },
-                              isLoading: state is AuthLoading,
-                            ),
-                      ],
-                    ),
-                  );
-                },
-              ),
-            ),
+                            emailController: _emailController,
+                            passwordController: _passwordController,
+                            confirmPasswordController: _confirmPasswordController,
+                            onToggle: () => setState(() => isLogin = true),
+                            onSubmit: () {
+                              context.read<AuthBloc>().add(
+                                SignUpRequested(
+                                  email: _emailController.text.trim(),
+                                  password: _passwordController.text.trim(),
+                                  confirmPassword:
+                                      _confirmPasswordController.text.trim(),
+                                ),
+                              );
+                            },
+                            isLoading: state is AuthLoading,
+                          ),
+                    ],
+                  ),
+                ),
+              );
+            },
           ),
         ],
       ),
@@ -109,7 +113,6 @@ class _LoginCard extends StatelessWidget {
   final bool isLoading;
 
   const _LoginCard({
-    super.key,
     required this.emailController,
     required this.passwordController,
     required this.onToggle,
@@ -135,57 +138,88 @@ class _LoginCard extends StatelessWidget {
           ),
         ],
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text(
-              "Sign In",
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 20),
-            CustomTextField(
-              label: "Email",
-              controller: emailController,
-            ),
-            const SizedBox(height: 10),
-            CustomTextField(
-              label: "Password",
-              controller: passwordController,
-              isPassword: true,
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: isLoading ? null : onSubmit,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blueAccent,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        spacing: 18,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 24, 24, 12),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              spacing: 20,
+              children: [
+                const Align(
+                  alignment: Alignment.topLeft,
+                  child: Text(
+                    'Witaj',
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 24,
+                      fontFamily: 'Itim',
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
                 ),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 40,
-                  vertical: 12,
+                Column(
+                  spacing: 8,
+                  children: [
+                    LabeledTextField(
+                      label: "E-mail",
+                      controller: emailController,
+                      iconOnLeft: false,
+                    ),
+                    LabeledTextField(
+                      label: "Hasło",
+                      controller: passwordController,
+                      isPassword: true,
+                    ),
+                  ],
                 ),
-              ),
-              child: isLoading
-                  ? const CircularProgressIndicator(color: Colors.white)
-                  : const Text("Sign In"),
+                CustomTextButton(
+                  width: 0,
+                  label: "Zaloguj się",
+                  onTap: isLoading ? () {} : onSubmit,
+                  backgroundColor: const Color(0xFFFFC6FF),
+                  isLoading: isLoading,
+                ),
+                const Text(
+                  'lub',
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 18,
+                    fontFamily: 'Itim',
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+                GoogleSignInButton(onTap: () {}),
+              ],
             ),
-            const SizedBox(height: 10),
-            TextButton(
-              onPressed: onToggle,
-              child: const Text(
-                "Don't have an account? Sign Up",
-                style: TextStyle(color: Colors.white),
-              ),
+          ),
+          const DashedSeparator(),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              spacing: 10,
+              children: [
+                const Text(
+                  'Nie masz jeszcze konta?',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 14,
+                    fontFamily: 'Itim',
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+                CustomTextButton.small(
+                  label: "Zarejestruj się",
+                  onTap: onToggle
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -200,7 +234,6 @@ class _RegistrationCard extends StatelessWidget {
   final bool isLoading;
 
   const _RegistrationCard({
-    super.key,
     required this.emailController,
     required this.passwordController,
     required this.confirmPasswordController,
@@ -234,16 +267,10 @@ class _RegistrationCard extends StatelessWidget {
           children: [
             const Text(
               "Sign Up",
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),
-            CustomTextField(
-              label: "Email",
-              controller: emailController,
-            ),
+            CustomTextField(label: "Email", controller: emailController),
             const SizedBox(height: 10),
             CustomTextField(
               label: "Password",
@@ -270,9 +297,10 @@ class _RegistrationCard extends StatelessWidget {
                   vertical: 12,
                 ),
               ),
-              child: isLoading
-                  ? const CircularProgressIndicator(color: Colors.white)
-                  : const Text("Sign Up"),
+              child:
+                  isLoading
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : const Text("Sign Up"),
             ),
             const SizedBox(height: 10),
             TextButton(
@@ -288,5 +316,3 @@ class _RegistrationCard extends StatelessWidget {
     );
   }
 }
-
-

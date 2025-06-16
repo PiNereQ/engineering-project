@@ -16,21 +16,62 @@ class _DebugScreenState extends State<DebugScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Debug'),),
-      body: const Column(
-        children: [
-          CustomTextButton(
-            label: '_addMockCoupons',
-            onTap: _addMockCoupons
-          ),
-          CustomTextButton(
-            label: '_deleteMockCoupons',
-            onTap: _deleteMockCoupons
-          ),
-          CustomTextButton(
-            label: '_checkUser',
-            onTap: _checkUser
-          ),
-        ],
+      body: SingleChildScrollView(
+        child: Column(
+          spacing: 8,
+          children: [
+            CustomTextButton(
+              label: '_addMockCoupons',
+              onTap: _addMockCoupons
+            ),
+            CustomTextButton(
+              label: '_deleteMockCoupons',
+              onTap: _deleteMockCoupons
+            ),
+            CustomTextButton(
+              label: '_checkUser',
+              onTap: _checkUser
+            ),
+            CustomTextButton(
+              label: 'Test',
+              onTap: () {},
+            ),
+            CustomTextButton.small(
+              label: 'Test',
+              onTap: () {}
+            ),
+            CustomTextButton(
+              label: 'Test',
+              onTap: () {},
+              icon: const Icon(Icons.report),
+            ),
+            CustomTextButton.small(
+              label: 'Test',
+              onTap: () {},
+              icon: const Icon(Icons.report),
+            ),
+            CustomTextButton(
+              label: 'Test',
+              onTap: () {},
+              badgeNumber: 2,
+            ),
+            CustomTextButton.small(
+              label: 'Test',
+              onTap: () {},
+              badgeNumber: 2,
+            ),
+            CustomTextButton(
+              label: 'Test',
+              onTap: () {},
+              isLoading: true
+            ),
+            CustomTextButton.small(
+              label: 'Test',
+              onTap: () {},
+              isLoading: true
+            ),
+          ],
+        ),
       )
     );
     
