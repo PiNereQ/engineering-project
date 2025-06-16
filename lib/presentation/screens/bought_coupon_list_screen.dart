@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:proj_inz/bloc/owned_coupon_list/owned_coupon_list_bloc.dart';
 import 'package:proj_inz/data/repositories/coupon_repository.dart';
 import 'package:proj_inz/presentation/widgets/bought_coupon_card.dart';
@@ -162,9 +163,7 @@ class _Toolbar extends StatelessWidget {
                 spacing: 12,
                 children: [
                   CustomIconButton(
-                    // icon: SvgPicture.asset('icons/back.svg'),
-                    // TODO: svg crash fix
-                    icon: const Icon(Icons.arrow_back),
+                    icon: SvgPicture.asset('assets/icons/back.svg'),
                     onTap: () {
                       Navigator.of(context).pop();
                     },

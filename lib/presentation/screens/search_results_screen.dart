@@ -49,7 +49,7 @@ class SearchResultsScreen extends StatelessWidget {
                             )
                           ],
                         ),
-                        child: SvgPicture.asset('icons/back.svg', width: 18, height: 18,),
+                        child: SvgPicture.asset('assets/icons/back.svg', width: 18, height: 18,),
                       ),
                     ),
                     const SizedBox(width: 16),
@@ -308,7 +308,7 @@ class SearchResultsScreen extends StatelessWidget {
                                       ),
                                       child: Center(
                                         child: SvgPicture.asset(
-                                          'icons/favorite.svg',
+                                          'assets/icons/favorite.svg',
                                           width: 18,
                                           height: 18,
                                         ),

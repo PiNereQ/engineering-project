@@ -3,14 +3,6 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 enum LabeledTextFieldWidth { full, half }
 
-// controller: _priceController,
-//                               keyboardType: TextInputType.number,
-//                               validator: (val) {
-//                                   if (val == null || val.isEmpty) return 'Wymagane';
-//                                   if (double.tryParse(val) == null) return 'Niepoprawna liczba';
-//                                   return null;
-//                               },
-
 class LabeledTextField extends StatelessWidget {
   final String label;
   final String placeholder;
@@ -45,15 +37,14 @@ class LabeledTextField extends StatelessWidget {
       mainAxisAlignment: iconOnLeft ? MainAxisAlignment.start : MainAxisAlignment.end,
       children: iconOnLeft
           ? [
-              // Transform.rotate(
-              //   angle: iconRotationRadians,
-              //   child: SvgPicture.asset(
-              //     'icons/switch-access-shortcut-rounded.svg',
-              //     width: 18,
-              //     height: 18,
-              //   ),
-              // ),
-              // TODO: svg crash fix
+              Transform.rotate(
+                angle: iconRotationRadians,
+                child: SvgPicture.asset(
+                  'assets/icons/switch-access-shortcut-rounded.svg',
+                  width: 18,
+                  height: 18,
+                ),
+              ),
               const SizedBox(width: 8),
               Text(
                 label,
@@ -76,16 +67,15 @@ class LabeledTextField extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              // Transform(
-              //   alignment: Alignment.center,
-              //   transform: Matrix4.rotationZ(iconRotationRadians)..scale(-1.0, 1.0),
-              //   child: SvgPicture.asset(
-              //     'icons/switch-access-shortcut-rounded.svg',
-              //     width: 18,
-              //     height: 18,
-              //   ),
-              // ),
-              // TODO: svg crash fix
+              Transform(
+                alignment: Alignment.center,
+                transform: Matrix4.rotationZ(iconRotationRadians)..scale(-1.0, 1.0),
+                child: SvgPicture.asset(
+                  'assets/icons/switch-access-shortcut-rounded.svg',
+                  width: 18,
+                  height: 18,
+                ),
+              ),
             ],
     );
 

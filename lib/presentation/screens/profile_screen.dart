@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:proj_inz/bloc/auth/auth_bloc.dart';
 import 'package:proj_inz/presentation/screens/bought_coupon_list_screen.dart';
 import 'package:proj_inz/presentation/screens/debug_screen.dart';
@@ -23,22 +24,20 @@ class ProfileScreen extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-              const Row(
+              Row(
                 //mainAxisSize: MainAxisSize.min,
                 children: [
                   CircleAvatar(
                     radius: 36,
                     backgroundColor: Colors.transparent,
-                      // child: SvgPicture.asset(
-                      //   'icons/Awatar.svg',
-                      //   width: 100,
-                      //   height: 100,
-                      // ),
-                      // TODO: svg crash fix
-                      child: Placeholder(),
+                      child: SvgPicture.asset(
+                        'assets/icons/Awatar.svg',
+                        width: 100,
+                        height: 100,
+                      ),
                   ),
-                  SizedBox(width: 12),
-                  Text('Cześć, username', 
+                  const SizedBox(width: 12),
+                  const Text('Cześć, username', 
                       style: TextStyle(
                         fontSize: 16,
                         fontFamily: 'Itim',
