@@ -74,9 +74,12 @@ class ProfileScreen extends StatelessWidget {
               ),
             const SizedBox(height: 8),
             Row(
-                //mainAxisSize: MainAxisSize.min,
-                children: [
-                  CustomTextButton(height: 40, width: 130, fontSize: 14, label: 'Kupione', onTap: () {
+              mainAxisSize: MainAxisSize.max,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              spacing: 20,
+              children: [
+                Expanded(
+                  child: CustomTextButton(label: 'Kupione', onTap: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -84,12 +87,12 @@ class ProfileScreen extends StatelessWidget {
                       ),
                     );
                   }),
-                  const SizedBox(width: 24),            
-                  CustomTextButton(height: 40, width: 130, fontSize: 14, label: 'Wystawione', onTap: () {})
-                ],
-              ),
+                ),           
+                Expanded(child: CustomTextButton(label: 'Wystawione', onTap: () {}))
+              ],
+            ),
             const SizedBox(height: 8),
-            CustomTextButton(height: 40, width: 480, fontSize: 14, label: 'Obserwowane', onTap: () {}),
+            CustomTextButton(width: double.infinity, label: 'Obserwowane', onTap: () {}),
             const SizedBox(height: 16),
             const Text(
               'Twoje preferencje',
@@ -100,14 +103,8 @@ class ProfileScreen extends StatelessWidget {
                       ),
               ),
             const SizedBox(height: 8),
-            Row(
-              children: [
-                CustomTextButton(height: 40, width: 480, fontSize: 14, label: 'Ulubione', onTap: () {}),
-                CustomTextButton(height: 40, width: 480, fontSize: 14, label: 'Wyloguj', onTap: () {
-                  context.read<AuthBloc>().add(SignOutRequested());
-                }),
-              ],
-            ),
+            CustomTextButton(width: double.infinity, label: 'Ulubione', onTap: () {}),
+            
             const SizedBox(height: 16),
             const Text(
               'Ranking',
@@ -126,10 +123,27 @@ class ProfileScreen extends StatelessWidget {
               fontSize: 14,
             ),
             const SizedBox(height: 8),
-            CustomTextButton(height: 40, width: 480, fontSize: 14, label: 'Ustawienia', onTap: () {}),
+            Row(
+              mainAxisSize: MainAxisSize.max,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              spacing: 20,
+              children: [
+                Expanded(child: CustomTextButton(label: 'Ustawienia', onTap: () {}),),
+                Expanded(
+                  child: CustomTextButton(
+                    label: 'Wyloguj',
+                    backgroundColor: const Color(0xFFFF9A9A),
+                    onTap: () {
+                      context.read<AuthBloc>().add(SignOutRequested());
+                  }),
+                ),
+              ],
+            ),
             const SizedBox(height: 16),
             if (kDebugMode) CustomTextButton(
+              width: double.infinity,
               label: 'Debug',
+              icon: const Icon(Icons.developer_mode_rounded),
               onTap: () {
                 Navigator.push(
                   context,
