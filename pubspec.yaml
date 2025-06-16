@@ -41,6 +41,7 @@ dev_dependencies:
 flutter:
   assets:
     - assets/.env
+    - assets/icons/ # to prevent Android crashes remember to ALWAYS use the full local path like this: 'assets/icons/<filename>' 
   uses-material-design: true
   fonts:
     - family: Itim

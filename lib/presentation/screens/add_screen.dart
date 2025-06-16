@@ -129,13 +129,11 @@ class _AddScreenState extends State<AddScreen> {
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           CustomIconButton(
-                            // icon: SvgPicture.asset('icons/back.svg'),
-                            // TODO: svg crash fix
-                            icon: const Icon(Icons.arrow_back), 
+                            icon: SvgPicture.asset('assets/icons/back.svg'),
                             onTap: () => _backDialog(),
                           ),
                           CustomIconButton(
-                            icon: const Icon(Icons.info),
+                            icon: const Icon(Icons.info_outline_rounded),
                             onTap: () {},
                           ),
                         ],
@@ -285,25 +283,23 @@ class _AddScreenState extends State<AddScreen> {
                                         const BoxConstraints(minHeight: 72),
                                     padding:
                                         const EdgeInsets.symmetric(horizontal: 8),
-                                    child: const Align(
+                                    child: Align(
                                       alignment: Alignment.centerLeft,
                                       child: Row(
                                         crossAxisAlignment:
                                             CrossAxisAlignment.center,
                                         children: [
-                                          // SvgPicture.asset(
-                                          //   'icons/report-outline-rounded.svg',
-                                          //   height: 24,
-                                          //   width: 24,
-                                          //   colorFilter: const ColorFilter.mode(
-                                          //     Color(0xFF646464),
-                                          //     BlendMode.srcIn,
-                                          //   ),
-                                          // ),
-                                          // TODO: svg crash fix
-                                          const SizedBox(width:24, height: 24, child: Icon(Icons.report_outlined)),
-                                          SizedBox(width: 12),
-                                          Expanded(
+                                          SvgPicture.asset(
+                                            'assets/icons/report-outline-rounded.svg',
+                                            height: 24,
+                                            width: 24,
+                                            colorFilter: const ColorFilter.mode(
+                                              Color(0xFF646464),
+                                              BlendMode.srcIn,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 12),
+                                          const Expanded(
                                             child: Text(
                                               'Jeśli Twój kupon nie posiada kodu w formie tekstu, zeskanuj go dodając zdjęcie',
                                               style: TextStyle(
@@ -504,30 +500,24 @@ class _AddScreenState extends State<AddScreen> {
                                 const SizedBox(width: 20),
                         
                                 // informacja
-                                const Expanded(
+                                Expanded(
                                   flex: 3,
                                   child: Align(
                                     alignment: Alignment.centerLeft,
                                     child: Row(
                                       crossAxisAlignment: CrossAxisAlignment.center,
                                       children: [
-                                        // SvgPicture.asset(
-                                          //   'icons/report-outline-rounded.svg',
-                                        //   height: 24,
-                                        //   width: 24,
-                                        //   colorFilter: const ColorFilter.mode(
-                                        //     Color(0xFF646464),
-                                        //     BlendMode.srcIn,
-                                        //   ),
-                                        // ),
-                                        // TODO: svg crash fix
-                                        SizedBox(
-                                          width: 24,
+                                        SvgPicture.asset(
+                                            'assets/icons/report-outline-rounded.svg',
                                           height: 24,
-                                          child: Icon(Icons.report_outlined),
+                                          width: 24,
+                                          colorFilter: const ColorFilter.mode(
+                                            Color(0xFF646464),
+                                            BlendMode.srcIn,
+                                          ),
                                         ),
-                                        SizedBox(width: 12),
-                                        Expanded(
+                                        const SizedBox(width: 12),
+                                        const Expanded(
                                           child: Text(
                                             'Jeśli Twój kupon posiada ograniczenia tj. wyłączone produkty/kategorie z promocji - wypisz je w opisie',
                                             style: TextStyle(
@@ -561,14 +551,13 @@ class _AddScreenState extends State<AddScreen> {
                             const SizedBox(height: 24),
                         
                             // separator
-                            // SizedBox(
-                            //   width: double.infinity,
-                            //   child: SvgPicture.asset(
-                            //     'icons/separator_wide.svg',
-                            //     fit: BoxFit.fitWidth,
-                            //   ),
-                            // ),
-                            // TODO: svg crash fix
+                            SizedBox(
+                              width: double.infinity,
+                              child: SvgPicture.asset(
+                                'assets/icons/separator_wide.svg',
+                                fit: BoxFit.fitWidth,
+                              ),
+                            ),
                             const SizedBox(height: 18),
                         
                             // 10. Liczba punktow za dodanie kuponow TODO: liczenie punktow

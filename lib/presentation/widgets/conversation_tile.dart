@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 
 class ConversationTile extends StatelessWidget {
   final String username;
@@ -126,19 +127,18 @@ class ConversationTile extends StatelessWidget {
                 ),
 
                 // Separator (SVG)
-                // Positioned(
-                //   left: 370, // Adjust position as necessary
-                //   top: 0,
-                //   child: Container(
-                //     width: 5,
-                //     height: 112, // Adjust height as necessary
-                //     child: SvgPicture.asset(
-                //       'icons/Separator.svg',
-                //       fit: BoxFit.contain,
-                //     ),
-                //   ),
-                // ),
-                // TODO: svg crash fix
+                Positioned(
+                  left: 370,
+                  top: 0,
+                  child: Container(
+                    width: 5,
+                    height: 112,
+                    child: SvgPicture.asset(
+                      'assets/icons/Separator.svg',
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                ),
 
                 // Message icon (SVG)
                 Positioned(
@@ -149,16 +149,12 @@ class ConversationTile extends StatelessWidget {
                     height: 32,
                     child: Stack(
                       children: [
-                        // SvgPicture.asset(
-                        //   isRead
-                        //       ? 'icons/chat-outline-rounded.svg'
-                        //       : 'icons/mark-unread-chat-alt-outline-rounded.svg',
-                        //   fit: BoxFit.contain,
-                        // ),
-                        // TODO: svg crash fix
-                        Icon(isRead
-                              ? Icons.chat_outlined
-                              : Icons.mark_chat_unread_outlined),
+                        SvgPicture.asset(
+                          isRead
+                              ? 'assets/icons/chat-outline-rounded.svg'
+                              : 'assets/icons/mark-unread-chat-alt-outline-rounded.svg',
+                          fit: BoxFit.contain,
+                        ),
                       ],
                     ),
                   ),
