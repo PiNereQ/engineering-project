@@ -176,7 +176,6 @@ class _LoginCard extends StatelessWidget {
                   ],
                 ),
                 CustomTextButton(
-                  width: 0,
                   label: "Zaloguj się",
                   onTap: isLoading ? () {} : onSubmit,
                   backgroundColor: const Color(0xFFFFC6FF),
