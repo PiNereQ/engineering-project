@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:proj_inz/presentation/widgets/custom_snack_bar.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_text_button.dart';
 
 
@@ -34,7 +35,9 @@ class _DebugScreenState extends State<DebugScreen> {
             ),
             CustomTextButton(
               label: 'Test',
-              onTap: () {},
+              onTap: () {
+                showCustomSnackBar(context, "Test");
+              },
             ),
             CustomTextButton.small(
               label: 'Test',
@@ -77,6 +80,8 @@ class _DebugScreenState extends State<DebugScreen> {
     
   }
 }
+
+
 
 void _addMockCoupons() async {
   final collection = FirebaseFirestore.instance

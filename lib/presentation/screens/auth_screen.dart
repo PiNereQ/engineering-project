@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:proj_inz/bloc/auth/auth_bloc.dart';
 import 'package:proj_inz/presentation/screens/main_screen.dart';
+import 'package:proj_inz/presentation/widgets/custom_snack_bar.dart';
 import 'package:proj_inz/presentation/widgets/dashed_separator.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_text_button.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/google_sign_in_button.dart';
@@ -20,7 +20,7 @@ class _AuthScreenState extends State<AuthScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
-  bool isLogin = true; // Toggle between login/register
+  bool isLogin = true;
 
   @override
   Widget build(BuildContext context) {
@@ -33,17 +33,11 @@ class _AuthScreenState extends State<AuthScreen> {
           BlocConsumer<AuthBloc, AuthState>(
             listener: (context, state) {
               if (state is AuthSignedIn) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Authentication Successful!")),
-                );
+                showCustomSnackBar(context, "Zalogowano pomyślnie!");
                 Navigator.of(context).pushAndRemoveUntil(
                   MaterialPageRoute(builder: (context) => const MainScreen()),
                   (route) => false,
                 );
-              } else if (state is UnAuthenticated) {
-                ScaffoldMessenger.of(
-                  context,
-                ).showSnackBar(SnackBar(content: Text(state.errorMessage)));
               }
             },
             builder: (context, state) {
@@ -105,7 +99,7 @@ class _AuthScreenState extends State<AuthScreen> {
   }
 }
 
-class _LoginCard extends StatelessWidget {
+class _LoginCard extends StatefulWidget {
   final TextEditingController emailController;
   final TextEditingController passwordController;
   final VoidCallback onToggle;
@@ -119,6 +113,34 @@ class _LoginCard extends StatelessWidget {
     required this.onSubmit,
     required this.isLoading,
   });
+
+  @override
+  State<_LoginCard> createState() => _LoginCardState();
+}
+
+class _LoginCardState extends State<_LoginCard> {
+  final _formKey = GlobalKey<FormState>();
+  String? _errorMessage;
+
+  void _handleSubmit() {
+    if (_formKey.currentState?.validate() ?? false) {
+      setState(() {
+        _errorMessage = null;
+      });
+      widget.onSubmit();
+    }
+  }
+
+  String? _emailValidator(String? value) {
+    if (value == null || value.isEmpty) {
+      return "E-mail jest wymagany";
+    }
+    final emailRegex = RegExp(r'^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$');
+    if (!emailRegex.hasMatch(value)) {
+      return "Podaj poprawny adres e-mail";
+    }
+    return null;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -138,89 +160,120 @@ class _LoginCard extends StatelessWidget {
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        spacing: 18,
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(24, 24, 24, 12),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              spacing: 20,
-              children: [
-                const Align(
-                  alignment: Alignment.topLeft,
-                  child: Text(
-                    'Witaj',
+      child: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          spacing: 18,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 24, 24, 12),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                spacing: 20,
+                children: [
+                  const Align(
+                    alignment: Alignment.topLeft,
+                    child: Text(
+                      'Witaj',
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 24,
+                        fontFamily: 'Itim',
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                  ),
+                  Column(
+                    spacing: 8,
+                    children: [
+                      LabeledTextField(
+                        label: "E-mail",
+                        controller: widget.emailController,
+                        iconOnLeft: false,
+                        validator: _emailValidator,
+                      ),
+                      LabeledTextField(
+                        label: "Hasło",
+                        controller: widget.passwordController,
+                        isPassword: true,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return "Hasło jest wymagane";
+                          }
+                          return null;
+                        },
+                      ),
+                    ],
+                  ),
+                  if (_errorMessage != null)
+                    Text(
+                      _errorMessage!,
+                      style: const TextStyle(
+                        color: Colors.red,
+                        fontSize: 14,
+                        fontFamily: 'Itim',
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                  CustomTextButton(
+                    label: "Zaloguj się",
+                    onTap: widget.isLoading ? () {} : _handleSubmit,
+                    backgroundColor: const Color(0xFFFFC6FF),
+                    isLoading: widget.isLoading,
+                  ),
+                  const Text(
+                    'lub',
                     style: TextStyle(
                       color: Colors.black,
-                      fontSize: 24,
+                      fontSize: 18,
                       fontFamily: 'Itim',
                       fontWeight: FontWeight.w400,
                     ),
                   ),
-                ),
-                Column(
-                  spacing: 8,
-                  children: [
-                    LabeledTextField(
-                      label: "E-mail",
-                      controller: emailController,
-                      iconOnLeft: false,
-                    ),
-                    LabeledTextField(
-                      label: "Hasło",
-                      controller: passwordController,
-                      isPassword: true,
-                    ),
-                  ],
-                ),
-                CustomTextButton(
-                  label: "Zaloguj się",
-                  onTap: isLoading ? () {} : onSubmit,
-                  backgroundColor: const Color(0xFFFFC6FF),
-                  isLoading: isLoading,
-                ),
-                const Text(
-                  'lub',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 18,
-                    fontFamily: 'Itim',
-                    fontWeight: FontWeight.w400,
-                  ),
-                ),
-                GoogleSignInButton(onTap: () {}),
-              ],
+                  GoogleSignInButton(onTap: () {}),
+                ],
+              ),
             ),
-          ),
-          const DashedSeparator(),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              spacing: 10,
-              children: [
-                const Text(
-                  'Nie masz jeszcze konta?',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 14,
-                    fontFamily: 'Itim',
-                    fontWeight: FontWeight.w400,
+            const DashedSeparator(),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                spacing: 10,
+                children: [
+                  const Text(
+                    'Nie masz jeszcze konta?',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 14,
+                      fontFamily: 'Itim',
+                      fontWeight: FontWeight.w400,
+                    ),
                   ),
-                ),
-                CustomTextButton.small(
-                  label: "Zarejestruj się",
-                  onTap: onToggle
-                ),
-              ],
+                  CustomTextButton.small(
+                    label: "Zarejestruj się",
+                    onTap: widget.onToggle,
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
+  }
+
+  @override
+  void didUpdateWidget(covariant _LoginCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final authState = context.read<AuthBloc>().state;
+    if (authState is UnAuthenticated) {
+      setState(() {
+        _errorMessage = authState.errorMessage;
+      });
+    }
   }
 }
 

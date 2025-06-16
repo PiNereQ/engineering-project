@@ -121,6 +121,12 @@ class LabeledTextField extends StatelessWidget {
                   maxLines: maxLines,
                   decoration: InputDecoration.collapsed(
                     hintText: placeholder,
+                  ).copyWith(
+                    errorStyle: const TextStyle(
+                      color: Colors.red,
+                      fontSize: 12,
+                      fontFamily: 'Itim',
+                    ),
                   ),
                   style: const TextStyle(
                     color: Color(0xFF000000),
