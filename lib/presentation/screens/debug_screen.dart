@@ -22,56 +22,8 @@ class _DebugScreenState extends State<DebugScreen> {
           spacing: 8,
           children: [
             CustomTextButton(
-              label: '_addMockCoupons',
-              onTap: _addMockCoupons
-            ),
-            CustomTextButton(
-              label: '_deleteMockCoupons',
-              onTap: _deleteMockCoupons
-            ),
-            CustomTextButton(
               label: '_checkUser',
               onTap: _checkUser
-            ),
-            CustomTextButton(
-              label: 'Test',
-              onTap: () {
-                showCustomSnackBar(context, "Test");
-              },
-            ),
-            CustomTextButton.small(
-              label: 'Test',
-              onTap: () {}
-            ),
-            CustomTextButton(
-              label: 'Test',
-              onTap: () {},
-              icon: const Icon(Icons.report),
-            ),
-            CustomTextButton.small(
-              label: 'Test',
-              onTap: () {},
-              icon: const Icon(Icons.report),
-            ),
-            CustomTextButton(
-              label: 'Test',
-              onTap: () {},
-              badgeNumber: 2,
-            ),
-            CustomTextButton.small(
-              label: 'Test',
-              onTap: () {},
-              badgeNumber: 2,
-            ),
-            CustomTextButton(
-              label: 'Test',
-              onTap: () {},
-              isLoading: true
-            ),
-            CustomTextButton.small(
-              label: 'Test',
-              onTap: () {},
-              isLoading: true
             ),
           ],
         ),
@@ -79,44 +31,6 @@ class _DebugScreenState extends State<DebugScreen> {
     );
     
   }
-}
-
-
-
-void _addMockCoupons() async {
-  final collection = FirebaseFirestore.instance
-        .collection('coupons');
-  
-  for (var i=0;i<200;i++) {
-    await collection.add({
-      'code': '000',
-      'createdAt': FieldValue.serverTimestamp(),
-      'description': 'test',
-      'expiryDate': Timestamp.fromDate(DateTime.now().add(const Duration(days: 30))),
-      'hasLimits': false,
-      'isSold': false,
-      'pricePLN': i+1,
-      'reduction': i+1,
-      'reductionIsPercentage': true,
-      'sellerId': '0',
-      'shopId': '0',
-      'worksInStore': true,
-      'worksOnline': false
-    });
-  }
-}
-
-void _deleteMockCoupons() {
-  final collection = FirebaseFirestore.instance
-        .collection('coupons');
-
-  collection.get().then((snapshot) async {
-    for (var doc in snapshot.docs) {
-      if (doc.id != '0') {
-        await doc.reference.delete();
-      }
-    }
-  });
 }
 
 void _checkUser() {

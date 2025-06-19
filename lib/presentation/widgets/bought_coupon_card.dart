@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'package:proj_inz/core/utils.dart';
+import 'package:proj_inz/core/utils/utils.dart';
 import 'package:proj_inz/data/models/coupon_model.dart';
 import 'package:proj_inz/presentation/screens/bought_coupon_detail_screen.dart';
 

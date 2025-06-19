@@ -11,13 +11,15 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthRepository authRepository;
   final UserRepository userRepository;
 
-  AuthBloc({required this.authRepository, required this.userRepository}) : super(UnAuthenticated(errorMessage: '')) {
-    on<SignUpRequested>(_onSignUp);
-    on<SignInRequested>(_onSignIn);
-    on<SignOutRequested>(_onSignOut);
+  AuthBloc({required this.authRepository, required this.userRepository})
+    : super(AuthUnauthenticated()) {
+    on<SignUpRequested>(_onSignUpRequested);
+    on<SignInRequested>(_onSignInRequested);
+    on<SignOutRequested>(_onSignOutRequested);
   }
-  void _onSignUp(SignUpRequested event, Emitter<AuthState> emit) async {
-    emit(AuthLoading());
+
+  void _onSignUpRequested(SignUpRequested event, Emitter<AuthState> emit) async {
+    emit(AuthSignUpInProgress());
     try {
       final userCredential = await authRepository.singUp(
         email: event.email,
@@ -26,50 +28,44 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       );
       final user = userCredential.user;
 
-      try {
-      add(SignInRequested(
-        email: event.email,
-        password: event.password,
-      ));
-      } catch (e) {
-        emit(UnAuthenticated(errorMessage: e.toString()));
-        return;
-      } finally {
-
+      // try {
+      //   add(SignInRequested(email: event.email, password: event.password));
+      // } catch (e) {
+      //   emit(AuthSignInFailure(errorMessage: e.toString()));
+      //   return;
+      // } finally {
         if (user != null) {
-          print(user.uid);
           await userRepository.createUserProfile(
             uid: user.uid,
             email: user.email ?? event.email,
           );
         }
-      }
+      // }
 
-      emit(AuthSignedIn());
+      emit(AuthSignUpSuccess());
     } catch (e) {
-      emit(UnAuthenticated(errorMessage: e.toString()));
+      emit(AuthSignUpFailure(errorMessage: e.toString()));
     }
   }
 
 
-  void _onSignIn(SignInRequested event, Emitter<AuthState> emit) async {
-    emit(AuthLoading());
+  void _onSignInRequested(SignInRequested event, Emitter<AuthState> emit) async {
+    emit(AuthSignInInProgress());
     try {
       await authRepository.signIn(event.email, event.password);
-      emit(AuthSignedIn());
+      emit(AuthSignInSuccess());
     } catch (e) {
-      emit(UnAuthenticated(errorMessage: e.toString()));
+      emit(AuthSignInFailure(errorMessage: e.toString()));
     }
  }
 
-  void _onSignOut(SignOutRequested event, Emitter<AuthState> emit) async {
-    emit(AuthLoading());
+  void _onSignOutRequested(SignOutRequested event, Emitter<AuthState> emit) async {
+    emit(AuthSignOutInProgress());
     try {
       await authRepository.signOut();
-      emit(UnAuthenticated(errorMessage: 'Signed out successfully'));
-      //print('Signed out successfully');
+      emit(AuthUnauthenticated());
     } catch (e) {
-      emit(UnAuthenticated(errorMessage: e.toString()));
+      emit(AuthSignOutFailure(errorMessage: e.toString()));
     }
   }
 }

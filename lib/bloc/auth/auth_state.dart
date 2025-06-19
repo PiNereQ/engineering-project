@@ -1,27 +1,61 @@
 part of 'auth_bloc.dart';
 
 abstract class AuthState extends Equatable {
-}
-
-class AuthLoading extends AuthState {
   @override
   List<Object?> get props => [];
 }
 
-class UnAuthenticated extends AuthState {
+class AuthUnauthenticated extends AuthState {}
+
+// Sign-in
+
+class AuthSignInInProgress extends AuthState {}
+
+class AuthSignInSuccess extends AuthState {}
+
+class AuthSignInFailure extends AuthState {
   final String errorMessage;
-  UnAuthenticated({required this.errorMessage});
+  AuthSignInFailure({required this.errorMessage});
 
   @override
   List<Object?> get props => [errorMessage];
 }
 
-class AuthInitial extends AuthState {
+// Sign-up
+
+class AuthSignUpInProgress extends AuthState {}
+
+class AuthSignUpSuccess extends AuthState {}
+
+class AuthSignUpFailure extends AuthState {
+  final String errorMessage;
+  AuthSignUpFailure({required this.errorMessage});
+
   @override
-  List<Object?> get props => [];
+  List<Object?> get props => [errorMessage];
 }
 
-class AuthSignedIn extends AuthState {
+// Sign-out
+
+class AuthSignOutInProgress extends AuthState {}
+
+// handled by AuthUnauthenticated
+// class AuthSignOutSuccess extends AuthState {}
+
+class AuthSignOutFailure extends AuthState {
+  final String errorMessage;
+  AuthSignOutFailure({required this.errorMessage});
+
   @override
-  List<Object?> get props => [];
+  List<Object?> get props => [errorMessage];
 }
+
+// class UnAuthenticated extends AuthState {
+//   final String errorMessage;
+//   UnAuthenticated({required this.errorMessage});
+
+//   @override
+//   List<Object?> get props => [errorMessage];
+// }
+
+
