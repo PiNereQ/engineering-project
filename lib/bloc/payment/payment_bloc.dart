@@ -33,7 +33,7 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
         await Stripe.instance.initPaymentSheet(
           paymentSheetParameters: SetupPaymentSheetParameters(
             paymentIntentClientSecret: clientSecret,
-            merchantDisplayName: 'Your App Name',
+            merchantDisplayName: 'Coupidyn',
           ),
         );
         await Stripe.instance.presentPaymentSheet();

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:proj_inz/bloc/auth/auth_bloc.dart';
 import 'package:proj_inz/core/utils/validators.dart';
-import 'package:proj_inz/presentation/screens/main_screen.dart';
 import 'package:proj_inz/presentation/screens/sign_up_screen.dart';
 import 'package:proj_inz/presentation/widgets/custom_snack_bar.dart';
 import 'package:proj_inz/presentation/widgets/dashed_separator.dart';
@@ -32,10 +31,10 @@ class _SignInScreenState extends State<SignInScreen> {
             listener: (context, state) {
               if (state is AuthSignInSuccess) {
                 showCustomSnackBar(context, "Zalogowano pomyślnie!");
-                Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (context) => const MainScreen()),
-                  (route) => false,
-                );
+                // Navigator.of(context).pushAndRemoveUntil(
+                //   MaterialPageRoute(builder: (context) => const MainScreen()),
+                //   (route) => false,
+                // );
               }
             },
             builder: (context, state) {
