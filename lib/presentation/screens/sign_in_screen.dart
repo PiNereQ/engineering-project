@@ -30,7 +30,7 @@ class _SignInScreenState extends State<SignInScreen> {
           Container(decoration: const BoxDecoration(color: Color(0xFFFFEC9C))),
           BlocConsumer<AuthBloc, AuthState>(
             listener: (context, state) {
-              if (state is AuthSignedIn) {
+              if (state is AuthSignInSuccess) {
                 showCustomSnackBar(context, "Zalogowano pomyślnie!");
                 Navigator.of(context).pushAndRemoveUntil(
                   MaterialPageRoute(builder: (context) => const MainScreen()),
@@ -64,7 +64,7 @@ class _SignInScreenState extends State<SignInScreen> {
                             ),
                           );
                         },
-                        isLoading: state is AuthLoading,
+                        isLoading: state is AuthSignInInProgress,
                       ),
                     ],
                   ),
@@ -237,7 +237,7 @@ class _LoginCardState extends State<_LoginCard> {
   void didUpdateWidget(covariant _LoginCard oldWidget) {
     super.didUpdateWidget(oldWidget);
     final authState = context.read<AuthBloc>().state;
-    if (authState is UnAuthenticated) {
+    if (authState is AuthSignInFailure) {
       setState(() {
         _errorMessage = authState.errorMessage;
       });

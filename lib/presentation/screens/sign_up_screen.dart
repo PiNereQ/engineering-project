@@ -1,9 +1,8 @@
-import 'dart:core';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:proj_inz/bloc/auth/auth_bloc.dart';
 import 'package:proj_inz/core/utils/validators.dart';
-import 'package:proj_inz/presentation/screens/main_screen.dart';
+import 'package:proj_inz/presentation/screens/phone_number_confirmation_screen.dart';
 import 'package:proj_inz/presentation/widgets/custom_snack_bar.dart';
 import 'package:proj_inz/presentation/widgets/dashed_separator.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/checkbox.dart';
@@ -18,20 +17,6 @@ class SignUpScreen extends StatefulWidget {
 }
 
 class _SignUpScreenState extends State<SignUpScreen> {
-  int _step = 1;
-
-  void _previousStep() {
-    setState(() {
-      _step -= 1;
-    });
-  }
-
-  void _nextStep() {
-    setState(() {
-      _step += 1;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -41,10 +26,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
           Container(decoration: const BoxDecoration(color: Color(0xFFFFEC9C))),
           BlocConsumer<AuthBloc, AuthState>(
             listener: (context, state) {
-              if (state is AuthSignedIn) {
-                showCustomSnackBar(context, "Zalogowano pomyślnie!");
+              if (state is AuthSignUpSuccess) {
+                showCustomSnackBar(context, "Zarejestrowano pomyślnie!");
                 Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (context) => const MainScreen()),
+                  MaterialPageRoute(builder: (context) => const PhoneNumberConfirmationScreen(isDuringRegistration: true)),
                   (route) => false,
                 );
               }
@@ -64,13 +49,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         height: 158,
                         child: Placeholder(),
                       ),
-                      switch (_step) {
-                        1 => _RegistrationStepCard(isLoading: state is AuthLoading, onNext:_nextStep),
-                        2 => _PhoneNumberStepCard(isLoading: state is AuthLoading, onNext: _nextStep),
-                        3 => _ConfirmationCodeStep(isLoading: state is AuthLoading, onPrevious: _previousStep),
-                        int() => const SizedBox.shrink(),
-                      },
-                      
+                    _RegistrationStepCard(isLoading: state is AuthSignUpInProgress),
                     ],
                   ),
                 ),
@@ -85,10 +64,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
 class _RegistrationStepCard extends StatefulWidget {
   final bool isLoading;
-  final VoidCallback onNext;
 
   const _RegistrationStepCard({
-    required this.isLoading, required this.onNext,
+    required this.isLoading,
   });
 
   @override
@@ -121,6 +99,17 @@ class _RegistrationStepCardState extends State<_RegistrationStepCard> {
           confirmPassword: _confirmPasswordController.text.trim(),
         ),
       );
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant _RegistrationStepCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final authState = context.read<AuthBloc>().state;
+    if (authState is AuthSignUpFailure) {
+      setState(() {
+        _errorMessage = authState.errorMessage;
+      });
     }
   }
 
@@ -251,7 +240,7 @@ class _RegistrationStepCardState extends State<_RegistrationStepCard> {
                         backgroundColor: const Color(0xFFEBEBEB),
                       ),
                       CustomTextButton(
-                        label: "Dalej",
+                        label: "Zarejestruj",
                         onTap:widget.isLoading
                             ? () {}
                             : _handleSubmit,
@@ -285,144 +274,5 @@ class _RegistrationStepCardState extends State<_RegistrationStepCard> {
         ),
       ),
     );
-  }
-}
-
-class _PhoneNumberStepCard extends StatefulWidget {
-  final bool isLoading;
-  final VoidCallback onNext;
-
-  const _PhoneNumberStepCard({
-    required this.isLoading, required this.onNext
-  });
-
-  @override
-  State<_PhoneNumberStepCard> createState() => _PhoneNumberStepCardState();
-}
-
-class _PhoneNumberStepCardState extends State<_PhoneNumberStepCard> {
-  final _formKey = GlobalKey<FormState>();
-  final _phoneNumberController = TextEditingController();
-
-  String? _errorMessage;
-
-  void _handleSkip() {
-    
-  }
-
-  void _handleSubmit() {
-    if (_formKey.currentState?.validate() ?? false) {
-      setState(() {
-        _errorMessage = null;
-      });
-      
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: ShapeDecoration(
-        color: Colors.white,
-        shape: RoundedRectangleBorder(
-          side: const BorderSide(width: 2),
-          borderRadius: BorderRadius.circular(24),
-        ),
-        shadows: const [
-          BoxShadow(
-            color: Color(0xFF000000),
-            blurRadius: 0,
-            offset: Offset(4, 4),
-            spreadRadius: 0,
-          ),
-        ],
-      ),
-      child: Form(
-        key: _formKey,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          spacing: 18,
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 24, 24, 12),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                spacing: 20,
-                children: [
-                  const Align(
-                    alignment: Alignment.topLeft,
-                    child: Text(
-                      'Potwierdź numer telefonu',
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 24,
-                        fontFamily: 'Itim',
-                        fontWeight: FontWeight.w400,
-                      ),
-                    ),
-                  ),
-                  LabeledTextField(
-                    label: "Numer telefonu",
-                    controller: _phoneNumberController,
-                    iconOnLeft: false,
-                    validator: emailValidator,
-                  ),
-                  if (_errorMessage != null)
-                    Text(
-                      _errorMessage!,
-                      style: const TextStyle(
-                        color: Colors.red,
-                        fontSize: 14,
-                        fontFamily: 'Itim',
-                        fontWeight: FontWeight.w400,
-                      ),
-                    ),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    spacing: 18,
-                    children: [
-                      CustomTextButton(
-                        label: "Pomiń",
-                        onTap: widget.isLoading
-                            ? () {}
-                            : _handleSkip,
-                        backgroundColor: const Color(0xFFEBEBEB),
-                      ),
-                      CustomTextButton(
-                        label: "Wyślij kod",
-                        onTap: widget.isLoading
-                            ? () {}
-                            : _handleSubmit,
-                        backgroundColor: const Color(0xFFFFC6FF),
-                        isLoading: widget.isLoading,
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _ConfirmationCodeStep extends StatefulWidget {
-  final bool isLoading;
-  final VoidCallback onPrevious;
-
-  const _ConfirmationCodeStep({
-    required this.isLoading, required this.onPrevious
-  });
-
-  @override
-  State<_ConfirmationCodeStep> createState() => _ConfirmationCodeStepState();
-}
-
-class _ConfirmationCodeStepState extends State<_ConfirmationCodeStep> {
-  @override
-  Widget build(BuildContext context) {
-    return const Placeholder();
   }
 }

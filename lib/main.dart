@@ -55,7 +55,7 @@ class MainApp extends StatelessWidget {
           theme: ThemeData(
             primarySwatch: Colors.blue,
           ),
-            home: (kDebugMode && debugSkipAuth) ? const MainScreen() : (FirebaseAuth.instance.currentUser != null ? const MainScreen() : const SignInScreen()),
+            home: FirebaseAuth.instance.currentUser != null ? const MainScreen() : const SignInScreen(),
         ),
       ),
     );
