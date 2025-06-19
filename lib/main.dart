@@ -10,7 +10,7 @@ import 'package:proj_inz/data/repositories/category_repository.dart';
 import 'package:proj_inz/data/repositories/coupon_repository.dart';
 import 'package:proj_inz/data/repositories/shop_repository.dart';
 import 'package:proj_inz/data/repositories/user_repository.dart';
-import 'package:proj_inz/presentation/screens/auth_screen.dart';
+import 'package:proj_inz/presentation/screens/sign_in_screen.dart';
 import 'package:proj_inz/presentation/screens/main_screen.dart';
 
 import 'firebase_options.dart';
@@ -55,7 +55,7 @@ class MainApp extends StatelessWidget {
           theme: ThemeData(
             primarySwatch: Colors.blue,
           ),
-            home: (kDebugMode && debugSkipAuth) ? const MainScreen() : (FirebaseAuth.instance.currentUser != null ? const MainScreen() : const AuthScreen()),
+            home: (kDebugMode && debugSkipAuth) ? const MainScreen() : (FirebaseAuth.instance.currentUser != null ? const MainScreen() : const SignInScreen()),
         ),
       ),
     );

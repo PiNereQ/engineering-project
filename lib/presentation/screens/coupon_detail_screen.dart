@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:proj_inz/bloc/coupon/coupon_bloc.dart';
 import 'package:proj_inz/bloc/payment/payment_bloc.dart';
-import 'package:proj_inz/core/utils.dart';
+import 'package:proj_inz/core/utils/utils.dart';
 import 'package:proj_inz/data/models/coupon_model.dart';
 import 'package:proj_inz/data/repositories/coupon_repository.dart';
 import 'package:proj_inz/data/repositories/user_repository.dart';
