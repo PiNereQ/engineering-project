@@ -67,7 +67,7 @@ class ErrorCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          CustomTextButton.iconSmall(
+          CustomTextButton.small(
             label: 'Kopiuj komunikat błędu',
             icon: const Icon(Icons.copy_rounded),
             onTap: () async {
@@ -82,7 +82,7 @@ class ErrorCard extends StatelessWidget {
             },
           ),
           const SizedBox(height: 8),
-          CustomTextButton.iconSmall(
+          CustomTextButton.small(
             label: 'Zgłoś problem',
             icon: const Icon(Icons.send_rounded),
             onTap: () {}, // TODO: reporting

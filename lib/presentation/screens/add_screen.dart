@@ -129,11 +129,11 @@ class _AddScreenState extends State<AddScreen> {
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           CustomIconButton(
-                            icon: SvgPicture.asset('icons/back.svg'),
+                            icon: SvgPicture.asset('assets/icons/back.svg'),
                             onTap: () => _backDialog(),
                           ),
                           CustomIconButton(
-                            icon: const Icon(Icons.info),
+                            icon: const Icon(Icons.info_outline_rounded),
                             onTap: () {},
                           ),
                         ],
@@ -290,7 +290,7 @@ class _AddScreenState extends State<AddScreen> {
                                             CrossAxisAlignment.center,
                                         children: [
                                           SvgPicture.asset(
-                                            'icons/report-outline-rounded.svg',
+                                            'assets/icons/report-outline-rounded.svg',
                                             height: 24,
                                             width: 24,
                                             colorFilter: const ColorFilter.mode(
@@ -324,7 +324,6 @@ class _AddScreenState extends State<AddScreen> {
                                     child: CustomTextButton(
                                       height: 51.86,
                                       width: 160,
-                                      fontSize: 18,
                                       label: 'Dodaj zdjęcie',
                                       onTap: () {
                                         print('Kliknięto: Dodaj zdjęcie');
@@ -508,7 +507,7 @@ class _AddScreenState extends State<AddScreen> {
                                       crossAxisAlignment: CrossAxisAlignment.center,
                                       children: [
                                         SvgPicture.asset(
-                                          'icons/report-outline-rounded.svg',
+                                            'assets/icons/report-outline-rounded.svg',
                                           height: 24,
                                           width: 24,
                                           colorFilter: const ColorFilter.mode(
@@ -554,7 +553,7 @@ class _AddScreenState extends State<AddScreen> {
                             SizedBox(
                               width: double.infinity,
                               child: SvgPicture.asset(
-                                'icons/separator_wide.svg',
+                                'assets/icons/separator_wide.svg',
                                 fit: BoxFit.fitWidth,
                               ),
                             ),
@@ -595,7 +594,6 @@ class _AddScreenState extends State<AddScreen> {
                             CustomTextButton(
                               height: 56,
                               width: double.infinity,
-                              fontSize: 20,
                               label: 'Dodaj',
                               onTap: () {
                                 if (_formKey.currentState?.validate() ?? false) {

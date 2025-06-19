@@ -2,13 +2,12 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/svg.dart';
-import 'package:proj_inz/presentation/widgets/error_card.dart';
-import 'package:qr_flutter/qr_flutter.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:proj_inz/bloc/owned_coupon/owned_coupon_bloc.dart';
 import 'package:proj_inz/core/utils.dart';
 import 'package:proj_inz/data/models/owned_coupon_model.dart';
 import 'package:proj_inz/data/repositories/coupon_repository.dart';
+import 'package:proj_inz/presentation/widgets/error_card.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_icon_button.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_text_button.dart';
 import 'package:qr_flutter/qr_flutter.dart';
@@ -36,13 +35,13 @@ class BoughtCouponDetailsScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     CustomIconButton(
-                      icon: SvgPicture.asset('icons/back.svg'),
+                      icon: SvgPicture.asset('assets/icons/back.svg'),
                       onTap: () {
                         Navigator.of(context).pop();
                       },
                     ),
                     CustomIconButton(
-                      icon: SvgPicture.asset('icons/share.svg'),
+                      icon: SvgPicture.asset('assets/icons/share.svg'),
                       onTap: () {},
                     ),
                   ],

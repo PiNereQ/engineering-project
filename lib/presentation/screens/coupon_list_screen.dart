@@ -1,9 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/svg.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import 'package:proj_inz/bloc/coupon_list/coupon_list_bloc.dart';
 import 'package:proj_inz/bloc/search_shops_categories/search_shops_categories_bloc.dart';
@@ -238,7 +237,7 @@ Widget build(BuildContext context) {
                             ],
                           ),
                           child: SvgPicture.asset(
-                            'icons/back.svg',
+                            'assets/icons/back.svg',
                             width: 18,
                             height: 18,
                           ),
@@ -300,7 +299,7 @@ Widget build(BuildContext context) {
                   ),
                 Row(
                   children: [
-                    CustomTextButton.iconSmall(
+                    CustomTextButton.small(
                       label: 'Filtruj',
                       onTap: () => showDialog(
                         context: context,
@@ -315,7 +314,7 @@ Widget build(BuildContext context) {
                       }),
                       icon: const Icon(Icons.filter_alt),
                     ),
-                    CustomTextButton.iconSmall(
+                    CustomTextButton.small(
                       label: 'Sortuj',
                       onTap: () => showDialog(
                         context: context,
@@ -396,7 +395,7 @@ class _CouponFilterDialogState extends State<_CouponFilterDialog> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       CustomIconButton(
-                        icon: SvgPicture.asset('icons/back.svg'),
+                        icon: SvgPicture.asset('assets/icons/back.svg'),
                         onTap: () {
                           Navigator.of(context).pop();
                         }
@@ -570,7 +569,7 @@ class _CouponFilterDialogState extends State<_CouponFilterDialog> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
-                            CustomTextButton.icon(
+                            CustomTextButton(
                               label: 'Wyczyść',
                               icon: const Icon(Icons.delete_outline),
                               onTap: () {
@@ -578,7 +577,7 @@ class _CouponFilterDialogState extends State<_CouponFilterDialog> {
                                 context.read<CouponListBloc>().add(ClearCouponFilters());
                               },
                             ),
-                            CustomTextButton.icon(
+                            CustomTextButton(
                               label: 'Zastosuj',
                               icon: const Icon(Icons.check),
                               onTap: () {
@@ -651,7 +650,7 @@ class _CouponSortDialogState extends State<_CouponSortDialog> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       CustomIconButton(
-                        icon: SvgPicture.asset('icons/back.svg'),
+                        icon: SvgPicture.asset('assets/icons/back.svg'),
                         onTap: () {
                           Navigator.of(context).pop();
                         }
@@ -821,7 +820,7 @@ class _CouponSortDialogState extends State<_CouponSortDialog> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
-                            CustomTextButton.icon(
+                            CustomTextButton(
                               label: 'Zastosuj',
                               icon: const Icon(Icons.check),
                               onTap: () {

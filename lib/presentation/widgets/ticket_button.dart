@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:flutter_svg/svg.dart';
 
 class TicketButton extends StatelessWidget {
   final double height;
@@ -60,7 +59,7 @@ class TicketButton extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     SvgPicture.asset(
-                      "icons/ticketbutton_separator.svg",
+                      "assets/icons/ticketbutton_separator.svg",
                       width: 48,
                       height: 2,
                     ),
@@ -75,11 +74,10 @@ class TicketButton extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     SvgPicture.asset(
-                      "icons/heart.svg",
+                      "assets/icons/heart.svg",
                       width: 20,
                       height: 18.35,
                     ),
-                    
                   ],
                 ),
               ),

@@ -35,17 +35,24 @@ class AuthRepository {
         password: password,
       );
     } on FirebaseAuthException catch(e) {
-      if (e.code == 'user-not-found') {
-        throw Exception('No user found for that email.');
-      } else if (e.code == 'wrong-password') {
-        throw Exception('Wrong password provided for that user.');
-      } else if (e.code == 'invalid-email') {
-        throw Exception('The email address is not valid.');
+      print(e.code);
+      if (e.code == 'invalid-email') {
+        throw AuthException('Podany adres e-mail jest nieprawidłowy.');
+      } else if (e.code == 'too-many-requests') {
+        throw AuthException('Zbyt wiele prób logowania, spróbuj ponownie za chwilę.');
+      } else if (e.code == 'network-request-failed') {
+        throw AuthException('Nie udało się połączyć z siecią, spróbuj ponownie za chwilę lub sprawdź ustawienia połączenia.');
+      } else if (e.code == 'invalid-credential'
+                  || e.code == 'INVALID_LOGIN_CREDENTIALS'
+                  || e.code == 'user-not-found'
+                  || e.code == 'user-not-found'
+                  || e.code == 'wrong-password') {
+        throw AuthException('Podane dane logowania są nieprawidłowe.');
       } else {
-        throw Exception('Error signing in: ${e.message}');
+        throw AuthException('Błąd logowania: ${e.message}');
       }
     } catch (e) {
-      throw Exception('Error signing in: $e');
+      throw AuthException('Błąd logowania: $e');
     }
   }
 
@@ -56,6 +63,14 @@ class AuthRepository {
       throw Exception('Error signing out: $e');
     }
   }
+}
 
 
+class AuthException implements Exception {
+  final String message;
+
+  AuthException(this.message);
+
+  @override
+  String toString() => message;
 }

@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/svg.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:proj_inz/bloc/coupon/coupon_bloc.dart';
 import 'package:proj_inz/bloc/payment/payment_bloc.dart';
 import 'package:proj_inz/core/utils.dart';
@@ -42,13 +42,13 @@ class CouponDetailsScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     CustomIconButton(
-                      icon: SvgPicture.asset('icons/back.svg'),
+                      icon: SvgPicture.asset('assets/icons/back.svg'),
                       onTap: () {
                         Navigator.of(context).pop();
                       },
                     ),
                     CustomIconButton(
-                      icon: SvgPicture.asset('icons/share.svg'),
+                      icon: SvgPicture.asset('assets/icons/share.svg'),
                       onTap: () {},
                     ),
                   ],

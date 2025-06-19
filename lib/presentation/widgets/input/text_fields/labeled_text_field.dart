@@ -3,22 +3,15 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 enum LabeledTextFieldWidth { full, half }
 
-// controller: _priceController,
-//                               keyboardType: TextInputType.number,
-//                               validator: (val) {
-//                                   if (val == null || val.isEmpty) return 'Wymagane';
-//                                   if (double.tryParse(val) == null) return 'Niepoprawna liczba';
-//                                   return null;
-//                               },
-
 class LabeledTextField extends StatelessWidget {
   final String label;
-  final String placeholder;
+  final String? placeholder;
   final double iconRotationRadians;
   final bool iconOnLeft;
   final LabeledTextFieldWidth width;
   final TextAlign textAlign;
   final int maxLines;
+  final bool isPassword;
 
   final TextEditingController? controller;
   final TextInputType? keyboardType;
@@ -27,12 +20,13 @@ class LabeledTextField extends StatelessWidget {
   const LabeledTextField({
     super.key,
     required this.label,
-    required this.placeholder,
+    this.placeholder,
     this.iconRotationRadians = 0.0,
     this.iconOnLeft = true,
     this.width = LabeledTextFieldWidth.full,
     this.textAlign = TextAlign.left,
     this.maxLines = 1,
+    this.isPassword = false,
     this.controller,
     this.keyboardType,
     this.validator,
@@ -48,7 +42,7 @@ class LabeledTextField extends StatelessWidget {
               Transform.rotate(
                 angle: iconRotationRadians,
                 child: SvgPicture.asset(
-                  'icons/switch-access-shortcut-rounded.svg',
+                  'assets/icons/switch-access-shortcut-rounded.svg',
                   width: 18,
                   height: 18,
                 ),
@@ -79,7 +73,7 @@ class LabeledTextField extends StatelessWidget {
                 alignment: Alignment.center,
                 transform: Matrix4.rotationZ(iconRotationRadians)..scale(-1.0, 1.0),
                 child: SvgPicture.asset(
-                  'icons/switch-access-shortcut-rounded.svg',
+                  'assets/icons/switch-access-shortcut-rounded.svg',
                   width: 18,
                   height: 18,
                 ),
@@ -127,6 +121,12 @@ class LabeledTextField extends StatelessWidget {
                   maxLines: maxLines,
                   decoration: InputDecoration.collapsed(
                     hintText: placeholder,
+                  ).copyWith(
+                    errorStyle: const TextStyle(
+                      color: Colors.red,
+                      fontSize: 12,
+                      fontFamily: 'Itim',
+                    ),
                   ),
                   style: const TextStyle(
                     color: Color(0xFF000000),
@@ -135,6 +135,8 @@ class LabeledTextField extends StatelessWidget {
                     fontWeight: FontWeight.w400,
                   ),
                   textAlign: textAlign,
+                  obscureText: isPassword,
+                  obscuringCharacter: '♡',
                   controller: controller,
                   keyboardType: keyboardType,
                   validator: validator

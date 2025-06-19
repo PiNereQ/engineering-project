@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_svg/svg.dart';
 
 class ConversationTile extends StatelessWidget {
   final String username;
@@ -128,13 +128,13 @@ class ConversationTile extends StatelessWidget {
 
                 // Separator (SVG)
                 Positioned(
-                  left: 370, // Adjust position as necessary
+                  left: 370,
                   top: 0,
                   child: Container(
                     width: 5,
-                    height: 112, // Adjust height as necessary
+                    height: 112,
                     child: SvgPicture.asset(
-                      'icons/Separator.svg',
+                      'assets/icons/Separator.svg',
                       fit: BoxFit.contain,
                     ),
                   ),
@@ -144,15 +144,15 @@ class ConversationTile extends StatelessWidget {
                 Positioned(
                   left: 400, // Adjust position as necessary
                   top: 42, // Adjust position as necessary
-                  child: Container(
+                  child: SizedBox(
                     width: 32,
                     height: 32,
                     child: Stack(
                       children: [
                         SvgPicture.asset(
                           isRead
-                              ? 'icons/chat-outline-rounded.svg'
-                              : 'icons/mark-unread-chat-alt-outline-rounded.svg',
+                              ? 'assets/icons/chat-outline-rounded.svg'
+                              : 'assets/icons/mark-unread-chat-alt-outline-rounded.svg',
                           fit: BoxFit.contain,
                         ),
                       ],
