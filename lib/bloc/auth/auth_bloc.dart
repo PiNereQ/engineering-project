@@ -67,6 +67,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     try {
       await authRepository.signOut();
       emit(UnAuthenticated(errorMessage: 'Signed out successfully'));
+      //print('Signed out successfully');
     } catch (e) {
       emit(UnAuthenticated(errorMessage: e.toString()));
     }
