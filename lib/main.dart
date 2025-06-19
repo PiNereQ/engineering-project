@@ -1,10 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:proj_inz/bloc/auth/auth_bloc.dart';
+import 'package:proj_inz/bloc/number_verification/number_verification_bloc.dart';
 import 'package:proj_inz/data/repositories/auth_repository.dart';
 import 'package:proj_inz/data/repositories/category_repository.dart';
 import 'package:proj_inz/data/repositories/coupon_repository.dart';
@@ -14,9 +14,6 @@ import 'package:proj_inz/presentation/screens/sign_in_screen.dart';
 import 'package:proj_inz/presentation/screens/main_screen.dart';
 
 import 'firebase_options.dart';
-
-// Global debugging flags
-bool debugSkipAuth = false; // Skip authentication in debug mode; Default to false
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -43,19 +40,33 @@ class MainApp extends StatelessWidget {
       ],
       child: MultiBlocProvider(
         providers: [
-          RepositoryProvider(
+          BlocProvider(
             create: (context) => AuthBloc(
               authRepository: context.read<AuthRepository>(),
               userRepository: context.read<UserRepository>(),
-            ),
+            )
           ),
+          BlocProvider(create: (_) => NumberVerificationBloc())
         ],
         child: MaterialApp(
-           title: 'Flutter Demo',
-          theme: ThemeData(
-            primarySwatch: Colors.blue,
+          title: 'Flutter Demo',
+          theme: ThemeData(primarySwatch: Colors.blue),
+          home: StreamBuilder<User?>(
+            stream: FirebaseAuth.instance.authStateChanges(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Scaffold(
+                  body: Center(child: CircularProgressIndicator()),
+                );
+              }
+
+              if (snapshot.hasData && snapshot.data != null) {
+                return const MainScreen();
+              } else {
+                return const SignInScreen();
+              }
+            },
           ),
-            home: FirebaseAuth.instance.currentUser != null ? const MainScreen() : const SignInScreen(),
         ),
       ),
     );

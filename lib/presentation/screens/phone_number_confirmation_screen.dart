@@ -1,7 +1,7 @@
 import 'dart:core';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:proj_inz/bloc/auth/auth_bloc.dart';
+import 'package:proj_inz/bloc/number_verification/number_verification_bloc.dart';
 import 'package:proj_inz/core/utils/validators.dart';
 import 'package:proj_inz/presentation/screens/main_screen.dart';
 import 'package:proj_inz/presentation/widgets/custom_snack_bar.dart';
@@ -10,10 +10,8 @@ import 'package:proj_inz/presentation/widgets/input/buttons/custom_text_button.d
 import 'package:proj_inz/presentation/widgets/input/text_fields/labeled_text_field.dart';
 
 class PhoneNumberConfirmationScreen extends StatefulWidget {
-  final bool isDuringRegistration;
   const PhoneNumberConfirmationScreen({
-    super.key,
-    required this.isDuringRegistration
+    super.key
   });
 
   @override
@@ -21,6 +19,7 @@ class PhoneNumberConfirmationScreen extends StatefulWidget {
 }
 
 class _PhoneNumberConfirmationScreenState extends State<PhoneNumberConfirmationScreen> {
+  bool _isAfterRegistration = false;
   bool _numberSubmitted = false;
 
   void _previousStep() {
@@ -37,26 +36,30 @@ class _PhoneNumberConfirmationScreenState extends State<PhoneNumberConfirmationS
 
   @override
   Widget build(BuildContext context) {
+    BlocListener<NumberVerificationBloc, NumberVerificationState>(
+      listener: (context, state) {
+        if (state is NumberVerificationAfterRegistration) {
+          setState(() {
+            _isAfterRegistration = true;
+          });
+        }
+      }
+    );
+
+
     return Scaffold(
       resizeToAvoidBottomInset: true,
       body: Stack(
         children: [
           Container(decoration: const BoxDecoration(color: Color(0xFFFFEC9C))),
-          BlocConsumer<AuthBloc, AuthState>(
+          BlocConsumer<NumberVerificationBloc, NumberVerificationState>(
             listener: (context, state) {
-              if (state is AuthPhoneNumberConfirmationSuccess) {
+              if (state is NumberVerificationSuccess) {
                 showCustomSnackBar(context, "Numer telefonu został potwierdzony!");
-                if (widget.isDuringRegistration) {
-                  Navigator.of(context).pushReplacement(
-                    MaterialPageRoute(builder: (context) => const PhoneNumberConfirmationScreen(isDuringRegistration: true)),
-                  );
-                } else {
-                  // TODO: continue to the proper screen
-                }
               }
 
-              if (state is AuthPhoneNumberConfirmationSkipped) {
-                if (widget.isDuringRegistration) {
+              if (state is NumberVerificationSkipRequested) {
+                if (_isAfterRegistration) {
                   Navigator.of(context).pushReplacement(
                     MaterialPageRoute(builder: (context) => const MainScreen()),
                   );
@@ -71,8 +74,8 @@ class _PhoneNumberConfirmationScreenState extends State<PhoneNumberConfirmationS
                   padding: const EdgeInsets.fromLTRB(16, 72, 16, 24),
                   child: Center(
                     child: !_numberSubmitted
-                      ? _PhoneNumberStepCard(isLoading: state is AuthPhoneNumberConfirmationInProgress, onNext: _nextStep)
-                      : _ConfirmationCodeStep(isLoading: state is AuthPhoneNumberConfirmationInProgress, onPrevious: _previousStep),
+                      ? _PhoneNumberStepCard(isLoading: state is NumberVerificationInProgress, onNext: _nextStep)
+                      : _ConfirmationCodeStep(isLoading: state is NumberVerificationInProgress, onPrevious: _previousStep),
                   ),
                 ),
               );
@@ -102,8 +105,8 @@ class _PhoneNumberStepCardState extends State<_PhoneNumberStepCard> {
   String? _errorMessage;
 
   void _handleSkip() {
-    context.read<AuthBloc>().add(
-      PhoneNumberConfirmationSkipped(),
+    context.read<NumberVerificationBloc>().add(
+      NumberVerificationSkipRequested(),
     );
   }
 
@@ -242,8 +245,8 @@ class _ConfirmationCodeStepState extends State<_ConfirmationCodeStep> {
         _errorMessage = null;
       });
 
-      context.read<AuthBloc>().add(
-        PhoneNumberConfirmationRequested(
+      context.read<NumberVerificationBloc>().add(
+        NumberVerificationRequested(
           number: _verificationCodeController.text.trim(),
         ),
       );

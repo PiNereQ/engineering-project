@@ -16,8 +16,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<SignUpRequested>(_onSignUpRequested);
     on<SignInRequested>(_onSignInRequested);
     on<SignOutRequested>(_onSignOutRequested);
-    on<PhoneNumberConfirmationRequested>(_onPhoneNumberConfirmationRequested);
-    on<PhoneNumberConfirmationSkipped>(_onPhoneNumberConfirmationSkipped);
   }
 
   void _onSignUpRequested(SignUpRequested event, Emitter<AuthState> emit) async {
@@ -30,19 +28,21 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       );
       final user = userCredential.user;
 
-      try {
-        add(SignInRequested(email: event.email, password: event.password));
-      } catch (e) {
-        emit(AuthSignUpFailure(errorMessage: e.toString()));
-        return;
-      } finally {
+      // try {
+      //   add(SignInRequested(email: event.email, password: event.password));
+      // } catch (e) {
+      //   emit(AuthSignInFailure(errorMessage: e.toString()));
+      //   return;
+      // } finally {
         if (user != null) {
           await userRepository.createUserProfile(
             uid: user.uid,
             email: user.email ?? event.email,
           );
         }
-      }
+      // }
+
+      emit(AuthSignUpSuccess());
     } catch (e) {
       emit(AuthSignUpFailure(errorMessage: e.toString()));
     }
@@ -67,13 +67,5 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     } catch (e) {
       emit(AuthSignOutFailure(errorMessage: e.toString()));
     }
-  }
-
-  void _onPhoneNumberConfirmationRequested(PhoneNumberConfirmationRequested event, Emitter<AuthState> emit) async {
-    throw UnimplementedError();
-  }
-
-  void _onPhoneNumberConfirmationSkipped(PhoneNumberConfirmationSkipped event, Emitter<AuthState> emit) async {
-    emit(AuthPhoneNumberConfirmationSkipped());
   }
 }

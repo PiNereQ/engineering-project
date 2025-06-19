@@ -50,14 +50,6 @@ class AuthSignOutFailure extends AuthState {
   List<Object?> get props => [errorMessage];
 }
 
-class AuthPhoneNumberConfirmationInProgress extends AuthState {}
-
-class AuthPhoneNumberConfirmationSuccess extends AuthState {}
-
-class AuthPhoneNumberConfirmationFailure extends AuthState {}
-
-class AuthPhoneNumberConfirmationSkipped extends AuthState {}
-
 // class UnAuthenticated extends AuthState {
 //   final String errorMessage;
 //   UnAuthenticated({required this.errorMessage});

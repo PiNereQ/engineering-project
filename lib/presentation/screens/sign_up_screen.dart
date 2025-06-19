@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:proj_inz/bloc/auth/auth_bloc.dart';
+import 'package:proj_inz/bloc/number_verification/number_verification_bloc.dart';
 import 'package:proj_inz/core/utils/validators.dart';
+import 'package:proj_inz/presentation/screens/main_screen.dart';
 import 'package:proj_inz/presentation/screens/phone_number_confirmation_screen.dart';
 import 'package:proj_inz/presentation/widgets/custom_snack_bar.dart';
 import 'package:proj_inz/presentation/widgets/dashed_separator.dart';
@@ -28,8 +30,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
             listener: (context, state) {
               if (state is AuthSignUpSuccess) {
                 showCustomSnackBar(context, "Zarejestrowano pomyślnie!");
+                context.read<NumberVerificationBloc>().add(NumberVerificationFirstRequested());
                 Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (context) => const PhoneNumberConfirmationScreen(isDuringRegistration: true)),
+                  MaterialPageRoute(builder: (context) => const MainScreen()),
                   (route) => false,
                 );
               }

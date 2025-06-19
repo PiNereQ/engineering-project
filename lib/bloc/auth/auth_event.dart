@@ -28,14 +28,3 @@ class SignInRequested extends AuthEvent {
 }
 
 class SignOutRequested extends AuthEvent {}
-
-class PhoneNumberConfirmationRequested extends AuthEvent {
-  final String number;
-
-  PhoneNumberConfirmationRequested({required this.number});
-
-  @override
-  List<Object?> get props => [number];
-}
-
-class PhoneNumberConfirmationSkipped extends AuthEvent {}
