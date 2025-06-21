@@ -4,7 +4,6 @@ import 'package:proj_inz/bloc/auth/auth_bloc.dart';
 import 'package:proj_inz/bloc/number_verification/number_verification_bloc.dart';
 import 'package:proj_inz/core/utils/validators.dart';
 import 'package:proj_inz/presentation/screens/main_screen.dart';
-import 'package:proj_inz/presentation/screens/phone_number_confirmation_screen.dart';
 import 'package:proj_inz/presentation/widgets/custom_snack_bar.dart';
 import 'package:proj_inz/presentation/widgets/dashed_separator.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/checkbox.dart';
@@ -22,61 +21,57 @@ class _SignUpScreenState extends State<SignUpScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFFFEC9C),
       resizeToAvoidBottomInset: true,
-      body: Stack(
-        children: [
-          Container(decoration: const BoxDecoration(color: Color(0xFFFFEC9C))),
-          BlocConsumer<AuthBloc, AuthState>(
-            listener: (context, state) {
-              if (state is AuthSignUpSuccess) {
-                showCustomSnackBar(context, "Zarejestrowano pomyślnie!");
-                context.read<NumberVerificationBloc>().add(NumberVerificationFirstRequested());
-                Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (context) => const MainScreen()),
-                  (route) => false,
-                );
-              }
-            },
-            builder: (context, state) {
-              return SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 72, 16, 24),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    spacing: 36,
-                    children: [
-                      const SizedBox(
-                        width: 176,
-                        height: 158,
-                        child: Placeholder(),
-                      ),
-                    _RegistrationStepCard(isLoading: state is AuthSignUpInProgress),
-                    ],
+      body: BlocConsumer<AuthBloc, AuthState>(
+        listener: (context, state) {
+          if (state is AuthSignUpSuccess) {
+            showCustomSnackBar(context, "Zarejestrowano pomyślnie!");
+            context.read<NumberVerificationBloc>().add(
+              NumberVerificationFirstRequested(),
+            );
+            Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(builder: (context) => const MainScreen()),
+              (route) => false,
+            );
+          }
+        },
+        builder: (context, state) {
+          return SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 72, 16, 24),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                spacing: 36,
+                children: [
+                  const SizedBox(width: 176, height: 158, child: Placeholder()),
+                  _RegistrationCard(
+                    isLoading: state is AuthSignUpInProgress,
                   ),
-                ),
-              );
-            },
-          ),
-        ],
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }
 }
 
-class _RegistrationStepCard extends StatefulWidget {
+class _RegistrationCard extends StatefulWidget {
   final bool isLoading;
 
-  const _RegistrationStepCard({
+  const _RegistrationCard({
     required this.isLoading,
   });
 
   @override
-  State<_RegistrationStepCard> createState() => _RegistrationStepCardState();
+  State<_RegistrationCard> createState() => _RegistrationCardState();
 }
 
-class _RegistrationStepCardState extends State<_RegistrationStepCard> {
+class _RegistrationCardState extends State<_RegistrationCard> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _usernameController = TextEditingController();
@@ -90,23 +85,44 @@ class _RegistrationStepCardState extends State<_RegistrationStepCard> {
     Navigator.of(context).pop();
   }
 
-  void _handleSubmit() {
+  void _handleSubmit() async {
+    _emailController.text = _emailController.text.trim();
+    _usernameController.text = _usernameController.text.trim();
+    _passwordController.text = _passwordController.text.trim();
+    _confirmPasswordController.text = _confirmPasswordController.text.trim();
+
+    setState(() {
+      _errorMessage = null;
+    });
+
     if (_formKey.currentState?.validate() ?? false) {
-      setState(() {
-        _errorMessage = null;
-      });
-      context.read<AuthBloc>().add(
-        SignUpRequested(
-          email: _emailController.text.trim(),
-          password: _passwordController.text.trim(),
-          confirmPassword: _confirmPasswordController.text.trim(),
-        ),
-      );
+      if (!_termsAccepted || !_privacyPolicyAccepted) {
+        setState(() {
+          _errorMessage =
+              "Zaakceptuj regulamin aplikacji i politykę prywatności!";
+        });
+
+        if (_errorMessage == null) {
+          context.read<AuthBloc>().add(
+            SignUpRequested(
+              email: _emailController.text,
+              username: _usernameController.text,
+              password: _passwordController.text,
+              confirmPassword: _confirmPasswordController.text,
+            ),
+          );
+        }
+      }
+    
+    
+
     }
+
+    
   }
 
   @override
-  void didUpdateWidget(covariant _RegistrationStepCard oldWidget) {
+  void didUpdateWidget(covariant _RegistrationCard oldWidget) {
     super.didUpdateWidget(oldWidget);
     final authState = context.read<AuthBloc>().state;
     if (authState is AuthSignUpFailure) {
@@ -149,7 +165,7 @@ class _RegistrationStepCardState extends State<_RegistrationStepCard> {
                   const Align(
                     alignment: Alignment.topLeft,
                     child: Text(
-                      'Zarejstruj się!',
+                      'Zarejestruj się!',
                       style: TextStyle(
                         color: Colors.black,
                         fontSize: 24,
@@ -165,51 +181,29 @@ class _RegistrationStepCardState extends State<_RegistrationStepCard> {
                         label: "E-mail",
                         controller: _emailController,
                         iconOnLeft: false,
-                        validator: emailValidator,
+                        keyboardType: TextInputType.emailAddress,
+                        validator: (value) => emailValidator(value),
                       ),
                       LabeledTextField(
                         label: "Nazwa użytkownika",
                         controller: _usernameController,
-                        validator: usernameValidator,
+                        validator: (value) => usernameValidator(value)
                       ),
                       LabeledTextField(
                         label: "Hasło",
                         controller: _passwordController,
                         iconOnLeft: false,
                         isPassword: true,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return "Hasło jest wymagane";
-                          }
-                          return null;
-                        },
+                        validator: (value) => signUpPasswordValidator(value),
                       ),
                       LabeledTextField(
                         label: "Powtórz hasło",
                         controller: _confirmPasswordController,
                         isPassword: true,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return "Powtórz hasło";
-                          }
-                          if (value != _confirmPasswordController.text) {
-                            return "Hasła muszą być takie same!";
-                          }
-                          return null;
-                        },
+                        validator: (value) => signUpConfirmPasswordValidator(value, _passwordController.text.trim())
                       ),
                     ],
                   ),
-                  if (_errorMessage != null)
-                    Text(
-                      _errorMessage!,
-                      style: const TextStyle(
-                        color: Colors.red,
-                        fontSize: 14,
-                        fontFamily: 'Itim',
-                        fontWeight: FontWeight.w400,
-                      ),
-                    ),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
@@ -233,6 +227,16 @@ class _RegistrationStepCardState extends State<_RegistrationStepCard> {
                       ),
                     ],
                   ),
+                  if (_errorMessage != null)
+                    Text(
+                      _errorMessage!,
+                      style: const TextStyle(
+                        color: Colors.red,
+                        fontSize: 14,
+                        fontFamily: 'Itim',
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     spacing: 18,

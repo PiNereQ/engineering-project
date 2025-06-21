@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:proj_inz/bloc/auth/auth_bloc.dart';
 import 'package:proj_inz/core/utils/validators.dart';
+import 'package:proj_inz/presentation/screens/main_screen.dart';
 import 'package:proj_inz/presentation/screens/sign_up_screen.dart';
 import 'package:proj_inz/presentation/widgets/custom_snack_bar.dart';
 import 'package:proj_inz/presentation/widgets/dashed_separator.dart';
@@ -17,76 +18,47 @@ class SignInScreen extends StatefulWidget {
 }
 
 class _SignInScreenState extends State<SignInScreen> {
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFFFEC9C),
       resizeToAvoidBottomInset: true,
-      body: Stack(
-        children: [
-          Container(decoration: const BoxDecoration(color: Color(0xFFFFEC9C))),
-          BlocConsumer<AuthBloc, AuthState>(
-            listener: (context, state) {
-              if (state is AuthSignInSuccess) {
-                showCustomSnackBar(context, "Zalogowano pomyślnie!");
-                // Navigator.of(context).pushAndRemoveUntil(
-                //   MaterialPageRoute(builder: (context) => const MainScreen()),
-                //   (route) => false,
-                // );
-              }
-            },
-            builder: (context, state) {
-              return SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 72, 16, 24),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    spacing: 36,
-                    children: [
-                      const SizedBox(
-                        width: 176,
-                        height: 158,
-                        child: Placeholder(),
-                      ),
-                      _LoginCard(
-                        emailController: _emailController,
-                        passwordController: _passwordController,
-                        onSubmit: () {
-                          context.read<AuthBloc>().add(
-                            SignInRequested(
-                              email: _emailController.text.trim(),
-                              password: _passwordController.text.trim(),
-                            ),
-                          );
-                        },
-                        isLoading: state is AuthSignInInProgress,
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          ),
-        ],
+      body: BlocConsumer<AuthBloc, AuthState>(
+        listener: (context, state) {
+          if (state is AuthSignInSuccess) {
+            showCustomSnackBar(context, "Zalogowano pomyślnie!");
+            Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(builder: (context) => const MainScreen()),
+              (route) => false,
+            );
+          }
+        },
+        builder: (context, state) {
+          return SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 72, 16, 24),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                spacing: 36,
+                children: [
+                  const SizedBox(width: 176, height: 158, child: Placeholder()),
+                  _LoginCard(isLoading: state is AuthSignInInProgress),
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }
 }
 
 class _LoginCard extends StatefulWidget {
-  final TextEditingController emailController;
-  final TextEditingController passwordController;
-  final VoidCallback onSubmit;
   final bool isLoading;
 
   const _LoginCard({
-    required this.emailController,
-    required this.passwordController,
-    required this.onSubmit,
     required this.isLoading,
   });
 
@@ -95,6 +67,8 @@ class _LoginCard extends StatefulWidget {
 }
 
 class _LoginCardState extends State<_LoginCard> {
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   String? _errorMessage;
 
@@ -103,7 +77,12 @@ class _LoginCardState extends State<_LoginCard> {
       setState(() {
         _errorMessage = null;
       });
-      widget.onSubmit();
+      context.read<AuthBloc>().add(
+        SignInRequested(
+          email: _emailController.text.trim(),
+          password: _passwordController.text.trim(),
+        ),
+      );
     }
   }
 
@@ -154,13 +133,13 @@ class _LoginCardState extends State<_LoginCard> {
                     children: [
                       LabeledTextField(
                         label: "E-mail",
-                        controller: widget.emailController,
+                        controller: _emailController,
                         iconOnLeft: false,
                         validator: emailValidator,
                       ),
                       LabeledTextField(
                         label: "Hasło",
-                        controller: widget.passwordController,
+                        controller: _passwordController,
                         isPassword: true,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
@@ -219,9 +198,12 @@ class _LoginCardState extends State<_LoginCard> {
                   ),
                   CustomTextButton.small(
                     label: "Zarejestruj się",
-                    onTap: () => Navigator.of(context).push(
-                      MaterialPageRoute(builder: (context) => const SignUpScreen())
-                    ),
+                    onTap:
+                        () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => const SignUpScreen(),
+                          ),
+                        ),
                   ),
                 ],
               ),
