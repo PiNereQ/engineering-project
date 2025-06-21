@@ -16,8 +16,6 @@ class AuthRepository {
     }
     
     try {
-      print('ok');
-      throw('OK');
       final userCredential = await _firebaseAuth.createUserWithEmailAndPassword(
         email: email,
         password: password,
