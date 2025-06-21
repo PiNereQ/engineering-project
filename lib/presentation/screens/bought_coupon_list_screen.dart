@@ -45,68 +45,70 @@ class _BoughtCouponListScreenState extends State<BoughtCouponListScreen> {
       create: (context) => OwnedCouponListBloc(context.read<CouponRepository>())
         ..add(FetchCoupons()),
       child: Scaffold(
-        body: RefreshIndicator(
-          onRefresh: () async {
-            context.read<OwnedCouponListBloc>().add(RefreshCoupons());
-          },
-          child: CustomScrollView(
-            controller: _scrollController,
-            slivers: [
-              const _Toolbar(),
-              BlocBuilder<OwnedCouponListBloc, OwnedCouponListState>(
-                builder: (context, state) {
-                  if (state is OwnedCouponListLoadInProgress) {
-                    return const SliverFillRemaining(
-                      child: Center(child: CircularProgressIndicator()),
-                    );
-                  } else if (state is OwnedCouponListLoadSuccess) {
-                    return SliverList(
-                      delegate: SliverChildBuilderDelegate((context, index) {
-                        final coupon = state.coupons[index];
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 16.0),
-                          child: BoughtCouponCardHorizontal(coupon: coupon),
-                        );
-                      }, childCount: state.coupons.length),
-                    );
-                  } else if (state is OwnedCouponListLoadEmpty) {
-                    return const SliverFillRemaining(
-                      child: Center(
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 24),
-                          child: Text(
-                            "Nie posiadasz jeszcze żadnych kuponów.",
-                            textAlign: TextAlign.left,
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 18,
-                              fontFamily: 'Itim',
-                              fontWeight: FontWeight.w400,
+        body: SafeArea(
+          child: RefreshIndicator(
+            onRefresh: () async {
+              context.read<OwnedCouponListBloc>().add(RefreshCoupons());
+            },
+            child: CustomScrollView(
+              controller: _scrollController,
+              slivers: [
+                const _Toolbar(),
+                BlocBuilder<OwnedCouponListBloc, OwnedCouponListState>(
+                  builder: (context, state) {
+                    if (state is OwnedCouponListLoadInProgress) {
+                      return const SliverFillRemaining(
+                        child: Center(child: CircularProgressIndicator()),
+                      );
+                    } else if (state is OwnedCouponListLoadSuccess) {
+                      return SliverList(
+                        delegate: SliverChildBuilderDelegate((context, index) {
+                          final coupon = state.coupons[index];
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 16.0),
+                            child: BoughtCouponCardHorizontal(coupon: coupon),
+                          );
+                        }, childCount: state.coupons.length),
+                      );
+                    } else if (state is OwnedCouponListLoadEmpty) {
+                      return const SliverFillRemaining(
+                        child: Center(
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 24),
+                            child: Text(
+                              "Nie posiadasz jeszcze żadnych kuponów.",
+                              textAlign: TextAlign.left,
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 18,
+                                fontFamily: 'Itim',
+                                fontWeight: FontWeight.w400,
+                              ),
+                              softWrap: true,
                             ),
-                            softWrap: true,
                           ),
                         ),
-                      ),
-                    );
-                  } else if (state is OwnedCouponListLoadFailure) {
-                    if (kDebugMode) debugPrint(state.message);
-                    return SliverFillRemaining(
-                      child: Center(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 24),
-                          child: ErrorCard(
-                            text: "Przykro nam, wystąpił błąd w trakcie ładowania Twoich kuponów.",
-                            errorString: state.message,
-                            icon: const Icon(Icons.sentiment_dissatisfied),
+                      );
+                    } else if (state is OwnedCouponListLoadFailure) {
+                      if (kDebugMode) debugPrint(state.message);
+                      return SliverFillRemaining(
+                        child: Center(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 24),
+                            child: ErrorCard(
+                              text: "Przykro nam, wystąpił błąd w trakcie ładowania Twoich kuponów.",
+                              errorString: state.message,
+                              icon: const Icon(Icons.sentiment_dissatisfied),
+                            ),
                           ),
                         ),
-                      ),
-                    );
-                  }
-                  return const SliverFillRemaining();
-                },
-              ),
-            ],
+                      );
+                    }
+                    return const SliverFillRemaining();
+                  },
+                ),
+              ],
+            ),
           ),
         ),
       ),

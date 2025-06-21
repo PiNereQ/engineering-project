@@ -23,108 +23,110 @@ class BoughtCouponDetailsScreen extends StatelessWidget {
       create: (context) => OwnedCouponBloc(context.read<CouponRepository>(), couponId)
         ..add(FetchCouponDetails()),
       child: Scaffold(
-        body: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            children: [
-              SizedBox(
-                width: double.infinity,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    CustomIconButton(
-                      icon: SvgPicture.asset('assets/icons/back.svg'),
-                      onTap: () {
-                        Navigator.of(context).pop();
-                      },
-                    ),
-                    CustomIconButton(
-                      icon: SvgPicture.asset('assets/icons/share.svg'),
-                      onTap: () {},
-                    ),
-                  ],
+        body: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              children: [
+                SizedBox(
+                  width: double.infinity,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      CustomIconButton(
+                        icon: SvgPicture.asset('assets/icons/back.svg'),
+                        onTap: () {
+                          Navigator.of(context).pop();
+                        },
+                      ),
+                      CustomIconButton(
+                        icon: SvgPicture.asset('assets/icons/share.svg'),
+                        onTap: () {},
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(height: 16,),
-              BlocBuilder<OwnedCouponBloc, OwnedCouponState>(
-                builder: (context, state) {
-                  if (state is OwnedCouponLoadInProgress) {
-                    return const Center(child: CircularProgressIndicator());
-                  } else if (state is OwnedCouponLoadSuccess) {
-                    return SingleChildScrollView(
-                      child: Column(
-                        children: [
-                          Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.all(16),
-                            clipBehavior: Clip.antiAlias,
-                            decoration: ShapeDecoration(
-                              color: Colors.white,
-                              shape: RoundedRectangleBorder(
-                                side: const BorderSide(width: 2),
-                                borderRadius: BorderRadius.circular(24),
-                              ),
-                              shadows: const [
-                                BoxShadow(
-                                  color: Color(0xFF000000),
-                                  blurRadius: 0,
-                                  offset: Offset(4, 4),
-                                  spreadRadius: 0,
-                                )
-                              ],
-                            ),
-                            child: const Row(
-                              children: [
-                                Icon(
-                                  Icons.redeem_outlined,
-                                  color: Colors.black,
-                                  size: 32,
-                                  ),
-                                SizedBox(width: 16,),
-                                Text(
-                                  "Ten kupon należy do Ciebie!",
-                                  style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 18,
-                                  fontFamily: 'Itim',
-                                  fontWeight: FontWeight.w400,
-                                  height: 1.2,
-                                  ),
+                const SizedBox(height: 16,),
+                BlocBuilder<OwnedCouponBloc, OwnedCouponState>(
+                  builder: (context, state) {
+                    if (state is OwnedCouponLoadInProgress) {
+                      return const Center(child: CircularProgressIndicator());
+                    } else if (state is OwnedCouponLoadSuccess) {
+                      return SingleChildScrollView(
+                        child: Column(
+                          children: [
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(16),
+                              clipBehavior: Clip.antiAlias,
+                              decoration: ShapeDecoration(
+                                color: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                  side: const BorderSide(width: 2),
+                                  borderRadius: BorderRadius.circular(24),
                                 ),
-                              ],
-                            )
-                          ),
-                          const SizedBox(height: 24,),
-                          _CouponDetails(coupon: state.coupon,),
-                          const SizedBox(height: 24),
-                          _SellerDetails(
-                            sellerId: state.coupon.sellerId,
-                            sellerUsername: state.coupon.sellerUsername.toString(),
-                            sellerReputation: state.coupon.sellerReputation,
-                            sellerJoinDate: state.coupon.sellerJoinDate ?? DateTime(1970, 1, 1),
-                          ),
-                        ],
-                      ),
-                    );
-                  }
-                  else if (state is OwnedCouponLoadFailure) {
-                    if (kDebugMode) debugPrint(state.message);
-                    return Expanded(
-                      child: Center(
-                        child: ErrorCard(
-                          text: "Przykro nam, wystąpił błąd w trakcie ładowania tego kuponu.",
-                          errorString: state.message,
-                          icon: const Icon(Icons.sentiment_dissatisfied),
+                                shadows: const [
+                                  BoxShadow(
+                                    color: Color(0xFF000000),
+                                    blurRadius: 0,
+                                    offset: Offset(4, 4),
+                                    spreadRadius: 0,
+                                  )
+                                ],
+                              ),
+                              child: const Row(
+                                children: [
+                                  Icon(
+                                    Icons.redeem_outlined,
+                                    color: Colors.black,
+                                    size: 32,
+                                    ),
+                                  SizedBox(width: 16,),
+                                  Text(
+                                    "Ten kupon należy do Ciebie!",
+                                    style: TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 18,
+                                    fontFamily: 'Itim',
+                                    fontWeight: FontWeight.w400,
+                                    height: 1.2,
+                                    ),
+                                  ),
+                                ],
+                              )
+                            ),
+                            const SizedBox(height: 24,),
+                            _CouponDetails(coupon: state.coupon,),
+                            const SizedBox(height: 24),
+                            _SellerDetails(
+                              sellerId: state.coupon.sellerId,
+                              sellerUsername: state.coupon.sellerUsername.toString(),
+                              sellerReputation: state.coupon.sellerReputation,
+                              sellerJoinDate: state.coupon.sellerJoinDate ?? DateTime(1970, 1, 1),
+                            ),
+                          ],
                         ),
-                      ),
-                    );
+                      );
+                    }
+                    else if (state is OwnedCouponLoadFailure) {
+                      if (kDebugMode) debugPrint(state.message);
+                      return Expanded(
+                        child: Center(
+                          child: ErrorCard(
+                            text: "Przykro nam, wystąpił błąd w trakcie ładowania tego kuponu.",
+                            errorString: state.message,
+                            icon: const Icon(Icons.sentiment_dissatisfied),
+                          ),
+                        ),
+                      );
+                    }
+                    return const SizedBox();
                   }
-                  return const SizedBox();
-                }
-              ),
-            ],
+                ),
+              ],
+            ),
           ),
         ),
       ),

@@ -8,7 +8,7 @@ import 'package:proj_inz/presentation/screens/debug_screen.dart';
 import 'package:proj_inz/presentation/screens/sign_in_screen.dart';
 import 'package:proj_inz/presentation/widgets/custom_snack_bar.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_text_button.dart';
-import 'package:proj_inz/presentation/widgets/ticket_button.dart';
+import 'package:proj_inz/presentation/widgets/input/buttons/ticket_button.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -27,144 +27,205 @@ class ProfileScreen extends StatelessWidget {
       },
       builder: (context, state) {
         return Scaffold(
-          body: Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  //mainAxisSize: MainAxisSize.min,
-                  children: [
-                    CircleAvatar(
-                      radius: 36,
-                      backgroundColor: Colors.transparent,
-                      child: SvgPicture.asset(
-                        'assets/icons/Awatar.svg',
-                        width: 100,
-                        height: 100,
+          body: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 24.0,
+                vertical: 16,
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                spacing: 20,
+                children: [
+                  Row(
+                    spacing: 12,
+                    children: [
+                      CircleAvatar(
+                        radius: 36,
+                        backgroundColor: Colors.transparent,
+                        child: SvgPicture.asset(
+                          'assets/icons/Awatar.svg',
+                          width: 100,
+                          height: 100,
+                        ),
                       ),
-                  ),
-                  const SizedBox(width: 12),
-                  const Text('Cześć, username', 
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontFamily: 'Itim',
-                        fontWeight: FontWeight.w600,
+                      const Text(
+                        'Cześć, username',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontFamily: 'Itim',
+                          fontWeight: FontWeight.w400,
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                const TicketButton(
-                  height: 58,
-                  width: 480,
-                  leftText: 'Twoje punkty',
-                  rightText: '997',
-                  fontSize: 14,
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  'Reputacja',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontFamily: 'Itim',
-                    fontWeight: FontWeight.w700,
+                    ],
                   ),
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  'Twoje kupony',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontFamily: 'Itim',
-                    fontWeight: FontWeight.w700,
+                  TicketButton(
+                    label: 'Twoje punkty',
+                    value: '997',
+                    icon: const Icon(Icons.favorite),
+                    onTap: () {},
                   ),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  mainAxisSize: MainAxisSize.max,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  spacing: 20,
-                  children: [
-                    Expanded(
-                      child: CustomTextButton(
-                          label: 'Kupione',
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    const BoughtCouponListScreen(),
-                              ),
-                            );
-                          }),
-                    ),
-                    Expanded(
-                        child: CustomTextButton(
-                            label: 'Wystawione', onTap: () {}))
-                  ],
-                ),
-                const SizedBox(height: 8),
-                CustomTextButton(
-                    width: double.infinity,
-                    label: 'Obserwowane',
-                    onTap: () {}),
-                const SizedBox(height: 16),
-                const Text(
-                  'Twoje preferencje',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontFamily: 'Itim',
-                    fontWeight: FontWeight.w700,
+                  // Reputacja
+                  const Column(
+                    spacing: 16,
+                    children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        spacing: 12,
+                        children: [
+                          Icon(Icons.speed_rounded, size: 28),
+                          Text(
+                            'Reputacja',
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontFamily: 'Itim',
+                              fontWeight: FontWeight.w400,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Placeholder(fallbackHeight: 16)
+                    ],
                   ),
-                ),
-                const SizedBox(height: 8),
-                CustomTextButton(
-                    width: double.infinity, label: 'Ulubione', onTap: () {}),
-                const SizedBox(height: 16),
-                const Text(
-                  'Ranking',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontFamily: 'Itim',
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                const TicketButton(
-                  height: 58,
-                  width: 480,
-                  leftText: 'Twoja pozycja',
-                  rightText: '3. miejsce',
-                  fontSize: 14,
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  mainAxisSize: MainAxisSize.max,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  spacing: 20,
-                  children: [
-                    Expanded(
-                      child: CustomTextButton(
-                        label: 'Ustawienia',
+                  // Twoje kupony
+                  Column(
+                    spacing: 16,
+                    children: [
+                      const Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        spacing: 12,
+                        children: [
+                          Icon(Icons.confirmation_number_outlined, size: 28),
+                          Text(
+                            'Twoje kupony',
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontFamily: 'Itim',
+                              fontWeight: FontWeight.w400,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Row(
+                        mainAxisSize: MainAxisSize.max,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        spacing: 20,
+                        children: [
+                          Expanded(
+                            child: CustomTextButton(
+                              label: 'Kupione',
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder:
+                                        (context) =>
+                                            const BoughtCouponListScreen(),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                          Expanded(
+                            child: CustomTextButton(
+                              label: 'Wystawione',
+                              onTap: () {},
+                            ),
+                          ),
+                        ],
+                      ),
+                      CustomTextButton(
+                        width: double.infinity,
+                        label: 'Obserwowane',
                         onTap: () {},
                       ),
-                    ),
-                    Expanded(
-                      child: CustomTextButton(
-                        label: 'Wyloguj',
-                        backgroundColor: const Color(0xFFFF9A9A),
-                        onTap: () {
-                          context.read<AuthBloc>().add(SignOutRequested());
-                        },
+                    ],
+                  ),
+                  // Twoje preferencje
+                  Column(
+                    spacing: 16,
+                    children: [
+                      const Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        spacing: 12,
+                        children: [
+                          Icon(Icons.favorite_outline_rounded, size: 28),
+                          Text(
+                            'Twoje preferencje',
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontFamily: 'Itim',
+                              fontWeight: FontWeight.w400,
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                if (kDebugMode)
-                  CustomTextButton(
+                      CustomTextButton(
+                        width: double.infinity,
+                        label: 'Ulubione',
+                        onTap: () {},
+                      ),
+                    ],
+                  ),
+                  // Ranking
+                  Column(
+                    spacing: 16,
+                    children: [
+                      const Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        spacing: 12,
+                        children: [
+                          Icon(Icons.leaderboard_outlined, size: 28),
+                          Text(
+                            'Ranking',
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontFamily: 'Itim',
+                              fontWeight: FontWeight.w400,
+                            ),
+                          ),
+                        ],
+                      ),
+                      TicketButton(
+                        label: 'Twoja pozycja',
+                        value: '3. miejsce',
+                        icon: const Icon(Icons.favorite),
+                        onTap: () {},
+                      ),
+                    ],
+                  ),
+                  const Divider(
+                    color: Colors.black,
+                  ),
+                  Row(
+                    mainAxisSize: MainAxisSize.max,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    spacing: 20,
+                    children: [
+                      Flexible(
+                        flex: 2,
+                        fit: FlexFit.tight,
+                        child: CustomTextButton(
+                          label: 'Ustawienia',
+                          onTap: () {},
+                        ),
+                      ),
+                      Flexible(
+                        flex: 1,
+                        fit: FlexFit.tight,
+                        child: CustomTextButton(
+                          label: 'Wyloguj',
+                          backgroundColor: const Color(0xFFFF9A9A),
+                          onTap: () {
+                            context.read<AuthBloc>().add(SignOutRequested());
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (kDebugMode)
+                    CustomTextButton(
                       width: double.infinity,
                       label: 'Debug',
                       icon: const Icon(Icons.developer_mode_rounded),
@@ -175,8 +236,10 @@ class ProfileScreen extends StatelessWidget {
                             builder: (context) => const DebugScreen(),
                           ),
                         );
-                      })
-              ],
+                      },
+                    ),
+                ],
+              ),
             ),
           ),
         );

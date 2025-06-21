@@ -1,8 +1,8 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:proj_inz/presentation/widgets/custom_snack_bar.dart';
+import 'package:proj_inz/presentation/widgets/dashed_separator.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_text_button.dart';
+import 'package:proj_inz/presentation/widgets/input/buttons/ticket_button.dart';
 
 
 class DebugScreen extends StatefulWidget {
@@ -25,6 +25,13 @@ class _DebugScreenState extends State<DebugScreen> {
               label: '_checkUser',
               onTap: _checkUser
             ),
+            TicketButton(
+              label: 'Twoje punkty',
+              value: '999',
+              icon: const Icon(Icons.favorite),
+              onTap: () {}
+            ),
+            DashedSeparator(),
           ],
         ),
       )

@@ -30,109 +30,111 @@ class CouponDetailsScreen extends StatelessWidget {
         BlocProvider(create: (_) => PaymentBloc()),
       ],
       child: Scaffold(
-        body: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            children: [
-              SizedBox(
-                width: double.infinity,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    CustomIconButton(
-                      icon: SvgPicture.asset('assets/icons/back.svg'),
-                      onTap: () {
-                        Navigator.of(context).pop();
-                      },
-                    ),
-                    CustomIconButton(
-                      icon: SvgPicture.asset('assets/icons/share.svg'),
-                      onTap: () {},
-                    ),
-                  ],
+        body: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              children: [
+                SizedBox(
+                  width: double.infinity,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      CustomIconButton(
+                        icon: SvgPicture.asset('assets/icons/back.svg'),
+                        onTap: () {
+                          Navigator.of(context).pop();
+                        },
+                      ),
+                      CustomIconButton(
+                        icon: SvgPicture.asset('assets/icons/share.svg'),
+                        onTap: () {},
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(height: 16,),
-              BlocBuilder<OwnedCouponBloc, CouponState>(
-                builder: (context, state) {
-                  if (state is CouponLoadInProgress) {
-                    return const Center(child: CircularProgressIndicator());
-                  } else if (state is CouponLoadSuccess) {
-                    return SingleChildScrollView(
-                      child: Column(
-                        children: [
-                          if (state.coupon.isSold == true)
-                            Container(
-                              width: double.infinity,
-                              padding: const EdgeInsets.all(16),
-                              clipBehavior: Clip.antiAlias,
-                              decoration: ShapeDecoration(
-                                color: Colors.white,
-                                shape: RoundedRectangleBorder(
-                                  side: const BorderSide(width: 2),
-                                  borderRadius: BorderRadius.circular(24),
-                                ),
-                                shadows: const [
-                                  BoxShadow(
-                                    color: Color(0xFF000000),
-                                    blurRadius: 0,
-                                    offset: Offset(4, 4),
-                                    spreadRadius: 0,
-                                  )
-                                ],
-                              ),
-                              child: const Row(
-                                children: [
-                                  Icon(
-                                    Icons.report_outlined,
-                                    color: Color(0xFFE32F2F),
-                                    size: 32,
-                                    ),
-                                  SizedBox(width: 16,),
-                                  Text(
-                                    "Oferta sprzedaży tego kuponu\nzostała zakończona.",
-                                    style: TextStyle(
-                                    color: Color(0xFFE22E2E),
-                                    fontSize: 18,
-                                    fontFamily: 'Itim',
-                                    fontWeight: FontWeight.w400,
-                                    height: 1.2,
-                                    ),
+                const SizedBox(height: 16,),
+                BlocBuilder<OwnedCouponBloc, CouponState>(
+                  builder: (context, state) {
+                    if (state is CouponLoadInProgress) {
+                      return const Center(child: CircularProgressIndicator());
+                    } else if (state is CouponLoadSuccess) {
+                      return SingleChildScrollView(
+                        child: Column(
+                          children: [
+                            if (state.coupon.isSold == true)
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.all(16),
+                                clipBehavior: Clip.antiAlias,
+                                decoration: ShapeDecoration(
+                                  color: Colors.white,
+                                  shape: RoundedRectangleBorder(
+                                    side: const BorderSide(width: 2),
+                                    borderRadius: BorderRadius.circular(24),
                                   ),
-                                ],
-                              )
+                                  shadows: const [
+                                    BoxShadow(
+                                      color: Color(0xFF000000),
+                                      blurRadius: 0,
+                                      offset: Offset(4, 4),
+                                      spreadRadius: 0,
+                                    )
+                                  ],
+                                ),
+                                child: const Row(
+                                  children: [
+                                    Icon(
+                                      Icons.report_outlined,
+                                      color: Color(0xFFE32F2F),
+                                      size: 32,
+                                      ),
+                                    SizedBox(width: 16,),
+                                    Text(
+                                      "Oferta sprzedaży tego kuponu\nzostała zakończona.",
+                                      style: TextStyle(
+                                      color: Color(0xFFE22E2E),
+                                      fontSize: 18,
+                                      fontFamily: 'Itim',
+                                      fontWeight: FontWeight.w400,
+                                      height: 1.2,
+                                      ),
+                                    ),
+                                  ],
+                                )
+                              ),
+                            if (state.coupon.isSold == true) const SizedBox(height: 24,),
+                            _CouponDetails(coupon: state.coupon,),
+                            const SizedBox(height: 24),
+                            _SellerDetails(
+                              sellerId: state.coupon.sellerId,
+                              sellerUsername: state.coupon.sellerUsername.toString(),
+                              sellerReputation: state.coupon.sellerReputation,
+                              sellerJoinDate: state.coupon.sellerJoinDate ?? DateTime(1970, 1, 1),
                             ),
-                          if (state.coupon.isSold == true) const SizedBox(height: 24,),
-                          _CouponDetails(coupon: state.coupon,),
-                          const SizedBox(height: 24),
-                          _SellerDetails(
-                            sellerId: state.coupon.sellerId,
-                            sellerUsername: state.coupon.sellerUsername.toString(),
-                            sellerReputation: state.coupon.sellerReputation,
-                            sellerJoinDate: state.coupon.sellerJoinDate ?? DateTime(1970, 1, 1),
-                          ),
-                        ],
-                      ),
-                    );
-                  }
-                  else if (state is CouponLoadFailure) {
-                    if (kDebugMode) debugPrint(state.message);
-                    return Expanded(
-                      child: Center(
-                        child: ErrorCard(
-                          text: "Przykro nam, wystąpił błąd w trakcie ładowania tego kuponu.",
-                          errorString: state.message,
-                          icon: const Icon(Icons.sentiment_dissatisfied),
+                          ],
                         ),
-                      ),
-                    );
+                      );
+                    }
+                    else if (state is CouponLoadFailure) {
+                      if (kDebugMode) debugPrint(state.message);
+                      return Expanded(
+                        child: Center(
+                          child: ErrorCard(
+                            text: "Przykro nam, wystąpił błąd w trakcie ładowania tego kuponu.",
+                            errorString: state.message,
+                            icon: const Icon(Icons.sentiment_dissatisfied),
+                          ),
+                        ),
+                      );
+                    }
+                    return const SizedBox();
                   }
-                  return const SizedBox();
-                }
-              ),
-            ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
