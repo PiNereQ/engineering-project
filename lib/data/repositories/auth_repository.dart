@@ -1,30 +1,53 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:proj_inz/data/repositories/user_repository.dart';
 
 class AuthRepository {
-
   final _firebaseAuth = FirebaseAuth.instance;
+  final _userRepository = UserRepository();
 
-  Future<UserCredential> singUp({required String email, required String password, required String confirmPassword}) async {
+  Future<void> singUp({required String email, required String username, required String password, required String confirmPassword}) async {
     if (password != confirmPassword) {
-      throw Exception('Passwords do not match');
+      throw 'Podane hasła nie są takie same.';
     }
+    
+    if (await _userRepository.isUsernameInUse(username)) {
+      print('used');
+      throw "Nazwa użytkownika jest zajęta";
+    }
+    
     try {
-      return await _firebaseAuth.createUserWithEmailAndPassword(
+      print('ok');
+      throw('OK');
+      final userCredential = await _firebaseAuth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
+
+      final user = userCredential.user;
+
+      if (user != null) {
+        await _userRepository.createUserProfile(
+          uid: user.uid,
+          username: username,
+        );
+      }
     } on FirebaseAuthException catch(e) {
-      if (e.code == 'weak-password') {
-        throw Exception('The password provided is too weak.');
-      } else if (e.code == 'email-already-in-use') {
-        throw Exception('The account already exists for that email.');
-      } else if (e.code == 'invalid-email') {
-        throw Exception('The email address is not valid.');
-      } else {
-        throw Exception('Error signing up: ${e.message}');
+      switch (e.code) {
+        case 'weak-password':
+          throw 'Podane hasło jest zbyt słabe.';
+        case 'email-already-in-use':
+          throw 'Podany adres e-mail jest już używany.';
+        case 'invalid-email':
+          throw 'Podany adres e-mail jest nieprawidłowy.';
+        case 'too-many-requests':
+          throw 'Zbyt wiele prób rejestracji, spróbuj ponownie za chwilę.';
+        case 'network-request-failed':
+          throw 'Nie udało się połączyć z siecią, spróbuj ponownie za chwilę lub sprawdź ustawienia połączenia.';
+        default:
+          throw 'Błąd rejestracji: ${e.message}';
       }
     } catch (e) {
-      throw Exception('Error signing up: $e');
+      throw 'Błąd rejestracji: $e';
     }
   }
 
@@ -35,24 +58,23 @@ class AuthRepository {
         password: password,
       );
     } on FirebaseAuthException catch(e) {
-      print(e.code);
-      if (e.code == 'invalid-email') {
-        throw AuthException('Podany adres e-mail jest nieprawidłowy.');
-      } else if (e.code == 'too-many-requests') {
-        throw AuthException('Zbyt wiele prób logowania, spróbuj ponownie za chwilę.');
-      } else if (e.code == 'network-request-failed') {
-        throw AuthException('Nie udało się połączyć z siecią, spróbuj ponownie za chwilę lub sprawdź ustawienia połączenia.');
-      } else if (e.code == 'invalid-credential'
-                  || e.code == 'INVALID_LOGIN_CREDENTIALS'
-                  || e.code == 'user-not-found'
-                  || e.code == 'user-not-found'
-                  || e.code == 'wrong-password') {
-        throw AuthException('Podane dane logowania są nieprawidłowe.');
-      } else {
-        throw AuthException('Błąd logowania: ${e.message}');
+      switch (e.code) {
+        case 'invalid-email':
+          throw 'Podany adres e-mail jest nieprawidłowy.';
+        case 'too-many-requests':
+          throw 'Zbyt wiele prób logowania, spróbuj ponownie za chwilę.';
+        case 'network-request-failed':
+          throw 'Nie udało się połączyć z siecią, spróbuj ponownie za chwilę lub sprawdź ustawienia połączenia.';
+        case 'invalid-credential':
+        case 'INVALID_LOGIN_CREDENTIALS':
+        case 'user-not-found':
+        case 'wrong-password':
+          throw 'Podane dane logowania są nieprawidłowe.';
+        default:
+          throw 'Błąd logowania: ${e.message}';
       }
     } catch (e) {
-      throw AuthException('Błąd logowania: $e');
+      throw 'Błąd logowania: $e';
     }
   }
 
@@ -61,17 +83,7 @@ class AuthRepository {
       await _firebaseAuth.signOut();
       //print('Signed out successfully (repository)');
     } catch (e) {
-      throw Exception('Error signing out: $e');
+      throw'Błąd wylogowania: $e';
     }
   }
-}
-
-
-class AuthException implements Exception {
-  final String message;
-
-  AuthException(this.message);
-
-  @override
-  String toString() => message;
 }

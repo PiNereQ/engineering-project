@@ -21,29 +21,16 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   void _onSignUpRequested(SignUpRequested event, Emitter<AuthState> emit) async {
     emit(AuthSignUpInProgress());
     try {
-      final userCredential = await authRepository.singUp(
+      await authRepository.singUp(
         email: event.email,
+        username: event.username,
         password: event.password,
         confirmPassword: event.confirmPassword,
       );
-      final user = userCredential.user;
-
-      // try {
-      //   add(SignInRequested(email: event.email, password: event.password));
-      // } catch (e) {
-      //   emit(AuthSignInFailure(errorMessage: e.toString()));
-      //   return;
-      // } finally {
-        if (user != null) {
-          await userRepository.createUserProfile(
-            uid: user.uid,
-            email: user.email ?? event.email,
-          );
-        }
-      // }
-
+      
       emit(AuthSignUpSuccess());
     } catch (e) {
+      print(e);
       emit(AuthSignUpFailure(errorMessage: e.toString()));
     }
   }
