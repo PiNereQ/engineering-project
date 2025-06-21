@@ -54,11 +54,12 @@ class OwnedCouponListBloc extends Bloc<OwnedCouponListEvent, OwnedCouponListStat
       _allCoupons.addAll(coupons);
       _lastDocument = lastDoc;
 
+      
+      emit(OwnedCouponListLoadSuccess(coupons: _allCoupons, hasMore: _hasMore));
+
       if (_allCoupons.isEmpty) {
         emit(OwnedCouponListLoadEmpty());
       }
-
-      emit(OwnedCouponListLoadSuccess(coupons: _allCoupons, hasMore: _hasMore));
     } catch (e) {
       if (kDebugMode) debugPrint(e.toString());
       emit(OwnedCouponListLoadFailure(message: e.toString()));
@@ -68,6 +69,7 @@ class OwnedCouponListBloc extends Bloc<OwnedCouponListEvent, OwnedCouponListStat
   }
 
   _onRefreshCoupons(RefreshCoupons event, Emitter<OwnedCouponListState> emit) async {
+    emit(OwnedCouponListLoadInProgress());
     _allCoupons.clear();
     _lastDocument = null;
     _hasMore = true;

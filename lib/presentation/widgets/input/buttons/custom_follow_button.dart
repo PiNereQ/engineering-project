@@ -1,62 +1,50 @@
 import 'package:flutter/material.dart';
 
-class CustomIconButton extends StatefulWidget {
-  final double size;
-  final Widget icon;
+class CustomFollowButton extends StatefulWidget {
+  final double _size;
   final VoidCallback onTap;
 
-  const CustomIconButton._({
+  const CustomFollowButton._({
     super.key,
-    required this.size,
-    required this.icon,
+    required double size,
     required this.onTap,
-  });
+  }) : _size = size;
 
-  factory CustomIconButton({
+  factory CustomFollowButton({
     Key? key,
-    required Widget icon,
     required VoidCallback onTap,
   }) {
-    return CustomIconButton._(
+    return CustomFollowButton._(
       key: key,
-      icon: icon,
       onTap: onTap,
       size: 48,
     );
   }
 
-  factory CustomIconButton.small({
+  factory CustomFollowButton.small({
     Key? key,
-    required Widget icon,
     required VoidCallback onTap,
   }) {
-    return CustomIconButton._(
+    return CustomFollowButton._(
       key: key,
-      icon: SizedBox(
-        width: 18,
-        height: 18,
-        child: FittedBox(
-          child: icon,
-        ),
-      ),
       onTap: onTap,
       size: 36,
     );
   }
 
   @override
-  State<CustomIconButton> createState() => _CustomIconButtonState();
+  State<CustomFollowButton> createState() => _CustomFollowButtonState();
 }
-  
-class _CustomIconButtonState extends State<CustomIconButton> {
+
+class _CustomFollowButtonState extends State<CustomFollowButton> {
   bool _isPressed = false;
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: widget.onTap,
-      onTapDown: (TapDownDetails details) => (setState(() =>(_isPressed = true))),
-      onTapCancel: () => (setState(() =>(_isPressed = false))),
+      onTapDown: (TapDownDetails details) => (setState(() => (_isPressed = true))),
+      onTapCancel: () => (setState(() => (_isPressed = false))),
       onTapUp: (TapUpDetails details) async {
         await Future.delayed(const Duration(milliseconds: 80));
         if (mounted) {
@@ -71,10 +59,10 @@ class _CustomIconButtonState extends State<CustomIconButton> {
             : const EdgeInsets.only(right: 3, bottom: 3),
         child: Center(
           child: Container(
-            width: widget.size,
-            height: widget.size,
+            width: widget._size,
+            height: widget._size,
             decoration: ShapeDecoration(
-              color: _isPressed ? const Color(0xFFB2B2B2) : Colors.white,
+              color: _isPressed ? const Color(0xFFFF405F) : Colors.white,
               shape: RoundedRectangleBorder(
                 side: const BorderSide(width: 2),
                 borderRadius: BorderRadius.circular(1000),
@@ -85,13 +73,27 @@ class _CustomIconButtonState extends State<CustomIconButton> {
                       BoxShadow(
                         color: const Color(0xFF000000),
                         blurRadius: 0,
-                        offset: Offset(widget.size == 36 ? 2 : 3, widget.size == 36 ? 2 : 3),
+                        offset: Offset(widget._size == 36 ? 2 : 3, widget._size == 36 ? 2 : 3),
                         spreadRadius: 0,
                       )
                     ],
             ),
             child: Center(
-              child: widget.icon,
+              child: widget._size == 48
+                ? Icon(
+                    Icons.favorite,
+                    color: _isPressed ? Colors.white : const Color(0xFFFF405F)
+                  )
+                : SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: FittedBox(
+                    child: Icon(
+                        Icons.favorite,
+                        color: _isPressed ? Colors.white : const Color(0xFFFF405F)
+                      ),
+                  ),
+                )
             ),
           ),
         ),

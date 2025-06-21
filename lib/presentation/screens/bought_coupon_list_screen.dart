@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:proj_inz/bloc/owned_coupon_list/owned_coupon_list_bloc.dart';
 import 'package:proj_inz/data/repositories/coupon_repository.dart';
-import 'package:proj_inz/presentation/widgets/bought_coupon_card.dart';
+import 'package:proj_inz/presentation/widgets/coupon_card.dart';
 import 'package:proj_inz/presentation/widgets/error_card.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_icon_button.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/search_button.dart';
@@ -18,14 +18,18 @@ class BoughtCouponListScreen extends StatefulWidget {
 
 class _BoughtCouponListScreenState extends State<BoughtCouponListScreen> {
   final ScrollController _scrollController = ScrollController();
+  bool _scrollListenerAdded = false;
 
   @override
-  void initState() {
-    super.initState();
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _setupScrollListener(BuildContext context) {
     _scrollController.addListener(() {
       if (_scrollController.position.pixels >=
           _scrollController.position.maxScrollExtent - 150) {
-        debugPrint('Ładuj wincyj!');
         if (mounted) {
           context.read<OwnedCouponListBloc>().add(FetchMoreCoupons());
         }
@@ -34,85 +38,92 @@ class _BoughtCouponListScreenState extends State<BoughtCouponListScreen> {
   }
 
   @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => OwnedCouponListBloc(context.read<CouponRepository>())
         ..add(FetchCoupons()),
-      child: Scaffold(
-        body: SafeArea(
-          child: RefreshIndicator(
-            onRefresh: () async {
-              context.read<OwnedCouponListBloc>().add(RefreshCoupons());
-            },
-            child: CustomScrollView(
-              controller: _scrollController,
-              slivers: [
-                const _Toolbar(),
-                BlocBuilder<OwnedCouponListBloc, OwnedCouponListState>(
-                  builder: (context, state) {
-                    if (state is OwnedCouponListLoadInProgress) {
-                      return const SliverFillRemaining(
-                        child: Center(child: CircularProgressIndicator()),
-                      );
-                    } else if (state is OwnedCouponListLoadSuccess) {
-                      return SliverList(
-                        delegate: SliverChildBuilderDelegate((context, index) {
-                          final coupon = state.coupons[index];
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 16.0),
-                            child: BoughtCouponCardHorizontal(coupon: coupon),
-                          );
-                        }, childCount: state.coupons.length),
-                      );
-                    } else if (state is OwnedCouponListLoadEmpty) {
-                      return const SliverFillRemaining(
-                        child: Center(
-                          child: Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 24),
-                            child: Text(
-                              "Nie posiadasz jeszcze żadnych kuponów.",
-                              textAlign: TextAlign.left,
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontSize: 18,
-                                fontFamily: 'Itim',
-                                fontWeight: FontWeight.w400,
-                              ),
-                              softWrap: true,
-                            ),
-                          ),
-                        ),
-                      );
-                    } else if (state is OwnedCouponListLoadFailure) {
-                      if (kDebugMode) debugPrint(state.message);
-                      return SliverFillRemaining(
-                        child: Center(
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 24),
-                            child: ErrorCard(
-                              text: "Przykro nam, wystąpił błąd w trakcie ładowania Twoich kuponów.",
-                              errorString: state.message,
-                              icon: const Icon(Icons.sentiment_dissatisfied),
-                            ),
-                          ),
-                        ),
-                      );
-                    }
-                    return const SliverFillRemaining();
-                  },
+      child: BlocBuilder<OwnedCouponListBloc, OwnedCouponListState>(
+        builder: (context, state) {
+          if (!_scrollListenerAdded) {
+            _setupScrollListener(context);
+            _scrollListenerAdded = true;
+          }
+
+          return Scaffold(
+            body: SafeArea(
+              child: RefreshIndicator(
+                onRefresh: () async {
+                  context.read<OwnedCouponListBloc>().add(RefreshCoupons());
+                },
+                child: CustomScrollView(
+                  controller: _scrollController,
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  slivers: [
+                    const _Toolbar(),
+                    _listContent(state),
+                  ],
                 ),
-              ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _listContent(OwnedCouponListState state) {
+    if (state is OwnedCouponListLoadInProgress) {
+      return const SliverFillRemaining(
+        child: Center(child: CircularProgressIndicator()),
+      );
+    } else if (state is OwnedCouponListLoadSuccess) {
+      return SliverPadding(
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        sliver: SliverList(
+          delegate: SliverChildBuilderDelegate((context, index) {
+            final coupon = state.coupons[index];
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 16.0),
+              child: CouponCardHorizontal.bought(coupon: coupon),
+            );
+          }, childCount: state.coupons.length),
+        ),
+      );
+    } else if (state is OwnedCouponListLoadEmpty) {
+      return const SliverFillRemaining(
+        child: Center(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 24),
+            child: Text(
+              "Nie posiadasz jeszcze żadnych kuponów.",
+              textAlign: TextAlign.left,
+              style: TextStyle(
+                color: Colors.black,
+                fontSize: 18,
+                fontFamily: 'Itim',
+                fontWeight: FontWeight.w400,
+              ),
+              softWrap: true,
             ),
           ),
         ),
-      ),
-    );
+      );
+    } else if (state is OwnedCouponListLoadFailure) {
+      if (kDebugMode) debugPrint(state.message);
+      return SliverFillRemaining(
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: ErrorCard(
+              text: "Przykro nam, wystąpił błąd w trakcie ładowania Twoich kuponów.",
+              errorString: state.message,
+              icon: const Icon(Icons.sentiment_dissatisfied),
+            ),
+          ),
+        ),
+      );
+    }
+    return const SliverFillRemaining();
   }
 }
 
@@ -171,10 +182,7 @@ class _Toolbar extends StatelessWidget {
                     },
                   ),
                   Expanded(
-                    child: SearchButtonWide(
-                      label: 'Wyszukaj...',
-                      onTap: () {},
-                    ),
+                    child: SearchButtonWide(label: 'Wyszukaj...', onTap: () {}),
                   ),
                 ],
               ),

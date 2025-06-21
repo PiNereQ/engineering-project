@@ -3,14 +3,40 @@ import 'package:flutter/material.dart';
 import 'package:proj_inz/core/utils/utils.dart';
 import 'package:proj_inz/data/models/coupon_model.dart';
 import 'package:proj_inz/presentation/screens/coupon_detail_screen.dart';
+import 'package:proj_inz/presentation/widgets/dashed_separator.dart';
+import 'package:proj_inz/presentation/widgets/input/buttons/custom_follow_button.dart';
 
 class CouponCardHorizontal extends StatelessWidget {
   final Coupon coupon;
+  final bool isBought;
 
-  const CouponCardHorizontal({
+  const CouponCardHorizontal._({
     super.key,
-    required this.coupon
+    required this.coupon,
+    this.isBought = false,
   });
+
+  factory CouponCardHorizontal({
+    Key? key,
+    required Coupon coupon,
+  }) {
+    return CouponCardHorizontal._(
+      key: key,
+      coupon: coupon,
+      isBought: false,
+    );
+  }
+
+  factory CouponCardHorizontal.bought({
+    Key? key,
+    required Coupon coupon,
+  }) {
+    return CouponCardHorizontal._(
+      key: key,
+      coupon: coupon,
+      isBought: true,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +52,6 @@ class CouponCardHorizontal extends StatelessWidget {
     final bool worksOnline = coupon.worksOnline;
     final bool worksInStore = coupon.worksInStore;
     final DateTime expiryDate = coupon.expiryDate;
-
 
     final reductionText = isInteger(reduction)
       ? reduction.toString()
@@ -121,20 +146,18 @@ class CouponCardHorizontal extends StatelessWidget {
       ),
     );
 
-return Center(
-  child: Material(  // <--- dodajemy Material tutaj
-    color: Colors.transparent,  // jeśli nie chcesz zmieniać koloru tła
-    child: InkWell(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => CouponDetailsScreen(couponId: couponId),
-          ),
-        );
-      },
+    return Material(
+      color: Colors.transparent,
+      child: GestureDetector(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => CouponDetailsScreen(couponId: couponId),
+            ),
+          );
+        },
         child: Container(
-          width: 364.0,
           decoration: ShapeDecoration(
             color: Colors.white,
             shape: RoundedRectangleBorder(
@@ -143,17 +166,20 @@ return Center(
             ),
             shadows: const [
               BoxShadow(
-              color: Color(0xFF000000),
-              blurRadius: 0,
-              offset: Offset(4, 4),
-              spreadRadius: 0,
+                color: Color(0xFF000000),
+                blurRadius: 0,
+                offset: Offset(4, 4),
+                spreadRadius: 0,
               )
             ],
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
+            spacing: 12,
             children: [
-              Padding(padding: const EdgeInsets.fromLTRB(16.0, 10.0, 0.0, 10.0),
+              // Shop
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16.0, 10.0, 0.0, 10.0),
                 child: Container(
                   width: 110.0,
                   height: 80.0,
@@ -177,13 +203,13 @@ return Center(
                   ),
                 ),
               ),
-               Flexible(
-                 fit: FlexFit.loose,
+              // Details
+              Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(12.0, 10.0, 0.0, 10.0),
+                  padding: const EdgeInsets.symmetric(vertical: 10),
                   child: SizedBox(
                     width: 150,
-                      child: Column(
+                    child: Column(
                       mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.start,
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -207,11 +233,22 @@ return Center(
                   ),
                 ),
               ),
+              DashedSeparator.vertical(length: 146),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(4, 10, 16, 10),
+                child: Center(
+                  child: isBought
+                    ? const Icon(
+                          Icons.check_rounded,
+                          size: 36,
+                        )
+                    : CustomFollowButton.small(onTap: () {}),
+                ),
+              ),
             ],
           )
         ),
       ),
-  ),
     );
   }
 }

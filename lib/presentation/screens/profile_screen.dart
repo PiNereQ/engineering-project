@@ -8,7 +8,7 @@ import 'package:proj_inz/presentation/screens/debug_screen.dart';
 import 'package:proj_inz/presentation/screens/sign_in_screen.dart';
 import 'package:proj_inz/presentation/widgets/custom_snack_bar.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_text_button.dart';
-import 'package:proj_inz/presentation/widgets/input/buttons/ticket_button.dart';
+import 'package:proj_inz/presentation/widgets/ticket_button.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
