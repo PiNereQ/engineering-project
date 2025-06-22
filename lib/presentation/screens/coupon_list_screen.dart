@@ -96,68 +96,75 @@ class _CouponListScreenContentState extends State<_CouponListScreenContent> {
 
   @override
   Widget build(BuildContext context) {
-    return RefreshIndicator(
-      onRefresh: () async {
-        context.read<CouponListBloc>().add(RefreshCoupons());
-      },
-      child: CustomScrollView(
-        controller: _scrollController,
-        slivers: [
-          _Toolbar(searchShopName: widget.searchShopName),
-          BlocBuilder<CouponListBloc, CouponListState>(
-            builder: (context, state) {
-              if (state is CouponListLoadInProgress) {
-                return const SliverFillRemaining(
-                  child: Center(child: CircularProgressIndicator()),
-                );
-              } else if (state is CouponListLoadSuccess) {
-                return SliverList(
-                  delegate: SliverChildBuilderDelegate((context, index) {
-                    final coupon = state.coupons[index];
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 16.0),
-                      child: CouponCardHorizontal(coupon: coupon),
-                    );
-                  }, childCount: state.coupons.length),
-                );
-              } else if (state is CouponListLoadEmpty) {
-                return const SliverFillRemaining(
-                  child: Center(
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 24),
-                      child: Text(
-                        "Nie znaleźliśmy kuponów pasujących do wybranych filtrów...",
-                        textAlign: TextAlign.left,
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 18,
-                          fontFamily: 'Itim',
-                          fontWeight: FontWeight.w400,
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: RefreshIndicator(
+        onRefresh: () async {
+          context.read<CouponListBloc>().add(RefreshCoupons());
+        },
+        child: CustomScrollView(
+          controller: _scrollController,
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: [
+            _Toolbar(searchShopName: widget.searchShopName),
+            BlocBuilder<CouponListBloc, CouponListState>(
+              builder: (context, state) {
+                if (state is CouponListLoadInProgress) {
+                  return const SliverFillRemaining(
+                    child: Center(child: CircularProgressIndicator()),
+                  );
+                } else if (state is CouponListLoadSuccess) {
+                  return SliverPadding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    sliver: SliverList(
+                      delegate: SliverChildBuilderDelegate((context, index) {
+                        final coupon = state.coupons[index];
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 16.0),
+                          child: CouponCardHorizontal(coupon: coupon),
+                        );
+                      }, childCount: state.coupons.length),
+                    ),
+                  );
+                } else if (state is CouponListLoadEmpty) {
+                  return const SliverFillRemaining(
+                    child: Center(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 24),
+                        child: Text(
+                          "Nie znaleźliśmy kuponów pasujących do wybranych filtrów...",
+                          textAlign: TextAlign.left,
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 18,
+                            fontFamily: 'Itim',
+                            fontWeight: FontWeight.w400,
+                          ),
+                          softWrap: true,
                         ),
-                        softWrap: true,
                       ),
                     ),
-                  ),
-                );
-              } else if (state is CouponListLoadFailure) {
-                if (kDebugMode) debugPrint(state.message);
-                return SliverFillRemaining(
-                  child: Center(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
-                      child: ErrorCard(
-                        text: "Przykro nam, wystąpił błąd w trakcie ładowania kuponów.",
-                        errorString: state.message,
-                        icon: const Icon(Icons.sentiment_dissatisfied),
+                  );
+                } else if (state is CouponListLoadFailure) {
+                  if (kDebugMode) debugPrint(state.message);
+                  return SliverFillRemaining(
+                    child: Center(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        child: ErrorCard(
+                          text: "Przykro nam, wystąpił błąd w trakcie ładowania kuponów.",
+                          errorString: state.message,
+                          icon: const Icon(Icons.sentiment_dissatisfied),
+                        ),
                       ),
                     ),
-                  ),
-                );
-              }
-              return const SliverFillRemaining();
-            },
-          ),
-        ],
+                  );
+                }
+                return const SliverFillRemaining();
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -187,7 +194,7 @@ Widget build(BuildContext context) {
           child: Container(color: Colors.white),
         ),
         Padding(
-          padding: const EdgeInsets.fromLTRB(16, 24, 16, 16),
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
           child: Container(
             width: double.infinity,
             decoration: ShapeDecoration(
@@ -207,12 +214,11 @@ Widget build(BuildContext context) {
             ),
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Column(
+              spacing: 16,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 if (searchShopName != null)
-                  Padding(
-                  padding: const EdgeInsets.only(bottom: 12.0),
-                  child: Row(
+                  Row(
                     children: [
                       // przycisk wstecz
                       InkWell(
@@ -275,29 +281,26 @@ Widget build(BuildContext context) {
                         ),
                       ),
                     ],
-                  ),
-                )
+                  )
                 else
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 12.0),
-                    child: SearchBarWide(
-                      hintText: 'Wyszukaj sklep lub kategorię',
-                      onSubmitted: (query) {
-                        final searchBloc = context.read<SearchBloc>();
-                        searchBloc.add(SearchQuerySubmitted(query));
-
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (context) => BlocProvider.value(
-                              value: searchBloc,
-                              child: SearchResultsScreen(query: query),
-                            ),
+                  SearchBarWide(
+                    hintText: 'Wyszukaj sklep lub kategorię',
+                    onSubmitted: (query) {
+                      final searchBloc = context.read<SearchBloc>();
+                      searchBloc.add(SearchQuerySubmitted(query));
+                  
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => BlocProvider.value(
+                            value: searchBloc,
+                            child: SearchResultsScreen(query: query),
                           ),
-                        );
-                      },
-                    ),
+                        ),
+                      );
+                    },
                   ),
                 Row(
+                  spacing: 12,
                   children: [
                     CustomTextButton.small(
                       label: 'Filtruj',
@@ -337,7 +340,7 @@ Widget build(BuildContext context) {
         ),
       ],
     ),
-    toolbarHeight: 200,
+    toolbarHeight: 174,
   );
 }
 }

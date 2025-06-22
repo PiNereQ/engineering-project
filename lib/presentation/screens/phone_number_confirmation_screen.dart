@@ -335,7 +335,7 @@ class _ConfirmationCodeStepState extends State<_ConfirmationCodeStep> {
                 ],
               ),
             ),
-            const DashedSeparator(),
+            DashedSeparator(),
             Padding(
               padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
               child: Row(

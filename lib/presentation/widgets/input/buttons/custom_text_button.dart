@@ -158,7 +158,7 @@ class _CustomTextButtonState extends State<CustomTextButton> {
                     color: _isPressed
                         ? const Color.fromARGB(100, 0, 0, 0)
                         : Colors.black,
-                    fontSize: widget._fontSize, // Use private font size
+                    fontSize: widget._fontSize,
                     fontFamily: 'Itim',
                     fontWeight: FontWeight.w400,
                   ),

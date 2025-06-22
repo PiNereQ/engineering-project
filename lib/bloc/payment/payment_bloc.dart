@@ -13,7 +13,6 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
     on<StartPayment>((event, emit) async {
       emit(PaymentInProgress());
       try {
-        // 1. Call your backend to create a PaymentIntent
         final response = await http.post(
           Uri.parse('https://europe-west1-projektinzynierski-44c9d.cloudfunctions.net/createPaymentIntent'),
           headers: {'Content-Type': 'application/json'},
@@ -23,13 +22,12 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
         );
 
         if (response.statusCode != 200) {
-          throw Exception('Failed to create PaymentIntent');
+          throw Exception('Błąd połączenia z systemem płatności.');
         }
 
         final data = jsonDecode(response.body);
         final clientSecret = data['clientSecret'];
 
-        // 2. Confirm payment with flutter_stripe
         await Stripe.instance.initPaymentSheet(
           paymentSheetParameters: SetupPaymentSheetParameters(
             paymentIntentClientSecret: clientSecret,
@@ -38,8 +36,12 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
         );
         await Stripe.instance.presentPaymentSheet();
         emit(PaymentSuccess());
+      } on StripeException catch (e) {
+        if (e.error.code == FailureCode.Canceled) {
+          emit(const PaymentFailure(error: "Płatność została anulowana."));
+        }
       } catch (e) {
-        emit(PaymentFailure(error: e.toString()));
+        emit(PaymentFailure(error: "Błąd płatności: ${e.toString()}"));
       }
     });
   }

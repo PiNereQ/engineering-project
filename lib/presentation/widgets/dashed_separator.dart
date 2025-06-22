@@ -22,7 +22,10 @@ class DashedLinePainter extends CustomPainter {
       ..strokeWidth = dashHeight
       ..strokeCap = StrokeCap.round;
     double start = 0;
-    while (start < (isVertical ? size.height : size.width)) {
+
+    final double maxDimension = isVertical ? size.height : size.width;
+
+    while (start < maxDimension) {
       if (isVertical) {
         canvas.drawLine(
           Offset(0, start),
@@ -45,31 +48,33 @@ class DashedLinePainter extends CustomPainter {
 }
 
 class DashedSeparator extends StatelessWidget {
-  final double dashWidth;
-  final double dashSpace;
-  final double dashHeight;
+  final double length;
   final Color color;
-  final bool isVertical;
+  final bool _isVertical;
 
-  const DashedSeparator({
-    super.key,
-    this.dashWidth = 4.0,
-    this.dashSpace = 10.0,
-    this.dashHeight = 5.0,
+  const DashedSeparator._({
+    required this.length,
     this.color = Colors.black,
-    this.isVertical = false,
-  });
+    required bool isVertical
+  }) : _isVertical = isVertical;
 
-  factory DashedSeparator.vertical({
-    double dashWidth = 4.0,
-    double dashSpace = 10.0,
-    double dashHeight = 5.0,
+  factory DashedSeparator({
+    double length = double.infinity,
     Color color = Colors.black,
   }) {
-    return DashedSeparator(
-      dashWidth: dashWidth,
-      dashSpace: dashSpace,
-      dashHeight: dashHeight,
+    return DashedSeparator._(
+      length: length,
+      color: color,
+      isVertical: false,
+    );
+  }
+
+  factory DashedSeparator.vertical({
+    required double length,
+    Color color = Colors.black,
+  }) {
+    return DashedSeparator._(
+      length: length,
       color: color,
       isVertical: true,
     );
@@ -78,15 +83,15 @@ class DashedSeparator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CustomPaint(
-      size: isVertical
-          ? const Size(1, double.infinity)
-          : const Size(double.infinity, 1),
+      size: _isVertical
+          ? Size(1, length)
+          : Size(length, 1),
       painter: DashedLinePainter(
-        dashWidth: dashWidth,
-        dashSpace: dashSpace,
-        dashHeight: dashHeight,
+        dashWidth: 4.0,
+        dashSpace: 10.0,
+        dashHeight: 5.0,
         color: color,
-        isVertical: isVertical,
+        isVertical: _isVertical,
       ),
     );
   }

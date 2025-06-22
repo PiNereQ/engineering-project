@@ -40,7 +40,8 @@ class MainScreen extends StatelessWidget {
           return BlocBuilder<NavbarBloc, NavbarState>(
             builder: (context, state) {
               return Scaffold(
-                body: _screens[state.selectedIndex],
+                backgroundColor: Colors.white,
+                body: SafeArea(child: _screens[state.selectedIndex]),
                 bottomNavigationBar: BottomNavigationBar(
                   currentIndex: state.selectedIndex,
                   onTap: (index) {
