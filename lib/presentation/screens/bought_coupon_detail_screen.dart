@@ -7,6 +7,8 @@ import 'package:proj_inz/bloc/owned_coupon/owned_coupon_bloc.dart';
 import 'package:proj_inz/core/utils/utils.dart';
 import 'package:proj_inz/data/models/owned_coupon_model.dart';
 import 'package:proj_inz/data/repositories/coupon_repository.dart';
+import 'package:proj_inz/presentation/widgets/custom_snack_bar.dart';
+import 'package:proj_inz/presentation/widgets/dashed_separator.dart';
 import 'package:proj_inz/presentation/widgets/error_card.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_icon_button.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_text_button.dart';
@@ -23,9 +25,10 @@ class BoughtCouponDetailsScreen extends StatelessWidget {
       create: (context) => OwnedCouponBloc(context.read<CouponRepository>(), couponId)
         ..add(FetchCouponDetails()),
       child: Scaffold(
+        backgroundColor: Colors.white,
         body: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.all(24.0),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
             child: Column(
               children: [
                 SizedBox(
@@ -240,7 +243,6 @@ class _CouponDetails extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
       clipBehavior: Clip.antiAlias,
       decoration: ShapeDecoration(
         color: Colors.white,
@@ -259,133 +261,156 @@ class _CouponDetails extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Container(
-            width: double.infinity,
-            height: 90.0,
-            alignment: Alignment.center,
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            decoration: ShapeDecoration(
-              color: shopBgColor,
-              shape: RoundedRectangleBorder(
-                side: const BorderSide(width: 2),
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16.0, 10.0, 0.0, 10.0),
-              child: Text(
-                shopName,
-                style: TextStyle(
-                  color: shopNameColor,
-                  fontSize: 30,
-                  fontFamily: 'Roboto',
-                  fontWeight: FontWeight.w700,
-                )
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
+            padding: const EdgeInsets.all(16.0),
             child: Column(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text.rich(titleText),
-                ),
-                const SizedBox(height: 8,),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text.rich(priceText),
-                ),
-              ],
-            ),
-          ),
-          const Divider(
-            color: Colors.black,
-            thickness: 2,
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              spacing: 4,
-              children:[
-                const Text(
-                  'Szczegóły',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 20,
-                    fontFamily: 'Itim',
-                    fontWeight: FontWeight.w400,
+                Container(
+                  width: double.infinity,
+                  height: 90.0,
+                  alignment: Alignment.center,
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  decoration: ShapeDecoration(
+                    color: shopBgColor,
+                    shape: RoundedRectangleBorder(
+                      side: const BorderSide(width: 2),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16.0, 10.0, 0.0, 10.0),
+                    child: Text(
+                      shopName,
+                      style: TextStyle(
+                        color: shopNameColor,
+                        fontSize: 30,
+                        fontFamily: 'Roboto',
+                        fontWeight: FontWeight.w700,
+                      )
+                    ),
                   ),
                 ),
-                SizedBox(
-                  width: double.infinity,
-                  child: Row(
+                const SizedBox(height: 16),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: Column(
                     mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Gdzie działa:',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 18,
-                          fontFamily: 'Itim',
-                          fontWeight: FontWeight.w400,
-                          height: 0.83,
-                        ),
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text.rich(titleText),
                       ),
-                      locationText
+                      const SizedBox(height: 8,),
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text.rich(priceText),
+                      ),
                     ],
                   ),
                 ),
                 const Divider(
-                  height: 8,
                   color: Colors.black,
-                  thickness: 1,
+                  thickness: 2,
                 ),
-                SizedBox(
-                  width: double.infinity,
-                  child: Row(
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: Column(
                     mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    spacing: 4,
+                    children:[
                       const Text(
-                        'Ograniczenia:',
+                        'Szczegóły',
                         style: TextStyle(
                           color: Colors.black,
-                          fontSize: 18,
+                          fontSize: 20,
                           fontFamily: 'Itim',
                           fontWeight: FontWeight.w400,
-                          height: 0.83,
                         ),
                       ),
-                      limitsText
-                    ],
-                  ),
-                ),
-                const Divider(
-                  height: 8,
-                  color: Colors.black,
-                  thickness: 1,
-                ),
-                SizedBox(
-                  width: double.infinity,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
+                      SizedBox(
+                        width: double.infinity,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            const Text(
+                              'Gdzie działa:',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 18,
+                                fontFamily: 'Itim',
+                                fontWeight: FontWeight.w400,
+                                height: 0.83,
+                              ),
+                            ),
+                            locationText
+                          ],
+                        ),
+                      ),
+                      const Divider(
+                        height: 8,
+                        color: Colors.black,
+                        thickness: 1,
+                      ),
+                      SizedBox(
+                        width: double.infinity,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            const Text(
+                              'Ograniczenia:',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 18,
+                                fontFamily: 'Itim',
+                                fontWeight: FontWeight.w400,
+                                height: 0.83,
+                              ),
+                            ),
+                            limitsText
+                          ],
+                        ),
+                      ),
+                      const Divider(
+                        height: 8,
+                        color: Colors.black,
+                        thickness: 1,
+                      ),
+                      SizedBox(
+                        width: double.infinity,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            const Text(
+                              'Ważny do:',
+                              style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 18,
+                              fontFamily: 'Itim',
+                              fontWeight: FontWeight.w400,
+                              height: 0.83,
+                              ),
+                            ),
+                            expiryDateText
+                          ],
+                        ),
+                      ),
+                      const Divider(
+                        height: 8,
+                        color: Colors.black,
+                        thickness: 1,
+                      ),
                       const Text(
-                        'Ważny do:',
+                        'Opis:',
                         style: TextStyle(
                         color: Colors.black,
                         fontSize: 18,
@@ -394,62 +419,45 @@ class _CouponDetails extends StatelessWidget {
                         height: 0.83,
                         ),
                       ),
-                      expiryDateText
-                    ],
+                      Text(
+                        (description == null || description == '') ? 'brak' : description,
+                        style: const TextStyle(
+                          color: Color(0xFF646464),
+                          fontSize: 18,
+                          fontFamily: 'Itim',
+                          fontWeight: FontWeight.w400,
+                          height: 0.83,
+                        ),
+                      ),
+                    ]
                   ),
                 ),
-                const Divider(
-                  height: 8,
-                  color: Colors.black,
-                  thickness: 1,
-                ),
-                const Text(
-                  'Opis:',
-                  style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 18,
-                  fontFamily: 'Itim',
-                  fontWeight: FontWeight.w400,
-                  height: 0.83,
-                  ),
-                ),
-                Text(
-                  description ?? 'brak',
-                  style: const TextStyle(
-                    color: Color(0xFF646464),
-                    fontSize: 18,
-                    fontFamily: 'Itim',
-                    fontWeight: FontWeight.w400,
-                    height: 0.83,
-                  ),
-                ),
-              ]
+              ],
             ),
           ),
-          const Divider(
-            height: 32,
-            color: Colors.black,
-            thickness: 2,
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            spacing: 18,
-            children: [
-              const Text(
-                'Gotowy do wykorzystania!',
-                style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 20,
-                    fontFamily: 'Itim',
-                    fontWeight: FontWeight.w400,
-                    height: 0.75,
+          DashedSeparator(),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              spacing: 18,
+              children: [
+                const Text(
+                  'Gotowy do wykorzystania!',
+                  style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 20,
+                      fontFamily: 'Itim',
+                      fontWeight: FontWeight.w400,
+                      height: 0.75,
+                  ),
                 ),
-              ),
-              CustomTextButton(
-                label: 'Wyświetl kod',
-                onTap: () => _showCodeDialog(context, code),
-              )
-            ],
+                CustomTextButton(
+                  label: 'Wyświetl kod',
+                  onTap: () => _showCodeDialog(context, code),
+                )
+              ],
+            ),
           )
         ],
       ),
@@ -497,9 +505,7 @@ class _CouponDetails extends StatelessWidget {
                   onTap: () async {
                     await Clipboard.setData(ClipboardData(text: code));
                     if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Skopiowano kod do schowka')),
-                      );
+                      showCustomSnackBar(context, 'Skopiowano kod do schowka');
                     }
                   },
                   child: Row(

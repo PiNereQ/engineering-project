@@ -76,8 +76,10 @@ class _TicketButtonState extends State<TicketButton> {
                 side: const BorderSide(width: 2),
                 borderRadius: BorderRadius.circular(1000),
               ),
-              shadows: const [
-                      BoxShadow(
+              shadows: _isPressed
+                  ? []
+                  : [
+                      const BoxShadow(
                         color: Color(0xFF000000),
                         blurRadius: 0,
                         offset: Offset(4, 4),

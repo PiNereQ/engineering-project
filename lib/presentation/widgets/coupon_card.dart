@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:proj_inz/core/utils/utils.dart';
 import 'package:proj_inz/data/models/coupon_model.dart';
+import 'package:proj_inz/presentation/screens/bought_coupon_detail_screen.dart';
 import 'package:proj_inz/presentation/screens/coupon_detail_screen.dart';
 import 'package:proj_inz/presentation/widgets/dashed_separator.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_follow_button.dart';
@@ -149,14 +150,7 @@ class CouponCardHorizontal extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: GestureDetector(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => CouponDetailsScreen(couponId: couponId),
-            ),
-          );
-        },
+        
         child: Container(
           decoration: ShapeDecoration(
             color: Colors.white,
@@ -178,58 +172,82 @@ class CouponCardHorizontal extends StatelessWidget {
             spacing: 12,
             children: [
               // Shop
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16.0, 10.0, 0.0, 10.0),
-                child: Container(
-                  width: 110.0,
-                  height: 80.0,
-                  alignment: Alignment.center,
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  decoration: ShapeDecoration(
-                    color: shopBgColor,
-                    shape: RoundedRectangleBorder(
-                      side: const BorderSide(width: 2),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ), 
-                  child: Text(
-                    shopName,
-                    style: TextStyle(
-                      color: shopNameColor,
-                      fontSize: 15,
-                      fontFamily: 'Roboto',
-                      fontWeight: FontWeight.w700,
-                    )
-                  ),
-                ),
-              ),
-              // Details
               Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 10),
-                  child: SizedBox(
-                    width: 150,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text.rich(
-                          TextSpan(
-                            children: [
-                              titleText,
-                              limitsText
-                            ],
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (context) =>
+                                isBought
+                                    ? BoughtCouponDetailsScreen(
+                                      couponId: couponId,
+                                    )
+                                    : CouponDetailsScreen(couponId: couponId),
+                      ),
+                    );
+                  },
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    spacing: 12,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16.0, 10.0, 0.0, 10.0),
+                        child: Container(
+                          width: 110.0,
+                          height: 80.0,
+                          alignment: Alignment.center,
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          decoration: ShapeDecoration(
+                            color: shopBgColor,
+                            shape: RoundedRectangleBorder(
+                              side: const BorderSide(width: 2),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ), 
+                          child: Text(
+                            shopName,
+                            style: TextStyle(
+                              color: shopNameColor,
+                              fontSize: 15,
+                              fontFamily: 'Roboto',
+                              fontWeight: FontWeight.w700,
+                            )
                           ),
                         ),
-                        const SizedBox(height: 2.0,),
-                        Text.rich(priceText),
-                        const SizedBox(height: 2.0,),
-                        Text.rich(reputationText),
-                        Text.rich(locationText),
-                        Text.rich(expiryDateText),
-                      ],
-                    ),
+                      ),
+                      // Details
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          child: SizedBox(
+                            width: 150,
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text.rich(
+                                  TextSpan(
+                                    children: [
+                                      titleText,
+                                      limitsText
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 2.0,),
+                                Text.rich(priceText),
+                                const SizedBox(height: 2.0,),
+                                Text.rich(reputationText),
+                                Text.rich(locationText),
+                                Text.rich(expiryDateText),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
