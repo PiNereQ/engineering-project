@@ -101,24 +101,18 @@ class _RegistrationCardState extends State<_RegistrationCard> {
           _errorMessage =
               "Zaakceptuj regulamin aplikacji i politykę prywatności!";
         });
-
-        if (_errorMessage == null) {
-          context.read<AuthBloc>().add(
-            SignUpRequested(
-              email: _emailController.text,
-              username: _usernameController.text,
-              password: _passwordController.text,
-              confirmPassword: _confirmPasswordController.text,
-            ),
-          );
-        }
       }
-    
-    
-
+      if (_errorMessage == null) {
+        context.read<AuthBloc>().add(
+          SignUpRequested(
+            email: _emailController.text,
+            username: _usernameController.text,
+            password: _passwordController.text,
+            confirmPassword: _confirmPasswordController.text,
+          ),
+        );
+      }
     }
-
-    
   }
 
   @override
