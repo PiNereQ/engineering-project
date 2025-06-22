@@ -3,11 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:proj_inz/bloc/coupon/coupon_bloc.dart';
+import 'package:proj_inz/bloc/coupon_list/coupon_list_bloc.dart';
 import 'package:proj_inz/bloc/payment/payment_bloc.dart';
 import 'package:proj_inz/core/utils/utils.dart';
 import 'package:proj_inz/data/models/coupon_model.dart';
 import 'package:proj_inz/data/repositories/coupon_repository.dart';
 import 'package:proj_inz/data/repositories/user_repository.dart';
+import 'package:proj_inz/presentation/screens/bought_coupon_detail_screen.dart';
+import 'package:proj_inz/presentation/widgets/custom_snack_bar.dart';
 import 'package:proj_inz/presentation/widgets/dashed_separator.dart';
 import 'package:proj_inz/presentation/widgets/error_card.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_follow_button.dart';
@@ -30,6 +33,9 @@ class CouponDetailsScreen extends StatelessWidget {
                     ..add(FetchCouponDetails()),
         ),
         BlocProvider(create: (_) => PaymentBloc()),
+        BlocProvider(
+          create: (context) => CouponListBloc(context.read<CouponRepository>()),
+        ),
       ],
       child: Scaffold(
         backgroundColor: Colors.white,
@@ -255,22 +261,28 @@ class _CouponDetails extends StatelessWidget {
           showDialog(
             context: context,
             barrierDismissible: false,
-            builder: (_) => const Center(child: CircularProgressIndicator()),
+            builder: (_) => const Center(child: CircularProgressIndicator(color: Colors.white,)),
           );
         } else if (state is PaymentSuccess) {
           Navigator.of(context, rootNavigator: true).pop();
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Płatność zakończona sukcesem!')),
-          );
+          showCustomSnackBar(context, 'Płatność zakończona sukcesem!');
           final user = await getCurrentUser();
-          context.read<OwnedCouponBloc>().add(
-            BuyCouponRequested(couponId: coupon.id, userId: user.uid),
-          );
+          if (context.mounted) {
+            context.read<OwnedCouponBloc>().add(
+              BuyCouponRequested(couponId: coupon.id, userId: user.uid),
+            );
+            
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(
+              builder: (_) => BoughtCouponDetailsScreen(couponId: coupon.id),
+              ),
+            );
+            context.read<CouponListBloc>().add(RefreshCoupons()); // TODO: add listener for success state so the refresh is run after backend change
+          }
+          
         } else if (state is PaymentFailure) {
           Navigator.of(context, rootNavigator: true).pop();
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Błąd płatności: ${state.error}')),
-          );
+          showCustomSnackBar(context, state.error);
         }
       },
       child: Container(
