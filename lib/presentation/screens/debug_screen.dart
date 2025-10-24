@@ -1,10 +1,8 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:proj_inz/presentation/widgets/dashed_separator.dart';
-import 'package:proj_inz/presentation/widgets/input/buttons/custom_follow_button.dart';
-import 'package:proj_inz/presentation/widgets/input/buttons/custom_icon_button.dart';
-import 'package:proj_inz/presentation/widgets/input/buttons/custom_text_button.dart';
-import 'package:proj_inz/presentation/widgets/input/buttons/ticket_button.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 
 class DebugScreen extends StatefulWidget {
@@ -15,42 +13,64 @@ class DebugScreen extends StatefulWidget {
 }
 
 class _DebugScreenState extends State<DebugScreen> {
+  bool _isLoading = true;
+
   @override
   Widget build(BuildContext context) {
+    final apiKey = dotenv.env['GEOAPIFY_API_KEY'] ?? '';
+    
     return Scaffold(
       appBar: AppBar(title: const Text('Debug'),),
-      body: SingleChildScrollView(
-        child: Column(
-          spacing: 8,
-          children: [
-            CustomTextButton(
-              label: '_checkUser',
-              onTap: _checkUser
+      body: Stack(
+        children: [
+          FlutterMap(
+            options: MapOptions(
+              initialCenter: const LatLng(52.069328, 19.480216), // środek Polski
+              initialZoom: 6.0,
+              onMapReady: () {
+                setState(() {
+                  _isLoading = false;
+                });
+              },
+              interactionOptions: const InteractionOptions(
+                flags: InteractiveFlag.pinchZoom | InteractiveFlag.drag,
+              ),
             ),
-            TicketButton(
-              label: 'Twoje punkty',
-              value: '999',
-              icon: const Icon(Icons.favorite),
-              onTap: () {}
+            children: [
+              TileLayer(
+                urlTemplate: 'https://maps.geoapify.com/v1/tile/carto/{z}/{x}/{y}.png?&apiKey=$apiKey',
+                userAgentPackageName: 'com.coupidyn.proj_inz',
+                maxZoom: 18,
+                panBuffer: 1,
+              ),
+              RichAttributionWidget(
+                showFlutterMapAttribution: false,
+                attributions: [
+                  TextSourceAttribution(
+                    'OpenStreetMap contributors',
+                    onTap:
+                        () => launchUrl(
+                          Uri.parse('https://openstreetmap.org/copyright'),
+                        ),
+                  ),
+                  TextSourceAttribution(
+                    'Geoapify',
+                    onTap:
+                        () => launchUrl(
+                          Uri.parse('https://www.geoapify.com/terms-of-use'),
+                        ),
+                  )
+                ],
+              ),
+            ],
+          ),
+          if (_isLoading)
+            const Center(
+              child: CircularProgressIndicator(),
             ),
-            DashedSeparator(),
-            CustomIconButton(icon: const Icon(Icons.texture_sharp), onTap: () {}),
-            CustomIconButton.small(icon: const Icon(Icons.texture_sharp), onTap: () {}),
-            CustomFollowButton(onTap: () {}),
-            CustomFollowButton.small(onTap: () {})
-          ],
-        ),
-      )
+        ],
+      ),
     );
     
-  }
-}
-
-void _checkUser() {
-  final user = FirebaseAuth.instance.currentUser;
-  if (user != null) {
-    debugPrint('Logged in user ID: ${user.uid}');
-  } else {
-    debugPrint('No user is currently logged in.');
   }
 }
