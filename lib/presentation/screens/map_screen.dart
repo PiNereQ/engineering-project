@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -25,11 +26,11 @@ class MapScreen extends StatefulWidget {
 class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver {
   bool _isLoading = true;
   MapController? _mapController;
-  Key _mapKey = UniqueKey();
   bool _isLocationEnabled = false;
   bool _isLocationLoading = false;
   LatLng? _currentPosition;
   bool _waitingForLocationSettings = false;
+  Timer? _locationUpdateTimer;
 
   @override
   void initState() {
@@ -42,6 +43,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver {
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _mapController?.dispose();
+    _locationUpdateTimer?.cancel();
     super.dispose();
   }
 
@@ -54,6 +56,42 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver {
     }
   }
 
+  void _startLocationUpdates() {
+    _locationUpdateTimer?.cancel();
+    _locationUpdateTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
+      if (_isLocationEnabled && !_isLocationLoading) {
+        _updateLocation();
+      }
+    });
+  }
+
+
+  void _stopLocationUpdates() {
+    _locationUpdateTimer?.cancel();
+  }
+
+  Future<void> _updateLocation() async {
+    try {
+      final position = await Geolocator.getCurrentPosition();
+      final newPosition = LatLng(position.latitude, position.longitude);
+      debugPrint(newPosition.toString());
+
+      if (mounted) {
+        setState(() {
+          _currentPosition = newPosition;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error updating location: $e');
+      if (mounted) {
+        setState(() {
+          _isLocationEnabled = false;
+          _currentPosition = null;
+        });
+        _stopLocationUpdates();
+      }
+    }
+  }
 
   Future<void> _showLocationPermissionDialog() async {
     await showDialog(
@@ -287,6 +325,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver {
         _currentPosition = null;
         _isLocationEnabled = false;
       });
+      _stopLocationUpdates();
       return;
     }
 
@@ -302,7 +341,8 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver {
         _isLocationEnabled = true;
       });
 
-      _mapController?.move(newPosition, 15.0);
+      _mapController?.move(newPosition, 16.0);
+      _startLocationUpdates();
     } catch (e) {
       debugPrint('Error getting location: $e');
     } finally {
@@ -321,7 +361,6 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver {
         body: Stack(
           children: [
             FlutterMap(
-              key: _mapKey,
               mapController: _mapController,
               options: MapOptions(
                 initialCenter: const LatLng(52.23, 19.09), // środek Polski
