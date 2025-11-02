@@ -7,6 +7,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:proj_inz/bloc/coupon_list/coupon_list_bloc.dart';
 import 'package:proj_inz/bloc/search_shops_categories/search_shops_categories_bloc.dart';
 import 'package:proj_inz/bloc/search_shops_categories/search_shops_categories_event.dart';
+import 'package:proj_inz/presentation/screens/map_screen.dart';
 import 'package:proj_inz/presentation/screens/search_results_screen.dart';
 import 'package:proj_inz/data/repositories/shop_repository.dart';
 import 'package:proj_inz/data/repositories/category_repository.dart';
@@ -300,45 +301,70 @@ Widget build(BuildContext context) {
                     },
                   ),
                 Row(
-                  spacing: 12,
+                  mainAxisSize: MainAxisSize.max,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    CustomTextButton.small(
-                      label: 'Filtruj',
-                      onTap: () => showDialog(
-                        context: context,
-                        builder: (dialogContext) => BlocProvider.value(
-                          value: context.read<CouponListBloc>(),
-                          child: const _CouponFilterDialog(),
-                        ),
-                      ).then((_) {
-                        if (context.mounted) {
-                          context.read<CouponListBloc>().add(LeaveCouponFilterPopUp());
-                        }
-                      }),
-                      icon: const Icon(Icons.filter_alt),
-                    ),
-                    CustomTextButton.small(
-                      label: 'Sortuj',
-                      onTap: () => showDialog(
-                        context: context,
-                        builder: (dialogContext) => BlocProvider.value(
-                          value: context.read<CouponListBloc>(),
-                          child: const _CouponSortDialog(),
-                        ),
-                      ).then((_) {
-                        if (context.mounted) {
-                          context.read<CouponListBloc>().add(LeaveCouponSortPopUp());
-                        }
-                      }),
-                      icon: const Icon(Icons.sort),
-                    ),
-                  ],
-                ),
-              ],
+                      Row(
+                        spacing: 12,
+                        children: [
+                          CustomTextButton.small(
+                            label: 'Filtruj',
+                            onTap:
+                                () => showDialog(
+                                  context: context,
+                                  builder:
+                                      (dialogContext) => BlocProvider.value(
+                                        value: context.read<CouponListBloc>(),
+                                        child: const _CouponFilterDialog(),
+                                      ),
+                                ).then((_) {
+                                  if (context.mounted) {
+                                    context.read<CouponListBloc>().add(
+                                      LeaveCouponFilterPopUp(),
+                                    );
+                                  }
+                                }),
+                            icon: const Icon(Icons.filter_alt),
+                          ),
+                          CustomTextButton.small(
+                            label: 'Sortuj',
+                            onTap:
+                                () => showDialog(
+                                  context: context,
+                                  builder:
+                                      (dialogContext) => BlocProvider.value(
+                                        value: context.read<CouponListBloc>(),
+                                        child: const _CouponSortDialog(),
+                                      ),
+                                ).then((_) {
+                                  if (context.mounted) {
+                                    context.read<CouponListBloc>().add(
+                                      LeaveCouponSortPopUp(),
+                                    );
+                                  }
+                                }),
+                            icon: const Icon(Icons.sort),
+                          ),
+                        ],
+                      ),
+                      CustomTextButton.small(
+                        label: 'Pokaż mapę',
+                        onTap:
+                            () => Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => const MapScreen(),
+                              ),
+                            ),
+                        icon: const Icon(Icons.map_outlined),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
-      ],
+        ],
     ),
     toolbarHeight: 174,
   );
