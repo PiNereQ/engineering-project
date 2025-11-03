@@ -54,6 +54,70 @@ class MapCacheRepository {
     }
   }
 
+  Future<int> getCacheSize() async {
+    if (!_isInitialised || _cacheDirectoryPath == null) {
+      throw Exception('getCacheSize(): Cache store not initialized. Call initialize() first.');
+    }
+
+    try {
+      final cacheDirectory = Directory(_cacheDirectoryPath!);
+
+      if (!await cacheDirectory.exists()) {
+        return 0;
+      }
+
+      int totalSize = 0;
+      await for (final entity in cacheDirectory.list(recursive: true)) {
+        if (entity is File) {
+          final stat = await entity.stat();
+          totalSize += stat.size;
+        }
+      }
+
+      return totalSize;
+    } catch (e) {
+      throw Exception('Failed to get cache size: $e');
+    }
+  }
+
+  Future<String> getCacheSizeFormatted() async {
+    final sizeInBytes = await getCacheSize();
+
+    if (sizeInBytes < 1024) {
+      return '$sizeInBytes B';
+    } else if (sizeInBytes < 1024 * 1024) {
+      return '${(sizeInBytes / 1024).toStringAsFixed(1)} KB';
+    } else {
+      return '${(sizeInBytes / (1024 * 1024)).toStringAsFixed(1)} MB';
+    }
+  }
+
+
+  Future<int> getCachedTilesCount() async {
+    if (!_isInitialised || _cacheDirectoryPath == null) {
+      throw Exception('getCacheTilesCount(): Cache store not initialized. Call initialize() first.');
+    }
+
+    try {
+      final cacheDirectory = Directory(_cacheDirectoryPath!);
+
+      if (!await cacheDirectory.exists()) {
+        return 0;
+      }
+
+      int fileCount = 0;
+      await for (final entity in cacheDirectory.list(recursive: true)) {
+        if (entity is File) {
+          fileCount++;
+        }
+      }
+
+      return fileCount;
+    } catch (e) {
+      throw Exception('Failed to get cached tiles count: $e');
+    }
+  }
+
   void dispose() {
     _isInitialised = false;
   }

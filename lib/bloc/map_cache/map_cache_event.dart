@@ -8,3 +8,5 @@ abstract class MapCacheEvent extends Equatable {
 class MapCacheInitialiseRequested extends MapCacheEvent {}
 
 class MapCacheClearRequested extends MapCacheEvent {}
+
+class MapCacheStatusRequested extends MapCacheEvent {}

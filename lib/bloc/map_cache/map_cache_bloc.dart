@@ -11,6 +11,7 @@ class MapCacheBloc extends Bloc<MapCacheEvent, MapCacheState> {
   MapCacheBloc({required this.mapCacheRepository}) : super(MapCacheInitial()) {
     on<MapCacheInitialiseRequested>(_onInitializeRequested);
     on<MapCacheClearRequested>(_onClearRequested);
+    on<MapCacheStatusRequested>(_onStatusRequested);
   }
 
   void _onInitializeRequested(
@@ -32,6 +33,24 @@ class MapCacheBloc extends Bloc<MapCacheEvent, MapCacheState> {
       emit(MapCacheClearSuccess());
     } catch (e) {
       emit(MapCacheClearError(errorMessage: e.toString()));
+    }
+  }
+
+  void _onStatusRequested(
+      MapCacheStatusRequested event, Emitter<MapCacheState> emit) async {
+    emit(MapCacheGetStatusInProgress());
+    try {
+      final cacheSize = await mapCacheRepository.getCacheSize();
+      final cacheSizeFormatted = await mapCacheRepository.getCacheSizeFormatted();
+      final tilesCount = await mapCacheRepository.getCachedTilesCount();
+      
+      emit(MapCacheGetStatusSuccess(
+        cacheSize: cacheSize,
+        cacheSizeFormatted: cacheSizeFormatted,
+        tilesCount: tilesCount,
+      ));
+    } catch (e) {
+      emit(MapCacheGetStatusError(errorMessage: e.toString()));
     }
   }
 

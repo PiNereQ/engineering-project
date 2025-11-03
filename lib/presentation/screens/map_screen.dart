@@ -1,14 +1,18 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_map_cache/flutter_map_cache.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:app_settings/app_settings.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 
+import 'package:proj_inz/bloc/map_cache/map_cache_bloc.dart';
+import 'package:proj_inz/data/repositories/map_cache_repository.dart';
 import 'package:proj_inz/presentation/widgets/custom_snack_bar.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_icon_button.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_text_button.dart';
@@ -23,7 +27,26 @@ class MapScreen extends StatefulWidget {
   State<MapScreen> createState() => _MapScreenState();
 }
 
-class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver {
+class _MapScreenState extends State<MapScreen> {
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (context) => MapCacheBloc(
+        mapCacheRepository: MapCacheRepository(),
+      )..add(MapCacheInitialiseRequested()),
+      child: const _MapScreenView(),
+    );
+  }
+}
+
+class _MapScreenView extends StatefulWidget {
+  const _MapScreenView();
+
+  @override
+  State<_MapScreenView> createState() => _MapScreenViewState();
+}
+
+class _MapScreenViewState extends State<_MapScreenView> with WidgetsBindingObserver {
   bool _isLoading = true;
   MapController? _mapController;
   bool _isLocationEnabled = false;
@@ -91,6 +114,115 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver {
         _stopLocationUpdates();
       }
     }
+  }
+
+  Future<void> _showCacheManagementDialog() async {
+    final mapCacheBloc = context.read<MapCacheBloc>();
+    mapCacheBloc.add(MapCacheStatusRequested());
+    
+    await showDialog(
+      context: context,
+      builder: (dialogContext) => BlocProvider.value(
+        value: mapCacheBloc,
+        child: BlocBuilder<MapCacheBloc, MapCacheState>(
+          builder: (context, state) {
+            return AlertDialog(
+              backgroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(24),
+                side: const BorderSide(width: 2, color: Colors.black),
+              ),
+              title: const Text(
+                'Zarządzanie cache\'em mapy',
+                style: TextStyle(
+                  fontFamily: 'Itim',
+                  fontSize: 22,
+                  fontWeight: FontWeight.w400,
+                  color: Colors.black,
+                ),
+              ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (state is MapCacheGetStatusSuccess) ...[
+                  Text(
+                    'Rozmiar cache: ${state.cacheSizeFormatted}',
+                    style: const TextStyle(
+                      fontFamily: 'Itim',
+                      fontSize: 16,
+                      color: Color(0xFF646464),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Liczba kafelków: ${state.tilesCount}',
+                    style: const TextStyle(
+                      fontFamily: 'Itim',
+                      fontSize: 16,
+                      color: Color(0xFF646464),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ] else if (state is MapCacheGetStatusInProgress) ...[
+                  const Center(child: CircularProgressIndicator()),
+                  const SizedBox(height: 16),
+                ] else if (state is MapCacheGetStatusError) ...[
+                  Text(
+                    'Błąd: ${state.errorMessage}',
+                    style: const TextStyle(
+                      fontFamily: 'Itim',
+                      fontSize: 16,
+                      color: Colors.red,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+                const Text(
+                  'Czy chcesz wyczyścić cache mapy?',
+                  style: TextStyle(
+                    fontFamily: 'Itim',
+                    fontSize: 16,
+                    color: Color(0xFF646464),
+                  ),
+                ),
+              ],
+            ),
+            actionsPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 12,
+            ),
+            actions: [
+              CustomTextButton.small(
+                label: 'Anuluj',
+                width: 100,
+                onTap: () => Navigator.of(context).pop(),
+              ),
+              BlocConsumer<MapCacheBloc, MapCacheState>(
+                listener: (context, state) {
+                  if (state is MapCacheClearSuccess) {
+                    Navigator.of(context).pop();
+                    showCustomSnackBar(context, 'Cache został wyczyszczony');
+                  } else if (state is MapCacheClearError) {
+                    showCustomSnackBar(context, 'Błąd podczas czyszczenia cache: ${state.errorMessage}');
+                  }
+                },
+                builder: (context, state) {
+                  return CustomTextButton.small(
+                    label: state is MapCacheClearInProgress ? 'Czyszczenie...' : 'Wyczyść',
+                    width: 120,
+                    onTap: state is MapCacheClearInProgress 
+                        ? () {} 
+                        : () => context.read<MapCacheBloc>().add(MapCacheClearRequested()),
+                  );
+                },
+              ),
+            ],
+          );
+        },
+      ),
+        ),
+    );
   }
 
   Future<void> _showLocationPermissionDialog() async {
@@ -303,15 +435,19 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver {
       if (userWantsLocation) {
         _waitingForLocationSettings = true;
         Geolocator.openLocationSettings();
-        showCustomSnackBar(
-          context,
-          'Włącz usługi lokalizacji i wróć do aplikacji.',
-        );
+        if (mounted) {
+          showCustomSnackBar(
+            context,
+            'Włącz usługi lokalizacji i wróć do aplikacji.',
+          );
+        }
         // The settings open and this function finishes.
         // After user returns to the app, didChangeAppLifecycleState() runs and checks for location services again.
         return Future.error('Waiting for location settings.');
       } else {
-        showCustomSnackBar(context, 'Usługi lokalizacji są wyłączone.');
+        if (mounted) {
+          showCustomSnackBar(context, 'Usługi lokalizacji są wyłączone.');
+        }
         return Future.error('Location service disabled.');
       }
     }
@@ -380,12 +516,30 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver {
                 ),
               ),
               children: [
-                TileLayer(
-                  urlTemplate:
-                      'https://maps.geoapify.com/v1/tile/carto/{z}/{x}/{y}.png?&apiKey=$apiKey',
-                  userAgentPackageName: 'com.coupidyn.proj_inz',
-                  maxZoom: 18,
-                  panBuffer: 1,
+                BlocBuilder<MapCacheBloc, MapCacheState>(
+                  builder: (context, state) {
+                    if (state is MapCacheInitialisedSuccess || state is MapCacheGetStatusSuccess || state is MapCacheGetStatusInProgress) {
+                      return TileLayer(
+                        urlTemplate:
+                            'https://maps.geoapify.com/v1/tile/carto/{z}/{x}/{y}.png?&apiKey=$apiKey',
+                        userAgentPackageName: 'com.coupidyn.proj_inz',
+                        maxZoom: 19,
+                        panBuffer: 1,
+                        tileProvider: CachedTileProvider(
+                          store: context.read<MapCacheBloc>().mapCacheRepository.cacheStore,
+                          maxStale: const Duration(days: 30),
+                        ),
+                      );
+                    } else {
+                      return TileLayer(
+                        urlTemplate:
+                            'https://maps.geoapify.com/v1/tile/carto/{z}/{x}/{y}.png?&apiKey=$apiKey',
+                        userAgentPackageName: 'com.coupidyn.proj_inz',
+                        maxZoom: 19,
+                        panBuffer: 1,
+                      );
+                    }
+                  },
                 ),
                 if (_currentPosition != null)
                   MarkerLayer(
@@ -421,6 +575,14 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver {
                         ? Icon(Icons.my_location)
                         : Icon(Icons.location_searching),
                 onTap: locationButtonPressed,
+              ),
+            ),
+            Positioned(
+              right: 24,
+              bottom: 124,
+              child: CustomIconButton(
+                icon: Icon(Icons.cleaning_services),
+                onTap: () => _showCacheManagementDialog(),
               ),
             ),
             if (_isLoading) const Center(child: CircularProgressIndicator()),
