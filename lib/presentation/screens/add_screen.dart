@@ -53,7 +53,7 @@ class _AddScreenState extends State<AddScreen> {
   @override
   Widget build(BuildContext context) {
 
-    _backDialog() {
+    backDialog() {
       return showDialog(
         context: context,
         builder: (context) => AlertDialog(
@@ -131,7 +131,7 @@ class _AddScreenState extends State<AddScreen> {
                           children: [
                             CustomIconButton(
                               icon: SvgPicture.asset('assets/icons/back.svg'),
-                              onTap: () => _backDialog(),
+                              onTap: () => backDialog(),
                             ),
                             CustomIconButton(
                               icon: const Icon(Icons.info_outline_rounded),
@@ -327,7 +327,7 @@ class _AddScreenState extends State<AddScreen> {
                                         width: 160,
                                         label: 'Dodaj zdjęcie',
                                         onTap: () {
-                                          print('Kliknięto: Dodaj zdjęcie');
+                                          debugPrint('Kliknięto: Dodaj zdjęcie');
                                         },
                                       ),
                                     ),
@@ -598,7 +598,7 @@ class _AddScreenState extends State<AddScreen> {
                                 label: 'Dodaj',
                                 onTap: () {
                                   if (_formKey.currentState?.validate() ?? false) {
-                                    print('Kliknięto Dodaj');
+                                    debugPrint('Kliknięto Dodaj');
                                     final offer = CouponOffer(
                                       description: _descriptionController.text,
                                       reduction: double.tryParse(_reductionController.text) ?? 0,
@@ -613,7 +613,7 @@ class _AddScreenState extends State<AddScreen> {
                                     );
                                     context.read<CouponAddBloc>().add(AddCouponOffer(offer));
                                   } else {
-                                    print('Formularz nie jest kompletny!');
+                                    debugPrint('Formularz nie jest kompletny!');
                                   }
                                 },
                               ),

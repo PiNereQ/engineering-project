@@ -33,7 +33,6 @@ class UserRepository {
           .where('username', isEqualTo: username)
           .get();
       
-      print(query.docs.isNotEmpty);
       return query.docs.isNotEmpty;
     } catch (e) {
       return false;

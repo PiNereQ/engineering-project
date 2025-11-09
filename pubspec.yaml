@@ -53,7 +53,7 @@ flutter:
   fonts:
     - family: Itim
       fonts:
-        - asset: assets/fonts/Itim/Itim-Regular.ttf
+        - asset: assets/fonts/itim/Itim-Regular.ttf
     - family: Roboto Mono
       fonts:
         - asset: assets/fonts/roboto_mono/RobotoMono-VariableFont_wght.ttf

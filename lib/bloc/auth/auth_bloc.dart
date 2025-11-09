@@ -30,7 +30,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       
       emit(AuthSignUpSuccess());
     } catch (e) {
-      print(e);
       emit(AuthSignUpFailure(errorMessage: e.toString()));
     }
   }

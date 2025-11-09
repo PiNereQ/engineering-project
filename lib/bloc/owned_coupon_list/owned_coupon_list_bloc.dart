@@ -23,7 +23,7 @@ class OwnedCouponListBloc extends Bloc<OwnedCouponListEvent, OwnedCouponListStat
     on<RefreshCoupons>(_onRefreshCoupons);
   }
 
-    _onFetchCoupons(FetchCoupons event, Emitter<OwnedCouponListState> emit) async {
+    Future<void> _onFetchCoupons(FetchCoupons event, Emitter<OwnedCouponListState> emit) async {
     emit(OwnedCouponListLoadInProgress());
     _allCoupons.clear();
     _lastDocument = null;
@@ -31,7 +31,7 @@ class OwnedCouponListBloc extends Bloc<OwnedCouponListEvent, OwnedCouponListStat
     add(FetchMoreCoupons());
   }
 
-  _onFetchMoreCoupons(FetchMoreCoupons event, Emitter<OwnedCouponListState> emit) async {
+  Future<void> _onFetchMoreCoupons(FetchMoreCoupons event, Emitter<OwnedCouponListState> emit) async {
     if (_isFetching) {
       debugPrint("Still loading");
       return;
@@ -68,7 +68,7 @@ class OwnedCouponListBloc extends Bloc<OwnedCouponListEvent, OwnedCouponListStat
     }
   }
 
-  _onRefreshCoupons(RefreshCoupons event, Emitter<OwnedCouponListState> emit) async {
+  Future<void> _onRefreshCoupons(RefreshCoupons event, Emitter<OwnedCouponListState> emit) async {
     emit(OwnedCouponListLoadInProgress());
     _allCoupons.clear();
     _lastDocument = null;

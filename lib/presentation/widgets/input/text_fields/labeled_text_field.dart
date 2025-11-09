@@ -87,7 +87,7 @@ class LabeledTextField extends StatelessWidget {
             ? constraints.maxWidth
             : (constraints.maxWidth - 16) / 2;
 
-        return Container(
+        return SizedBox(
           width: calculatedWidth,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

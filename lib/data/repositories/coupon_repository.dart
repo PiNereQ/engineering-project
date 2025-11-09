@@ -185,7 +185,6 @@ class CouponRepository {
     }
     
     final ownershipQuerySnapshot = await ownershipQuery.get();
-    print(ownershipQuerySnapshot.docs.length);
 
     final coupons = <Coupon>[];
     for (final codeDataDoc in ownershipQuerySnapshot.docs) {

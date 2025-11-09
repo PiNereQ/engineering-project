@@ -319,7 +319,7 @@ class SearchResultsScreen extends StatelessWidget {
                             ],
                           ),
                         );
-                      }).toList(),
+                      }),
                     ],
                   );
                 } else if (state is SearchError) {

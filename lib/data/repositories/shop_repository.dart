@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:proj_inz/data/models/shop_model.dart';
 
@@ -75,7 +74,7 @@ class ShopRepository {
       final querySnapshot = await _firestore
           .collection('shops')
           .where('nameLowercase', isGreaterThanOrEqualTo: lowercaseQuery)
-          .where('nameLowercase', isLessThan: lowercaseQuery + 'z')
+          .where('nameLowercase', isLessThan: '${lowercaseQuery}z')
           .get();
 
       final shops = querySnapshot.docs.map((doc) {

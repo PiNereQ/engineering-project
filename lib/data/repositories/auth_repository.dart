@@ -11,7 +11,6 @@ class AuthRepository {
     }
     
     if (await _userRepository.isUsernameInUse(username)) {
-      print('used');
       throw "Nazwa użytkownika jest zajęta";
     }
     

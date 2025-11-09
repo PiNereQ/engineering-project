@@ -14,7 +14,7 @@ class CategoryRepository {
     final snapshot = await _firestore
         .collection('categories')
         .where('name', isGreaterThanOrEqualTo: lowercaseQuery)
-        .where('name', isLessThan: lowercaseQuery + 'z')
+        .where('name', isLessThan: '${lowercaseQuery}z')
         .get();
 
     return snapshot.docs.map((doc) {

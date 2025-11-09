@@ -303,15 +303,22 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver {
       if (userWantsLocation) {
         _waitingForLocationSettings = true;
         Geolocator.openLocationSettings();
-        showCustomSnackBar(
-          context,
-          'Włącz usługi lokalizacji i wróć do aplikacji.',
-        );
+        if (mounted) {
+          showCustomSnackBar(
+            context,
+            'Włącz usługi lokalizacji i wróć do aplikacji.',
+          );
+        }
         // The settings open and this function finishes.
         // After user returns to the app, didChangeAppLifecycleState() runs and checks for location services again.
         return Future.error('Waiting for location settings.');
       } else {
-        showCustomSnackBar(context, 'Usługi lokalizacji są wyłączone.');
+        if (mounted) {
+          showCustomSnackBar(
+            context,
+            'Usługi lokalizacji są wyłączone.',
+          );
+        }
         return Future.error('Location service disabled.');
       }
     }
