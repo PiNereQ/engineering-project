@@ -4,15 +4,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:proj_inz/presentation/widgets/coupon_map/shop_location.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:app_settings/app_settings.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:proj_inz/bloc/coupon_map/coupon_map_bloc.dart';
+import 'package:proj_inz/data/repositories/map_repository.dart';
 
 import 'package:proj_inz/presentation/widgets/custom_snack_bar.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_icon_button.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_text_button.dart';
-import 'package:proj_inz/presentation/widgets/location_dot.dart';
+import 'package:proj_inz/presentation/widgets/coupon_map/location_dot.dart';
 
 
 
@@ -363,76 +367,96 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     final apiKey = dotenv.env['GEOAPIFY_API_KEY'] ?? '';
 
-    return SafeArea(
-      child: Scaffold(
-        body: Stack(
-          children: [
-            FlutterMap(
-              mapController: _mapController,
-              options: MapOptions(
-                initialCenter: const LatLng(52.23, 19.09), // środek Polski
-                initialZoom: 5.9,
-                onMapReady: () {
-                  setState(() {
-                    _isLoading = false;
-                  });
-                },
-                interactionOptions: const InteractionOptions(
-                  flags:
-                      InteractiveFlag.pinchZoom |
-                      InteractiveFlag.drag |
-                      InteractiveFlag.pinchMove |
-                      InteractiveFlag.doubleTapZoom |
-                      InteractiveFlag.scrollWheelZoom,
-                ),
-              ),
-              children: [
-                TileLayer(
-                  urlTemplate:
-                      'https://maps.geoapify.com/v1/tile/carto/{z}/{x}/{y}.png?&apiKey=$apiKey',
-                  userAgentPackageName: 'com.coupidyn.proj_inz',
-                  maxZoom: 18,
-                  panBuffer: 1,
-                ),
-                if (_currentPosition != null)
-                  MarkerLayer(
-                    markers: [
-                      Marker(point: _currentPosition!, child: LocationDot()),
+    return BlocProvider(
+      create: (context) => CouponMapBloc(mapRepository: MapRepository())..add(LoadLocations()),
+      child: BlocBuilder<CouponMapBloc, CouponMapState>(
+        builder: (context, state) {
+          List<Marker> markers = [];
+
+          if (state is CouponMapLoaded) {
+            markers = state.locations.map((location) {
+              return Marker(
+                point: LatLng(location.latitude, location.longitude),
+                child: ShopLocation(),
+              );
+            }).toList();
+          }
+
+          return SafeArea(
+            child: Scaffold(
+              body: Stack(
+                children: [
+                  FlutterMap(
+                    mapController: _mapController,
+                    options: MapOptions(
+                      initialCenter: const LatLng(52.23, 19.09),
+                      initialZoom: 5.9,
+                      maxZoom: 20.0,
+                      onMapReady: () {
+                        setState(() {
+                          _isLoading = false;
+                        });
+                      },
+                      interactionOptions: const InteractionOptions(
+                        flags:
+                            InteractiveFlag.pinchZoom |
+                            InteractiveFlag.drag |
+                            InteractiveFlag.pinchMove |
+                            InteractiveFlag.doubleTapZoom |
+                            InteractiveFlag.scrollWheelZoom,
+                      ),
+                    ),
+                    children: [
+                      TileLayer(
+                        urlTemplate:
+                            'https://maps.geoapify.com/v1/tile/carto/{z}/{x}/{y}.png?&apiKey=$apiKey',
+                        userAgentPackageName: 'com.coupidyn.proj_inz',
+                        maxZoom: 20,
+                        panBuffer: 1,
+                      ),
+                      if (_currentPosition != null)
+                        MarkerLayer(
+                          markers: [
+                            Marker(point: _currentPosition!, child: LocationDot()),
+                          ],
+                        ),
+                      MarkerLayer(markers: markers),
+                      _AttributionWidget()
                     ],
                   ),
-                _AttributionWidget()
-              ],
-            ),
-            Positioned(
-              left: 24,
-              top: 16,
-              child: CustomIconButton(
-                icon: SvgPicture.asset('assets/icons/back.svg'),
-                onTap: () {
-                  Navigator.of(context).pop();
-                },
+                  Positioned(
+                    left: 24,
+                    top: 16,
+                    child: CustomIconButton(
+                      icon: SvgPicture.asset('assets/icons/back.svg'),
+                      onTap: () {
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                  ),
+                  Positioned(
+                    right: 24,
+                    bottom: 64,
+                    child: CustomIconButton(
+                      icon:
+                          _isLocationLoading
+                              ? const CircularProgressIndicator(
+                            color: Colors.black,
+                            padding: EdgeInsets.all(12.0),
+                            strokeWidth: 2.0,
+                          )
+                              : _isLocationEnabled
+                              ? Icon(Icons.my_location)
+                              : Icon(Icons.location_searching),
+                      onTap: locationButtonPressed,
+                    ),
+                  ),
+                  if (_isLoading) const Center(child: CircularProgressIndicator()),
+                ],
               ),
             ),
-            Positioned(
-              right: 24,
-              bottom: 64,
-              child: CustomIconButton(
-                icon:
-                    _isLocationLoading
-                        ? const CircularProgressIndicator(
-                          color: Colors.black,
-                          padding: EdgeInsets.all(12.0),
-                          strokeWidth: 2.0,
-                        )
-                        : _isLocationEnabled
-                        ? Icon(Icons.my_location)
-                        : Icon(Icons.location_searching),
-                onTap: locationButtonPressed,
-              ),
-            ),
-            if (_isLoading) const Center(child: CircularProgressIndicator()),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
