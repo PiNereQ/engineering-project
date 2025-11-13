@@ -51,7 +51,7 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
     on<LeaveCouponSortPopUp>(_onLeaveCouponSortPopUp);
   }
 
-  _onFetchCoupons(FetchCoupons event, Emitter<CouponListState> emit) async {
+  Future<void> _onFetchCoupons(FetchCoupons event, Emitter<CouponListState> emit) async {
     emit(CouponListLoadInProgress());
     _allCoupons.clear();
     _lastDocument = null;
@@ -60,7 +60,7 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
     add(FetchMoreCoupons());
   }
 
-  _onFetchMoreCoupons(FetchMoreCoupons event, Emitter<CouponListState> emit) async {
+  Future<void> _onFetchMoreCoupons(FetchMoreCoupons event, Emitter<CouponListState> emit) async {
     if (_isFetching) {
       debugPrint("Still loading");
       return;
@@ -112,14 +112,14 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
     }
   }
 
-  _onRefreshCoupons(RefreshCoupons event, Emitter<CouponListState> emit) async {
+  Future<void> _onRefreshCoupons(RefreshCoupons event, Emitter<CouponListState> emit) async {
     _allCoupons.clear();
     _lastDocument = null;
     _hasMore = true;
     add(FetchCoupons());
   }
 
-  _onApplyCouponFilters(ApplyCouponFilters event, Emitter<CouponListState> emit) {
+  void _onApplyCouponFilters(ApplyCouponFilters event, Emitter<CouponListState> emit) {
     if (kDebugMode) debugPrint('Applied filters:\n\t%:${event.reductionIsFixed}\tzł:${event.reductionIsPercentage}\n\tminPrice:${event.minPrice}\tmaxPrice:${event.maxPrice}\n\trep:${event.minReputation}');
     emit(CouponListFilterApplyInProgress());
     _reductionIsFixed = event.reductionIsFixed;
@@ -138,7 +138,7 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
     add(FetchCoupons());
   }
 
-  _onClearCouponFilters(ClearCouponFilters event, Emitter<CouponListState> emit) {
+  void _onClearCouponFilters(ClearCouponFilters event, Emitter<CouponListState> emit) {
     if (kDebugMode) debugPrint('Filters cleared.');
     _reductionIsFixed = null;
     _reductionIsPercentage = null;
@@ -156,7 +156,7 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
     add(FetchCoupons());
   }
 
-  _onReadCouponFilters(ReadCouponFilters event, Emitter<CouponListState> emit) {
+  void _onReadCouponFilters(ReadCouponFilters event, Emitter<CouponListState> emit) {
     emit(CouponListFilterRead(
       reductionIsPercentage: _reductionIsPercentage,
       reductionIsFixed: _reductionIsFixed,
@@ -166,11 +166,11 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
     ));
   }
 
-  _onLeaveCouponFilterPopUp(LeaveCouponFilterPopUp event, Emitter<CouponListState> emit) {
+  void _onLeaveCouponFilterPopUp(LeaveCouponFilterPopUp event, Emitter<CouponListState> emit) {
     emit(_previousListState);
   }
 
-  _onApplyCouponOrdering(ApplyCouponOrdering event, Emitter<CouponListState> emit) {
+  void _onApplyCouponOrdering(ApplyCouponOrdering event, Emitter<CouponListState> emit) {
     if (kDebugMode) debugPrint('Applied order:\t%:${event.ordering}');
     emit(CouponListOrderingApplyInProgress());
     _ordering = event.ordering;
@@ -179,11 +179,11 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
     add(FetchCoupons());
   }
 
-  _onReadCouponOrdering(ReadCouponOrdering event, Emitter<CouponListState> emit) {
+  void _onReadCouponOrdering(ReadCouponOrdering event, Emitter<CouponListState> emit) {
     emit(CouponListOrderingRead(_ordering));
   }
 
-  _onLeaveCouponSortPopUp(LeaveCouponSortPopUp event, Emitter<CouponListState> emit) {
+  void _onLeaveCouponSortPopUp(LeaveCouponSortPopUp event, Emitter<CouponListState> emit) {
     emit(_previousListState);
   }
 }

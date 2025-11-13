@@ -464,7 +464,7 @@ class _CouponDetails extends StatelessWidget {
     );
   }
 
-  _showCodeDialog(BuildContext context, String code) {
+  Future _showCodeDialog(BuildContext context, String code) {
     return showDialog(
       context: context,
       builder: (context) {

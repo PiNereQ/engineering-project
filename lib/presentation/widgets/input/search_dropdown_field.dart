@@ -63,7 +63,7 @@ class _SearchDropdownFieldState extends State<SearchDropdownField> {
             ),
             child: DropdownButtonHideUnderline(
               child: DropdownButtonFormField<String>(
-                value: currentValue,
+                initialValue: currentValue,
                 hint: widget.placeholder != null
                     ? Text(
                         widget.placeholder!,

@@ -77,7 +77,7 @@ class _ChatScreenState extends State<ChatScreen> {
             child: ListView.separated(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               itemCount: currentConversations.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 12),
+              separatorBuilder: (_, _) => const SizedBox(height: 12),
               itemBuilder: (context, index) {
                 final c = currentConversations[index];
                 return GestureDetector(

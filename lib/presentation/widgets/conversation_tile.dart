@@ -130,7 +130,7 @@ class ConversationTile extends StatelessWidget {
                 Positioned(
                   left: 370,
                   top: 0,
-                  child: Container(
+                  child: SizedBox(
                     width: 5,
                     height: 112,
                     child: SvgPicture.asset(
