@@ -35,6 +35,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver {
   LatLng? _currentPosition;
   bool _waitingForLocationSettings = false;
   Timer? _locationUpdateTimer;
+  bool _showSearchButton = false;
 
   @override
   void initState() {
@@ -56,7 +57,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver {
     if (state == AppLifecycleState.resumed && _waitingForLocationSettings) {
       _waitingForLocationSettings = false;
       // Retry getting location when app resumes
-      locationButtonPressed();
+      _locationButtonPressed();
     }
   }
 
@@ -68,7 +69,6 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver {
       }
     });
   }
-
 
   void _stopLocationUpdates() {
     _locationUpdateTimer?.cancel();
@@ -274,7 +274,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver {
     return result ?? false;
   }
 
-  Future<Position> getPosition() async {
+  Future<Position> _getPosition() async {
     bool serviceEnabled;
     LocationPermission permission;
 
@@ -330,7 +330,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver {
     return await Geolocator.getCurrentPosition();
   }
 
-  Future<void> locationButtonPressed() async {
+  Future<void> _locationButtonPressed() async {
     if (_isLocationEnabled) {
       setState(() {
         _currentPosition = null;
@@ -344,7 +344,7 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver {
       setState(() {
         _isLocationLoading = true;
       });
-      final position = await getPosition();
+      final position = await _getPosition();
       final newPosition = LatLng(position.latitude, position.longitude);
 
       setState(() {
@@ -363,6 +363,14 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver {
     }
   }
 
+  void _onMapMove() {
+    setState(() {
+      _showSearchButton = true;
+    });
+  }
+
+  
+
   @override
   Widget build(BuildContext context) {
     final apiKey = dotenv.env['GEOAPIFY_API_KEY'] ?? '';
@@ -371,6 +379,26 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver {
       create: (context) => CouponMapBloc(mapRepository: MapRepository())..add(LoadLocations()),
       child: BlocBuilder<CouponMapBloc, CouponMapState>(
         builder: (context, state) {
+
+          void searchInCurrentView() {
+            if (_mapController != null) {
+              final bounds = _mapController?.camera.visibleBounds;
+              if (bounds != null) {
+                final customBounds = LatLngBounds(
+                  LatLng(bounds.southWest.latitude, bounds.southWest.longitude),
+                  LatLng(bounds.northEast.latitude, bounds.northEast.longitude),
+                );
+                context.read<CouponMapBloc>().add(
+                  LoadLocationsInBounds(bounds: customBounds),
+                );
+              }
+            }
+            setState(() {
+              _showSearchButton = false;
+            });
+          }
+
+
           List<Marker> markers = [];
 
           if (state is CouponMapLoaded) {
@@ -382,51 +410,57 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver {
             }).toList();
           }
 
-          return SafeArea(
-            child: Scaffold(
-              body: Stack(
-                children: [
-                  FlutterMap(
-                    mapController: _mapController,
-                    options: MapOptions(
-                      initialCenter: const LatLng(52.23, 19.09),
-                      initialZoom: 5.9,
-                      maxZoom: 20.0,
-                      onMapReady: () {
-                        setState(() {
-                          _isLoading = false;
-                        });
-                      },
-                      interactionOptions: const InteractionOptions(
-                        flags:
-                            InteractiveFlag.pinchZoom |
-                            InteractiveFlag.drag |
-                            InteractiveFlag.pinchMove |
-                            InteractiveFlag.doubleTapZoom |
-                            InteractiveFlag.scrollWheelZoom,
-                      ),
+          return Scaffold(
+            body: Stack(
+              children: [
+                FlutterMap(
+                  mapController: _mapController,
+                  options: MapOptions(
+                    initialCenter: const LatLng(52.23, 19.09),
+                    initialZoom: 5.9,
+                    maxZoom: 20.0,
+                    onMapReady: () {
+                      setState(() {
+                        _isLoading = false;
+                      });
+                    },
+                    onPositionChanged: (position, hasGesture) {
+                      if (hasGesture) {
+                        _onMapMove();
+                      }
+                    },
+                    interactionOptions: const InteractionOptions(
+                      flags:
+                          InteractiveFlag.pinchZoom |
+                          InteractiveFlag.drag |
+                          InteractiveFlag.pinchMove |
+                          InteractiveFlag.doubleTapZoom |
+                          InteractiveFlag.scrollWheelZoom,
                     ),
-                    children: [
-                      TileLayer(
-                        urlTemplate:
-                            'https://maps.geoapify.com/v1/tile/carto/{z}/{x}/{y}.png?&apiKey=$apiKey',
-                        userAgentPackageName: 'com.coupidyn.proj_inz',
-                        maxZoom: 20,
-                        panBuffer: 1,
-                      ),
-                      if (_currentPosition != null)
-                        MarkerLayer(
-                          markers: [
-                            Marker(point: _currentPosition!, child: LocationDot()),
-                          ],
-                        ),
-                      MarkerLayer(markers: markers),
-                      _AttributionWidget()
-                    ],
                   ),
-                  Positioned(
-                    left: 24,
-                    top: 16,
+                  children: [
+                    TileLayer(
+                      urlTemplate:
+                          'https://maps.geoapify.com/v1/tile/carto/{z}/{x}/{y}.png?&apiKey=$apiKey',
+                      userAgentPackageName: 'com.coupidyn.proj_inz',
+                      maxZoom: 20,
+                      panBuffer: 1,
+                    ),
+                    if (_currentPosition != null)
+                      MarkerLayer(
+                        markers: [
+                          Marker(point: _currentPosition!, child: LocationDot()),
+                        ],
+                      ),
+                    MarkerLayer(markers: markers),
+                    _AttributionWidget()
+                  ],
+                ),
+                Positioned(
+                  left: 24,
+                  top: 16,
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 24.0),
                     child: CustomIconButton(
                       icon: SvgPicture.asset('assets/icons/back.svg'),
                       onTap: () {
@@ -434,26 +468,35 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver {
                       },
                     ),
                   ),
+                ),
+                Positioned(
+                  right: 24,
+                  bottom: 64,
+                  child: CustomIconButton(
+                    icon:
+                        _isLocationLoading
+                            ? const CircularProgressIndicator(
+                          color: Colors.black,
+                          padding: EdgeInsets.all(12.0),
+                          strokeWidth: 2.0,
+                        )
+                            : _isLocationEnabled
+                            ? Icon(Icons.my_location)
+                            : Icon(Icons.location_searching),
+                    onTap: _locationButtonPressed,
+                  ),
+                ),
+                if (_showSearchButton)
                   Positioned(
-                    right: 24,
-                    bottom: 64,
-                    child: CustomIconButton(
-                      icon:
-                          _isLocationLoading
-                              ? const CircularProgressIndicator(
-                            color: Colors.black,
-                            padding: EdgeInsets.all(12.0),
-                            strokeWidth: 2.0,
-                          )
-                              : _isLocationEnabled
-                              ? Icon(Icons.my_location)
-                              : Icon(Icons.location_searching),
-                      onTap: locationButtonPressed,
+                    bottom: 16,
+                    right: 16,
+                    child: CustomTextButton.small(
+                      label: 'Szukaj w tym obszarze',
+                      onTap: searchInCurrentView,
                     ),
                   ),
-                  if (_isLoading) const Center(child: CircularProgressIndicator()),
-                ],
-              ),
+                if (_isLoading) const Center(child: CircularProgressIndicator()),
+              ],
             ),
           );
         },
