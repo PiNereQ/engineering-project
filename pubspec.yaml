@@ -37,9 +37,13 @@ dependencies:
 
   # map
   flutter_map: ^8.2.2
+  flutter_map_cache: ^2.0.0
+  http_cache_file_store: ^2.0.0
   latlong2: ^0.9.1
   geolocator: ^14.0.2
   app_settings: ^6.1.1
+  path_provider: ^2.1.4
+  path: ^1.9.0
   
 
 dev_dependencies:
@@ -55,7 +59,7 @@ flutter:
   fonts:
     - family: Itim
       fonts:
-        - asset: assets/fonts/itim/Itim-Regular.ttf
+        - asset: assets/fonts/Itim/Itim-Regular.ttf
     - family: Roboto Mono
       fonts:
         - asset: assets/fonts/roboto_mono/RobotoMono-VariableFont_wght.ttf
