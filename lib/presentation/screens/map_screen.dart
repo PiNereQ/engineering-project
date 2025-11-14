@@ -12,6 +12,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:proj_inz/bloc/coupon_map/coupon_map_bloc.dart';
 import 'package:proj_inz/data/repositories/map_repository.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:proj_inz/presentation/widgets/custom_snack_bar.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_icon_button.dart';
@@ -42,10 +43,37 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver {
     super.initState();
     _mapController = MapController();
     WidgetsBinding.instance.addObserver(this);
+    _loadMapState();
+  }
+
+  Future<void> _loadMapState() async {
+    final prefs = await SharedPreferences.getInstance();
+    final zoomLevel = prefs.getDouble('map_zoom_level') ?? 5.9;
+    final latitude = prefs.getDouble('map_latitude') ?? 52.23;
+    final longitude = prefs.getDouble('map_longitude') ?? 19.09;
+
+    if (mounted) {
+      setState(() {
+        _mapController?.move(LatLng(latitude, longitude), zoomLevel);
+      });
+    }
+  }
+
+  Future<void> _saveMapState() async {
+    if (_mapController != null) {
+      final prefs = await SharedPreferences.getInstance();
+      final center = _mapController!.camera.center;
+      final zoom = _mapController!.camera.zoom;
+
+      await prefs.setDouble('map_latitude', center.latitude);
+      await prefs.setDouble('map_longitude', center.longitude);
+      await prefs.setDouble('map_zoom_level', zoom);
+    }
   }
 
   @override
   void dispose() {
+    _saveMapState();
     WidgetsBinding.instance.removeObserver(this);
     _mapController?.dispose();
     _locationUpdateTimer?.cancel();
@@ -382,6 +410,14 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver {
 
           void searchInCurrentView() {
             if (_mapController != null) {
+              final zoomLevel = _mapController!.camera.zoom;
+              if (zoomLevel < 11) {
+                showCustomSnackBar(
+                  context,
+                  'Przybliż mapę, aby wyszukać.',
+                );
+                return;
+              }
               final bounds = _mapController?.camera.visibleBounds;
               if (bounds != null) {
                 final customBounds = LatLngBounds(

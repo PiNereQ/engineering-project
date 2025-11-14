@@ -15,6 +15,7 @@ dependencies:
   provider: ^6.1.5
   url_launcher: ^6.3.2
   icon_decoration: ^2.1.0
+  shared_preferences: ^2.5.3
 
   # Bloc
   bloc: ^9.0.0
