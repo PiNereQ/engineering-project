@@ -37,26 +37,13 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver {
   bool _waitingForLocationSettings = false;
   Timer? _locationUpdateTimer;
   bool _showSearchButton = false;
+  bool _showZoomTip = true;
 
   @override
   void initState() {
     super.initState();
     _mapController = MapController();
     WidgetsBinding.instance.addObserver(this);
-    _loadMapState();
-  }
-
-  Future<void> _loadMapState() async {
-    final prefs = await SharedPreferences.getInstance();
-    final zoomLevel = prefs.getDouble('map_zoom_level') ?? 5.9;
-    final latitude = prefs.getDouble('map_latitude') ?? 52.23;
-    final longitude = prefs.getDouble('map_longitude') ?? 19.09;
-
-    if (mounted) {
-      setState(() {
-        _mapController?.move(LatLng(latitude, longitude), zoomLevel);
-      });
-    }
   }
 
   Future<void> _saveMapState() async {
@@ -397,27 +384,67 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver {
     });
   }
 
-  
+  void _updateZoomTip() {
+    if (_mapController != null) {
+      final zoomLevel = _mapController!.camera.zoom;
+      setState(() {
+        _showZoomTip = zoomLevel < 11;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final apiKey = dotenv.env['GEOAPIFY_API_KEY'] ?? '';
 
     return BlocProvider(
-      create: (context) => CouponMapBloc(mapRepository: MapRepository())..add(LoadLocations()),
+      create: (context) => CouponMapBloc(mapRepository: MapRepository()),
       child: BlocBuilder<CouponMapBloc, CouponMapState>(
         builder: (context, state) {
+
+          Future<void> initializeMap() async {
+            final prefs = await SharedPreferences.getInstance();
+            final zoomLevel = prefs.getDouble('map_zoom_level') ?? 5.9;
+            final latitude = prefs.getDouble('map_latitude') ?? 52.23;
+            final longitude = prefs.getDouble('map_longitude') ?? 19.09;
+
+            if (mounted) {
+              setState(() {
+                _mapController?.move(LatLng(latitude, longitude), zoomLevel);
+              });
+            }
+
+            if (_mapController != null) {
+              final zoomLevel = _mapController!.camera.zoom;
+              if (zoomLevel >= 11) {
+                final bounds = _mapController?.camera.visibleBounds;
+                if (bounds != null) {
+                  final customBounds = LatLngBounds(
+                    LatLng(
+                      bounds.southWest.latitude,
+                      bounds.southWest.longitude,
+                    ),
+                    LatLng(
+                      bounds.northEast.latitude,
+                      bounds.northEast.longitude,
+                    ),
+                  );
+                  context.read<CouponMapBloc>().add(
+                    LoadLocationsInBounds(bounds: customBounds),
+                  );
+                }
+              }
+            }
+            setState(() {
+              _isLoading = false;
+            });
+          }
 
           void searchInCurrentView() {
             if (_mapController != null) {
               final zoomLevel = _mapController!.camera.zoom;
-              if (zoomLevel < 11) {
-                showCustomSnackBar(
-                  context,
-                  'Przybliż mapę, aby wyszukać.',
-                );
-                return;
-              }
+              if (zoomLevel < 11) return;
+
               final bounds = _mapController?.camera.visibleBounds;
               if (bounds != null) {
                 final customBounds = LatLngBounds(
@@ -434,10 +461,9 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver {
             });
           }
 
-
           List<Marker> markers = [];
 
-          if (state is CouponMapLoaded) {
+          if (state is CouponMapShopLocationLoadSuccess) {
             markers = state.locations.map((location) {
               return Marker(
                 point: LatLng(location.latitude, location.longitude),
@@ -456,13 +482,13 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver {
                     initialZoom: 5.9,
                     maxZoom: 20.0,
                     onMapReady: () {
-                      setState(() {
-                        _isLoading = false;
-                      });
+                      initializeMap();
+                      _updateZoomTip();
                     },
                     onPositionChanged: (position, hasGesture) {
                       if (hasGesture) {
                         _onMapMove();
+                        _updateZoomTip();
                       }
                     },
                     interactionOptions: const InteractionOptions(
@@ -506,31 +532,77 @@ class _MapScreenState extends State<MapScreen> with WidgetsBindingObserver {
                   ),
                 ),
                 Positioned(
-                  right: 24,
-                  bottom: 64,
-                  child: CustomIconButton(
-                    icon:
-                        _isLocationLoading
-                            ? const CircularProgressIndicator(
+                  bottom: 20,
+                  left: 8,
+                  right: 8,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: Colors.black, width: 2),
+                      boxShadow: [
+                        BoxShadow(
                           color: Colors.black,
-                          padding: EdgeInsets.all(12.0),
-                          strokeWidth: 2.0,
-                        )
-                            : _isLocationEnabled
-                            ? Icon(Icons.my_location)
-                            : Icon(Icons.location_searching),
-                    onTap: _locationButtonPressed,
-                  ),
-                ),
-                if (_showSearchButton)
-                  Positioned(
-                    bottom: 16,
-                    right: 16,
-                    child: CustomTextButton.small(
-                      label: 'Szukaj w tym obszarze',
-                      onTap: searchInCurrentView,
+                          offset: const Offset(3, 3),
+                        ),
+                      ],
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          flex: 4,
+                          child: _showZoomTip
+                              ? const Text(
+                                'Przybliż mapę, aby móc wyszukać sklepy z dostępnymi kuponami.',
+                                style: TextStyle(
+                                  fontFamily: 'Itim',
+                                  fontSize: 16,
+                                  color: Colors.black,
+                                ),
+                              )
+                              : _showSearchButton
+                                ? CustomTextButton.small(label: "Szukaj w tym obszarze", icon: Icon(Icons.radar),
+                                  onTap: searchInCurrentView,
+                                )
+                                : Text(
+                                  markers.isEmpty
+                                        ? 'Nie znaleźliśmy żadnych kuponów.'
+                                        : markers.length == 1
+                                        ? 'Znaleźliśmy 1 kupon.'
+                                        : markers.length <= 4
+                                        ? 'Znaleźliśmy ${markers.length} kupony.'
+                                        : 'Znaleźliśmy ${markers.length} kuponów.',
+                                  style: TextStyle(
+                                  fontFamily: 'Itim',
+                                  fontSize: 16,
+                                  color: Colors.black,
+                                ),
+                              ),
+                        ),
+                        Expanded(
+                          flex: 1,
+                          child: CustomIconButton(
+                            icon:
+                                _isLocationLoading
+                                    ? const CircularProgressIndicator(
+                                      color: Colors.black,
+                                      padding: EdgeInsets.all(12.0),
+                                      strokeWidth: 2.0,
+                                    )
+                                    : _isLocationEnabled
+                                    ? Icon(Icons.my_location)
+                                    : Icon(Icons.location_searching),
+                            onTap: _locationButtonPressed,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
+                ),
                 if (_isLoading) const Center(child: CircularProgressIndicator()),
               ],
             ),

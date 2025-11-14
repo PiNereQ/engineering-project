@@ -9,21 +9,21 @@ sealed class CouponMapState extends Equatable {
 
 final class CouponMapInitial extends CouponMapState {}
 
-class CouponMapLoading extends CouponMapState {}
+class CouponMapShopLocationLoadInProgress extends CouponMapState {}
 
-class CouponMapLoaded extends CouponMapState {
+class CouponMapShopLocationLoadSuccess extends CouponMapState {
   final List<Location> locations;
 
-  const CouponMapLoaded({required this.locations});
+  const CouponMapShopLocationLoadSuccess({required this.locations});
 
   @override
   List<Object> get props => [locations];
 }
 
-class CouponMapError extends CouponMapState {
+class CouponMapShopLoadError extends CouponMapState {
   final String message;
 
-  const CouponMapError({required this.message});
+  const CouponMapShopLoadError({required this.message});
 
   @override
   List<Object> get props => [message];

@@ -7,8 +7,6 @@ sealed class CouponMapEvent extends Equatable {
   List<Object> get props => [];
 }
 
-class LoadLocations extends CouponMapEvent {}
-
 class LoadLocationsInBounds extends CouponMapEvent {
   final LatLngBounds bounds;
 
