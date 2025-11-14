@@ -10,6 +10,9 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:app_settings/app_settings.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:proj_inz/bloc/coupon_map/coupon_map_bloc.dart';
+import 'package:proj_inz/data/repositories/map_repository.dart';
 
 import 'package:proj_inz/bloc/map_cache/map_cache_bloc.dart';
 import 'package:proj_inz/data/repositories/map_cache_repository.dart';
@@ -54,6 +57,8 @@ class _MapScreenViewState extends State<_MapScreenView> with WidgetsBindingObser
   LatLng? _currentPosition;
   bool _waitingForLocationSettings = false;
   Timer? _locationUpdateTimer;
+  bool _showSearchButton = false;
+  bool _showZoomTip = true;
 
   @override
   void initState() {
@@ -62,8 +67,21 @@ class _MapScreenViewState extends State<_MapScreenView> with WidgetsBindingObser
     WidgetsBinding.instance.addObserver(this);
   }
 
+  Future<void> _saveMapState() async {
+    if (_mapController != null) {
+      final prefs = await SharedPreferences.getInstance();
+      final center = _mapController!.camera.center;
+      final zoom = _mapController!.camera.zoom;
+
+      await prefs.setDouble('map_latitude', center.latitude);
+      await prefs.setDouble('map_longitude', center.longitude);
+      await prefs.setDouble('map_zoom_level', zoom);
+    }
+  }
+
   @override
   void dispose() {
+    _saveMapState();
     WidgetsBinding.instance.removeObserver(this);
     _mapController?.dispose();
     _locationUpdateTimer?.cancel();
@@ -75,7 +93,7 @@ class _MapScreenViewState extends State<_MapScreenView> with WidgetsBindingObser
     if (state == AppLifecycleState.resumed && _waitingForLocationSettings) {
       _waitingForLocationSettings = false;
       // Retry getting location when app resumes
-      locationButtonPressed();
+      _locationButtonPressed();
     }
   }
 
@@ -87,7 +105,6 @@ class _MapScreenViewState extends State<_MapScreenView> with WidgetsBindingObser
       }
     });
   }
-
 
   void _stopLocationUpdates() {
     _locationUpdateTimer?.cancel();
@@ -402,7 +419,7 @@ class _MapScreenViewState extends State<_MapScreenView> with WidgetsBindingObser
     return result ?? false;
   }
 
-  Future<Position> getPosition() async {
+  Future<Position> _getPosition() async {
     bool serviceEnabled;
     LocationPermission permission;
 
@@ -455,7 +472,7 @@ class _MapScreenViewState extends State<_MapScreenView> with WidgetsBindingObser
     return await Geolocator.getCurrentPosition();
   }
 
-  Future<void> locationButtonPressed() async {
+  Future<void> _locationButtonPressed() async {
     if (_isLocationEnabled) {
       setState(() {
         _currentPosition = null;
@@ -469,7 +486,7 @@ class _MapScreenViewState extends State<_MapScreenView> with WidgetsBindingObser
       setState(() {
         _isLocationLoading = true;
       });
-      final position = await getPosition();
+      final position = await _getPosition();
       final newPosition = LatLng(position.latitude, position.longitude);
 
       setState(() {
@@ -488,106 +505,115 @@ class _MapScreenViewState extends State<_MapScreenView> with WidgetsBindingObser
     }
   }
 
+  void _onMapMove() {
+    setState(() {
+      _showSearchButton = true;
+    });
+  }
+
+  void _updateZoomTip() {
+    if (_mapController != null) {
+      final zoomLevel = _mapController!.camera.zoom;
+      setState(() {
+        _showZoomTip = zoomLevel < 11;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final apiKey = dotenv.env['GEOAPIFY_API_KEY'] ?? '';
 
-    return SafeArea(
-      child: Scaffold(
-        body: Stack(
-          children: [
-            FlutterMap(
-              mapController: _mapController,
-              options: MapOptions(
-                initialCenter: const LatLng(52.23, 19.09), // środek Polski
-                initialZoom: 5.9,
-                onMapReady: () {
-                  setState(() {
-                    _isLoading = false;
-                  });
-                },
-                interactionOptions: const InteractionOptions(
-                  flags:
-                      InteractiveFlag.pinchZoom |
-                      InteractiveFlag.drag |
-                      InteractiveFlag.pinchMove |
-                      InteractiveFlag.doubleTapZoom |
-                      InteractiveFlag.scrollWheelZoom,
-                ),
-              ),
-              children: [
-                BlocBuilder<MapCacheBloc, MapCacheState>(
-                  builder: (context, state) {
-                    if (state is MapCacheInitialisedSuccess || state is MapCacheGetStatusSuccess || state is MapCacheGetStatusInProgress) {
-                      return TileLayer(
+    return BlocProvider(
+      create: (context) => CouponMapBloc(mapRepository: MapRepository())..add(LoadLocations()),
+      child: BlocBuilder<CouponMapBloc, CouponMapState>(
+        builder: (context, state) {
+          List<Marker> markers = [];
+
+          if (state is CouponMapLoaded) {
+            markers = state.locations.map((location) {
+              return Marker(
+                point: LatLng(location.latitude, location.longitude),
+                child: ShopLocation(),
+              );
+            }).toList();
+          }
+
+          return SafeArea(
+            child: Scaffold(
+              body: Stack(
+                children: [
+                  FlutterMap(
+                    mapController: _mapController,
+                    options: MapOptions(
+                      initialCenter: const LatLng(52.23, 19.09),
+                      initialZoom: 5.9,
+                      maxZoom: 20.0,
+                      onMapReady: () {
+                        setState(() {
+                          _isLoading = false;
+                        });
+                      },
+                      interactionOptions: const InteractionOptions(
+                        flags:
+                            InteractiveFlag.pinchZoom |
+                            InteractiveFlag.drag |
+                            InteractiveFlag.pinchMove |
+                            InteractiveFlag.doubleTapZoom |
+                            InteractiveFlag.scrollWheelZoom,
+                      ),
+                    ),
+                    children: [
+                      TileLayer(
                         urlTemplate:
                             'https://maps.geoapify.com/v1/tile/carto/{z}/{x}/{y}.png?&apiKey=$apiKey',
                         userAgentPackageName: 'com.coupidyn.proj_inz',
-                        maxZoom: 19,
+                        maxZoom: 20,
                         panBuffer: 1,
-                        tileProvider: CachedTileProvider(
-                          store: context.read<MapCacheBloc>().mapCacheRepository.cacheStore,
-                          maxStale: const Duration(days: 30),
+                      ),
+                      if (_currentPosition != null)
+                        MarkerLayer(
+                          markers: [
+                            Marker(point: _currentPosition!, child: LocationDot()),
+                          ],
                         ),
-                      );
-                    } else {
-                      return TileLayer(
-                        urlTemplate:
-                            'https://maps.geoapify.com/v1/tile/carto/{z}/{x}/{y}.png?&apiKey=$apiKey',
-                        userAgentPackageName: 'com.coupidyn.proj_inz',
-                        maxZoom: 19,
-                        panBuffer: 1,
-                      );
-                    }
-                  },
-                ),
-                if (_currentPosition != null)
-                  MarkerLayer(
-                    markers: [
-                      Marker(point: _currentPosition!, child: LocationDot()),
+                      MarkerLayer(markers: markers),
+                      _AttributionWidget()
                     ],
                   ),
-                _AttributionWidget()
-              ],
-            ),
-            Positioned(
-              left: 24,
-              top: 16,
-              child: CustomIconButton(
-                icon: SvgPicture.asset('assets/icons/back.svg'),
-                onTap: () {
-                  Navigator.of(context).pop();
-                },
+                  Positioned(
+                    left: 24,
+                    top: 16,
+                    child: CustomIconButton(
+                      icon: SvgPicture.asset('assets/icons/back.svg'),
+                      onTap: () {
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                  ),
+                  Positioned(
+                    right: 24,
+                    bottom: 64,
+                    child: CustomIconButton(
+                      icon:
+                          _isLocationLoading
+                              ? const CircularProgressIndicator(
+                            color: Colors.black,
+                            padding: EdgeInsets.all(12.0),
+                            strokeWidth: 2.0,
+                          )
+                              : _isLocationEnabled
+                              ? Icon(Icons.my_location)
+                              : Icon(Icons.location_searching),
+                      onTap: locationButtonPressed,
+                    ),
+                  ),
+                  if (_isLoading) const Center(child: CircularProgressIndicator()),
+                ],
               ),
             ),
-            Positioned(
-              right: 24,
-              bottom: 64,
-              child: CustomIconButton(
-                icon:
-                    _isLocationLoading
-                        ? const CircularProgressIndicator(
-                          color: Colors.black,
-                          padding: EdgeInsets.all(12.0),
-                          strokeWidth: 2.0,
-                        )
-                        : _isLocationEnabled
-                        ? Icon(Icons.my_location)
-                        : Icon(Icons.location_searching),
-                onTap: locationButtonPressed,
-              ),
-            ),
-            Positioned(
-              right: 24,
-              bottom: 124,
-              child: CustomIconButton(
-                icon: Icon(Icons.cleaning_services),
-                onTap: () => _showCacheManagementDialog(),
-              ),
-            ),
-            if (_isLoading) const Center(child: CircularProgressIndicator()),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
