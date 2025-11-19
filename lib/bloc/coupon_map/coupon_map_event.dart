@@ -15,3 +15,16 @@ class LoadLocationsInBounds extends CouponMapEvent {
   @override
   List<Object> get props => [bounds];
 }
+
+class CouponMapPositionChanged extends CouponMapEvent {
+  final double zoomLevel;
+
+  const CouponMapPositionChanged({required this.zoomLevel});
+
+  @override
+  List<Object> get props => [zoomLevel];
+}
+
+class CouponMapSearchExecuted extends CouponMapEvent {
+  const CouponMapSearchExecuted();
+}

@@ -9,18 +9,57 @@ part 'coupon_map_state.dart';
 class CouponMapBloc extends Bloc<CouponMapEvent, CouponMapState> {
   final MapRepository mapRepository;
 
-  CouponMapBloc({required this.mapRepository}) : super(CouponMapInitial()) {
+  CouponMapBloc({required this.mapRepository}) : super(const CouponMapState()) {
     on<LoadLocationsInBounds>(_onLoadLocationsInBounds);
+    on<CouponMapPositionChanged>(_onPositionChanged);
+    on<CouponMapSearchExecuted>(_onSearchExecuted);
   }
 
-  Future<void> _onLoadLocationsInBounds(LoadLocationsInBounds event, Emitter<CouponMapState> emit) async {
-    emit(CouponMapShopLocationLoadInProgress());
+  Future<void> _onLoadLocationsInBounds(
+    LoadLocationsInBounds event,
+    Emitter<CouponMapState> emit,
+  ) async {
+    emit(state.copyWith(status: CouponMapStatus.loading));
     try {
-      final locations = await mapRepository.fetchLocationsInBounds(event.bounds);
-      emit(CouponMapShopLocationLoadSuccess(locations: locations));
+      final locations = await mapRepository.fetchLocationsInBounds(
+        event.bounds,
+      );
+      emit(
+        state.copyWith(
+          status: CouponMapStatus.success,
+          locations: locations,
+          showSearchButton: false,
+        ),
+      );
     } catch (e) {
-      emit(CouponMapShopLoadError(message: e.toString()));
+      emit(
+        state.copyWith(
+          status: CouponMapStatus.failure,
+          errorMessage: e.toString(),
+        ),
+      );
     }
   }
-}
 
+  void _onPositionChanged(
+    CouponMapPositionChanged event,
+    Emitter<CouponMapState> emit,
+  ) {
+    final shouldShowZoomTip = event.zoomLevel < 11;
+    final shouldShowSearchButton = event.zoomLevel >= 11;
+
+    emit(
+      state.copyWith(
+        showSearchButton: shouldShowSearchButton,
+        showZoomTip: shouldShowZoomTip,
+      ),
+    );
+  }
+
+  void _onSearchExecuted(
+    CouponMapSearchExecuted event,
+    Emitter<CouponMapState> emit,
+  ) {
+    emit(state.copyWith(showSearchButton: false));
+  }
+}
