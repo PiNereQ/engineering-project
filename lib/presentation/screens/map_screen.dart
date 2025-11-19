@@ -23,8 +23,6 @@ import 'package:proj_inz/presentation/widgets/input/buttons/custom_text_button.d
 import 'package:proj_inz/presentation/widgets/coupon_map/location_dot.dart';
 import 'package:proj_inz/presentation/widgets/coupon_map/shop_location.dart';
 
-
-
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});
 
@@ -35,10 +33,18 @@ class MapScreen extends StatefulWidget {
 class _MapScreenState extends State<MapScreen> {
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => MapCacheBloc(
-        mapCacheRepository: MapCacheRepository(),
-      )..add(MapCacheInitialiseRequested()),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<MapCacheBloc>(
+          create:
+              (context) =>
+                  MapCacheBloc(mapCacheRepository: MapCacheRepository())
+                    ..add(MapCacheInitialiseRequested()),
+        ),
+        BlocProvider<CouponMapBloc>(
+          create: (context) => CouponMapBloc(mapRepository: MapRepository()),
+        ),
+      ],
       child: const _MapScreenView(),
     );
   }
@@ -51,16 +57,15 @@ class _MapScreenView extends StatefulWidget {
   State<_MapScreenView> createState() => _MapScreenViewState();
 }
 
-class _MapScreenViewState extends State<_MapScreenView> with WidgetsBindingObserver {
-  bool _isLoading = true;
+class _MapScreenViewState extends State<_MapScreenView>
+    with WidgetsBindingObserver {
+  bool _isMapLoading = true;
   MapController? _mapController;
-  bool _isLocationEnabled = false;
-  bool _isLocationLoading = false;
-  LatLng? _currentPosition;
-  bool _waitingForLocationSettings = false;
-  Timer? _locationUpdateTimer;
-  bool _showSearchButton = false;
-  bool _showZoomTip = true;
+  bool _isUserLocationEnabled = false;
+  bool _isUserLocationLoading = false;
+  LatLng? _currentUserLocation;
+  bool _waitingForUserLocationSettings = false;
+  Timer? _userLocationUpdateTimer;
 
   @override
   void initState() {
@@ -86,30 +91,32 @@ class _MapScreenViewState extends State<_MapScreenView> with WidgetsBindingObser
     _saveMapState();
     WidgetsBinding.instance.removeObserver(this);
     _mapController?.dispose();
-    _locationUpdateTimer?.cancel();
+    _userLocationUpdateTimer?.cancel();
     super.dispose();
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed && _waitingForLocationSettings) {
-      _waitingForLocationSettings = false;
+    if (state == AppLifecycleState.resumed && _waitingForUserLocationSettings) {
+      _waitingForUserLocationSettings = false;
       // Retry getting location when app resumes
       _locationButtonPressed();
     }
   }
 
   void _startLocationUpdates() {
-    _locationUpdateTimer?.cancel();
-    _locationUpdateTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
-      if (_isLocationEnabled && !_isLocationLoading) {
+    _userLocationUpdateTimer?.cancel();
+    _userLocationUpdateTimer = Timer.periodic(const Duration(seconds: 3), (
+      timer,
+    ) {
+      if (_isUserLocationEnabled && !_isUserLocationLoading) {
         _updateLocation();
       }
     });
   }
 
   void _stopLocationUpdates() {
-    _locationUpdateTimer?.cancel();
+    _userLocationUpdateTimer?.cancel();
   }
 
   Future<void> _updateLocation() async {
@@ -120,15 +127,15 @@ class _MapScreenViewState extends State<_MapScreenView> with WidgetsBindingObser
 
       if (mounted) {
         setState(() {
-          _currentPosition = newPosition;
+          _currentUserLocation = newPosition;
         });
       }
     } catch (e) {
       debugPrint('Error updating location: $e');
       if (mounted) {
         setState(() {
-          _isLocationEnabled = false;
-          _currentPosition = null;
+          _isUserLocationEnabled = false;
+          _currentUserLocation = null;
         });
         _stopLocationUpdates();
       }
@@ -138,109 +145,122 @@ class _MapScreenViewState extends State<_MapScreenView> with WidgetsBindingObser
   Future<void> _showCacheManagementDialog() async {
     final mapCacheBloc = context.read<MapCacheBloc>();
     mapCacheBloc.add(MapCacheStatusRequested());
-    
+
     await showDialog(
       context: context,
-      builder: (dialogContext) => BlocProvider.value(
-        value: mapCacheBloc,
-        child: BlocBuilder<MapCacheBloc, MapCacheState>(
-          builder: (context, state) {
-            return AlertDialog(
-              backgroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(24),
-                side: const BorderSide(width: 2, color: Colors.black),
-              ),
-              title: const Text(
-                'Zarządzanie cache\'em mapy',
-                style: TextStyle(
-                  fontFamily: 'Itim',
-                  fontSize: 22,
-                  fontWeight: FontWeight.w400,
-                  color: Colors.black,
-                ),
-              ),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (state is MapCacheGetStatusSuccess) ...[
-                  Text(
-                    'Rozmiar cache: ${state.cacheSizeFormatted}',
-                    style: const TextStyle(
+      builder:
+          (dialogContext) => BlocProvider.value(
+            value: mapCacheBloc,
+            child: BlocBuilder<MapCacheBloc, MapCacheState>(
+              builder: (context, state) {
+                return AlertDialog(
+                  backgroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(24),
+                    side: const BorderSide(width: 2, color: Colors.black),
+                  ),
+                  title: const Text(
+                    'Zarządzanie cache\'em mapy',
+                    style: TextStyle(
                       fontFamily: 'Itim',
-                      fontSize: 16,
-                      color: Color(0xFF646464),
+                      fontSize: 22,
+                      fontWeight: FontWeight.w400,
+                      color: Colors.black,
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Liczba kafelków: ${state.tilesCount}',
-                    style: const TextStyle(
-                      fontFamily: 'Itim',
-                      fontSize: 16,
-                      color: Color(0xFF646464),
+                  content: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (state is MapCacheGetStatusSuccess) ...[
+                        Text(
+                          'Rozmiar cache: ${state.cacheSizeFormatted}',
+                          style: const TextStyle(
+                            fontFamily: 'Itim',
+                            fontSize: 16,
+                            color: Color(0xFF646464),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Liczba kafelków: ${state.tilesCount}',
+                          style: const TextStyle(
+                            fontFamily: 'Itim',
+                            fontSize: 16,
+                            color: Color(0xFF646464),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                      ] else if (state is MapCacheGetStatusInProgress) ...[
+                        const Center(child: CircularProgressIndicator()),
+                        const SizedBox(height: 16),
+                      ] else if (state is MapCacheGetStatusError) ...[
+                        Text(
+                          'Błąd: ${state.errorMessage}',
+                          style: const TextStyle(
+                            fontFamily: 'Itim',
+                            fontSize: 16,
+                            color: Colors.red,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                      ],
+                      const Text(
+                        'Czy chcesz wyczyścić cache mapy?',
+                        style: TextStyle(
+                          fontFamily: 'Itim',
+                          fontSize: 16,
+                          color: Color(0xFF646464),
+                        ),
+                      ),
+                    ],
+                  ),
+                  actionsPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                  actions: [
+                    CustomTextButton.small(
+                      label: 'Anuluj',
+                      width: 100,
+                      onTap: () => Navigator.of(context).pop(),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                ] else if (state is MapCacheGetStatusInProgress) ...[
-                  const Center(child: CircularProgressIndicator()),
-                  const SizedBox(height: 16),
-                ] else if (state is MapCacheGetStatusError) ...[
-                  Text(
-                    'Błąd: ${state.errorMessage}',
-                    style: const TextStyle(
-                      fontFamily: 'Itim',
-                      fontSize: 16,
-                      color: Colors.red,
+                    BlocConsumer<MapCacheBloc, MapCacheState>(
+                      listener: (context, state) {
+                        if (state is MapCacheClearSuccess) {
+                          Navigator.of(context).pop();
+                          showCustomSnackBar(
+                            context,
+                            'Cache został wyczyszczony',
+                          );
+                        } else if (state is MapCacheClearError) {
+                          showCustomSnackBar(
+                            context,
+                            'Błąd podczas czyszczenia cache: ${state.errorMessage}',
+                          );
+                        }
+                      },
+                      builder: (context, state) {
+                        return CustomTextButton.small(
+                          label:
+                              state is MapCacheClearInProgress
+                                  ? 'Czyszczenie...'
+                                  : 'Wyczyść',
+                          width: 120,
+                          onTap:
+                              state is MapCacheClearInProgress
+                                  ? () {}
+                                  : () => context.read<MapCacheBloc>().add(
+                                    MapCacheClearRequested(),
+                                  ),
+                        );
+                      },
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                ],
-                const Text(
-                  'Czy chcesz wyczyścić cache mapy?',
-                  style: TextStyle(
-                    fontFamily: 'Itim',
-                    fontSize: 16,
-                    color: Color(0xFF646464),
-                  ),
-                ),
-              ],
+                  ],
+                );
+              },
             ),
-            actionsPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 12,
-            ),
-            actions: [
-              CustomTextButton.small(
-                label: 'Anuluj',
-                width: 100,
-                onTap: () => Navigator.of(context).pop(),
-              ),
-              BlocConsumer<MapCacheBloc, MapCacheState>(
-                listener: (context, state) {
-                  if (state is MapCacheClearSuccess) {
-                    Navigator.of(context).pop();
-                    showCustomSnackBar(context, 'Cache został wyczyszczony');
-                  } else if (state is MapCacheClearError) {
-                    showCustomSnackBar(context, 'Błąd podczas czyszczenia cache: ${state.errorMessage}');
-                  }
-                },
-                builder: (context, state) {
-                  return CustomTextButton.small(
-                    label: state is MapCacheClearInProgress ? 'Czyszczenie...' : 'Wyczyść',
-                    width: 120,
-                    onTap: state is MapCacheClearInProgress 
-                        ? () {} 
-                        : () => context.read<MapCacheBloc>().add(MapCacheClearRequested()),
-                  );
-                },
-              ),
-            ],
-          );
-        },
-      ),
-        ),
+          ),
     );
   }
 
@@ -452,7 +472,7 @@ class _MapScreenViewState extends State<_MapScreenView> with WidgetsBindingObser
     if (!serviceEnabled) {
       final userWantsLocation = await _showServiceEnableDialog();
       if (userWantsLocation) {
-        _waitingForLocationSettings = true;
+        _waitingForUserLocationSettings = true;
         Geolocator.openLocationSettings();
         if (mounted) {
           showCustomSnackBar(
@@ -465,10 +485,7 @@ class _MapScreenViewState extends State<_MapScreenView> with WidgetsBindingObser
         return Future.error('Waiting for location settings.');
       } else {
         if (mounted) {
-          showCustomSnackBar(
-            context,
-            'Usługi lokalizacji są wyłączone.',
-          );
+          showCustomSnackBar(context, 'Usługi lokalizacji są wyłączone.');
         }
         return Future.error('Location service disabled.');
       }
@@ -478,10 +495,10 @@ class _MapScreenViewState extends State<_MapScreenView> with WidgetsBindingObser
   }
 
   Future<void> _locationButtonPressed() async {
-    if (_isLocationEnabled) {
+    if (_isUserLocationEnabled) {
       setState(() {
-        _currentPosition = null;
-        _isLocationEnabled = false;
+        _currentUserLocation = null;
+        _isUserLocationEnabled = false;
       });
       _stopLocationUpdates();
       return;
@@ -489,14 +506,14 @@ class _MapScreenViewState extends State<_MapScreenView> with WidgetsBindingObser
 
     try {
       setState(() {
-        _isLocationLoading = true;
+        _isUserLocationLoading = true;
       });
       final position = await _getPosition();
       final newPosition = LatLng(position.latitude, position.longitude);
 
       setState(() {
-        _currentPosition = newPosition;
-        _isLocationEnabled = true;
+        _currentUserLocation = newPosition;
+        _isUserLocationEnabled = true;
       });
 
       _mapController?.move(newPosition, 16.0);
@@ -505,23 +522,26 @@ class _MapScreenViewState extends State<_MapScreenView> with WidgetsBindingObser
       debugPrint('Error getting location: $e');
     } finally {
       setState(() {
-        _isLocationLoading = false;
+        _isUserLocationLoading = false;
       });
     }
   }
 
   void _onMapMove() {
-    setState(() {
-      _showSearchButton = true;
-    });
+    if (_mapController != null) {
+      final zoomLevel = _mapController!.camera.zoom;
+      context.read<CouponMapBloc>().add(
+        CouponMapPositionChanged(zoomLevel: zoomLevel),
+      );
+    }
   }
 
   void _updateZoomTip() {
     if (_mapController != null) {
       final zoomLevel = _mapController!.camera.zoom;
-      setState(() {
-        _showZoomTip = zoomLevel < 11;
-      });
+      context.read<CouponMapBloc>().add(
+        CouponMapPositionChanged(zoomLevel: zoomLevel),
+      );
     }
   }
 
@@ -529,54 +549,24 @@ class _MapScreenViewState extends State<_MapScreenView> with WidgetsBindingObser
   Widget build(BuildContext context) {
     final apiKey = dotenv.env['GEOAPIFY_API_KEY'] ?? '';
 
-    return BlocProvider(
-      create: (context) => CouponMapBloc(mapRepository: MapRepository()),
+    return BlocBuilder<CouponMapBloc, CouponMapState>(
+      builder: (context, state) {
+        Future<void> initializeMap() async {
+          final prefs = await SharedPreferences.getInstance();
+          final zoomLevel = prefs.getDouble('map_zoom_level') ?? 5.9;
+          final latitude = prefs.getDouble('map_latitude') ?? 52.23;
+          final longitude = prefs.getDouble('map_longitude') ?? 19.09;
 
-      child: BlocBuilder<CouponMapBloc, CouponMapState>(
-        builder: (context, state) {
-          Future<void> initializeMap() async {
-            final prefs = await SharedPreferences.getInstance();
-            final zoomLevel = prefs.getDouble('map_zoom_level') ?? 5.9;
-            final latitude = prefs.getDouble('map_latitude') ?? 52.23;
-            final longitude = prefs.getDouble('map_longitude') ?? 19.09;
-
-            if (mounted) {
-              setState(() {
-                _mapController?.move(LatLng(latitude, longitude), zoomLevel);
-              });
-            }
-
-            if (_mapController != null) {
-              final zoomLevel = _mapController!.camera.zoom;
-              if (zoomLevel >= 11) {
-                final bounds = _mapController?.camera.visibleBounds;
-                if (bounds != null) {
-                  final customBounds = LatLngBounds(
-                    LatLng(
-                      bounds.southWest.latitude,
-                      bounds.southWest.longitude,
-                    ),
-                    LatLng(
-                      bounds.northEast.latitude,
-                      bounds.northEast.longitude,
-                    ),
-                  );
-                  context.read<CouponMapBloc>().add(
-                    LoadLocationsInBounds(bounds: customBounds),
-                  );
-                }
-              }
-            }
+          if (mounted) {
             setState(() {
-              _isLoading = false;
+              _mapController?.move(LatLng(latitude, longitude), zoomLevel);
             });
+
+            _updateZoomTip();
           }
 
-          void searchInCurrentView() {
-            if (_mapController != null) {
-              final zoomLevel = _mapController!.camera.zoom;
-              if (zoomLevel < 11) return;
-
+          if (_mapController != null) {
+            if (zoomLevel >= 11) {
               final bounds = _mapController?.camera.visibleBounds;
               if (bounds != null) {
                 final customBounds = LatLngBounds(
@@ -588,142 +578,168 @@ class _MapScreenViewState extends State<_MapScreenView> with WidgetsBindingObser
                 );
               }
             }
-            setState(() {
-              _showSearchButton = false;
-            });
           }
 
-          List<Marker> markers = [];
+          setState(() {
+            _isMapLoading = false;
+          });
+        }
 
-          if (state is CouponMapShopLocationLoadSuccess) {
-            markers = state.locations.map((location) {
+        void searchInCurrentView() {
+          if (_mapController != null) {
+            final zoomLevel = _mapController!.camera.zoom;
+            if (zoomLevel < 11) return;
+
+            final bounds = _mapController?.camera.visibleBounds;
+            if (bounds != null) {
+              final customBounds = LatLngBounds(
+                LatLng(bounds.southWest.latitude, bounds.southWest.longitude),
+                LatLng(bounds.northEast.latitude, bounds.northEast.longitude),
+              );
+              context.read<CouponMapBloc>().add(
+                LoadLocationsInBounds(bounds: customBounds),
+              );
+            }
+          }
+        }
+
+        final markers =
+            state.locations.map((location) {
               return Marker(
                 point: LatLng(location.latitude, location.longitude),
                 child: ShopLocation(),
               );
             }).toList();
-          }
 
-          return Scaffold(
-            body: Stack(
-              children: [
-                FlutterMap(
-                  mapController: _mapController,
-                  options: MapOptions(
-                    initialCenter: const LatLng(52.23, 19.09),
-                    initialZoom: 5.9,
-                    maxZoom: 20.0,
-                    onMapReady: () {
-                      initializeMap();
+        return Scaffold(
+          body: Stack(
+            children: [
+              FlutterMap(
+                mapController: _mapController,
+                options: MapOptions(
+                  initialCenter: const LatLng(52.23, 19.09),
+                  initialZoom: 5.9,
+                  maxZoom: 20.0,
+                  onMapReady: () {
+                    initializeMap();
+                    _updateZoomTip();
+                  },
+                  onPositionChanged: (position, hasGesture) {
+                    if (hasGesture) {
+                      _onMapMove();
                       _updateZoomTip();
-                    },
-                    onPositionChanged: (position, hasGesture) {
-                      if (hasGesture) {
-                        _onMapMove();
-                        _updateZoomTip();
+                    }
+                  },
+                  interactionOptions: const InteractionOptions(
+                    flags:
+                        InteractiveFlag.pinchZoom |
+                        InteractiveFlag.drag |
+                        InteractiveFlag.pinchMove |
+                        InteractiveFlag.doubleTapZoom |
+                        InteractiveFlag.scrollWheelZoom,
+                  ),
+                ),
+                children: [
+                  BlocBuilder<MapCacheBloc, MapCacheState>(
+                    builder: (context, state) {
+                      if (state is MapCacheInitialisedSuccess ||
+                          state is MapCacheGetStatusSuccess ||
+                          state is MapCacheGetStatusInProgress) {
+                        return TileLayer(
+                          urlTemplate:
+                              'https://maps.geoapify.com/v1/tile/carto/{z}/{x}/{y}.png?&apiKey=$apiKey',
+                          userAgentPackageName: 'com.coupidyn.proj_inz',
+                          maxZoom: 19,
+                          panBuffer: 1,
+                          tileProvider: CachedTileProvider(
+                            store:
+                                context
+                                    .read<MapCacheBloc>()
+                                    .mapCacheRepository
+                                    .cacheStore,
+                            maxStale: const Duration(days: 30),
+                          ),
+                        );
+                      } else {
+                        return TileLayer(
+                          urlTemplate:
+                              'https://maps.geoapify.com/v1/tile/carto/{z}/{x}/{y}.png?&apiKey=$apiKey',
+                          userAgentPackageName: 'com.coupidyn.proj_inz',
+                          maxZoom: 19,
+                          panBuffer: 1,
+                        );
                       }
                     },
-                    interactionOptions: const InteractionOptions(
-                      flags:
-                          InteractiveFlag.pinchZoom |
-                          InteractiveFlag.drag |
-                          InteractiveFlag.pinchMove |
-                          InteractiveFlag.doubleTapZoom |
-                          InteractiveFlag.scrollWheelZoom,
-                    ),
                   ),
-                  children: [
-                    BlocBuilder<MapCacheBloc, MapCacheState>(
-                      builder: (context, state) {
-                        if (state is MapCacheInitialisedSuccess ||
-                            state is MapCacheGetStatusSuccess ||
-                            state is MapCacheGetStatusInProgress) {
-                              debugPrint('using cache');
-                          return TileLayer(
-                            urlTemplate:
-                                'https://maps.geoapify.com/v1/tile/carto/{z}/{x}/{y}.png?&apiKey=$apiKey',
-                            userAgentPackageName: 'com.coupidyn.proj_inz',
-                            maxZoom: 19,
-                            panBuffer: 1,
-                            tileProvider: CachedTileProvider(
-                              store:
-                                  context
-                                      .read<MapCacheBloc>()
-                                      .mapCacheRepository
-                                      .cacheStore,
-                              maxStale: const Duration(days: 30),
-                            ),
-                          );
-                        } else {
-                          return TileLayer(
-                            urlTemplate:
-                                'https://maps.geoapify.com/v1/tile/carto/{z}/{x}/{y}.png?&apiKey=$apiKey',
-                            userAgentPackageName: 'com.coupidyn.proj_inz',
-                            maxZoom: 19,
-                            panBuffer: 1,
-                          );
-                        }
-                      },
-                    ),
-                    if (_currentPosition != null)
-                      MarkerLayer(
-                        markers: [
-                          Marker(point: _currentPosition!, child: LocationDot()),
-                        ],
-                      ),
-                    MarkerLayer(markers: markers),
-                    _AttributionWidget()
-                  ],
-                ),
-                Positioned(
-                  left: 24,
-                  top: 16,
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 24.0),
-                    child: CustomIconButton(
-                      icon: SvgPicture.asset('assets/icons/back.svg'),
-                      onTap: () {
-                        Navigator.of(context).pop();
-                      },
-                    ),
-                  ),
-                ),
-                Positioned(
-                  left: 128,
-                  top: 16,
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 24.0),
-                    child: CustomIconButton(
-                      icon: SvgPicture.asset('assets/icons/back.svg'),
-                      onTap: _showCacheManagementDialog,
-                    ),
-                  ),
-                ),
-                Positioned(
-                  bottom: 20,
-                  left: 8,
-                  right: 8,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.black, width: 2),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black,
-                          offset: const Offset(3, 3),
+                  if (_currentUserLocation != null)
+                    MarkerLayer(
+                      markers: [
+                        Marker(
+                          point: _currentUserLocation!,
+                          child: LocationDot(),
                         ),
                       ],
                     ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
-                    ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          flex: 4,
-                          child: _showZoomTip
+                  MarkerLayer(markers: markers),
+                  _AttributionWidget(),
+                ],
+              ),
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 48.0, horizontal: 24.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    mainAxisSize: MainAxisSize.max,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      CustomIconButton(
+                        icon: SvgPicture.asset('assets/icons/back.svg'),
+                        onTap: () {
+                          Navigator.of(context).pop();
+                        },
+                      ),
+                      CustomIconButton(
+                  icon: Icon(Icons.archive_outlined),
+                  onTap: _showCacheManagementDialog,
+                ),
+                    ],
+                  ),
+                ),
+              ),
+              Positioned(
+                bottom: 20,
+                left: 8,
+                right: 8,
+                child: Container(
+                  height: 74,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(color: Colors.black, width: 2),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black,
+                        offset: const Offset(4, 4),
+                      ),
+                    ],
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    mainAxisSize: MainAxisSize.max,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    spacing: 16,
+                    children: [
+                      Flexible(
+                        child: Container(
+                          alignment: Alignment.center,
+                          child: state.showZoomTip
                               ? const Text(
                                 'Przybliż mapę, aby móc wyszukać sklepy z dostępnymi kuponami.',
                                 style: TextStyle(
@@ -732,43 +748,60 @@ class _MapScreenViewState extends State<_MapScreenView> with WidgetsBindingObser
                                   color: Colors.black,
                                 ),
                               )
-                              : _showSearchButton
-                                ? CustomTextButton.small(label: "Szukaj w tym obszarze", icon: Icon(Icons.radar),
-                                  onTap: searchInCurrentView,
-                                )
-                                : Text(
-                                  markers.isEmpty
-                                        ? 'Nie znaleziono kuponów w tym obszarze.'
-                                        : 'Znaleźliśmy ${markers.length} kuponów.',
-                                  style: TextStyle(
+                              : state.showSearchButton
+                              ? CustomTextButton.small(
+                                label: "Szukaj w tym obszarze",
+                                icon:
+                                    state.status == CouponMapStatus.loading
+                                        ? const CircularProgressIndicator(
+                                          color: Colors.black,
+                                          strokeWidth: 4.0,
+                                        )
+                                        : Icon(Icons.radar),
+                                onTap:
+                                    state.status == CouponMapStatus.loading
+                                        ? () {}
+                                        : searchInCurrentView,
+                              )
+                              : Text(
+                                markers.isEmpty
+                                    ? 'Nie znaleziono kuponów w tym obszarze.'
+                                    : markers.length == 1
+                                    ? 'Znaleźliśmy 1 kupon.'
+                                    : markers.length <= 4
+                                    ? 'Znaleźliśmy ${markers.length} kupony.'
+                                    : 'Znaleźliśmy ${markers.length} kuponów.',
+                                style: TextStyle(
                                   fontFamily: 'Itim',
                                   fontSize: 16,
                                   color: Colors.black,
                                 ),
                               ),
                         ),
-                        Expanded(
-                          flex: 1,
-                          child: CustomIconButton(
-                            icon:
-                                _isLocationLoading
-                                    ? const CircularProgressIndicator()
-                                    : _isLocationEnabled
-                                    ? Icon(Icons.my_location)
-                                    : Icon(Icons.location_searching),
-                            onTap: _locationButtonPressed,
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                      CustomIconButton(
+                        icon:
+                            _isUserLocationLoading
+                                ? const CircularProgressIndicator(
+                                  color: Colors.black,
+                                  padding: EdgeInsets.all(12.0),
+                                  strokeWidth: 2.0,
+                                )
+                                : _isUserLocationEnabled
+                                ? Icon(Icons.my_location)
+                                : Icon(Icons.location_searching),
+                        onTap: _locationButtonPressed,
+                      ),
+                    ],
                   ),
                 ),
-                if (_isLoading) const Center(child: CircularProgressIndicator()),
-              ],
-            ),
-          );
-        },
-      ),
+              ),
+              if (_isMapLoading)
+                const Center(child: CircularProgressIndicator()),
+            ],
+          ),
+        );
+      },
     );
   }
 }
@@ -787,7 +820,7 @@ class _AttributionWidget extends StatelessWidget {
           onTap:
               () => launchUrl(Uri.parse('https://openstreetmap.org/copyright')),
           child: Padding(
-            padding: const EdgeInsets.all(3),
+            padding: const EdgeInsets.all(1),
             child: const Text(
               'Dane mapy © OpenstreetMap',
               style: TextStyle(fontSize: 12),
