@@ -2,6 +2,7 @@ import 'dart:core';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:proj_inz/bloc/number_verification/number_verification_bloc.dart';
+import 'package:proj_inz/core/theme.dart';
 import 'package:proj_inz/core/utils/validators.dart';
 import 'package:proj_inz/presentation/screens/main_screen.dart';
 import 'package:proj_inz/presentation/widgets/custom_snack_bar.dart';
@@ -51,7 +52,7 @@ class _PhoneNumberConfirmationScreenState extends State<PhoneNumberConfirmationS
       resizeToAvoidBottomInset: true,
       body: Stack(
         children: [
-          Container(decoration: const BoxDecoration(color: Color(0xFFFFEC9C))),
+          Container(decoration: const BoxDecoration(color: AppColors.background)),
           BlocConsumer<NumberVerificationBloc, NumberVerificationState>(
             listener: (context, state) {
               if (state is NumberVerificationSuccess) {
@@ -123,14 +124,14 @@ class _PhoneNumberStepCardState extends State<_PhoneNumberStepCard> {
   Widget build(BuildContext context) {
     return Container(
       decoration: ShapeDecoration(
-        color: Colors.white,
+        color: AppColors.surface,
         shape: RoundedRectangleBorder(
           side: const BorderSide(width: 2),
           borderRadius: BorderRadius.circular(24),
         ),
         shadows: const [
           BoxShadow(
-            color: Color(0xFF000000),
+            color: AppColors.textPrimary,
             blurRadius: 0,
             offset: Offset(4, 4),
             spreadRadius: 0,
@@ -154,7 +155,7 @@ class _PhoneNumberStepCardState extends State<_PhoneNumberStepCard> {
                     child: Text(
                       'Potwierdź numer telefonu',
                       style: TextStyle(
-                        color: Colors.black,
+                        color: AppColors.textPrimary,
                         fontSize: 24,
                         fontFamily: 'Itim',
                         fontWeight: FontWeight.w400,
@@ -165,7 +166,7 @@ class _PhoneNumberStepCardState extends State<_PhoneNumberStepCard> {
                     'Podaj swój numer telefonu, a prześlemy Tobie SMSem kod weryfikacyjny. Numer telefonu zostanie przypisany do konta. ',
                     textAlign: TextAlign.justify,
                     style: TextStyle(
-                      color: Colors.black,
+                      color: AppColors.textPrimary,
                       fontSize: 16,
                       fontFamily: 'Itim',
                       fontWeight: FontWeight.w400,
@@ -181,7 +182,7 @@ class _PhoneNumberStepCardState extends State<_PhoneNumberStepCard> {
                     Text(
                       _errorMessage!,
                       style: const TextStyle(
-                        color: Colors.red,
+                        color: AppColors.alertText,
                         fontSize: 14,
                         fontFamily: 'Itim',
                         fontWeight: FontWeight.w400,
@@ -196,14 +197,14 @@ class _PhoneNumberStepCardState extends State<_PhoneNumberStepCard> {
                         onTap: widget.isLoading
                             ? () {}
                             : _handleSkip,
-                        backgroundColor: const Color(0xFFEBEBEB),
+                        backgroundColor: AppColors.secondaryButton,
                       ),
                       CustomTextButton(
                         label: "Wyślij kod",
                         onTap: widget.isLoading
                             ? () {}
                             : _handleSubmit,
-                        backgroundColor: const Color(0xFFFFC6FF),
+                        backgroundColor: AppColors.primaryButton,
                         isLoading: widget.isLoading,
                       ),
                     ],
@@ -257,14 +258,14 @@ class _ConfirmationCodeStepState extends State<_ConfirmationCodeStep> {
   Widget build(BuildContext context) {
     return Container(
       decoration: ShapeDecoration(
-        color: Colors.white,
+        color: AppColors.surface,
         shape: RoundedRectangleBorder(
           side: const BorderSide(width: 2),
           borderRadius: BorderRadius.circular(24),
         ),
         shadows: const [
           BoxShadow(
-            color: Color(0xFF000000),
+            color: AppColors.textPrimary,
             blurRadius: 0,
             offset: Offset(4, 4),
             spreadRadius: 0,
@@ -288,7 +289,7 @@ class _ConfirmationCodeStepState extends State<_ConfirmationCodeStep> {
                     child: Text(
                       'Potwierdź numer telefonu',
                       style: TextStyle(
-                        color: Colors.black,
+                        color: AppColors.textPrimary,
                         fontSize: 24,
                         fontFamily: 'Itim',
                         fontWeight: FontWeight.w400,
@@ -305,7 +306,7 @@ class _ConfirmationCodeStepState extends State<_ConfirmationCodeStep> {
                     Text(
                       _errorMessage!,
                       style: const TextStyle(
-                        color: Colors.red,
+                        color: AppColors.alertText,
                         fontSize: 14,
                         fontFamily: 'Itim',
                         fontWeight: FontWeight.w400,
@@ -320,14 +321,14 @@ class _ConfirmationCodeStepState extends State<_ConfirmationCodeStep> {
                         onTap: widget.isLoading
                             ? () {}
                             : _handleBack,
-                        backgroundColor: const Color(0xFFEBEBEB),
+                        backgroundColor: AppColors.secondaryButton,
                       ),
                       CustomTextButton(
                         label: "Weryfikuj",
                         onTap: widget.isLoading
                             ? () {}
                             : _handleSubmit,
-                        backgroundColor: const Color(0xFFFFC6FF),
+                        backgroundColor: AppColors.primaryButton,
                         isLoading: widget.isLoading,
                       ),
                     ],
@@ -346,7 +347,7 @@ class _ConfirmationCodeStepState extends State<_ConfirmationCodeStep> {
                     'Kod nie dotarł?',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      color: Colors.black,
+                      color: AppColors.textPrimary,
                       fontSize: 14,
                       fontFamily: 'Itim',
                       fontWeight: FontWeight.w400,

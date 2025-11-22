@@ -22,6 +22,7 @@ import 'package:proj_inz/presentation/widgets/input/buttons/custom_icon_button.d
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_text_button.dart';
 import 'package:proj_inz/presentation/widgets/coupon_map/location_dot.dart';
 import 'package:proj_inz/presentation/widgets/coupon_map/shop_location.dart';
+import 'package:proj_inz/core/theme.dart';
 
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});
@@ -154,10 +155,10 @@ class _MapScreenViewState extends State<_MapScreenView>
             child: BlocBuilder<MapCacheBloc, MapCacheState>(
               builder: (context, state) {
                 return AlertDialog(
-                  backgroundColor: Colors.white,
+                  backgroundColor: AppColors.surface,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(24),
-                    side: const BorderSide(width: 2, color: Colors.black),
+                    side: const BorderSide(width: 2, color: AppColors.textPrimary),
                   ),
                   title: const Text(
                     'Zarządzanie cache\'em mapy',
@@ -165,7 +166,7 @@ class _MapScreenViewState extends State<_MapScreenView>
                       fontFamily: 'Itim',
                       fontSize: 22,
                       fontWeight: FontWeight.w400,
-                      color: Colors.black,
+                      color: AppColors.textPrimary,
                     ),
                   ),
                   content: Column(
@@ -178,7 +179,7 @@ class _MapScreenViewState extends State<_MapScreenView>
                           style: const TextStyle(
                             fontFamily: 'Itim',
                             fontSize: 16,
-                            color: Color(0xFF646464),
+                            color: AppColors.textSecondary,
                           ),
                         ),
                         const SizedBox(height: 8),
@@ -187,7 +188,7 @@ class _MapScreenViewState extends State<_MapScreenView>
                           style: const TextStyle(
                             fontFamily: 'Itim',
                             fontSize: 16,
-                            color: Color(0xFF646464),
+                            color: AppColors.textSecondary,
                           ),
                         ),
                         const SizedBox(height: 16),
@@ -200,7 +201,7 @@ class _MapScreenViewState extends State<_MapScreenView>
                           style: const TextStyle(
                             fontFamily: 'Itim',
                             fontSize: 16,
-                            color: Colors.red,
+                            color: AppColors.alertText,
                           ),
                         ),
                         const SizedBox(height: 16),
@@ -210,7 +211,7 @@ class _MapScreenViewState extends State<_MapScreenView>
                         style: TextStyle(
                           fontFamily: 'Itim',
                           fontSize: 16,
-                          color: Color(0xFF646464),
+                          color: AppColors.textSecondary,
                         ),
                       ),
                     ],
@@ -269,10 +270,10 @@ class _MapScreenViewState extends State<_MapScreenView>
       context: context,
       builder:
           (context) => AlertDialog(
-            backgroundColor: Colors.white,
+            backgroundColor: AppColors.surface,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(24),
-              side: const BorderSide(width: 2, color: Colors.black),
+              side: const BorderSide(width: 2, color: AppColors.textPrimary),
             ),
             title: const Text(
               'Dostęp do lokalizacji',
@@ -280,7 +281,7 @@ class _MapScreenViewState extends State<_MapScreenView>
                 fontFamily: 'Itim',
                 fontSize: 22,
                 fontWeight: FontWeight.w400,
-                color: Colors.black,
+                color: AppColors.textPrimary,
               ),
             ),
             content: const Text(
@@ -288,7 +289,7 @@ class _MapScreenViewState extends State<_MapScreenView>
               style: TextStyle(
                 fontFamily: 'Itim',
                 fontSize: 16,
-                color: Color(0xFF646464),
+                color: AppColors.textSecondary,
               ),
             ),
             actionsPadding: const EdgeInsets.symmetric(
@@ -311,10 +312,10 @@ class _MapScreenViewState extends State<_MapScreenView>
       context: context,
       builder:
           (context) => AlertDialog(
-            backgroundColor: Colors.white,
+            backgroundColor: AppColors.surface,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(24),
-              side: const BorderSide(width: 2, color: Colors.black),
+              side: const BorderSide(width: 2, color: AppColors.textPrimary),
             ),
             title: const Text(
               'Odmówiono dostępu do lokalizacji',
@@ -322,7 +323,7 @@ class _MapScreenViewState extends State<_MapScreenView>
                 fontFamily: 'Itim',
                 fontSize: 22,
                 fontWeight: FontWeight.w400,
-                color: Colors.black,
+                color: AppColors.textPrimary,
               ),
             ),
             content: const Text(
@@ -330,7 +331,7 @@ class _MapScreenViewState extends State<_MapScreenView>
               style: TextStyle(
                 fontFamily: 'Itim',
                 fontSize: 16,
-                color: Color(0xFF646464),
+                color: AppColors.textSecondary,
               ),
             ),
             actionsPadding: const EdgeInsets.symmetric(
@@ -361,10 +362,10 @@ class _MapScreenViewState extends State<_MapScreenView>
       context: context,
       builder:
           (context) => AlertDialog(
-            backgroundColor: Colors.white,
+            backgroundColor: AppColors.surface,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(24),
-              side: const BorderSide(width: 2, color: Colors.black),
+              side: const BorderSide(width: 2, color: AppColors.textPrimary),
             ),
             title: const Text(
               'Porada',
@@ -372,7 +373,7 @@ class _MapScreenViewState extends State<_MapScreenView>
                 fontFamily: 'Itim',
                 fontSize: 22,
                 fontWeight: FontWeight.w400,
-                color: Colors.black,
+                color: AppColors.textPrimary,
               ),
             ),
             content: const Text(
@@ -380,7 +381,7 @@ class _MapScreenViewState extends State<_MapScreenView>
               style: TextStyle(
                 fontFamily: 'Itim',
                 fontSize: 16,
-                color: Color(0xFF646464),
+                color: AppColors.textSecondary,
               ),
             ),
             actionsPadding: const EdgeInsets.symmetric(
@@ -403,10 +404,10 @@ class _MapScreenViewState extends State<_MapScreenView>
       context: context,
       builder:
           (context) => AlertDialog(
-            backgroundColor: Colors.white,
+            backgroundColor: AppColors.surface,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(24),
-              side: const BorderSide(width: 2, color: Colors.black),
+              side: const BorderSide(width: 2, color: AppColors.textPrimary),
             ),
             title: const Text(
               'Czy chcesz włączyć usługi lokalizacyjne?',
@@ -414,7 +415,7 @@ class _MapScreenViewState extends State<_MapScreenView>
                 fontFamily: 'Itim',
                 fontSize: 22,
                 fontWeight: FontWeight.w400,
-                color: Colors.black,
+                color: AppColors.textPrimary,
               ),
             ),
             actionsPadding: const EdgeInsets.symmetric(
@@ -716,12 +717,12 @@ class _MapScreenViewState extends State<_MapScreenView>
                 child: Container(
                   height: 74,
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: AppColors.surface,
                     borderRadius: BorderRadius.circular(24),
-                    border: Border.all(color: Colors.black, width: 2),
+                    border: Border.all(color: AppColors.textPrimary, width: 2),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black,
+                        color: AppColors.textPrimary,
                         offset: const Offset(4, 4),
                       ),
                     ],
@@ -745,7 +746,7 @@ class _MapScreenViewState extends State<_MapScreenView>
                                 style: TextStyle(
                                   fontFamily: 'Itim',
                                   fontSize: 16,
-                                  color: Colors.black,
+                                  color: AppColors.textPrimary,
                                 ),
                               )
                               : state.showSearchButton
@@ -754,7 +755,7 @@ class _MapScreenViewState extends State<_MapScreenView>
                                 icon:
                                     state.status == CouponMapStatus.loading
                                         ? const CircularProgressIndicator(
-                                          color: Colors.black,
+                                          color: AppColors.textPrimary,
                                           strokeWidth: 4.0,
                                         )
                                         : Icon(Icons.radar),
@@ -774,7 +775,7 @@ class _MapScreenViewState extends State<_MapScreenView>
                                 style: TextStyle(
                                   fontFamily: 'Itim',
                                   fontSize: 16,
-                                  color: Colors.black,
+                                  color: AppColors.textPrimary,
                                 ),
                               ),
                         ),
@@ -783,7 +784,7 @@ class _MapScreenViewState extends State<_MapScreenView>
                         icon:
                             _isUserLocationLoading
                                 ? const CircularProgressIndicator(
-                                  color: Colors.black,
+                                  color: AppColors.textPrimary,
                                   padding: EdgeInsets.all(12.0),
                                   strokeWidth: 2.0,
                                 )
@@ -813,7 +814,7 @@ class _AttributionWidget extends StatelessWidget {
       alignment: Alignment.bottomRight,
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.5),
+          color: AppColors.surface.withValues(alpha: 0.5),
           borderRadius: BorderRadius.circular(4),
         ),
         child: GestureDetector(

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:proj_inz/bloc/auth/auth_bloc.dart';
+import 'package:proj_inz/core/theme.dart';
 import 'package:proj_inz/presentation/screens/bought_coupon_list_screen.dart';
 import 'package:proj_inz/presentation/screens/debug_screen.dart';
 import 'package:proj_inz/presentation/screens/sign_in_screen.dart';
@@ -196,7 +197,7 @@ class ProfileScreen extends StatelessWidget {
                     ],
                   ),
                   const Divider(
-                    color: Colors.black,
+                    color: AppColors.textPrimary,
                   ),
                   Row(
                     mainAxisSize: MainAxisSize.max,
@@ -216,7 +217,7 @@ class ProfileScreen extends StatelessWidget {
                         fit: FlexFit.tight,
                         child: CustomTextButton(
                           label: 'Wyloguj',
-                          backgroundColor: const Color(0xFFFF9A9A),
+                          backgroundColor: AppColors.alertButton,
                           onTap: () {
                             context.read<AuthBloc>().add(SignOutRequested());
                           },

@@ -12,6 +12,7 @@ import 'package:proj_inz/presentation/screens/coupon_list_screen.dart';
 import 'package:proj_inz/presentation/screens/home_screen.dart';
 import 'package:proj_inz/presentation/screens/phone_number_confirmation_screen.dart';
 import 'package:proj_inz/presentation/screens/profile_screen.dart';
+import 'package:proj_inz/core/theme.dart';
 
 class MainScreen extends StatelessWidget {
   const MainScreen({super.key});
@@ -40,7 +41,7 @@ class MainScreen extends StatelessWidget {
           return BlocBuilder<NavbarBloc, NavbarState>(
             builder: (context, state) {
               return Scaffold(
-                backgroundColor: Colors.white,
+                backgroundColor: AppColors.surface,
                 body: SafeArea(child: _screens[state.selectedIndex]),
                 bottomNavigationBar: BottomNavigationBar(
                   currentIndex: state.selectedIndex,

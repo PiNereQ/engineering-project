@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:proj_inz/core/theme.dart';
 import 'package:proj_inz/presentation/widgets/conversation_tile.dart';
 
 import 'chat_detail_screen.dart';
@@ -121,7 +122,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 height: 48,
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 decoration: ShapeDecoration(
-                  color: isSelected ? const Color(0xFFB2B2B2) : Colors.white,
+                  color: isSelected ? AppColors.primaryButtonPressed : AppColors.surface,
                   shape: RoundedRectangleBorder(
                     side: const BorderSide(width: 2),
                     borderRadius: BorderRadius.circular(1000),
@@ -130,7 +131,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       ? []
                       : [
                           const BoxShadow(
-                            color: Color(0xFF000000),
+                            color: AppColors.textPrimary,
                             blurRadius: 0,
                             offset: Offset(4, 4),
                             spreadRadius: 0,
@@ -143,7 +144,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     Text(
                       label,
                       style: TextStyle(
-                        color: isSelected ? const Color(0xFF646464) : Colors.black,
+                        color: isSelected ? AppColors.textSecondary : AppColors.textPrimary,
                         fontSize: 18,
                         fontFamily: 'Itim',
                         fontWeight: FontWeight.w400,

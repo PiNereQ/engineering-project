@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:proj_inz/bloc/search_shops_categories/search_shops_categories_bloc.dart';
 import 'package:proj_inz/bloc/coupon_list/coupon_list_bloc.dart';
+import 'package:proj_inz/core/theme.dart';
 import 'package:proj_inz/data/repositories/coupon_repository.dart';
 import 'package:proj_inz/bloc/search_shops_categories/search_shops_categories_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -35,14 +36,14 @@ class SearchResultsScreen extends StatelessWidget {
                         padding: const EdgeInsets.all(10),
                         clipBehavior: Clip.antiAlias,
                         decoration: ShapeDecoration(
-                          color: Colors.white,
+                          color: AppColors.surface,
                           shape: RoundedRectangleBorder(
                             side: const BorderSide(width: 2),
                             borderRadius: BorderRadius.circular(1000),
                           ),
                           shadows: const [
                             BoxShadow(
-                              color: Color(0xFF000000),
+                              color: AppColors.textPrimary,
                               blurRadius: 0,
                               offset: Offset(3, 3),
                               spreadRadius: 0,
@@ -60,14 +61,14 @@ class SearchResultsScreen extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                         clipBehavior: Clip.antiAlias,
                         decoration: ShapeDecoration(
-                          color: Colors.white,
+                          color: AppColors.surface,
                           shape: RoundedRectangleBorder(
                             side: const BorderSide(width: 2),
                             borderRadius: BorderRadius.circular(16),
                           ),
                           shadows: const [
                             BoxShadow(
-                              color: Color(0xFF000000),
+                              color: AppColors.textPrimary,
                               blurRadius: 0,
                               offset: Offset(4, 4),
                               spreadRadius: 0,
@@ -79,7 +80,7 @@ class SearchResultsScreen extends StatelessWidget {
                           child: Text(
                             'Wyniki dla hasła: $query',
                             style: const TextStyle(
-                              color: Colors.black,
+                              color: AppColors.textPrimary,
                               fontSize: 18,
                               fontFamily: 'Itim',
                               fontWeight: FontWeight.w400,
@@ -129,12 +130,12 @@ class SearchResultsScreen extends StatelessWidget {
                           child: Container(
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
-                              color: Colors.white,
-                              border: Border.all(width: 2, color: Colors.black),
+                              color: AppColors.surface,
+                              border: Border.all(width: 2, color: AppColors.textPrimary),
                               borderRadius: BorderRadius.circular(16),
                               boxShadow: const [
                                 BoxShadow(
-                                  color: Color(0xFF000000),
+                                  color: AppColors.textPrimary,
                                   blurRadius: 0,
                                   offset: Offset(4, 4),
                                   spreadRadius: 0,
@@ -166,8 +167,8 @@ class SearchResultsScreen extends StatelessWidget {
                                           fontWeight: FontWeight.w400,
                                         ),
                                       ),
-                                      backgroundColor: Colors.grey.shade200,
-                                      side: const BorderSide(color: Colors.black, width: 1),
+                                      backgroundColor: AppColors.secondaryButton,
+                                      side: const BorderSide(color: AppColors.textPrimary, width: 1),
                                     );
                                   }).toList(),
                                 ),
@@ -187,14 +188,14 @@ class SearchResultsScreen extends StatelessWidget {
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                           clipBehavior: Clip.antiAlias,
                           decoration: ShapeDecoration(
-                            color: Colors.white,
+                            color: AppColors.surface,
                             shape: RoundedRectangleBorder(
                               side: const BorderSide(width: 2),
                               borderRadius: BorderRadius.circular(16),
                             ),
                             shadows: const [
                               BoxShadow(
-                                color: Color(0xFF000000),
+                                color: AppColors.textPrimary,
                                 blurRadius: 0,
                                 offset: Offset(4, 4),
                                 spreadRadius: 0,
@@ -222,7 +223,7 @@ class SearchResultsScreen extends StatelessWidget {
                                     item.name,
                                     textAlign: TextAlign.center,
                                     style: const TextStyle(
-                                      color: Colors.white,
+                                      color: AppColors.surface,
                                       fontSize: 15,
                                       fontFamily: 'Roboto',
                                       fontWeight: FontWeight.w700,
@@ -258,14 +259,14 @@ class SearchResultsScreen extends StatelessWidget {
                                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                                           clipBehavior: Clip.antiAlias,
                                           decoration: ShapeDecoration(
-                                            color: Colors.white,
+                                            color: AppColors.surface,
                                             shape: RoundedRectangleBorder(
                                               side: const BorderSide(width: 2),
                                               borderRadius: BorderRadius.circular(1000),
                                             ),
                                             shadows: const [
                                               BoxShadow(
-                                                color: Color(0xFF000000),
+                                                color: AppColors.textPrimary,
                                                 blurRadius: 0,
                                                 offset: Offset(3, 3),
                                                 spreadRadius: 0,
@@ -276,7 +277,7 @@ class SearchResultsScreen extends StatelessWidget {
                                             'Pokaż kupony',
                                             textAlign: TextAlign.center,
                                             style: TextStyle(
-                                              color: Colors.black,
+                                              color: AppColors.textPrimary,
                                               fontSize: 14,
                                               fontFamily: 'Itim',
                                               fontWeight: FontWeight.w400,
@@ -292,14 +293,14 @@ class SearchResultsScreen extends StatelessWidget {
                                       height: 36,
                                       clipBehavior: Clip.antiAlias,
                                       decoration: ShapeDecoration(
-                                        color: Colors.white,
+                                        color: AppColors.surface,
                                         shape: RoundedRectangleBorder(
                                           side: const BorderSide(width: 2),
                                           borderRadius: BorderRadius.circular(1000),
                                         ),
                                         shadows: const [
                                           BoxShadow(
-                                            color: Color(0xFF000000),
+                                            color: AppColors.textPrimary,
                                             blurRadius: 0,
                                             offset: Offset(2, 2),
                                             spreadRadius: 0,

@@ -9,6 +9,7 @@ import 'package:proj_inz/presentation/widgets/dashed_separator.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_text_button.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/google_sign_in_button.dart';
 import 'package:proj_inz/presentation/widgets/input/text_fields/labeled_text_field.dart';
+import 'package:proj_inz/core/theme.dart';
 
 class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
@@ -21,7 +22,7 @@ class _SignInScreenState extends State<SignInScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFFEC9C),
+      backgroundColor: AppColors.background,
       resizeToAvoidBottomInset: true,
       body: BlocConsumer<AuthBloc, AuthState>(
         listener: (context, state) {
@@ -90,14 +91,14 @@ class _LoginCardState extends State<_LoginCard> {
   Widget build(BuildContext context) {
     return Container(
       decoration: ShapeDecoration(
-        color: Colors.white,
+        color: AppColors.surface,
         shape: RoundedRectangleBorder(
           side: const BorderSide(width: 2),
           borderRadius: BorderRadius.circular(24),
         ),
         shadows: const [
           BoxShadow(
-            color: Color(0xFF000000),
+            color: AppColors.textPrimary,
             blurRadius: 0,
             offset: Offset(4, 4),
             spreadRadius: 0,
@@ -121,7 +122,7 @@ class _LoginCardState extends State<_LoginCard> {
                     child: Text(
                       'Witaj!',
                       style: TextStyle(
-                        color: Colors.black,
+                        color: AppColors.textPrimary,
                         fontSize: 24,
                         fontFamily: 'Itim',
                         fontWeight: FontWeight.w400,
@@ -154,7 +155,7 @@ class _LoginCardState extends State<_LoginCard> {
                     Text(
                       _errorMessage!,
                       style: const TextStyle(
-                        color: Colors.red,
+                        color: AppColors.alertText,
                         fontSize: 14,
                         fontFamily: 'Itim',
                         fontWeight: FontWeight.w400,
@@ -163,13 +164,13 @@ class _LoginCardState extends State<_LoginCard> {
                   CustomTextButton(
                     label: "Zaloguj się",
                     onTap: widget.isLoading ? () {} : _handleSubmit,
-                    backgroundColor: const Color(0xFFFFC6FF),
+                    backgroundColor: AppColors.primaryButton,
                     isLoading: widget.isLoading,
                   ),
                   const Text(
                     'lub',
                     style: TextStyle(
-                      color: Colors.black,
+                      color: AppColors.textPrimary,
                       fontSize: 18,
                       fontFamily: 'Itim',
                       fontWeight: FontWeight.w400,
@@ -190,7 +191,7 @@ class _LoginCardState extends State<_LoginCard> {
                     'Nie masz jeszcze konta?',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      color: Colors.black,
+                      color: AppColors.textPrimary,
                       fontSize: 14,
                       fontFamily: 'Itim',
                       fontWeight: FontWeight.w400,
