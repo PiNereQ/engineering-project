@@ -99,7 +99,7 @@ class _CouponListScreenContentState extends State<_CouponListScreenContent> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.surface,
+      backgroundColor: AppColors.background,
       body: RefreshIndicator(
         onRefresh: () async {
           context.read<CouponListBloc>().add(RefreshCoupons());
@@ -193,7 +193,7 @@ Widget build(BuildContext context) {
           right: 0,
           top: 0,
           height: 60,
-          child: Container(color: AppColors.surface),
+          child: Container(color: Colors.transparent),
         ),
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
@@ -314,6 +314,7 @@ Widget build(BuildContext context) {
                             onTap:
                                 () => showDialog(
                                   context: context,
+                                  barrierColor: AppColors.popupOverlay,
                                   builder:
                                       (dialogContext) => BlocProvider.value(
                                         value: context.read<CouponListBloc>(),
@@ -333,6 +334,7 @@ Widget build(BuildContext context) {
                             onTap:
                                 () => showDialog(
                                   context: context,
+                                  barrierColor: AppColors.popupOverlay,
                                   builder:
                                       (dialogContext) => BlocProvider.value(
                                         value: context.read<CouponListBloc>(),
@@ -411,8 +413,9 @@ class _CouponFilterDialogState extends State<_CouponFilterDialog> {
           });
         }
       },
-      child: Scaffold(
-        body: SingleChildScrollView(
+      child: Material(
+        color: Colors.transparent,
+        child: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
@@ -607,7 +610,7 @@ class _CouponFilterDialogState extends State<_CouponFilterDialog> {
                                 context.read<CouponListBloc>().add(ClearCouponFilters());
                               },
                             ),
-                            CustomTextButton(
+                            CustomTextButton.primary(
                               label: 'Zastosuj',
                               icon: const Icon(Icons.check),
                               onTap: () {
@@ -666,8 +669,9 @@ class _CouponSortDialogState extends State<_CouponSortDialog> {
           });
         }
       },
-      child: Scaffold(
-        body: SingleChildScrollView(
+      child: Material(
+        color: Colors.transparent,
+        child: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
@@ -850,7 +854,7 @@ class _CouponSortDialogState extends State<_CouponSortDialog> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
-                            CustomTextButton(
+                            CustomTextButton.primary(
                               label: 'Zastosuj',
                               icon: const Icon(Icons.check),
                               onTap: () {

@@ -63,7 +63,7 @@ class _CustomFollowButtonState extends State<CustomFollowButton> {
             width: widget._size,
             height: widget._size,
             decoration: ShapeDecoration(
-              color: _isPressed ? AppColors.checkIcon : AppColors.surface,
+              color: _isPressed ? AppColors.notificationDot : AppColors.surface,
               shape: RoundedRectangleBorder(
                 side: const BorderSide(width: 2),
                 borderRadius: BorderRadius.circular(1000),
@@ -83,7 +83,7 @@ class _CustomFollowButtonState extends State<CustomFollowButton> {
               child: widget._size == 48
                 ? Icon(
                     Icons.favorite,
-                    color: _isPressed ? AppColors.surface : AppColors.checkIcon,
+                    color: _isPressed ? AppColors.surface : AppColors.notificationDot,
                   )
                 : SizedBox(
                   width: 18,
@@ -91,7 +91,7 @@ class _CustomFollowButtonState extends State<CustomFollowButton> {
                   child: FittedBox(
                     child: Icon(
                         Icons.favorite,
-                        color: _isPressed ? AppColors.surface : AppColors.checkIcon,
+                        color: _isPressed ? AppColors.surface : AppColors.notificationDot,
                       ),
                   ),
                 )
