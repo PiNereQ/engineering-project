@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:icon_decoration/icon_decoration.dart';
+import 'package:proj_inz/core/theme.dart';
 
 class ShopLocation extends StatelessWidget {
-  const ShopLocation({super.key});
+  final bool active;
+
+  const ShopLocation({
+    super.key,
+    this.active = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -15,10 +21,10 @@ class ShopLocation extends StatelessWidget {
       ),
       icon: Icon(
         Icons.location_on_rounded,
-        color: Colors.red,
+        color: active ? AppColors.notificationDot : AppColors.primaryButtonPressed,
         size: 38,
         fontWeight: FontWeight.w100,
-        shadows: [Shadow(color: Colors.black, offset: Offset(3, 2))],
+        shadows: const [Shadow(color: Colors.black, offset: Offset(3, 2))],
       ),
     );
   }

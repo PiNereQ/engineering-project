@@ -608,7 +608,31 @@ class _MapScreenViewState extends State<_MapScreenView>
         final markers = state.locations
             .where(
               (location) =>
-                  state.selectedLocationId == null ||
+                  state.selectedLocationId != location.shopId,
+            )
+            .map((location) {
+          return Marker(
+            height: 53,
+            width: 53,
+            point: LatLng(location.latitude, location.longitude),
+            child: Transform.translate(
+              offset: const Offset(0, -19),
+              child: GestureDetector(
+                onTap: () {
+                  _mapController!.move(LatLng(location.latitude, location.longitude), _mapController!.camera.zoom);
+                  context.read<CouponMapBloc>().add(
+                    CouponMapLocationSelected(locationId: location.shopId),
+                  );
+                },
+                child: ShopLocation(active: state.selectedLocationId == null),
+              ),
+            ),
+          );
+        }).toList();
+
+        final selectedMarker = state.locations
+            .where(
+              (location) =>
                   state.selectedLocationId == location.shopId,
             )
             .map((location) {
@@ -625,7 +649,7 @@ class _MapScreenViewState extends State<_MapScreenView>
                     CouponMapLocationSelected(locationId: location.shopId),
                   );
                 },
-                child: ShopLocation(),
+                child: ShopLocation(active: true),
               ),
             ),
           );
@@ -691,17 +715,7 @@ class _MapScreenViewState extends State<_MapScreenView>
                       }
                     },
                   ),
-                  if (state.selectedLocationId != null)
-                  Positioned.fill(
-                    child: BackdropFilter(
-                      filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-                      child: Container(
-                        color: Colors.black.withValues(
-                          alpha: 0.4,
-                        ),
-                      ),
-                    ),
-                  ),
+                  
                   if (_currentUserLocation != null)
                     MarkerLayer(
                       markers: [
@@ -712,6 +726,18 @@ class _MapScreenViewState extends State<_MapScreenView>
                       ],
                     ),
                   MarkerLayer(markers: markers),
+                  if (state.selectedLocationId != null)
+                  Positioned.fill(
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
+                      child: Container(
+                        color: Colors.black.withValues(
+                          alpha: 0.3,
+                        ),
+                      ),
+                    ),
+                  ),
+                  MarkerLayer(markers: selectedMarker),
                   _AttributionWidget(),
                 ],
               ),
@@ -738,6 +764,32 @@ class _MapScreenViewState extends State<_MapScreenView>
                   icon: Icon(Icons.archive_outlined),
                   onTap: _showCacheManagementDialog,
                 ),
+                    ],
+                  ),
+                ),
+              ),
+              // top buttons if shop location selected
+              if (state.selectedLocationId != null)
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 48.0, horizontal: 24.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    mainAxisSize: MainAxisSize.max,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      CustomIconButton(
+                        icon: SvgPicture.asset('assets/icons/back.svg'),
+                        onTap: () {
+                          context
+                          .read<CouponMapBloc>()
+                          .add(const CouponMapLocationCleared());
+                        },
+                      ),
+                      
                     ],
                   ),
                 ),
@@ -833,48 +885,53 @@ class _MapScreenViewState extends State<_MapScreenView>
               ),
               if (_isMapLoading)
                 const Center(child: CircularProgressIndicator()),
+              // selected location coupon list
               if (state.selectedLocationId != null)
                 Positioned.fill(
+                  // click-outside detector
                   child: GestureDetector(
                     behavior: HitTestBehavior.opaque,
-                    onTap: () {
-                      debugPrint('Clearing selected location');
+                    onTap: () =>
                       context
                           .read<CouponMapBloc>()
-                          .add(const CouponMapLocationCleared());
-                    },
+                          .add(const CouponMapLocationCleared()),
+                    onHorizontalDragStart: (details) =>
+                      context
+                          .read<CouponMapBloc>()
+                          .add(const CouponMapLocationCleared()),
+                    onVerticalDragStart: (details) => 
+                      context
+                          .read<CouponMapBloc>()
+                          .add(const CouponMapLocationCleared()),
                     child: Stack(
                       children: [
                         Positioned(
-                          bottom: 110,
-                          left: 16,
-                          right: 16,
-                          child: GestureDetector(
-                            onTap: () {},
-                            child: Container(
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                color: AppColors.surface,
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(
-                                  color: AppColors.textPrimary,
-                                  width: 2,
-                                ),
-                                boxShadow: const [
-                                  BoxShadow(
-                                    color: AppColors.textPrimary,
-                                    offset: Offset(4, 4),
-                                  ),
-                                ],
+                          bottom: 20,
+                          left: 8,
+                          right: 8,
+                          child: Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: AppColors.surface,
+                              borderRadius: BorderRadius.circular(24),
+                              border: Border.all(
+                                color: AppColors.textPrimary,
+                                width: 2,
                               ),
-                              child: Text(
-                                'Location id: ${state.selectedLocationId}',
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                  fontFamily: 'Itim',
-                                  fontSize: 16,
+                              boxShadow: const [
+                                BoxShadow(
                                   color: AppColors.textPrimary,
+                                  offset: Offset(4, 4),
                                 ),
+                              ],
+                            ),
+                            child: Text(
+                              'Location id: ${state.selectedLocationId}',
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                fontFamily: 'Itim',
+                                fontSize: 16,
+                                color: AppColors.textPrimary,
                               ),
                             ),
                           ),
