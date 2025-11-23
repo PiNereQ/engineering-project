@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_text_button.dart';
+import 'package:proj_inz/core/theme.dart';
 
 class ErrorCard extends StatelessWidget {
 
@@ -20,14 +21,14 @@ class ErrorCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: ShapeDecoration(
-        color: Colors.white,
+        color: AppColors.surface,
         shape: RoundedRectangleBorder(
           side: const BorderSide(width: 2),
           borderRadius: BorderRadius.circular(24),
         ),
         shadows: const [
           BoxShadow(
-            color: Color(0xFF000000),
+            color: AppColors.textPrimary,
             blurRadius: 0,
             offset: Offset(4, 4),
             spreadRadius: 0,
@@ -54,7 +55,7 @@ class ErrorCard extends StatelessWidget {
                 child: Text(
                   text,
                   style: const TextStyle(
-                    color: Colors.black,
+                    color: AppColors.textPrimary,
                     fontSize: 18,
                     fontFamily: 'Itim',
                     fontWeight: FontWeight.w400,

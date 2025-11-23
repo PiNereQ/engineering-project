@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:proj_inz/core/theme.dart';
 
 class CustomFollowButton extends StatefulWidget {
   final double _size;
@@ -62,7 +63,7 @@ class _CustomFollowButtonState extends State<CustomFollowButton> {
             width: widget._size,
             height: widget._size,
             decoration: ShapeDecoration(
-              color: _isPressed ? const Color(0xFFFF405F) : Colors.white,
+              color: _isPressed ? AppColors.checkIcon : AppColors.surface,
               shape: RoundedRectangleBorder(
                 side: const BorderSide(width: 2),
                 borderRadius: BorderRadius.circular(1000),
@@ -71,7 +72,7 @@ class _CustomFollowButtonState extends State<CustomFollowButton> {
                   ? []
                   : [
                       BoxShadow(
-                        color: const Color(0xFF000000),
+                        color: AppColors.textPrimary,
                         blurRadius: 0,
                         offset: Offset(widget._size == 36 ? 2 : 3, widget._size == 36 ? 2 : 3),
                         spreadRadius: 0,
@@ -82,7 +83,7 @@ class _CustomFollowButtonState extends State<CustomFollowButton> {
               child: widget._size == 48
                 ? Icon(
                     Icons.favorite,
-                    color: _isPressed ? Colors.white : const Color(0xFFFF405F)
+                    color: _isPressed ? AppColors.surface : AppColors.checkIcon,
                   )
                 : SizedBox(
                   width: 18,
@@ -90,7 +91,7 @@ class _CustomFollowButtonState extends State<CustomFollowButton> {
                   child: FittedBox(
                     child: Icon(
                         Icons.favorite,
-                        color: _isPressed ? Colors.white : const Color(0xFFFF405F)
+                        color: _isPressed ? AppColors.surface : AppColors.checkIcon,
                       ),
                   ),
                 )

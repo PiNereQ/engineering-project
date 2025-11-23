@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:proj_inz/core/theme.dart';
 
 class SearchBarWide extends StatelessWidget {
   final double width;
@@ -22,14 +23,14 @@ class SearchBarWide extends StatelessWidget {
       width: width,
       padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
       decoration: ShapeDecoration(
-        color: Colors.white,
+        color: AppColors.surface,
         shape: RoundedRectangleBorder(
           side: const BorderSide(width: 2),
           borderRadius: BorderRadius.circular(16),
         ),
         shadows: const [
           BoxShadow(
-            color: Color(0xFF000000),
+            color: AppColors.textPrimary,
             blurRadius: 0,
             offset: Offset(4, 4),
             spreadRadius: 0,
@@ -42,7 +43,7 @@ class SearchBarWide extends StatelessWidget {
           fontSize: fontSize,
           fontFamily: 'Itim',
           fontWeight: FontWeight.w400,
-          color: Colors.black,
+          color: AppColors.textPrimary,
         ),
         decoration: InputDecoration(
           hintText: hintText,

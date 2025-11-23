@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:proj_inz/core/theme.dart';
 
 class CustomCheckbox extends StatelessWidget {
   final bool selected;
@@ -27,14 +28,14 @@ class CustomCheckbox extends StatelessWidget {
                 width: 24,
                 height: 24,
                 decoration: ShapeDecoration(
-                  color: Colors.white,
+                  color: AppColors.surface,
                   shape: RoundedRectangleBorder(
                     side: const BorderSide(width: 2),
                     borderRadius: BorderRadius.circular(4),
                   ),
                   shadows: const [
                     BoxShadow(
-                      color: Color(0xFF000000),
+                      color: AppColors.textPrimary,
                       blurRadius: 0,
                       offset: Offset(2, 2),
                       spreadRadius: 0,
@@ -46,7 +47,7 @@ class CustomCheckbox extends StatelessWidget {
                         child: Icon(
                           Icons.check,
                           size: 16,
-                          color: Color(0xFFFF4D7F),
+                          color: AppColors.checkIcon,
                         ),
                       )
                     : null,
@@ -57,7 +58,7 @@ class CustomCheckbox extends StatelessWidget {
           Text(
             label,
             style: const TextStyle(
-              color: Colors.black,
+              color: AppColors.textPrimary,
               fontSize: 18,
               fontFamily: 'Itim',
               fontWeight: FontWeight.w400,

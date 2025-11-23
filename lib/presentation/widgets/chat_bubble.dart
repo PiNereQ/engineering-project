@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:proj_inz/core/theme.dart';
 
 class ChatBubble extends StatelessWidget {
   final String text;
@@ -20,17 +21,16 @@ class ChatBubble extends StatelessWidget {
         isMine ? CrossAxisAlignment.end : CrossAxisAlignment.start;
 
     final timeColor = isMine
-        ? const Color(0xFF646464)
-        : (isRead ? const Color(0xFF646464) : Colors.black);
+        ? AppColors.textSecondary
+        : (isRead ? AppColors.textSecondary : AppColors.textPrimary);
 
     final backgroundColor = isMine
-        ? Colors.white
-        : (isRead ? Colors.white : const Color(0xFFFFEB9B));
+        ? AppColors.surface
+        : (isRead ? AppColors.surface : AppColors.background);
 
     final textColor = isMine
-        ? const Color(0xFF646464)
-        : (isRead ? const Color(0xFF646464) : Colors.black);
-
+        ? AppColors.textSecondary
+        : (isRead ? AppColors.textSecondary : AppColors.textPrimary);
     final borderSide = BorderSide(width: 2);
     final borderRadius = BorderRadius.circular(16);
 
@@ -75,7 +75,7 @@ class ChatBubble extends StatelessWidget {
               ),
               shadows: const [
                 BoxShadow(
-                  color: Color(0xFF000000),
+                  color: AppColors.textPrimary,
                   blurRadius: 0,
                   offset: Offset(4, 4),
                   spreadRadius: 0,

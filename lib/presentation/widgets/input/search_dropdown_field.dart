@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:proj_inz/core/theme.dart';
 
 enum CustomComponentWidth { full, half }
 
@@ -47,14 +48,14 @@ class _SearchDropdownFieldState extends State<SearchDropdownField> {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
             decoration: ShapeDecoration(
-              color: Colors.white,
+              color: AppColors.surface,
               shape: RoundedRectangleBorder(
                 side: const BorderSide(width: 2),
                 borderRadius: BorderRadius.circular(16),
               ),
               shadows: const [
                 BoxShadow(
-                  color: Color(0xFF000000),
+                  color: AppColors.textPrimary,
                   blurRadius: 0,
                   offset: Offset(4, 4),
                   spreadRadius: 0,
@@ -68,7 +69,7 @@ class _SearchDropdownFieldState extends State<SearchDropdownField> {
                     ? Text(
                         widget.placeholder!,
                         style: const TextStyle(
-                          color: Color(0xFF646464),
+                          color: AppColors.textSecondary,
                           fontSize: 18,
                           fontFamily: 'Itim',
                           fontWeight: FontWeight.w400,
@@ -78,12 +79,12 @@ class _SearchDropdownFieldState extends State<SearchDropdownField> {
                 isExpanded: true,
                 icon: const Icon(Icons.arrow_drop_down),
                 style: const TextStyle(
-                  color: Color(0xFF646464),
+                  color: AppColors.textSecondary,
                   fontSize: 18,
                   fontFamily: 'Itim',
                   fontWeight: FontWeight.w400,
                 ),
-                dropdownColor: Colors.white,
+                dropdownColor: AppColors.surface,
                 items: widget.options.map((String value) {
                   return DropdownMenuItem<String>(
                     value: value,

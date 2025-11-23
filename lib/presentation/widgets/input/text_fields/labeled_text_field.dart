@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:proj_inz/core/theme.dart';
 
 enum LabeledTextFieldWidth { full, half }
 
@@ -51,7 +52,7 @@ class LabeledTextField extends StatelessWidget {
               Text(
                 label,
                 style: const TextStyle(
-                  color: Color(0xFF646464),
+                  color: AppColors.textSecondary,
                   fontSize: 14,
                   fontFamily: 'Itim',
                   fontWeight: FontWeight.w400,
@@ -62,7 +63,7 @@ class LabeledTextField extends StatelessWidget {
               Text(
                 label,
                 style: const TextStyle(
-                  color: Color(0xFF646464),
+                  color: AppColors.textSecondary,
                   fontSize: 14,
                   fontFamily: 'Itim',
                   fontWeight: FontWeight.w400,
@@ -103,14 +104,14 @@ class LabeledTextField extends StatelessWidget {
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 decoration: ShapeDecoration(
-                  color: Colors.white,
+                  color: AppColors.surface,
                   shape: RoundedRectangleBorder(
                     side: const BorderSide(width: 2),
                     borderRadius: BorderRadius.circular(16),
                   ),
                   shadows: const [
                     BoxShadow(
-                      color: Color(0xFF000000),
+                      color: AppColors.textPrimary,
                       blurRadius: 0,
                       offset: Offset(4, 4),
                       spreadRadius: 0,
@@ -123,13 +124,13 @@ class LabeledTextField extends StatelessWidget {
                     hintText: placeholder,
                   ).copyWith(
                     errorStyle: const TextStyle(
-                      color: Colors.red,
+                      color: AppColors.alertText,
                       fontSize: 12,
                       fontFamily: 'Itim',
                     ),
                   ),
                   style: const TextStyle(
-                    color: Color(0xFF000000),
+                    color: AppColors.textPrimary,
                     fontSize: 18,
                     fontFamily: 'Itim',
                     fontWeight: FontWeight.w400,

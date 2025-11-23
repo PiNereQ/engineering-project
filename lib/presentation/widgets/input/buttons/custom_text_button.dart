@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:proj_inz/core/theme.dart';
 
 class CustomTextButton extends StatefulWidget {
   final String label;
@@ -24,7 +25,7 @@ class CustomTextButton extends StatefulWidget {
     this.badgeNumber,
     this.height,
     this.width,
-    this.backgroundColor = Colors.white,
+    this.backgroundColor = AppColors.surface,
     this.isLoading = false,
     required double fontSize,
     required double iconSize,
@@ -41,7 +42,7 @@ class CustomTextButton extends StatefulWidget {
     int? badgeNumber,
     double? height,
     double? width,
-    Color backgroundColor = Colors.white,
+    Color backgroundColor = AppColors.surface,
     bool isLoading = false,
   }) {
     return CustomTextButton._(
@@ -70,7 +71,7 @@ class CustomTextButton extends StatefulWidget {
     int? badgeNumber,
     double? height,
     double? width,
-    Color backgroundColor = Colors.white,
+    Color backgroundColor = AppColors.surface,
     bool isLoading = false,
   }) {
     return CustomTextButton._(
@@ -139,7 +140,7 @@ class _CustomTextButtonState extends State<CustomTextButton> {
                   ? []
                   : [
                       const BoxShadow(
-                        color: Color(0xFF000000),
+                        color: AppColors.textPrimary,
                         blurRadius: 0,
                         offset: Offset(4, 4),
                         spreadRadius: 0,
@@ -156,8 +157,8 @@ class _CustomTextButtonState extends State<CustomTextButton> {
                   widget.label,
                   style: TextStyle(
                     color: _isPressed
-                        ? const Color.fromARGB(100, 0, 0, 0)
-                        : Colors.black,
+                        ? AppColors.textSecondary
+                        : AppColors.textPrimary,
                     fontSize: widget._fontSize,
                     fontFamily: 'Itim',
                     fontWeight: FontWeight.w400,
@@ -171,8 +172,8 @@ class _CustomTextButtonState extends State<CustomTextButton> {
                       strokeWidth: 2,
                       strokeCap: StrokeCap.round,
                       color: _isPressed
-                          ? const Color.fromARGB(100, 0, 0, 0)
-                          : Colors.black,
+                          ? AppColors.textSecondary
+                          : AppColors.textPrimary,
                     ),
                   )
                 else if (widget.icon != null)
@@ -187,7 +188,7 @@ class _CustomTextButtonState extends State<CustomTextButton> {
                 if (widget.badgeNumber != null)
                   Container(
                     decoration: ShapeDecoration(
-                      color: const Color(0xFFFF8484),
+                      color: AppColors.notificationDot,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(1000),
                       ),
@@ -199,7 +200,7 @@ class _CustomTextButtonState extends State<CustomTextButton> {
                         widget.badgeNumber.toString(),
                         textAlign: TextAlign.center,
                         style: const TextStyle(
-                          color: Colors.white,
+                          color: AppColors.surface,
                           fontSize: 10,
                           fontFamily: 'Itim',
                           fontWeight: FontWeight.w400,
