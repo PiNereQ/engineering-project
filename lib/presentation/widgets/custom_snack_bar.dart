@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:proj_inz/core/theme.dart';
 
 void showCustomSnackBar(BuildContext context, String message) {
   final snackBar = SnackBar(
@@ -22,14 +23,14 @@ class _CustomSnackBarContent extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: ShapeDecoration(
-        color: Colors.white,
+        color: AppColors.surface,
         shape: RoundedRectangleBorder(
           side: const BorderSide(width: 2),
           borderRadius: BorderRadius.circular(24),
         ),
         shadows: const [
           BoxShadow(
-            color: Color(0xFF000000),
+            color: AppColors.textPrimary,
             blurRadius: 0,
             offset: Offset(4, 4),
             spreadRadius: 0,
@@ -40,7 +41,7 @@ class _CustomSnackBarContent extends StatelessWidget {
       child: Text(
         message,
         style: const TextStyle(
-          color: Colors.black,
+          color: AppColors.textPrimary,
           fontSize: 16,
           fontFamily: 'Itim',
         ),

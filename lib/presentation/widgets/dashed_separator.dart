@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:proj_inz/core/theme.dart';
 
 class DashedLinePainter extends CustomPainter {
   final double dashWidth;
@@ -11,7 +12,7 @@ class DashedLinePainter extends CustomPainter {
     this.dashWidth = 5.0,
     this.dashSpace = 3.0,
     this.dashHeight = 1.0,
-    this.color = Colors.black,
+    this.color = AppColors.textPrimary,
     this.isVertical = false,
   });
 
@@ -54,13 +55,13 @@ class DashedSeparator extends StatelessWidget {
 
   const DashedSeparator._({
     required this.length,
-    this.color = Colors.black,
+    this.color = AppColors.textPrimary,
     required bool isVertical
   }) : _isVertical = isVertical;
 
   factory DashedSeparator({
     double length = double.infinity,
-    Color color = Colors.black,
+    Color color = AppColors.textPrimary,
   }) {
     return DashedSeparator._(
       length: length,
@@ -71,7 +72,7 @@ class DashedSeparator extends StatelessWidget {
 
   factory DashedSeparator.vertical({
     required double length,
-    Color color = Colors.black,
+    Color color = AppColors.textPrimary,
   }) {
     return DashedSeparator._(
       length: length,

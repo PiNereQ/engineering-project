@@ -6,6 +6,7 @@ import 'package:proj_inz/presentation/screens/bought_coupon_detail_screen.dart';
 import 'package:proj_inz/presentation/screens/coupon_detail_screen.dart';
 import 'package:proj_inz/presentation/widgets/dashed_separator.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_follow_button.dart';
+import 'package:proj_inz/core/theme.dart';
 
 class CouponCardHorizontal extends StatelessWidget {
   final Coupon coupon;
@@ -65,7 +66,7 @@ class CouponCardHorizontal extends StatelessWidget {
       ? 'Kupon -$reductionText%\n'
       : 'Kupon na $reductionText zł\n',
       style: const TextStyle(
-      color: Colors.black,
+      color: AppColors.textPrimary,
       fontSize: 20,
       fontFamily: 'Itim',
       fontWeight: FontWeight.w400,
@@ -78,7 +79,7 @@ class CouponCardHorizontal extends StatelessWidget {
         ? 'z ograniczeniami'
         : 'na wszystko',
       style: const TextStyle(
-        color: Colors.black,
+        color: AppColors.textPrimary,
         fontSize: 14,
         fontFamily: 'Itim',
         fontWeight: FontWeight.w400,
@@ -90,7 +91,7 @@ class CouponCardHorizontal extends StatelessWidget {
         const TextSpan(
           text: "Cena: ",
           style: TextStyle(
-            color: Color(0xFF646464),
+            color: AppColors.textSecondary,
             fontSize: 14,
             fontFamily: 'Itim',
             fontWeight: FontWeight.w400,
@@ -99,7 +100,7 @@ class CouponCardHorizontal extends StatelessWidget {
         TextSpan(
           text: "$price zł",
           style: const TextStyle(
-            color: Colors.black,
+            color: AppColors.textPrimary,
             fontSize: 24,
             fontFamily: 'Itim',
             fontWeight: FontWeight.w400,
@@ -111,7 +112,7 @@ class CouponCardHorizontal extends StatelessWidget {
     final reputationText = TextSpan(
       text: 'Reputacja: $sellerReputation',
       style: const TextStyle(
-        color: Colors.black,
+        color: AppColors.textPrimary,
         fontSize: 12,
         fontFamily: 'Itim',
         fontWeight: FontWeight.w400,
@@ -128,7 +129,7 @@ class CouponCardHorizontal extends StatelessWidget {
           : 'w sklepach stacjonarnie'
       }',
       style: const TextStyle(
-        color: Colors.black,
+        color: AppColors.textPrimary,
         fontSize: 12,
         fontFamily: 'Itim',
         fontWeight: FontWeight.w400,
@@ -139,7 +140,7 @@ class CouponCardHorizontal extends StatelessWidget {
     final expiryDateText = TextSpan(
       text: '${expiryDate.day}.${expiryDate.month}.${expiryDate.year} r.',
       style: const TextStyle(
-        color: Colors.black,
+        color: AppColors.textPrimary,
         fontSize: 12,
         fontFamily: 'Itim',
         fontWeight: FontWeight.w400,
@@ -153,14 +154,14 @@ class CouponCardHorizontal extends StatelessWidget {
         
         child: Container(
           decoration: ShapeDecoration(
-            color: Colors.white,
+            color: AppColors.surface,
             shape: RoundedRectangleBorder(
               side: const BorderSide(width: 2),
               borderRadius: BorderRadius.circular(16),
             ),
             shadows: const [
               BoxShadow(
-                color: Color(0xFF000000),
+                color: AppColors.textPrimary,
                 blurRadius: 0,
                 offset: Offset(4, 4),
                 spreadRadius: 0,

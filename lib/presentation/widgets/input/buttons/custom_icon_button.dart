@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:proj_inz/core/theme.dart';
 
 class CustomIconButton extends StatefulWidget {
   final double size;
@@ -74,7 +75,7 @@ class _CustomIconButtonState extends State<CustomIconButton> {
             width: widget.size,
             height: widget.size,
             decoration: ShapeDecoration(
-              color: _isPressed ? const Color(0xFFB2B2B2) : Colors.white,
+              color: _isPressed ? AppColors.primaryButtonPressed : AppColors.surface,
               shape: RoundedRectangleBorder(
                 side: const BorderSide(width: 2),
                 borderRadius: BorderRadius.circular(1000),
@@ -83,7 +84,7 @@ class _CustomIconButtonState extends State<CustomIconButton> {
                   ? []
                   : [
                       BoxShadow(
-                        color: const Color(0xFF000000),
+                        color: AppColors.textPrimary,
                         blurRadius: 0,
                         offset: Offset(widget.size == 36 ? 2 : 3, widget.size == 36 ? 2 : 3),
                         spreadRadius: 0,

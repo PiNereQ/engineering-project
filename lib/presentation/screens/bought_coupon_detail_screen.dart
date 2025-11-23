@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:proj_inz/bloc/owned_coupon/owned_coupon_bloc.dart';
+import 'package:proj_inz/core/theme.dart';
 import 'package:proj_inz/core/utils/utils.dart';
 import 'package:proj_inz/data/models/owned_coupon_model.dart';
 import 'package:proj_inz/data/repositories/coupon_repository.dart';
@@ -25,7 +26,7 @@ class BoughtCouponDetailsScreen extends StatelessWidget {
       create: (context) => OwnedCouponBloc(context.read<CouponRepository>(), couponId)
         ..add(FetchCouponDetails()),
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.surface,
         body: SafeArea(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
@@ -65,14 +66,14 @@ class BoughtCouponDetailsScreen extends StatelessWidget {
                               padding: const EdgeInsets.all(16),
                               clipBehavior: Clip.antiAlias,
                               decoration: ShapeDecoration(
-                                color: Colors.white,
+                                color: AppColors.surface,
                                 shape: RoundedRectangleBorder(
                                   side: const BorderSide(width: 2),
                                   borderRadius: BorderRadius.circular(24),
                                 ),
                                 shadows: const [
                                   BoxShadow(
-                                    color: Color(0xFF000000),
+                                    color: AppColors.textPrimary,
                                     blurRadius: 0,
                                     offset: Offset(4, 4),
                                     spreadRadius: 0,
@@ -83,14 +84,14 @@ class BoughtCouponDetailsScreen extends StatelessWidget {
                                 children: [
                                   Icon(
                                     Icons.redeem_outlined,
-                                    color: Colors.black,
+                                    color: AppColors.textPrimary,
                                     size: 32,
                                     ),
                                   SizedBox(width: 16,),
                                   Text(
                                     "Ten kupon należy do Ciebie!",
                                     style: TextStyle(
-                                    color: Colors.black,
+                                    color: AppColors.textPrimary,
                                     fontSize: 18,
                                     fontFamily: 'Itim',
                                     fontWeight: FontWeight.w400,
@@ -171,7 +172,7 @@ class _CouponDetails extends StatelessWidget {
       ? 'Kupon -$reductionText%'
       : 'Kupon na $reductionText zł',
       style: const TextStyle(
-      color: Colors.black,
+      color: AppColors.textPrimary,
       fontSize: 30,
       fontFamily: 'Itim',
       fontWeight: FontWeight.w400,
@@ -184,7 +185,7 @@ class _CouponDetails extends StatelessWidget {
         const TextSpan(
           text: "Cena: ",
           style: TextStyle(
-            color: Color(0xFF646464),
+            color: AppColors.textSecondary,
             fontSize: 24,
             fontFamily: 'Itim',
             fontWeight: FontWeight.w400,
@@ -194,7 +195,7 @@ class _CouponDetails extends StatelessWidget {
         TextSpan(
           text: "$price zł",
           style: const TextStyle(
-            color: Colors.black,
+            color: AppColors.textPrimary,
             fontSize: 28,
             fontFamily: 'Itim',
             fontWeight: FontWeight.w400,
@@ -207,7 +208,7 @@ class _CouponDetails extends StatelessWidget {
     final limitsText = Text(
       hasLimits ? 'tak (w opisie)' : 'nie',
       style: const TextStyle(
-        color: Color(0xFF646464),
+        color: AppColors.textSecondary,
         fontSize: 18,
         fontFamily: 'Itim',
         fontWeight: FontWeight.w400,
@@ -222,7 +223,7 @@ class _CouponDetails extends StatelessWidget {
           ? 'w sklepach internetowych'
           : 'w sklepach online',
       style: const TextStyle(
-        color: Color(0xFF646464),
+        color: AppColors.textSecondary,
         fontSize: 18,
         fontFamily: 'Itim',
         fontWeight: FontWeight.w400,
@@ -233,7 +234,7 @@ class _CouponDetails extends StatelessWidget {
     final expiryDateText = Text(
       '${expiryDate.day}.${expiryDate.month}.${expiryDate.year} r.',
       style: const TextStyle(
-        color: Color(0xFF646464),
+        color: AppColors.textSecondary,
         fontSize: 18,
         fontFamily: 'Itim',
         fontWeight: FontWeight.w400,
@@ -245,14 +246,14 @@ class _CouponDetails extends StatelessWidget {
       width: double.infinity,
       clipBehavior: Clip.antiAlias,
       decoration: ShapeDecoration(
-        color: Colors.white,
+        color: AppColors.surface,
         shape: RoundedRectangleBorder(
           side: const BorderSide(width: 2),
           borderRadius: BorderRadius.circular(24),
         ),
         shadows: const [
           BoxShadow(
-            color: Color(0xFF000000),
+            color: AppColors.textPrimary,
             blurRadius: 0,
             offset: Offset(4, 4),
             spreadRadius: 0,
@@ -311,7 +312,7 @@ class _CouponDetails extends StatelessWidget {
                   ),
                 ),
                 const Divider(
-                  color: Colors.black,
+                  color: AppColors.textPrimary,
                   thickness: 2,
                 ),
                 Padding(
@@ -325,7 +326,7 @@ class _CouponDetails extends StatelessWidget {
                       const Text(
                         'Szczegóły',
                         style: TextStyle(
-                          color: Colors.black,
+                          color: AppColors.textPrimary,
                           fontSize: 20,
                           fontFamily: 'Itim',
                           fontWeight: FontWeight.w400,
@@ -341,7 +342,7 @@ class _CouponDetails extends StatelessWidget {
                             const Text(
                               'Gdzie działa:',
                               style: TextStyle(
-                                color: Colors.black,
+                                color: AppColors.textPrimary,
                                 fontSize: 18,
                                 fontFamily: 'Itim',
                                 fontWeight: FontWeight.w400,
@@ -354,7 +355,7 @@ class _CouponDetails extends StatelessWidget {
                       ),
                       const Divider(
                         height: 8,
-                        color: Colors.black,
+                        color: AppColors.textPrimary,
                         thickness: 1,
                       ),
                       SizedBox(
@@ -367,7 +368,7 @@ class _CouponDetails extends StatelessWidget {
                             const Text(
                               'Ograniczenia:',
                               style: TextStyle(
-                                color: Colors.black,
+                                color: AppColors.textPrimary,
                                 fontSize: 18,
                                 fontFamily: 'Itim',
                                 fontWeight: FontWeight.w400,
@@ -380,7 +381,7 @@ class _CouponDetails extends StatelessWidget {
                       ),
                       const Divider(
                         height: 8,
-                        color: Colors.black,
+                        color: AppColors.textPrimary,
                         thickness: 1,
                       ),
                       SizedBox(
@@ -393,7 +394,7 @@ class _CouponDetails extends StatelessWidget {
                             const Text(
                               'Ważny do:',
                               style: TextStyle(
-                              color: Colors.black,
+                              color: AppColors.textPrimary,
                               fontSize: 18,
                               fontFamily: 'Itim',
                               fontWeight: FontWeight.w400,
@@ -406,13 +407,13 @@ class _CouponDetails extends StatelessWidget {
                       ),
                       const Divider(
                         height: 8,
-                        color: Colors.black,
+                        color: AppColors.textPrimary,
                         thickness: 1,
                       ),
                       const Text(
                         'Opis:',
                         style: TextStyle(
-                        color: Colors.black,
+                        color: AppColors.textPrimary,
                         fontSize: 18,
                         fontFamily: 'Itim',
                         fontWeight: FontWeight.w400,
@@ -422,7 +423,7 @@ class _CouponDetails extends StatelessWidget {
                       Text(
                         (description == null || description == '') ? 'brak' : description,
                         style: const TextStyle(
-                          color: Color(0xFF646464),
+                          color: AppColors.textSecondary,
                           fontSize: 18,
                           fontFamily: 'Itim',
                           fontWeight: FontWeight.w400,
@@ -445,7 +446,7 @@ class _CouponDetails extends StatelessWidget {
                 const Text(
                   'Gotowy do wykorzystania!',
                   style: TextStyle(
-                      color: Colors.black,
+                      color: AppColors.textPrimary,
                       fontSize: 20,
                       fontFamily: 'Itim',
                       fontWeight: FontWeight.w400,
@@ -471,14 +472,14 @@ class _CouponDetails extends StatelessWidget {
         return Dialog(
           child: Container(
             decoration: ShapeDecoration(
-              color: Colors.white,
+              color: AppColors.background,
               shape: RoundedRectangleBorder(
                 side: const BorderSide(width: 2),
                 borderRadius: BorderRadius.circular(24),
               ),
               shadows: const [
                 BoxShadow(
-                  color: Color(0xFF000000),
+                  color: AppColors.textPrimary,
                   blurRadius: 0,
                   offset: Offset(4, 4),
                   spreadRadius: 0,
@@ -517,7 +518,7 @@ class _CouponDetails extends StatelessWidget {
                       Text(
                         code,
                         style: const TextStyle(
-                          color: Colors.black,
+                          color: AppColors.textPrimary,
                           fontSize: 20,
                           fontFamily: 'Roboto Mono',
                           fontWeight: FontWeight.w600,
@@ -570,14 +571,14 @@ class _SellerDetails extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       clipBehavior: Clip.antiAlias,
       decoration: ShapeDecoration(
-        color: Colors.white,
+        color: AppColors.surface,
         shape: RoundedRectangleBorder(
           side: const BorderSide(width: 2),
           borderRadius: BorderRadius.circular(24),
         ),
         shadows: const [
           BoxShadow(
-            color: Color(0xFF000000),
+            color: AppColors.textPrimary,
             blurRadius: 0,
             offset: Offset(4, 4),
             spreadRadius: 0,
@@ -595,7 +596,7 @@ class _SellerDetails extends StatelessWidget {
             child: Text(
               'O sprzedającym',
               style: TextStyle(
-                color: Colors.black,
+                color: AppColors.textPrimary,
                 fontSize: 20,
                 fontFamily: 'Itim',
                 fontWeight: FontWeight.w400,
@@ -618,7 +619,7 @@ class _SellerDetails extends StatelessWidget {
                     Text(
                       sellerUsername,
                       style: const TextStyle(
-                        color: Colors.black,
+                        color: AppColors.textPrimary,
                         fontSize: 20,
                         fontFamily: 'Itim',
                         fontWeight: FontWeight.w400,
@@ -628,7 +629,7 @@ class _SellerDetails extends StatelessWidget {
                     Text(
                       sellerReputation.toString(),
                       style: const TextStyle(
-                        color: Colors.black,
+                        color: AppColors.textPrimary,
                         fontSize: 16,
                         fontFamily: 'Itim',
                         fontWeight: FontWeight.w400,
@@ -638,7 +639,7 @@ class _SellerDetails extends StatelessWidget {
                     Text(
                       'Na Coupidynie od ${sellerJoinDate.day}.${sellerJoinDate.month}.${sellerJoinDate.year} r.',
                       style: const TextStyle(
-                        color: Color(0xFF646464),
+                        color: AppColors.textSecondary,
                         fontSize: 16,
                         fontFamily: 'Itim',
                         fontWeight: FontWeight.w400,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:proj_inz/presentation/widgets/dashed_separator.dart';
+import 'package:proj_inz/core/theme.dart';
 
 class TicketButton extends StatefulWidget {
   final String label;
@@ -14,7 +15,7 @@ class TicketButton extends StatefulWidget {
     required this.value,
     required this.icon,
     required this.onTap,
-    this.backgroundColor = Colors.white,
+    this.backgroundColor = AppColors.surface,
   });
 
   factory TicketButton({
@@ -23,7 +24,7 @@ class TicketButton extends StatefulWidget {
     required String value,
     required Widget icon,
     required VoidCallback onTap,
-    Color backgroundColor = Colors.white,
+    Color backgroundColor = AppColors.surface,
   }) {
     return TicketButton._(
       key: key,
@@ -80,7 +81,7 @@ class _TicketButtonState extends State<TicketButton> {
                   ? []
                   : [
                       const BoxShadow(
-                        color: Color(0xFF000000),
+                        color: AppColors.textPrimary,
                         blurRadius: 0,
                         offset: Offset(4, 4),
                         spreadRadius: 0,
@@ -116,8 +117,8 @@ class _TicketButtonState extends State<TicketButton> {
                             widget.value,
                             style: TextStyle(
                               color: _isPressed
-                                  ? const Color.fromARGB(100, 0, 0, 0)
-                                  : Colors.black,
+                                  ? AppColors.textSecondary
+                                  : AppColors.textPrimary,
                               fontSize: 18,
                               fontFamily: 'Itim',
                               fontWeight: FontWeight.w400,

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:proj_inz/bloc/owned_coupon_list/owned_coupon_list_bloc.dart';
+import 'package:proj_inz/core/theme.dart';
 import 'package:proj_inz/data/repositories/coupon_repository.dart';
 import 'package:proj_inz/presentation/widgets/coupon_card.dart';
 import 'package:proj_inz/presentation/widgets/error_card.dart';
@@ -98,7 +99,7 @@ class _BoughtCouponListScreenState extends State<BoughtCouponListScreen> {
               "Nie posiadasz jeszcze żadnych kuponów.",
               textAlign: TextAlign.left,
               style: TextStyle(
-                color: Colors.black,
+                color: AppColors.textPrimary,
                 fontSize: 18,
                 fontFamily: 'Itim',
                 fontWeight: FontWeight.w400,
@@ -147,21 +148,21 @@ class _Toolbar extends StatelessWidget {
             right: 0,
             top: 0,
             height: 60,
-            child: Container(color: Colors.white),
+            child: Container(color: AppColors.surface),
           ),
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 24, 16, 16),
             child: Container(
               width: double.infinity,
               decoration: ShapeDecoration(
-                color: Colors.white,
+                color: AppColors.surface,
                 shape: RoundedRectangleBorder(
                   side: const BorderSide(width: 2),
                   borderRadius: BorderRadius.circular(24),
                 ),
                 shadows: const [
                   BoxShadow(
-                    color: Color(0xFF000000),
+                    color: AppColors.textPrimary,
                     blurRadius: 0,
                     offset: Offset(4, 4),
                     spreadRadius: 0,

@@ -7,6 +7,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:proj_inz/bloc/coupon_list/coupon_list_bloc.dart';
 import 'package:proj_inz/bloc/search_shops_categories/search_shops_categories_bloc.dart';
 import 'package:proj_inz/bloc/search_shops_categories/search_shops_categories_event.dart';
+import 'package:proj_inz/core/theme.dart';
 import 'package:proj_inz/presentation/screens/map_screen.dart';
 import 'package:proj_inz/presentation/screens/search_results_screen.dart';
 import 'package:proj_inz/data/repositories/shop_repository.dart';
@@ -98,7 +99,7 @@ class _CouponListScreenContentState extends State<_CouponListScreenContent> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.background,
       body: RefreshIndicator(
         onRefresh: () async {
           context.read<CouponListBloc>().add(RefreshCoupons());
@@ -107,7 +108,11 @@ class _CouponListScreenContentState extends State<_CouponListScreenContent> {
           controller: _scrollController,
           physics: const AlwaysScrollableScrollPhysics(),
           slivers: [
-            _Toolbar(searchShopName: widget.searchShopName),
+              SliverSafeArea(
+              top: true,
+              bottom: false,
+              sliver: _Toolbar(searchShopName: widget.searchShopName),
+            ),
             BlocBuilder<CouponListBloc, CouponListState>(
               builder: (context, state) {
                 if (state is CouponListLoadInProgress) {
@@ -136,7 +141,7 @@ class _CouponListScreenContentState extends State<_CouponListScreenContent> {
                           "Nie znaleźliśmy kuponów pasujących do wybranych filtrów...",
                           textAlign: TextAlign.left,
                           style: TextStyle(
-                            color: Colors.black,
+                            color: AppColors.textPrimary,
                             fontSize: 18,
                             fontFamily: 'Itim',
                             fontWeight: FontWeight.w400,
@@ -192,21 +197,21 @@ Widget build(BuildContext context) {
           right: 0,
           top: 0,
           height: 60,
-          child: Container(color: Colors.white),
+          child: Container(color: Colors.transparent),
         ),
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
           child: Container(
             width: double.infinity,
             decoration: ShapeDecoration(
-              color: Colors.white,
+              color: AppColors.surface,
               shape: RoundedRectangleBorder(
                 side: const BorderSide(width: 2),
                 borderRadius: BorderRadius.circular(24),
               ),
               shadows: const [
                 BoxShadow(
-                  color: Color(0xFF000000),
+                  color: AppColors.textPrimary,
                   blurRadius: 0,
                   offset: Offset(4, 4),
                   spreadRadius: 0,
@@ -229,14 +234,14 @@ Widget build(BuildContext context) {
                           padding: const EdgeInsets.all(10),
                           clipBehavior: Clip.antiAlias,
                           decoration: ShapeDecoration(
-                            color: Colors.white,
+                            color: AppColors.surface,
                             shape: RoundedRectangleBorder(
                               side: const BorderSide(width: 2),
                               borderRadius: BorderRadius.circular(1000),
                             ),
                             shadows: const [
                               BoxShadow(
-                                color: Color(0xFF000000),
+                                color: AppColors.textPrimary,
                                 blurRadius: 0,
                                 offset: Offset(3, 3),
                                 spreadRadius: 0,
@@ -256,14 +261,14 @@ Widget build(BuildContext context) {
                         child: Container(
                           padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
                           decoration: ShapeDecoration(
-                            color: Colors.white,
+                            color: AppColors.surface,
                             shape: RoundedRectangleBorder(
                               side: const BorderSide(width: 2),
                               borderRadius: BorderRadius.circular(16),
                             ),
                             shadows: const [
                               BoxShadow(
-                                color: Color(0xFF000000),
+                                color: AppColors.textPrimary,
                                 blurRadius: 0,
                                 offset: Offset(4, 4),
                                 spreadRadius: 0,
@@ -273,7 +278,7 @@ Widget build(BuildContext context) {
                           child: Text(
                             'Wyniki dla sklepu: $searchShopName',
                             style: const TextStyle(
-                              color: Colors.black,
+                              color: AppColors.textPrimary,
                               fontSize: 18,
                               fontFamily: 'Itim',
                               fontWeight: FontWeight.w400,
@@ -313,6 +318,7 @@ Widget build(BuildContext context) {
                             onTap:
                                 () => showDialog(
                                   context: context,
+                                  barrierColor: AppColors.popupOverlay,
                                   builder:
                                       (dialogContext) => BlocProvider.value(
                                         value: context.read<CouponListBloc>(),
@@ -332,6 +338,7 @@ Widget build(BuildContext context) {
                             onTap:
                                 () => showDialog(
                                   context: context,
+                                  barrierColor: AppColors.popupOverlay,
                                   builder:
                                       (dialogContext) => BlocProvider.value(
                                         value: context.read<CouponListBloc>(),
@@ -366,7 +373,7 @@ Widget build(BuildContext context) {
           ),
         ],
     ),
-    toolbarHeight: 174,
+    toolbarHeight: searchShopName != null ? 194 : 174,
   );
 }
 }
@@ -410,8 +417,9 @@ class _CouponFilterDialogState extends State<_CouponFilterDialog> {
           });
         }
       },
-      child: Scaffold(
-        body: SingleChildScrollView(
+      child: Material(
+        color: Colors.transparent,
+        child: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
@@ -435,14 +443,14 @@ class _CouponFilterDialogState extends State<_CouponFilterDialog> {
                 const SizedBox(height: 16,),
                 Container(
                   decoration: ShapeDecoration(
-                    color: Colors.white,
+                    color: AppColors.surface,
                     shape: RoundedRectangleBorder(
                       side: const BorderSide(width: 2),
                       borderRadius: BorderRadius.circular(24),
                     ),
                     shadows: const [
                       BoxShadow(
-                        color: Color(0xFF000000),
+                        color: AppColors.textPrimary,
                         blurRadius: 0,
                         offset: Offset(4, 4),
                         spreadRadius: 0,
@@ -459,7 +467,7 @@ class _CouponFilterDialogState extends State<_CouponFilterDialog> {
                         child: Text(
                           'Filtry',
                           style: TextStyle(
-                          color: Colors.black,
+                          color: AppColors.textPrimary,
                           fontSize: 24,
                           fontFamily: 'Itim',
                           fontWeight: FontWeight.w400,
@@ -467,7 +475,7 @@ class _CouponFilterDialogState extends State<_CouponFilterDialog> {
                         ),
                         ),
                         const Divider(
-                        color: Colors.black,
+                        color: AppColors.textPrimary,
                         thickness: 2,
                         height: 2,
                         ),
@@ -486,7 +494,7 @@ class _CouponFilterDialogState extends State<_CouponFilterDialog> {
                                   child: Text(
                                       'Typ kuponu',
                                       style: TextStyle(
-                                          color: Colors.black,
+                                          color: AppColors.textPrimary,
                                           fontSize: 20,
                                           fontFamily: 'Itim',
                                           fontWeight: FontWeight.w400,
@@ -510,7 +518,7 @@ class _CouponFilterDialogState extends State<_CouponFilterDialog> {
                             ),
 
                             const Divider(
-                              color: Colors.black,
+                              color: AppColors.textPrimary,
                               thickness: 1,
                               height: 1,
                             ),
@@ -522,7 +530,7 @@ class _CouponFilterDialogState extends State<_CouponFilterDialog> {
                                   child: Text(
                                       'Cena',
                                       style: TextStyle(
-                                          color: Colors.black,
+                                          color: AppColors.textPrimary,
                                           fontSize: 20,
                                           fontFamily: 'Itim',
                                           fontWeight: FontWeight.w400,
@@ -552,7 +560,7 @@ class _CouponFilterDialogState extends State<_CouponFilterDialog> {
                             ),
 
                             const Divider(
-                              color: Colors.black,
+                              color: AppColors.textPrimary,
                               thickness: 1,
                               height: 1,
                             ),
@@ -564,7 +572,7 @@ class _CouponFilterDialogState extends State<_CouponFilterDialog> {
                                   child: Text(
                                       'Min. reputacja sprzedającego',
                                       style: TextStyle(
-                                          color: Colors.black,
+                                          color: AppColors.textPrimary,
                                           fontSize: 20,
                                           fontFamily: 'Itim',
                                           fontWeight: FontWeight.w400,
@@ -606,7 +614,7 @@ class _CouponFilterDialogState extends State<_CouponFilterDialog> {
                                 context.read<CouponListBloc>().add(ClearCouponFilters());
                               },
                             ),
-                            CustomTextButton(
+                            CustomTextButton.primary(
                               label: 'Zastosuj',
                               icon: const Icon(Icons.check),
                               onTap: () {
@@ -665,8 +673,9 @@ class _CouponSortDialogState extends State<_CouponSortDialog> {
           });
         }
       },
-      child: Scaffold(
-        body: SingleChildScrollView(
+      child: Material(
+        color: Colors.transparent,
+        child: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
@@ -690,14 +699,14 @@ class _CouponSortDialogState extends State<_CouponSortDialog> {
                 const SizedBox(height: 16,),
                 Container(
                   decoration: ShapeDecoration(
-                    color: Colors.white,
+                    color: AppColors.surface,
                     shape: RoundedRectangleBorder(
                       side: const BorderSide(width: 2),
                       borderRadius: BorderRadius.circular(24),
                     ),
                     shadows: const [
                       BoxShadow(
-                        color: Color(0xFF000000),
+                        color: AppColors.textPrimary,
                         blurRadius: 0,
                         offset: Offset(4, 4),
                         spreadRadius: 0,
@@ -714,7 +723,7 @@ class _CouponSortDialogState extends State<_CouponSortDialog> {
                         child: Text(
                           'Sortowanie',
                           style: TextStyle(
-                          color: Colors.black,
+                          color: AppColors.textPrimary,
                           fontSize: 24,
                           fontFamily: 'Itim',
                           fontWeight: FontWeight.w400,
@@ -722,7 +731,7 @@ class _CouponSortDialogState extends State<_CouponSortDialog> {
                         ),
                         ),
                         const Divider(
-                        color: Colors.black,
+                        color: AppColors.textPrimary,
                         thickness: 2,
                         height: 2,
                         ),
@@ -741,7 +750,7 @@ class _CouponSortDialogState extends State<_CouponSortDialog> {
                                   child: Text(
                                       'Data dodania',
                                       style: TextStyle(
-                                          color: Colors.black,
+                                          color: AppColors.textPrimary,
                                           fontSize: 20,
                                           fontFamily: 'Itim',
                                           fontWeight: FontWeight.w400,
@@ -768,7 +777,7 @@ class _CouponSortDialogState extends State<_CouponSortDialog> {
                                   child: Text(
                                       'Cena',
                                       style: TextStyle(
-                                          color: Colors.black,
+                                          color: AppColors.textPrimary,
                                           fontSize: 20,
                                           fontFamily: 'Itim',
                                           fontWeight: FontWeight.w400,
@@ -795,7 +804,7 @@ class _CouponSortDialogState extends State<_CouponSortDialog> {
                                   child: Text(
                                       'Reputacja sprzedającego',
                                       style: TextStyle(
-                                          color: Colors.black,
+                                          color: AppColors.textPrimary,
                                           fontSize: 20,
                                           fontFamily: 'Itim',
                                           fontWeight: FontWeight.w400,
@@ -822,7 +831,7 @@ class _CouponSortDialogState extends State<_CouponSortDialog> {
                                   child: Text(
                                       'Data ważności',
                                       style: TextStyle(
-                                          color: Colors.black,
+                                          color: AppColors.textPrimary,
                                           fontSize: 20,
                                           fontFamily: 'Itim',
                                           fontWeight: FontWeight.w400,
@@ -849,7 +858,7 @@ class _CouponSortDialogState extends State<_CouponSortDialog> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
-                            CustomTextButton(
+                            CustomTextButton.primary(
                               label: 'Zastosuj',
                               icon: const Icon(Icons.check),
                               onTap: () {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:proj_inz/core/theme.dart';
 
 class CustomTextField extends StatelessWidget {
   final String label;
@@ -21,7 +22,7 @@ class CustomTextField extends StatelessWidget {
         labelText: label,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
         filled: true,
-        fillColor: Colors.white,
+        fillColor: AppColors.surface,
       ),
     );
   }

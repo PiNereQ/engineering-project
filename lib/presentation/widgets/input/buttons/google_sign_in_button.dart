@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:proj_inz/core/theme.dart';
 
 class GoogleSignInButton extends StatelessWidget {
   final VoidCallback onTap;
@@ -14,7 +15,7 @@ class GoogleSignInButton extends StatelessWidget {
     if (Platform.isIOS) isIOS = true;
 
     return Material(
-      color: Colors.white,
+      color: AppColors.surface,
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(1000),
@@ -24,7 +25,7 @@ class GoogleSignInButton extends StatelessWidget {
           clipBehavior: Clip.antiAlias,
           decoration: ShapeDecoration(
             shape: RoundedRectangleBorder(
-              side: const BorderSide(width: 1, color: Color(0xFF747775)),
+              side: const BorderSide(width: 1, color: AppColors.textSecondary),
               borderRadius: BorderRadius.circular(1000),
             ),
           ),
@@ -39,7 +40,7 @@ class GoogleSignInButton extends StatelessWidget {
                 'Zaloguj się z Google',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: Color(0xFF1F1F1F),
+                  color: AppColors.textPrimary,
                   fontSize: 14,
                   fontFamily: 'Roboto',
                   fontWeight: FontWeight.w500,

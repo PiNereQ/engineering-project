@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:proj_inz/bloc/auth/auth_bloc.dart';
 import 'package:proj_inz/bloc/number_verification/number_verification_bloc.dart';
+import 'package:proj_inz/core/theme.dart';
 import 'package:proj_inz/core/utils/validators.dart';
 import 'package:proj_inz/presentation/screens/main_screen.dart';
 import 'package:proj_inz/presentation/widgets/custom_snack_bar.dart';
@@ -21,7 +22,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFFEC9C),
+      backgroundColor: AppColors.background,
       resizeToAvoidBottomInset: true,
       body: BlocConsumer<AuthBloc, AuthState>(
         listener: (context, state) {
@@ -130,14 +131,14 @@ class _RegistrationCardState extends State<_RegistrationCard> {
   Widget build(BuildContext context) {
     return Container(
       decoration: ShapeDecoration(
-        color: Colors.white,
+        color: AppColors.surface,
         shape: RoundedRectangleBorder(
           side: const BorderSide(width: 2),
           borderRadius: BorderRadius.circular(24),
         ),
         shadows: const [
           BoxShadow(
-            color: Color(0xFF000000),
+            color: AppColors.textPrimary,
             blurRadius: 0,
             offset: Offset(4, 4),
             spreadRadius: 0,
@@ -161,7 +162,7 @@ class _RegistrationCardState extends State<_RegistrationCard> {
                     child: Text(
                       'Zarejestruj się!',
                       style: TextStyle(
-                        color: Colors.black,
+                        color: AppColors.textPrimary,
                         fontSize: 24,
                         fontFamily: 'Itim',
                         fontWeight: FontWeight.w400,
@@ -225,7 +226,7 @@ class _RegistrationCardState extends State<_RegistrationCard> {
                     Text(
                       _errorMessage!,
                       style: const TextStyle(
-                        color: Colors.red,
+                        color: AppColors.alertText,
                         fontSize: 14,
                         fontFamily: 'Itim',
                         fontWeight: FontWeight.w400,
@@ -238,14 +239,14 @@ class _RegistrationCardState extends State<_RegistrationCard> {
                       CustomTextButton(
                         label: "Wróć",
                         onTap: widget.isLoading ? () {} : _handleBack,
-                        backgroundColor: const Color(0xFFEBEBEB),
+                        backgroundColor: AppColors.secondaryButton,
                       ),
                       CustomTextButton(
                         label: "Zarejestruj",
                         onTap:widget.isLoading
                             ? () {}
                             : _handleSubmit,
-                        backgroundColor: const Color(0xFFFFC6FF),
+                        backgroundColor: AppColors.primaryButton,
                         isLoading: widget.isLoading,
                       ),
                     ],

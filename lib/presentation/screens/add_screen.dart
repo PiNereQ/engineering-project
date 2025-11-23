@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:proj_inz/bloc/coupon_add/coupon_add_bloc.dart';
+import 'package:proj_inz/core/theme.dart';
 import 'package:proj_inz/data/models/coupon_offer_model.dart';
 import 'package:proj_inz/data/repositories/coupon_repository.dart';
 import 'package:proj_inz/bloc/shop/shop_bloc.dart';
@@ -57,10 +58,10 @@ class _AddScreenState extends State<AddScreen> {
       return showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          backgroundColor: Colors.white,
+          backgroundColor: AppColors.surface,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(24),
-            side: const BorderSide(width: 2, color: Colors.black),
+            side: const BorderSide(width: 2, color:AppColors.textPrimary),
           ),
           title: const Text(
             'Potwierdzenie',
@@ -68,7 +69,7 @@ class _AddScreenState extends State<AddScreen> {
               fontFamily: 'Itim',
               fontSize: 22,
               fontWeight: FontWeight.w400,
-              color: Colors.black,
+              color: AppColors.textPrimary,
             ),
           ),
           content: const Text(
@@ -76,7 +77,7 @@ class _AddScreenState extends State<AddScreen> {
             style: TextStyle(
               fontFamily: 'Itim',
               fontSize: 16,
-              color: Color(0xFF646464),
+              color: AppColors.textSecondary,
             ),
           ),
           actionsPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -86,7 +87,7 @@ class _AddScreenState extends State<AddScreen> {
               width: 100,
               onTap: () => Navigator.of(context).pop(),
             ),
-            CustomTextButton.small(
+            CustomTextButton.primarySmall(
               label: 'Tak',
               width: 100,
               onTap: () {
@@ -110,7 +111,7 @@ class _AddScreenState extends State<AddScreen> {
         ),
       ],
       child: Scaffold(
-        backgroundColor: Colors.yellow[200],
+        backgroundColor: AppColors.background,
         body: SafeArea(
           child: LayoutBuilder(
             builder: (context, constraints) {
@@ -145,14 +146,14 @@ class _AddScreenState extends State<AddScreen> {
                         width: maxWidth,
                         padding: const EdgeInsets.all(24),
                         decoration: ShapeDecoration(
-                          color: Colors.white,
+                          color: AppColors.surface,
                           shape: RoundedRectangleBorder(
-                            side: const BorderSide(width: 2),
+                            side: const BorderSide(width: 2, color: AppColors.textPrimary),
                             borderRadius: BorderRadius.circular(24),
                           ),
                           shadows: const [
                             BoxShadow(
-                              color: Color(0xFF000000),
+                              color: AppColors.textPrimary,
                               blurRadius: 0,
                               offset: Offset(4, 4),
                               spreadRadius: 0,
@@ -170,7 +171,7 @@ class _AddScreenState extends State<AddScreen> {
                                 child: Text(
                                   'Dodaj kupon',
                                   style: TextStyle(
-                                    color: Colors.black,
+                                    color: AppColors.textPrimary,
                                     fontSize: 24,
                                     fontFamily: 'Itim',
                                     fontWeight: FontWeight.w400,
@@ -295,7 +296,7 @@ class _AddScreenState extends State<AddScreen> {
                                               height: 24,
                                               width: 24,
                                               colorFilter: const ColorFilter.mode(
-                                                Color(0xFF646464),
+                                                AppColors.textSecondary,
                                                 BlendMode.srcIn,
                                               ),
                                             ),
@@ -304,7 +305,7 @@ class _AddScreenState extends State<AddScreen> {
                                               child: Text(
                                                 'Jeśli Twój kupon nie posiada kodu w formie tekstu, zeskanuj go dodając zdjęcie',
                                                 style: TextStyle(
-                                                  color: Color(0xFF646464),
+                                                  color: AppColors.textSecondary,
                                                   fontSize: 14,
                                                   fontFamily: 'Itim',
                                                   fontWeight: FontWeight.w400,
@@ -322,7 +323,7 @@ class _AddScreenState extends State<AddScreen> {
                                   ConstrainedBox(
                                     constraints: const BoxConstraints(minWidth: 132),
                                     child: Center(
-                                      child: CustomTextButton(
+                                      child: CustomTextButton.primary(
                                         height: 51.86,
                                         width: 160,
                                         label: 'Dodaj zdjęcie',
@@ -340,7 +341,7 @@ class _AddScreenState extends State<AddScreen> {
                               const Text(
                                 'Typ kuponu',
                                 style: TextStyle(
-                                  color: Colors.black,
+                                  color: AppColors.textPrimary,
                                   fontSize: 18,
                                   fontFamily: 'Itim',
                                   fontWeight: FontWeight.w400,
@@ -418,7 +419,7 @@ class _AddScreenState extends State<AddScreen> {
                               const Text(
                                 'Do wykorzystania w:',
                                 style: TextStyle(
-                                  color: Colors.black,
+                                  color: AppColors.textPrimary,
                                   fontSize: 18,
                                   fontFamily: 'Itim',
                                   fontWeight: FontWeight.w400,
@@ -457,7 +458,7 @@ class _AddScreenState extends State<AddScreen> {
                               const Text(
                                 'Czy Twój kupon ma ograniczenia?',
                                 style: TextStyle(
-                                  color: Colors.black,
+                                  color: AppColors.textPrimary,
                                   fontSize: 18,
                                   fontFamily: 'Itim',
                                   fontWeight: FontWeight.w400,
@@ -512,7 +513,7 @@ class _AddScreenState extends State<AddScreen> {
                                             height: 24,
                                             width: 24,
                                             colorFilter: const ColorFilter.mode(
-                                              Color(0xFF646464),
+                                              AppColors.textSecondary,
                                               BlendMode.srcIn,
                                             ),
                                           ),
@@ -521,7 +522,7 @@ class _AddScreenState extends State<AddScreen> {
                                             child: Text(
                                               'Jeśli Twój kupon posiada ograniczenia tj. wyłączone produkty/kategorie z promocji - wypisz je w opisie',
                                               style: TextStyle(
-                                                color: Color(0xFF646464),
+                                                color: AppColors.textSecondary,
                                                 fontSize: 14,
                                                 fontFamily: 'Itim',
                                                 fontWeight: FontWeight.w400,
@@ -567,7 +568,7 @@ class _AddScreenState extends State<AddScreen> {
                                     child: Text(
                                       'Za dodanie tego kuponu dostaniesz',
                                       style: TextStyle(
-                                        color: Colors.black,
+                                        color: AppColors.textPrimary,
                                         fontSize: 18,
                                         fontFamily: 'Itim',
                                         fontWeight: FontWeight.w400,
@@ -579,7 +580,7 @@ class _AddScreenState extends State<AddScreen> {
                                       '100 pkt',
                                       textAlign: TextAlign.right,
                                       style: TextStyle(
-                                        color: Colors.black,
+                                        color: AppColors.textPrimary,
                                         fontSize: 18,
                                         fontFamily: 'Itim',
                                         fontWeight: FontWeight.w400,
@@ -592,7 +593,7 @@ class _AddScreenState extends State<AddScreen> {
                               const SizedBox(height: 18),
                           
                               // 11. Przycisk dodaj
-                              CustomTextButton(
+                              CustomTextButton.primary(
                                 height: 56,
                                 width: double.infinity,
                                 label: 'Dodaj',

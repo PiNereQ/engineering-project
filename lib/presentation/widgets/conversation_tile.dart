@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:proj_inz/core/theme.dart';
 
 class ConversationTile extends StatelessWidget {
   final String username;
@@ -24,14 +25,14 @@ class ConversationTile extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           clipBehavior: Clip.antiAlias,
           decoration: ShapeDecoration(
-            color: isRead ? Colors.white : const Color(0xFFFFEB9B),
+            color: isRead ? AppColors.surface : AppColors.background,
             shape: RoundedRectangleBorder(
               side: const BorderSide(width: 2),
               borderRadius: BorderRadius.circular(16),
             ),
             shadows: const [
               BoxShadow(
-                color: Color(0xFF000000),
+                color: AppColors.textPrimary,
                 blurRadius: 0,
                 offset: Offset(4, 4),
                 spreadRadius: 0,
@@ -52,14 +53,14 @@ class ConversationTile extends StatelessWidget {
                     height: 71,
                     clipBehavior: Clip.antiAlias,
                     decoration: ShapeDecoration(
-                      color: Colors.white,
+                      color: AppColors.surface,
                       shape: RoundedRectangleBorder(
                         side: const BorderSide(width: 2),
                         borderRadius: BorderRadius.circular(1000),
                       ),
                       shadows: const [
                         BoxShadow(
-                          color: Color(0xFF000000),
+                          color: AppColors.textPrimary,
                           blurRadius: 0,
                           offset: Offset(4, 4),
                           spreadRadius: 0,
@@ -79,7 +80,7 @@ class ConversationTile extends StatelessWidget {
                     child: Text(
                       username,
                       style: const TextStyle(
-                        color: Colors.black,
+                        color: AppColors.textPrimary,
                         fontSize: 20,
                         fontFamily: 'Itim',
                         fontWeight: FontWeight.w400,
@@ -98,7 +99,7 @@ class ConversationTile extends StatelessWidget {
                     child: Text(
                       title,
                       style: const TextStyle(
-                        color: Colors.black,
+                        color: AppColors.textPrimary,
                         fontSize: 20,
                         fontFamily: 'Itim',
                         fontWeight: FontWeight.w400,
@@ -117,7 +118,7 @@ class ConversationTile extends StatelessWidget {
                     child: Text(
                       message,
                       style: TextStyle(
-                        color: isRead ? const Color(0xFF646464) : Colors.black,
+                        color: isRead ? AppColors.textSecondary : AppColors.textPrimary,
                         fontSize: 15,
                         fontFamily: 'Itim',
                         fontWeight: FontWeight.w400,
