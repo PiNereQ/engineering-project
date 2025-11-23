@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -604,13 +605,31 @@ class _MapScreenViewState extends State<_MapScreenView>
           }
         }
 
-        final markers =
-            state.locations.map((location) {
-              return Marker(
-                point: LatLng(location.latitude, location.longitude),
+        final markers = state.locations
+            .where(
+              (location) =>
+                  state.selectedLocationId == null ||
+                  state.selectedLocationId == location.shopId,
+            )
+            .map((location) {
+          return Marker(
+            height: 53,
+            width: 53,
+            point: LatLng(location.latitude, location.longitude),
+            child: Transform.translate(
+              offset: const Offset(0, -19),
+              child: GestureDetector(
+                onTap: () {
+                  _mapController!.move(LatLng(location.latitude, location.longitude), _mapController!.camera.zoom);
+                  context.read<CouponMapBloc>().add(
+                    CouponMapLocationSelected(locationId: location.shopId),
+                  );
+                },
                 child: ShopLocation(),
-              );
-            }).toList();
+              ),
+            ),
+          );
+        }).toList();
 
         return Scaffold(
           body: Stack(
@@ -672,6 +691,17 @@ class _MapScreenViewState extends State<_MapScreenView>
                       }
                     },
                   ),
+                  if (state.selectedLocationId != null)
+                  Positioned.fill(
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+                      child: Container(
+                        color: Colors.black.withValues(
+                          alpha: 0.4,
+                        ),
+                      ),
+                    ),
+                  ),
                   if (_currentUserLocation != null)
                     MarkerLayer(
                       markers: [
@@ -685,6 +715,8 @@ class _MapScreenViewState extends State<_MapScreenView>
                   _AttributionWidget(),
                 ],
               ),
+              // top buttons
+              if (state.selectedLocationId == null)
               Positioned(
                 top: 0,
                 left: 0,
@@ -710,6 +742,8 @@ class _MapScreenViewState extends State<_MapScreenView>
                   ),
                 ),
               ),
+              // bottom navigation bar
+              if (state.selectedLocationId == null)
               Positioned(
                 bottom: 20,
                 left: 8,
@@ -799,6 +833,56 @@ class _MapScreenViewState extends State<_MapScreenView>
               ),
               if (_isMapLoading)
                 const Center(child: CircularProgressIndicator()),
+              if (state.selectedLocationId != null)
+                Positioned.fill(
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () {
+                      debugPrint('Clearing selected location');
+                      context
+                          .read<CouponMapBloc>()
+                          .add(const CouponMapLocationCleared());
+                    },
+                    child: Stack(
+                      children: [
+                        Positioned(
+                          bottom: 110,
+                          left: 16,
+                          right: 16,
+                          child: GestureDetector(
+                            onTap: () {},
+                            child: Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: AppColors.surface,
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: AppColors.textPrimary,
+                                  width: 2,
+                                ),
+                                boxShadow: const [
+                                  BoxShadow(
+                                    color: AppColors.textPrimary,
+                                    offset: Offset(4, 4),
+                                  ),
+                                ],
+                              ),
+                              child: Text(
+                                'Location id: ${state.selectedLocationId}',
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                  fontFamily: 'Itim',
+                                  fontSize: 16,
+                                  color: AppColors.textPrimary,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
             ],
           ),
         );

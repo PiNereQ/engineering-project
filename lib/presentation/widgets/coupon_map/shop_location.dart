@@ -6,24 +6,19 @@ class ShopLocation extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Transform.translate(
-        offset: Offset(0, -19),
-        child: DecoratedIcon(
-          decoration: IconDecoration(
-            border: IconBorder(
-              color: Colors.black,
-              width: 4,
-            ),
-          ),
-          icon: Icon(
-            Icons.location_on_rounded,
-            color: Colors.red,
-            size: 38,
-            fontWeight: FontWeight.w100,
-            shadows: [Shadow(color: Colors.black, offset: Offset(3, 2))],
-          ),
+    return DecoratedIcon(
+      decoration: IconDecoration(
+        border: IconBorder(
+          color: Colors.black,
+          width: 4,
         ),
+      ),
+      icon: Icon(
+        Icons.location_on_rounded,
+        color: Colors.red,
+        size: 38,
+        fontWeight: FontWeight.w100,
+        shadows: [Shadow(color: Colors.black, offset: Offset(3, 2))],
       ),
     );
   }

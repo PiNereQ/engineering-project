@@ -13,6 +13,8 @@ class CouponMapBloc extends Bloc<CouponMapEvent, CouponMapState> {
     on<LoadLocationsInBounds>(_onLoadLocationsInBounds);
     on<CouponMapPositionChanged>(_onPositionChanged);
     on<CouponMapSearchExecuted>(_onSearchExecuted);
+    on<CouponMapLocationSelected>(_onLocationSelected);
+    on<CouponMapLocationCleared>(_onLocationCleared);
   }
 
   Future<void> _onLoadLocationsInBounds(
@@ -61,5 +63,19 @@ class CouponMapBloc extends Bloc<CouponMapEvent, CouponMapState> {
     Emitter<CouponMapState> emit,
   ) {
     emit(state.copyWith(showSearchButton: false));
+  }
+
+  void _onLocationSelected(
+    CouponMapLocationSelected event,
+    Emitter<CouponMapState> emit,
+  ) {
+    emit(state.copyWith(selectedLocationId: event.locationId));
+  }
+
+  void _onLocationCleared(
+    CouponMapLocationCleared event,
+    Emitter<CouponMapState> emit,
+  ) {
+    emit(state.copyWith(selectedLocationId: null));
   }
 }

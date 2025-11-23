@@ -13,6 +13,7 @@ class CouponMapState extends Equatable {
   final String? errorMessage;
   final bool showSearchButton;
   final bool showZoomTip;
+  final String? selectedLocationId;
 
   const CouponMapState({
     this.status = CouponMapStatus.initial,
@@ -20,6 +21,7 @@ class CouponMapState extends Equatable {
     this.errorMessage,
     this.showSearchButton = false,
     this.showZoomTip = true,
+    this.selectedLocationId,
   });
 
   CouponMapState copyWith({
@@ -28,6 +30,7 @@ class CouponMapState extends Equatable {
     String? errorMessage,
     bool? showSearchButton,
     bool? showZoomTip,
+    String? selectedLocationId,
   }) {
     return CouponMapState(
       status: status ?? this.status,
@@ -35,6 +38,8 @@ class CouponMapState extends Equatable {
       errorMessage: errorMessage ?? this.errorMessage,
       showSearchButton: showSearchButton ?? this.showSearchButton,
       showZoomTip: showZoomTip ?? this.showZoomTip,
+      // allow explicitly passing null to clear the selection
+      selectedLocationId: selectedLocationId,
     );
   }
   
@@ -45,5 +50,6 @@ class CouponMapState extends Equatable {
     errorMessage,
     showSearchButton,
     showZoomTip,
+    selectedLocationId,
   ];
 }

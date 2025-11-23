@@ -28,3 +28,16 @@ class CouponMapPositionChanged extends CouponMapEvent {
 class CouponMapSearchExecuted extends CouponMapEvent {
   const CouponMapSearchExecuted();
 }
+
+class CouponMapLocationSelected extends CouponMapEvent {
+  final String locationId;
+
+  const CouponMapLocationSelected({required this.locationId});
+
+  @override
+  List<Object> get props => [locationId];
+}
+
+class CouponMapLocationCleared extends CouponMapEvent {
+  const CouponMapLocationCleared();
+}
