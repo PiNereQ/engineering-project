@@ -51,6 +51,7 @@ class _ChatScreenState extends State<ChatScreen> {
         : dummySellingConversations;
 
     return Scaffold(
+      backgroundColor: AppColors.surface,
       appBar: AppBar(
         title: const Text('Wiadomości'),
       ),

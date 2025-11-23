@@ -39,7 +39,7 @@ class CouponDetailsScreen extends StatelessWidget {
         ),
       ],
       child: Scaffold(
-        backgroundColor: AppColors.surface,
+        backgroundColor: AppColors.background,
         body: SafeArea(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
@@ -478,7 +478,7 @@ class _CouponDetails extends StatelessWidget {
                   mainAxisSize: MainAxisSize.max,
                   spacing: 16,
                   children: [
-                    CustomTextButton(
+                    CustomTextButton.primary(
                       label: 'Kup teraz',
                       onTap: () async {
                         context.read<PaymentBloc>().add(

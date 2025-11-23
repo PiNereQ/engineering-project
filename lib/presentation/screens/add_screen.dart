@@ -87,7 +87,7 @@ class _AddScreenState extends State<AddScreen> {
               width: 100,
               onTap: () => Navigator.of(context).pop(),
             ),
-            CustomTextButton.small(
+            CustomTextButton.primarySmall(
               label: 'Tak',
               width: 100,
               onTap: () {
@@ -323,7 +323,7 @@ class _AddScreenState extends State<AddScreen> {
                                   ConstrainedBox(
                                     constraints: const BoxConstraints(minWidth: 132),
                                     child: Center(
-                                      child: CustomTextButton(
+                                      child: CustomTextButton.primary(
                                         height: 51.86,
                                         width: 160,
                                         label: 'Dodaj zdjęcie',
@@ -593,7 +593,7 @@ class _AddScreenState extends State<AddScreen> {
                               const SizedBox(height: 18),
                           
                               // 11. Przycisk dodaj
-                              CustomTextButton(
+                              CustomTextButton.primary(
                                 height: 56,
                                 width: double.infinity,
                                 label: 'Dodaj',

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../widgets/chat_bubble.dart';
+import 'package:proj_inz/core/theme.dart';
 
 class ChatDetailScreen extends StatelessWidget {
   const ChatDetailScreen({super.key});
@@ -7,6 +8,7 @@ class ChatDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text('Szczegóły rozmowy'),
       ),

@@ -28,6 +28,7 @@ class ProfileScreen extends StatelessWidget {
       },
       builder: (context, state) {
         return Scaffold(
+          backgroundColor: AppColors.background,
           body: SingleChildScrollView(
             child: Padding(
               padding: const EdgeInsets.symmetric(
