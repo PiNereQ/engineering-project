@@ -108,7 +108,11 @@ class _CouponListScreenContentState extends State<_CouponListScreenContent> {
           controller: _scrollController,
           physics: const AlwaysScrollableScrollPhysics(),
           slivers: [
-            _Toolbar(searchShopName: widget.searchShopName),
+              SliverSafeArea(
+              top: true,
+              bottom: false,
+              sliver: _Toolbar(searchShopName: widget.searchShopName),
+            ),
             BlocBuilder<CouponListBloc, CouponListState>(
               builder: (context, state) {
                 if (state is CouponListLoadInProgress) {
@@ -369,7 +373,7 @@ Widget build(BuildContext context) {
           ),
         ],
     ),
-    toolbarHeight: 174,
+    toolbarHeight: searchShopName != null ? 194 : 174,
   );
 }
 }
