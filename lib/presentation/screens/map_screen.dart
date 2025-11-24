@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_map_animations/flutter_map_animations.dart';
 import 'package:flutter_map_cache/flutter_map_cache.dart';
 import 'package:flutter_svg/svg.dart';
 
@@ -60,9 +61,9 @@ class _MapScreenView extends StatefulWidget {
 }
 
 class _MapScreenViewState extends State<_MapScreenView>
-    with WidgetsBindingObserver {
+    with TickerProviderStateMixin, WidgetsBindingObserver {
   bool _isMapLoading = true;
-  MapController? _mapController;
+  AnimatedMapController? _mapController;
   bool _isUserLocationEnabled = false;
   bool _isUserLocationLoading = false;
   LatLng? _currentUserLocation;
@@ -72,15 +73,20 @@ class _MapScreenViewState extends State<_MapScreenView>
   @override
   void initState() {
     super.initState();
-    _mapController = MapController();
+    _mapController = AnimatedMapController(
+      vsync: this,
+      duration: const Duration(milliseconds: 500),
+      curve: Curves.easeInOut,
+      cancelPreviousAnimations: true
+    );
     WidgetsBinding.instance.addObserver(this);
   }
 
   Future<void> _saveMapState() async {
     if (_mapController != null) {
       final prefs = await SharedPreferences.getInstance();
-      final center = _mapController!.camera.center;
-      final zoom = _mapController!.camera.zoom;
+      final center = _mapController!.mapController.camera.center;
+      final zoom = _mapController!.mapController.camera.zoom;
 
       await prefs.setDouble('map_latitude', center.latitude);
       await prefs.setDouble('map_longitude', center.longitude);
@@ -518,7 +524,7 @@ class _MapScreenViewState extends State<_MapScreenView>
         _isUserLocationEnabled = true;
       });
 
-      _mapController?.move(newPosition, 16.0);
+      _mapController?.animateTo(dest: newPosition, zoom: 16.0);
       _startLocationUpdates();
     } catch (e) {
       debugPrint('Error getting location: $e');
@@ -531,7 +537,7 @@ class _MapScreenViewState extends State<_MapScreenView>
 
   void _onMapMove() {
     if (_mapController != null) {
-      final zoomLevel = _mapController!.camera.zoom;
+      final zoomLevel = _mapController!.mapController.camera.zoom;
       context.read<CouponMapBloc>().add(
         CouponMapPositionChanged(zoomLevel: zoomLevel),
       );
@@ -540,7 +546,7 @@ class _MapScreenViewState extends State<_MapScreenView>
 
   void _updateZoomTip() {
     if (_mapController != null) {
-      final zoomLevel = _mapController!.camera.zoom;
+      final zoomLevel = _mapController!.mapController.camera.zoom;
       context.read<CouponMapBloc>().add(
         CouponMapPositionChanged(zoomLevel: zoomLevel),
       );
@@ -561,7 +567,7 @@ class _MapScreenViewState extends State<_MapScreenView>
 
           if (mounted) {
             setState(() {
-              _mapController?.move(LatLng(latitude, longitude), zoomLevel);
+              _mapController?.mapController.move(LatLng(latitude, longitude), zoomLevel);
             });
 
             _updateZoomTip();
@@ -569,17 +575,15 @@ class _MapScreenViewState extends State<_MapScreenView>
 
           if (_mapController != null) {
             if (zoomLevel >= 11) {
-              final bounds = _mapController?.camera.visibleBounds;
-              if (bounds != null) {
-                final customBounds = LatLngBounds(
-                  LatLng(bounds.southWest.latitude, bounds.southWest.longitude),
-                  LatLng(bounds.northEast.latitude, bounds.northEast.longitude),
-                );
-                context.read<CouponMapBloc>().add(
-                  LoadLocationsInBounds(bounds: customBounds),
-                );
-              }
-            }
+              final bounds = _mapController!.mapController.camera.visibleBounds;
+              final customBounds = LatLngBounds(
+                LatLng(bounds.southWest.latitude, bounds.southWest.longitude),
+                LatLng(bounds.northEast.latitude, bounds.northEast.longitude),
+              );
+              context.read<CouponMapBloc>().add(
+                LoadLocationsInBounds(bounds: customBounds),
+              );
+                        }
           }
 
           setState(() {
@@ -589,20 +593,18 @@ class _MapScreenViewState extends State<_MapScreenView>
 
         void searchInCurrentView() {
           if (_mapController != null) {
-            final zoomLevel = _mapController!.camera.zoom;
+            final zoomLevel = _mapController!.mapController.camera.zoom;
             if (zoomLevel < 11) return;
 
-            final bounds = _mapController?.camera.visibleBounds;
-            if (bounds != null) {
-              final customBounds = LatLngBounds(
-                LatLng(bounds.southWest.latitude, bounds.southWest.longitude),
-                LatLng(bounds.northEast.latitude, bounds.northEast.longitude),
-              );
-              context.read<CouponMapBloc>().add(
-                LoadLocationsInBounds(bounds: customBounds),
-              );
-            }
-          }
+            final bounds = _mapController!.mapController.camera.visibleBounds;
+            final customBounds = LatLngBounds(
+              LatLng(bounds.southWest.latitude, bounds.southWest.longitude),
+              LatLng(bounds.northEast.latitude, bounds.northEast.longitude),
+            );
+            context.read<CouponMapBloc>().add(
+              LoadLocationsInBounds(bounds: customBounds),
+            );
+                    }
         }
 
         final markers = state.locations
@@ -619,7 +621,10 @@ class _MapScreenViewState extends State<_MapScreenView>
               offset: const Offset(0, -19),
               child: GestureDetector(
                 onTap: () {
-                  _mapController!.move(LatLng(location.latitude, location.longitude), _mapController!.camera.zoom);
+                  _mapController!.animateTo(
+                    dest: LatLng(location.latitude, location.longitude),
+                    zoom: _mapController!.mapController.camera.zoom,
+                  );
                   context.read<CouponMapBloc>().add(
                     CouponMapLocationSelected(locationId: location.shopId),
                   );
@@ -644,7 +649,7 @@ class _MapScreenViewState extends State<_MapScreenView>
               offset: const Offset(0, -19),
               child: GestureDetector(
                 onTap: () {
-                  _mapController!.move(LatLng(location.latitude, location.longitude), _mapController!.camera.zoom);
+                  _mapController!.animateTo(dest: LatLng(location.latitude, location.longitude));
                   context.read<CouponMapBloc>().add(
                     CouponMapLocationSelected(locationId: location.shopId),
                   );
@@ -659,7 +664,7 @@ class _MapScreenViewState extends State<_MapScreenView>
           body: Stack(
             children: [
               FlutterMap(
-                mapController: _mapController,
+                mapController: _mapController!.mapController,
                 options: MapOptions(
                   initialCenter: const LatLng(52.23, 19.09),
                   initialZoom: 5.9,
