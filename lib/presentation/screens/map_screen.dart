@@ -618,23 +618,92 @@ class _MapScreenViewState extends State<_MapScreenView>
                   state.selectedShopLocationId != location.shopLocationId,
             )
             .map((location) {
+
+          final borderWidth = 1.2;
           return Marker(
             height: 53,
-            width: 53,
+            width: 253,
             point: LatLng(location.latitude, location.longitude),
             child: Transform.translate(
-              offset: const Offset(0, -19),
-              child: GestureDetector(
-                onTap: () {
-                  _mapController!.animateTo(
-                    dest: LatLng(location.latitude, location.longitude),
-                    zoom: _mapController!.mapController.camera.zoom,
-                  );
-                  context.read<CouponMapBloc>().add(
-                    CouponMapLocationSelected(shopLocationId: location.shopLocationId, shopId: location.shopId),
-                  );
-                },
-                child: ShopLocation(active: state.selectedShopLocationId == null),
+              offset: const Offset(108, -19),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                spacing: 4,
+                children: [
+                  GestureDetector(
+                    onTap: () {
+                      _mapController!.animateTo(
+                        dest: LatLng(
+                          location.latitude,
+                          location.longitude,
+                        ),
+                        zoom:
+                            _mapController!.mapController.camera.zoom,
+                      );
+                      context.read<CouponMapBloc>().add(
+                        CouponMapLocationSelected(
+                          shopLocationId: location.shopLocationId,
+                          shopId: location.shopId,
+                        ),
+                      );
+                    },
+                    child: ShopLocationPin(
+                      active: state.selectedShopLocationId == null,
+                    ),
+                  ),
+                  if (state.selectedShopLocationId == null) 
+                  SizedBox(
+                    width: 200,
+                    child: Stack(
+                      children: [
+                        Text(
+                          location.shopName ?? '',
+                          style: TextStyle(
+                            height: 0.8,
+                            fontFamily: 'Itim',
+                            fontSize: 18,
+                            color: AppColors.textPrimary,
+                            shadows: [
+                              Shadow(
+                                offset: Offset(-borderWidth, -borderWidth),
+                                color: AppColors.surface
+                              ),
+                              Shadow(
+                                offset: Offset(borderWidth, -borderWidth),
+                                color: AppColors.surface
+                              ),
+                              Shadow(
+                                offset: Offset(borderWidth, borderWidth),
+                                color: AppColors.surface
+                              ),
+                              Shadow(
+                                offset: Offset(-borderWidth, borderWidth),
+                                color: AppColors.surface
+                              ),
+                              Shadow(
+                                offset: Offset(-borderWidth, 0),
+                                color: AppColors.surface
+                              ),
+                              Shadow(
+                                offset: Offset(borderWidth, 0),
+                                color: AppColors.surface
+                              ),
+                              Shadow(
+                                offset: Offset(0, -borderWidth),
+                                color: AppColors.surface
+                              ),
+                              Shadow(
+                                offset: Offset(0, borderWidth),
+                                color: AppColors.surface
+                              ),
+                            ]
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
           );
@@ -646,15 +715,74 @@ class _MapScreenViewState extends State<_MapScreenView>
                   state.selectedShopLocationId == location.shopLocationId,
             )
             .map((location) {
+          
+          final borderWidth = 1.2;
           return Marker(
             height: 53,
-            width: 53,
+            width: 253,
             point: LatLng(location.latitude, location.longitude),
             child: Transform.translate(
-              offset: const Offset(0, -19),
-              child: GestureDetector(
-                onTap: () {},
-                child: ShopLocation(active: true),
+              offset: const Offset(108, -19),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                spacing: 4,
+                children: [
+                  ShopLocationPin(
+                    active: true,
+                    selected: true,
+                  ), 
+                  SizedBox(
+                    width: 200,
+                    child: Stack(
+                      children: [
+                        Text(
+                          location.shopName ?? '',
+                          style: TextStyle(
+                            height: 0.8,
+                            fontFamily: 'Itim',
+                            fontSize: 18,
+                            color: AppColors.textPrimary,
+                            shadows: [
+                              Shadow(
+                                offset: Offset(-borderWidth, -borderWidth),
+                                color: AppColors.surface
+                              ),
+                              Shadow(
+                                offset: Offset(borderWidth, -borderWidth),
+                                color: AppColors.surface
+                              ),
+                              Shadow(
+                                offset: Offset(borderWidth, borderWidth),
+                                color: AppColors.surface
+                              ),
+                              Shadow(
+                                offset: Offset(-borderWidth, borderWidth),
+                                color: AppColors.surface
+                              ),
+                              Shadow(
+                                offset: Offset(-borderWidth, 0),
+                                color: AppColors.surface
+                              ),
+                              Shadow(
+                                offset: Offset(borderWidth, 0),
+                                color: AppColors.surface
+                              ),
+                              Shadow(
+                                offset: Offset(0, -borderWidth),
+                                color: AppColors.surface
+                              ),
+                              Shadow(
+                                offset: Offset(0, borderWidth),
+                                color: AppColors.surface
+                              ),
+                            ]
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
           );
@@ -833,10 +961,10 @@ class _MapScreenViewState extends State<_MapScreenView>
                                 markers.isEmpty
                                     ? 'Nie znaleźliśmy sklepów z dostępnymi kuponów w tym obszarze.'
                                     : markers.length == 1
-                                    ? 'Znaleźliśmy 1 sklep z dostępnymi kuponami.'
+                                    ? 'W tym obszarze znaleźliśmy 1 sklep z dostępnymi kuponami.'
                                     : markers.length <= 4
-                                    ? 'Znaleźliśmy ${markers.length} sklepy z dostępnymi kuponami.'
-                                    : 'Znaleźliśmy ${markers.length} sklepów z dostępnymi kuponami.',
+                                    ? 'W tym obszarze znaleźliśmy ${markers.length} sklepy z dostępnymi kuponami.'
+                                    : 'W tym obszarze znaleźliśmy ${markers.length} sklepów z dostępnymi kuponami.',
                                 style: TextStyle(
                                   fontFamily: 'Itim',
                                   fontSize: 16,
@@ -913,69 +1041,69 @@ class _MapScreenViewState extends State<_MapScreenView>
               // selected location coupon list
               if (state.selectedShopLocationId != null)
               Positioned(
-                          bottom: 20,
-                          left: 8,
-                          right: 8,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            decoration: BoxDecoration(
-                              color: AppColors.surface,
-                              borderRadius: BorderRadius.circular(24),
-                              border: Border.all(
+                  bottom: 20,
+                  left: 8,
+                  right: 8,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    decoration: BoxDecoration(
+                      color: AppColors.surface,
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(
+                        color: AppColors.textPrimary,
+                        width: 2,
+                      ),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: AppColors.textPrimary,
+                          offset: Offset(4, 4),
+                        ),
+                      ],
+                    ),
+                    child:
+                        state.status == CouponMapStatus.loading
+                            ? Center(child: CircularProgressIndicator())
+                            : state.selectedShopLocationCoupons.isEmpty
+                            ? const Text(
+                              'Brak dostępnych kuponów w tym sklepie.',
+                              style: TextStyle(
+                                fontFamily: 'Itim',
+                                fontSize: 16,
                                 color: AppColors.textPrimary,
-                                width: 2,
                               ),
-                              boxShadow: const [
-                                BoxShadow(
-                                  color: AppColors.textPrimary,
-                                  offset: Offset(4, 4),
+                              textAlign: TextAlign.center,
+                            )
+                            : Column(
+                              spacing: 16,
+                              children: [
+                                SingleChildScrollView(
+                                  scrollDirection: Axis.horizontal,
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(bottom: 4.0),
+                                    child: Row(
+                                      spacing: 10,
+                                      children: [
+                                        const SizedBox(width: 8),
+                                        ...state.selectedShopLocationCoupons
+                                            .map(
+                                              (coupon) => CouponCardVertical(
+                                                coupon: coupon,
+                                              ),
+                                            ),
+                                        const SizedBox(width: 8),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                CustomTextButton(
+                                  label: 'Pokaż więcej',
+                                  onTap:
+                                      () {}, // TODO: coupon list screen redirect
                                 ),
                               ],
                             ),
-                            child:
-                                state.status == CouponMapStatus.loading
-                                    ? Center(child: CircularProgressIndicator())
-                                    : state.selectedShopLocationCoupons.isEmpty
-                                    ? const Text(
-                                      'Brak dostępnych kuponów w tym sklepie.',
-                                      style: TextStyle(
-                                        fontFamily: 'Itim',
-                                        fontSize: 16,
-                                        color: AppColors.textPrimary,
-                                      ),
-                                      textAlign: TextAlign.center,
-                                    )
-                                    : Column(
-                                      spacing: 16,
-                                      children: [
-                                        SingleChildScrollView(
-                                          scrollDirection: Axis.horizontal,
-                                          child: Padding(
-                                            padding: const EdgeInsets.only(bottom: 4.0),
-                                            child: Row(
-                                              spacing: 10,
-                                              children: [
-                                                const SizedBox(width: 8),
-                                                ...state.selectedShopLocationCoupons
-                                                    .map(
-                                                      (coupon) =>
-                                                          CouponCardVertical(
-                                                            coupon: coupon,
-                                                          ),
-                                                    ),
-                                                const SizedBox(width: 8),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                        CustomTextButton(
-                                          label: 'Pokaż więcej',
-                                          onTap: () {}, // TODO: coupon list screen redirect
-                                        ),
-                                      ],
-                                    ),
-                          ),
-                        ),
+                  ),
+                ),
             ],
           ),
         );
