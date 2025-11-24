@@ -6,8 +6,9 @@ class MapRepository {
     // TODO: Replace with fetching from API
     await Future.delayed(Duration(seconds: 1));
     return [
-      Location(latitude: 52.406374, longitude: 16.925168, name: 'A'),
-      Location(latitude: 52.467139, longitude: 16.927121, name: 'B'),
+      Location(shopLocationId: '0', latitude: 52.406374, longitude: 16.925168, shopId: '1', shopName: 'Media Expert'),
+      Location(shopLocationId: '1', latitude: 52.406554, longitude: 16.925334, shopId: '3', shopName: 'MediaMarkt'),
+      Location(shopLocationId: '2', latitude: 52.467139, longitude: 16.927121, shopId: '1', shopName: 'Media Expert'),
     ];
   }
 
@@ -20,13 +21,17 @@ class MapRepository {
 }
 
 class Location {
+  final String shopLocationId;
   final double latitude;
   final double longitude;
-  final String name;
+  final String shopId;
+  final String? shopName;
 
   Location({
+    required this.shopLocationId,
     required this.latitude,
     required this.longitude,
-    required this.name,
+    required this.shopId,
+    this.shopName,
   });
 }

@@ -1,11 +1,14 @@
 import 'dart:async';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_map_animations/flutter_map_animations.dart';
 import 'package:flutter_map_cache/flutter_map_cache.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:proj_inz/presentation/widgets/coupon_card.dart';
 
 import 'package:url_launcher/url_launcher.dart';
 import 'package:app_settings/app_settings.dart';
@@ -13,6 +16,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:proj_inz/bloc/coupon_map/coupon_map_bloc.dart';
 import 'package:proj_inz/data/repositories/map_repository.dart';
+import 'package:proj_inz/data/repositories/coupon_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:proj_inz/bloc/map_cache/map_cache_bloc.dart';
@@ -43,7 +47,10 @@ class _MapScreenState extends State<MapScreen> {
                     ..add(MapCacheInitialiseRequested()),
         ),
         BlocProvider<CouponMapBloc>(
-          create: (context) => CouponMapBloc(mapRepository: MapRepository()),
+          create: (context) => CouponMapBloc(
+            mapRepository: MapRepository(),
+            couponRepository: CouponRepository(),
+          ),
         ),
       ],
       child: const _MapScreenView(),
@@ -59,9 +66,9 @@ class _MapScreenView extends StatefulWidget {
 }
 
 class _MapScreenViewState extends State<_MapScreenView>
-    with WidgetsBindingObserver {
+    with TickerProviderStateMixin, WidgetsBindingObserver {
   bool _isMapLoading = true;
-  MapController? _mapController;
+  AnimatedMapController? _mapController;
   bool _isUserLocationEnabled = false;
   bool _isUserLocationLoading = false;
   LatLng? _currentUserLocation;
@@ -71,15 +78,20 @@ class _MapScreenViewState extends State<_MapScreenView>
   @override
   void initState() {
     super.initState();
-    _mapController = MapController();
+    _mapController = AnimatedMapController(
+      vsync: this,
+      duration: const Duration(milliseconds: 500),
+      curve: Curves.easeInOut,
+      cancelPreviousAnimations: true
+    );
     WidgetsBinding.instance.addObserver(this);
   }
 
   Future<void> _saveMapState() async {
     if (_mapController != null) {
       final prefs = await SharedPreferences.getInstance();
-      final center = _mapController!.camera.center;
-      final zoom = _mapController!.camera.zoom;
+      final center = _mapController!.mapController.camera.center;
+      final zoom = _mapController!.mapController.camera.zoom;
 
       await prefs.setDouble('map_latitude', center.latitude);
       await prefs.setDouble('map_longitude', center.longitude);
@@ -517,7 +529,7 @@ class _MapScreenViewState extends State<_MapScreenView>
         _isUserLocationEnabled = true;
       });
 
-      _mapController?.move(newPosition, 16.0);
+      _mapController?.animateTo(dest: newPosition, zoom: 16.0);
       _startLocationUpdates();
     } catch (e) {
       debugPrint('Error getting location: $e');
@@ -530,7 +542,7 @@ class _MapScreenViewState extends State<_MapScreenView>
 
   void _onMapMove() {
     if (_mapController != null) {
-      final zoomLevel = _mapController!.camera.zoom;
+      final zoomLevel = _mapController!.mapController.camera.zoom;
       context.read<CouponMapBloc>().add(
         CouponMapPositionChanged(zoomLevel: zoomLevel),
       );
@@ -539,7 +551,7 @@ class _MapScreenViewState extends State<_MapScreenView>
 
   void _updateZoomTip() {
     if (_mapController != null) {
-      final zoomLevel = _mapController!.camera.zoom;
+      final zoomLevel = _mapController!.mapController.camera.zoom;
       context.read<CouponMapBloc>().add(
         CouponMapPositionChanged(zoomLevel: zoomLevel),
       );
@@ -560,7 +572,7 @@ class _MapScreenViewState extends State<_MapScreenView>
 
           if (mounted) {
             setState(() {
-              _mapController?.move(LatLng(latitude, longitude), zoomLevel);
+              _mapController?.mapController.move(LatLng(latitude, longitude), zoomLevel);
             });
 
             _updateZoomTip();
@@ -568,17 +580,15 @@ class _MapScreenViewState extends State<_MapScreenView>
 
           if (_mapController != null) {
             if (zoomLevel >= 11) {
-              final bounds = _mapController?.camera.visibleBounds;
-              if (bounds != null) {
-                final customBounds = LatLngBounds(
-                  LatLng(bounds.southWest.latitude, bounds.southWest.longitude),
-                  LatLng(bounds.northEast.latitude, bounds.northEast.longitude),
-                );
-                context.read<CouponMapBloc>().add(
-                  LoadLocationsInBounds(bounds: customBounds),
-                );
-              }
-            }
+              final bounds = _mapController!.mapController.camera.visibleBounds;
+              final customBounds = LatLngBounds(
+                LatLng(bounds.southWest.latitude, bounds.southWest.longitude),
+                LatLng(bounds.northEast.latitude, bounds.northEast.longitude),
+              );
+              context.read<CouponMapBloc>().add(
+                LoadLocationsInBounds(bounds: customBounds),
+              );
+                        }
           }
 
           setState(() {
@@ -588,35 +598,201 @@ class _MapScreenViewState extends State<_MapScreenView>
 
         void searchInCurrentView() {
           if (_mapController != null) {
-            final zoomLevel = _mapController!.camera.zoom;
+            final zoomLevel = _mapController!.mapController.camera.zoom;
             if (zoomLevel < 11) return;
 
-            final bounds = _mapController?.camera.visibleBounds;
-            if (bounds != null) {
-              final customBounds = LatLngBounds(
-                LatLng(bounds.southWest.latitude, bounds.southWest.longitude),
-                LatLng(bounds.northEast.latitude, bounds.northEast.longitude),
-              );
-              context.read<CouponMapBloc>().add(
-                LoadLocationsInBounds(bounds: customBounds),
-              );
-            }
-          }
+            final bounds = _mapController!.mapController.camera.visibleBounds;
+            final customBounds = LatLngBounds(
+              LatLng(bounds.southWest.latitude, bounds.southWest.longitude),
+              LatLng(bounds.northEast.latitude, bounds.northEast.longitude),
+            );
+            context.read<CouponMapBloc>().add(
+              LoadLocationsInBounds(bounds: customBounds),
+            );
+                    }
         }
 
-        final markers =
-            state.locations.map((location) {
-              return Marker(
-                point: LatLng(location.latitude, location.longitude),
-                child: ShopLocation(),
-              );
-            }).toList();
+        final markers = state.locations
+            .where(
+              (location) =>
+                  state.selectedShopLocationId != location.shopLocationId,
+            )
+            .map((location) {
+
+          final borderWidth = 1.2;
+          return Marker(
+            height: 53,
+            width: 253,
+            point: LatLng(location.latitude, location.longitude),
+            child: Transform.translate(
+              offset: const Offset(108, -19),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                spacing: 4,
+                children: [
+                  GestureDetector(
+                    onTap: () {
+                      _mapController!.animateTo(
+                        dest: LatLng(
+                          location.latitude,
+                          location.longitude,
+                        ),
+                        zoom:
+                            _mapController!.mapController.camera.zoom,
+                      );
+                      context.read<CouponMapBloc>().add(
+                        CouponMapLocationSelected(
+                          shopLocationId: location.shopLocationId,
+                          shopId: location.shopId,
+                        ),
+                      );
+                    },
+                    child: ShopLocationPin(
+                      active: state.selectedShopLocationId == null,
+                    ),
+                  ),
+                  if (state.selectedShopLocationId == null) 
+                  SizedBox(
+                    width: 200,
+                    child: Stack(
+                      children: [
+                        Text(
+                          location.shopName ?? '',
+                          style: TextStyle(
+                            height: 0.8,
+                            fontFamily: 'Itim',
+                            fontSize: 18,
+                            color: AppColors.textPrimary,
+                            shadows: [
+                              Shadow(
+                                offset: Offset(-borderWidth, -borderWidth),
+                                color: AppColors.surface
+                              ),
+                              Shadow(
+                                offset: Offset(borderWidth, -borderWidth),
+                                color: AppColors.surface
+                              ),
+                              Shadow(
+                                offset: Offset(borderWidth, borderWidth),
+                                color: AppColors.surface
+                              ),
+                              Shadow(
+                                offset: Offset(-borderWidth, borderWidth),
+                                color: AppColors.surface
+                              ),
+                              Shadow(
+                                offset: Offset(-borderWidth, 0),
+                                color: AppColors.surface
+                              ),
+                              Shadow(
+                                offset: Offset(borderWidth, 0),
+                                color: AppColors.surface
+                              ),
+                              Shadow(
+                                offset: Offset(0, -borderWidth),
+                                color: AppColors.surface
+                              ),
+                              Shadow(
+                                offset: Offset(0, borderWidth),
+                                color: AppColors.surface
+                              ),
+                            ]
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }).toList();
+
+        final selectedMarker = state.locations
+            .where(
+              (location) =>
+                  state.selectedShopLocationId == location.shopLocationId,
+            )
+            .map((location) {
+          
+          final borderWidth = 1.2;
+          return Marker(
+            height: 53,
+            width: 253,
+            point: LatLng(location.latitude, location.longitude),
+            child: Transform.translate(
+              offset: const Offset(108, -19),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                spacing: 4,
+                children: [
+                  ShopLocationPin(
+                    active: true,
+                    selected: true,
+                  ), 
+                  SizedBox(
+                    width: 200,
+                    child: Stack(
+                      children: [
+                        Text(
+                          location.shopName ?? '',
+                          style: TextStyle(
+                            height: 0.8,
+                            fontFamily: 'Itim',
+                            fontSize: 18,
+                            color: AppColors.textPrimary,
+                            shadows: [
+                              Shadow(
+                                offset: Offset(-borderWidth, -borderWidth),
+                                color: AppColors.surface
+                              ),
+                              Shadow(
+                                offset: Offset(borderWidth, -borderWidth),
+                                color: AppColors.surface
+                              ),
+                              Shadow(
+                                offset: Offset(borderWidth, borderWidth),
+                                color: AppColors.surface
+                              ),
+                              Shadow(
+                                offset: Offset(-borderWidth, borderWidth),
+                                color: AppColors.surface
+                              ),
+                              Shadow(
+                                offset: Offset(-borderWidth, 0),
+                                color: AppColors.surface
+                              ),
+                              Shadow(
+                                offset: Offset(borderWidth, 0),
+                                color: AppColors.surface
+                              ),
+                              Shadow(
+                                offset: Offset(0, -borderWidth),
+                                color: AppColors.surface
+                              ),
+                              Shadow(
+                                offset: Offset(0, borderWidth),
+                                color: AppColors.surface
+                              ),
+                            ]
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }).toList();
 
         return Scaffold(
           body: Stack(
             children: [
               FlutterMap(
-                mapController: _mapController,
+                mapController: _mapController!.mapController,
                 options: MapOptions(
                   initialCenter: const LatLng(52.23, 19.09),
                   initialZoom: 5.9,
@@ -672,6 +848,7 @@ class _MapScreenViewState extends State<_MapScreenView>
                       }
                     },
                   ),
+                  
                   if (_currentUserLocation != null)
                     MarkerLayer(
                       markers: [
@@ -682,9 +859,23 @@ class _MapScreenViewState extends State<_MapScreenView>
                       ],
                     ),
                   MarkerLayer(markers: markers),
+                  if (state.selectedShopLocationId != null)
+                  Positioned.fill(
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
+                      child: Container(
+                        color: Colors.black.withValues(
+                          alpha: 0.3,
+                        ),
+                      ),
+                    ),
+                  ),
+                  MarkerLayer(markers: selectedMarker),
                   _AttributionWidget(),
                 ],
               ),
+              // top buttons
+              if (state.selectedShopLocationId == null)
               Positioned(
                 top: 0,
                 left: 0,
@@ -710,6 +901,8 @@ class _MapScreenViewState extends State<_MapScreenView>
                   ),
                 ),
               ),
+              // bottom navigation bar
+              if (state.selectedShopLocationId == null)
               Positioned(
                 bottom: 20,
                 left: 8,
@@ -766,12 +959,12 @@ class _MapScreenViewState extends State<_MapScreenView>
                               )
                               : Text(
                                 markers.isEmpty
-                                    ? 'Nie znaleziono kuponów w tym obszarze.'
+                                    ? 'Nie znaleźliśmy sklepów z dostępnymi kuponów w tym obszarze.'
                                     : markers.length == 1
-                                    ? 'Znaleźliśmy 1 kupon.'
+                                    ? 'W tym obszarze znaleźliśmy 1 sklep z dostępnymi kuponami.'
                                     : markers.length <= 4
-                                    ? 'Znaleźliśmy ${markers.length} kupony.'
-                                    : 'Znaleźliśmy ${markers.length} kuponów.',
+                                    ? 'W tym obszarze znaleźliśmy ${markers.length} sklepy z dostępnymi kuponami.'
+                                    : 'W tym obszarze znaleźliśmy ${markers.length} sklepów z dostępnymi kuponami.',
                                 style: TextStyle(
                                   fontFamily: 'Itim',
                                   fontSize: 16,
@@ -799,6 +992,118 @@ class _MapScreenViewState extends State<_MapScreenView>
               ),
               if (_isMapLoading)
                 const Center(child: CircularProgressIndicator()),
+              // selected location coupon list
+              if (state.selectedShopLocationId != null)
+                Positioned.fill(
+                  // click-outside detector
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () =>
+                      context
+                          .read<CouponMapBloc>()
+                          .add(const CouponMapLocationCleared()),
+                    onHorizontalDragStart: (details) =>
+                      context
+                          .read<CouponMapBloc>()
+                          .add(const CouponMapLocationCleared()),
+                    onVerticalDragStart: (details) => 
+                      context
+                          .read<CouponMapBloc>()
+                          .add(const CouponMapLocationCleared())
+                  ),
+                ),
+              // top buttons if shop location selected
+              if (state.selectedShopLocationId != null)
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 48.0, horizontal: 24.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    mainAxisSize: MainAxisSize.max,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      CustomIconButton(
+                        icon: SvgPicture.asset('assets/icons/back.svg'),
+                        onTap: () {
+                          context
+                          .read<CouponMapBloc>()
+                          .add(const CouponMapLocationCleared());
+                        },
+                      ),
+                      
+                    ],
+                  ),
+                ),
+              ),
+              // selected location coupon list
+              if (state.selectedShopLocationId != null)
+              Positioned(
+                  bottom: 20,
+                  left: 8,
+                  right: 8,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    decoration: BoxDecoration(
+                      color: AppColors.surface,
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(
+                        color: AppColors.textPrimary,
+                        width: 2,
+                      ),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: AppColors.textPrimary,
+                          offset: Offset(4, 4),
+                        ),
+                      ],
+                    ),
+                    child:
+                        state.status == CouponMapStatus.loading
+                            ? Center(child: CircularProgressIndicator())
+                            : state.selectedShopLocationCoupons.isEmpty
+                            ? const Text(
+                              'Brak dostępnych kuponów w tym sklepie.',
+                              style: TextStyle(
+                                fontFamily: 'Itim',
+                                fontSize: 16,
+                                color: AppColors.textPrimary,
+                              ),
+                              textAlign: TextAlign.center,
+                            )
+                            : Column(
+                              spacing: 16,
+                              children: [
+                                SingleChildScrollView(
+                                  scrollDirection: Axis.horizontal,
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(bottom: 4.0),
+                                    child: Row(
+                                      spacing: 10,
+                                      children: [
+                                        const SizedBox(width: 8),
+                                        ...state.selectedShopLocationCoupons
+                                            .map(
+                                              (coupon) => CouponCardVertical(
+                                                coupon: coupon,
+                                              ),
+                                            ),
+                                        const SizedBox(width: 8),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                CustomTextButton(
+                                  label: 'Pokaż więcej',
+                                  onTap:
+                                      () {}, // TODO: coupon list screen redirect
+                                ),
+                              ],
+                            ),
+                  ),
+                ),
             ],
           ),
         );

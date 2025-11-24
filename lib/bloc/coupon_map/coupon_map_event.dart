@@ -28,3 +28,27 @@ class CouponMapPositionChanged extends CouponMapEvent {
 class CouponMapSearchExecuted extends CouponMapEvent {
   const CouponMapSearchExecuted();
 }
+
+class CouponMapLocationSelected extends CouponMapEvent {
+  final String shopLocationId;
+  final String shopId;
+
+  const CouponMapLocationSelected({required this.shopLocationId, required this.shopId});
+
+  @override
+  List<Object> get props => [shopLocationId, shopId];
+}
+
+class CouponMapLocationCouponsLoaded extends CouponMapEvent {
+  final String shopLocationId;
+  final String shopId;
+
+  const CouponMapLocationCouponsLoaded({required this.shopLocationId, required this.shopId});
+
+  @override
+  List<Object> get props => [shopLocationId, shopId];
+}
+
+class CouponMapLocationCleared extends CouponMapEvent {
+  const CouponMapLocationCleared();
+}

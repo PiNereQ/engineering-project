@@ -380,4 +380,63 @@ class CouponRepository {
       'boughtAt': FieldValue.serverTimestamp(),
     });
   }
+
+  Future<List<Coupon>> fetchThreeCouponsForShop(String shopId) async {
+    // Query up to three unsold coupons for a given shop, ordered by creation date desc
+    final querySnapshot = await _firestore
+        .collection('couponOffers')
+        .where('isSold', isEqualTo: false)
+        .where('shopId', isEqualTo: shopId)
+        .orderBy('createdAt', descending: true)
+        .limit(3)
+        .get();
+
+    final coupons = <Coupon>[];
+
+    for (final doc in querySnapshot.docs) {
+      final sellerId = doc['sellerId'].toString();
+
+      // Shop data caching (we already know shopId, but keep consistent with the rest of the repo)
+      DocumentSnapshot shopDoc;
+      if (_shopCache.containsKey(shopId)) {
+        shopDoc = _shopCache[shopId]!;
+      } else {
+        shopDoc = await _firestore.collection('shops').doc(shopId).get();
+        _shopCache[shopId] = shopDoc;
+      }
+
+      // Seller data caching
+      DocumentSnapshot sellerDoc;
+      if (_sellerCache.containsKey(sellerId)) {
+        sellerDoc = _sellerCache[sellerId]!;
+      } else {
+        sellerDoc = await _firestore.collection('userProfileData').doc(sellerId).get();
+        _sellerCache[sellerId] = sellerDoc;
+      }
+
+      try {
+        coupons.add(Coupon(
+          id: doc.id,
+          reduction: doc['reduction'].toDouble(),
+          reductionIsPercentage: doc['reductionIsPercentage'],
+          price: doc['pricePLN'].toDouble(),
+          hasLimits: doc['hasLimits'],
+          worksOnline: doc['worksOnline'],
+          worksInStore: doc['worksInStore'],
+          expiryDate: (doc['expiryDate'] as Timestamp).toDate(),
+          shopId: shopDoc.id,
+          shopName: shopDoc['name'],
+          shopNameColor: Color(shopDoc['nameColor']),
+          shopBgColor: Color(shopDoc['bgColor']),
+          sellerId: sellerDoc.id,
+          sellerReputation: sellerDoc['reputation'],
+          isSold: doc['isSold'],
+        ));
+      } catch (e) {
+        if (kDebugMode) debugPrint('Error while getting coupon with id ${doc.id}: $e');
+      }
+    }
+
+    return coupons;
+  }
 }
