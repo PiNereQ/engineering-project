@@ -326,8 +326,8 @@ class CouponCardVertical extends StatelessWidget {
       ),
     );
 
-    final reputationText = TextSpan(
-      text: '$sellerReputation',
+    final reputationText = Text(
+      '$sellerReputation',
       style: const TextStyle(
         color: AppColors.textPrimary,
         fontSize: 12,
@@ -336,24 +336,12 @@ class CouponCardVertical extends StatelessWidget {
       ),
     );
 
-    final locationText = TextSpan(
-      text:
-          worksInStore && worksOnline
-              ? 'stacjonarnie i online'
-              : worksOnline
-              ? 'online'
-              : 'stacjonarnie',
-      style: const TextStyle(
-        color: AppColors.textPrimary,
-        fontSize: 12,
-        fontFamily: 'Itim',
-        fontWeight: FontWeight.w400,
-        height: 1.0,
-      ),
-    );
-
-    final expiryDateText = TextSpan(
-      text: '${expiryDate.day}.${expiryDate.month}.${expiryDate.year} r.',
+    final locationText = Text(
+      worksInStore && worksOnline
+          ? 'stacjonarnie i online'
+          : worksOnline
+          ? 'online'
+          : 'stacjonarnie',
       style: const TextStyle(
         color: AppColors.textPrimary,
         fontSize: 12,
@@ -363,38 +351,49 @@ class CouponCardVertical extends StatelessWidget {
       ),
     );
 
-    return Container(
-      width: 134,
-      height: 184,
-      padding: const EdgeInsets.all(8),
-      decoration: ShapeDecoration(
-        color: AppColors.surface,
-        shape: RoundedRectangleBorder(
-          side: const BorderSide(width: 2),
-          borderRadius: BorderRadius.circular(16),
-        ),
-        shadows: const [
-          BoxShadow(
-            color: AppColors.textPrimary,
-            blurRadius: 0,
-            offset: Offset(4, 4),
-            spreadRadius: 0,
+    final expiryDateText = Text(
+      '${expiryDate.day}.${expiryDate.month}.${expiryDate.year} r.',
+      style: const TextStyle(
+        color: AppColors.textPrimary,
+        fontSize: 12,
+        fontFamily: 'Itim',
+        fontWeight: FontWeight.w400,
+        height: 1.0,
+      ),
+    );
+
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder:
+                (context) =>
+                    isBought
+                        ? BoughtCouponDetailsScreen(couponId: couponId)
+                        : CouponDetailsScreen(couponId: couponId),
           ),
-        ],
-      ),
-      child: GestureDetector(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder:
-                  (context) =>
-                      isBought
-                          ? BoughtCouponDetailsScreen(couponId: couponId)
-                          : CouponDetailsScreen(couponId: couponId),
+        );
+      },
+      child: Container(
+        width: 134,
+        height: 190,
+        padding: const EdgeInsets.all(8),
+        decoration: ShapeDecoration(
+          color: AppColors.surface,
+          shape: RoundedRectangleBorder(
+            side: const BorderSide(width: 2),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          shadows: const [
+            BoxShadow(
+              color: AppColors.textPrimary,
+              blurRadius: 0,
+              offset: Offset(4, 4),
+              spreadRadius: 0,
             ),
-          );
-        },
+          ],
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.start,
@@ -457,21 +456,22 @@ class CouponCardVertical extends StatelessWidget {
                           spacing: 4,
                           children: [
                             Icon(Icons.speed, size: 12,),
-                            Text.rich(reputationText),
+                            reputationText,
                           ],
                         ),
                         Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           spacing: 4,
                           children: [
-                            Icon(Icons.location_on_outlined, size: 12,),
-                            Text.rich(locationText),
+                            Icon(Icons.location_on_outlined, size: 12),
+                            Expanded(child: locationText),
                           ],
                         ),
                         Row(
                           spacing: 4,
                           children: [
                             Icon(Icons.calendar_today, size: 12,),
-                            Text.rich(expiryDateText),
+                            expiryDateText,
                           ],
                         ),
                       ],

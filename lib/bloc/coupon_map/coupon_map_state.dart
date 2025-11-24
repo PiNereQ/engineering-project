@@ -1,5 +1,7 @@
 part of 'coupon_map_bloc.dart';
 
+const _noChange = Object();
+
 enum CouponMapStatus {
   initial,
   loading,
@@ -10,36 +12,44 @@ enum CouponMapStatus {
 class CouponMapState extends Equatable {
   final CouponMapStatus status;
   final List<Location> locations;
+  final List<Coupon> selectedShopLocationCoupons;
   final String? errorMessage;
   final bool showSearchButton;
   final bool showZoomTip;
-  final String? selectedLocationId;
+  final String? selectedShopLocationId;
 
   const CouponMapState({
     this.status = CouponMapStatus.initial,
     this.locations = const [],
+    this.selectedShopLocationCoupons = const [],
     this.errorMessage,
     this.showSearchButton = false,
     this.showZoomTip = true,
-    this.selectedLocationId,
+    this.selectedShopLocationId,
   });
 
   CouponMapState copyWith({
     CouponMapStatus? status,
     List<Location>? locations,
+    List<Coupon>? selectedShopLocationCoupons,
     String? errorMessage,
     bool? showSearchButton,
     bool? showZoomTip,
-    String? selectedLocationId,
+    Object? selectedShopLocationId = _noChange,
   }) {
     return CouponMapState(
       status: status ?? this.status,
       locations: locations ?? this.locations,
+      selectedShopLocationCoupons:
+          selectedShopLocationCoupons ?? this.selectedShopLocationCoupons,
       errorMessage: errorMessage ?? this.errorMessage,
       showSearchButton: showSearchButton ?? this.showSearchButton,
       showZoomTip: showZoomTip ?? this.showZoomTip,
-      // allow explicitly passing null to clear the selection
-      selectedLocationId: selectedLocationId,
+      // Only change selectedShopLocationId when an explicit value is provided.
+      selectedShopLocationId:
+          identical(selectedShopLocationId, _noChange)
+              ? this.selectedShopLocationId
+              : selectedShopLocationId as String?,
     );
   }
   
@@ -47,9 +57,10 @@ class CouponMapState extends Equatable {
   List<Object?> get props => [
     status,
     locations,
+    selectedShopLocationCoupons,
     errorMessage,
     showSearchButton,
     showZoomTip,
-    selectedLocationId,
+    selectedShopLocationId,
   ];
 }

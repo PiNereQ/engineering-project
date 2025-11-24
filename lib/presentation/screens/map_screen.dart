@@ -8,6 +8,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_animations/flutter_map_animations.dart';
 import 'package:flutter_map_cache/flutter_map_cache.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:proj_inz/presentation/widgets/coupon_card.dart';
 
 import 'package:url_launcher/url_launcher.dart';
 import 'package:app_settings/app_settings.dart';
@@ -15,6 +16,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:proj_inz/bloc/coupon_map/coupon_map_bloc.dart';
 import 'package:proj_inz/data/repositories/map_repository.dart';
+import 'package:proj_inz/data/repositories/coupon_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:proj_inz/bloc/map_cache/map_cache_bloc.dart';
@@ -45,7 +47,10 @@ class _MapScreenState extends State<MapScreen> {
                     ..add(MapCacheInitialiseRequested()),
         ),
         BlocProvider<CouponMapBloc>(
-          create: (context) => CouponMapBloc(mapRepository: MapRepository()),
+          create: (context) => CouponMapBloc(
+            mapRepository: MapRepository(),
+            couponRepository: CouponRepository(),
+          ),
         ),
       ],
       child: const _MapScreenView(),
@@ -610,7 +615,7 @@ class _MapScreenViewState extends State<_MapScreenView>
         final markers = state.locations
             .where(
               (location) =>
-                  state.selectedLocationId != location.shopId,
+                  state.selectedShopLocationId != location.shopLocationId,
             )
             .map((location) {
           return Marker(
@@ -626,10 +631,10 @@ class _MapScreenViewState extends State<_MapScreenView>
                     zoom: _mapController!.mapController.camera.zoom,
                   );
                   context.read<CouponMapBloc>().add(
-                    CouponMapLocationSelected(locationId: location.shopId),
+                    CouponMapLocationSelected(shopLocationId: location.shopLocationId, shopId: location.shopId),
                   );
                 },
-                child: ShopLocation(active: state.selectedLocationId == null),
+                child: ShopLocation(active: state.selectedShopLocationId == null),
               ),
             ),
           );
@@ -638,7 +643,7 @@ class _MapScreenViewState extends State<_MapScreenView>
         final selectedMarker = state.locations
             .where(
               (location) =>
-                  state.selectedLocationId == location.shopId,
+                  state.selectedShopLocationId == location.shopLocationId,
             )
             .map((location) {
           return Marker(
@@ -648,12 +653,7 @@ class _MapScreenViewState extends State<_MapScreenView>
             child: Transform.translate(
               offset: const Offset(0, -19),
               child: GestureDetector(
-                onTap: () {
-                  _mapController!.animateTo(dest: LatLng(location.latitude, location.longitude));
-                  context.read<CouponMapBloc>().add(
-                    CouponMapLocationSelected(locationId: location.shopId),
-                  );
-                },
+                onTap: () {},
                 child: ShopLocation(active: true),
               ),
             ),
@@ -731,7 +731,7 @@ class _MapScreenViewState extends State<_MapScreenView>
                       ],
                     ),
                   MarkerLayer(markers: markers),
-                  if (state.selectedLocationId != null)
+                  if (state.selectedShopLocationId != null)
                   Positioned.fill(
                     child: BackdropFilter(
                       filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
@@ -747,7 +747,7 @@ class _MapScreenViewState extends State<_MapScreenView>
                 ],
               ),
               // top buttons
-              if (state.selectedLocationId == null)
+              if (state.selectedShopLocationId == null)
               Positioned(
                 top: 0,
                 left: 0,
@@ -774,7 +774,7 @@ class _MapScreenViewState extends State<_MapScreenView>
                 ),
               ),
               // top buttons if shop location selected
-              if (state.selectedLocationId != null)
+              if (state.selectedShopLocationId != null)
               Positioned(
                 top: 0,
                 left: 0,
@@ -800,7 +800,7 @@ class _MapScreenViewState extends State<_MapScreenView>
                 ),
               ),
               // bottom navigation bar
-              if (state.selectedLocationId == null)
+              if (state.selectedShopLocationId == null)
               Positioned(
                 bottom: 20,
                 left: 8,
@@ -857,12 +857,12 @@ class _MapScreenViewState extends State<_MapScreenView>
                               )
                               : Text(
                                 markers.isEmpty
-                                    ? 'Nie znaleziono kuponów w tym obszarze.'
+                                    ? 'Nie znaleźliśmy sklepów z dostępnymi kuponów w tym obszarze.'
                                     : markers.length == 1
-                                    ? 'Znaleźliśmy 1 kupon.'
+                                    ? 'Znaleźliśmy 1 sklep z dostępnymi kuponami.'
                                     : markers.length <= 4
-                                    ? 'Znaleźliśmy ${markers.length} kupony.'
-                                    : 'Znaleźliśmy ${markers.length} kuponów.',
+                                    ? 'Znaleźliśmy ${markers.length} sklepy z dostępnymi kuponami.'
+                                    : 'Znaleźliśmy ${markers.length} sklepów z dostępnymi kuponami.',
                                 style: TextStyle(
                                   fontFamily: 'Itim',
                                   fontSize: 16,
@@ -891,7 +891,7 @@ class _MapScreenViewState extends State<_MapScreenView>
               if (_isMapLoading)
                 const Center(child: CircularProgressIndicator()),
               // selected location coupon list
-              if (state.selectedLocationId != null)
+              if (state.selectedShopLocationId != null)
                 Positioned.fill(
                   // click-outside detector
                   child: GestureDetector(
@@ -930,15 +930,39 @@ class _MapScreenViewState extends State<_MapScreenView>
                                 ),
                               ],
                             ),
-                            child: Text(
-                              'Location id: ${state.selectedLocationId}',
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                fontFamily: 'Itim',
-                                fontSize: 16,
-                                color: AppColors.textPrimary,
-                              ),
-                            ),
+                            child:
+                                state.status == CouponMapStatus.loading
+                                    ? Center(child: CircularProgressIndicator())
+                                    : state.selectedShopLocationCoupons.isEmpty
+                                    ? const Text(
+                                      'Brak dostępnych kuponów w tym sklepie.',
+                                      style: TextStyle(
+                                        fontFamily: 'Itim',
+                                        fontSize: 16,
+                                        color: AppColors.textPrimary,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    )
+                                    : Column(
+                                      spacing: 16,
+                                      children: [
+                                        Row(
+                                          children:
+                                              state.selectedShopLocationCoupons
+                                                  .map(
+                                                    (coupon) =>
+                                                        CouponCardVertical(
+                                                          coupon: coupon,
+                                                        ),
+                                                  )
+                                                  .toList(),
+                                        ),
+                                        CustomTextButton(
+                                          label: 'Pokaż więcej',
+                                          onTap: () {},
+                                        ),
+                                      ],
+                                    ),
                           ),
                         ),
                       ],
