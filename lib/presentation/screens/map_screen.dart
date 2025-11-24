@@ -773,32 +773,6 @@ class _MapScreenViewState extends State<_MapScreenView>
                   ),
                 ),
               ),
-              // top buttons if shop location selected
-              if (state.selectedShopLocationId != null)
-              Positioned(
-                top: 0,
-                left: 0,
-                right: 0,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 48.0, horizontal: 24.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    mainAxisSize: MainAxisSize.max,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      CustomIconButton(
-                        icon: SvgPicture.asset('assets/icons/back.svg'),
-                        onTap: () {
-                          context
-                          .read<CouponMapBloc>()
-                          .add(const CouponMapLocationCleared());
-                        },
-                      ),
-                      
-                    ],
-                  ),
-                ),
-              ),
               // bottom navigation bar
               if (state.selectedShopLocationId == null)
               Positioned(
@@ -907,15 +881,43 @@ class _MapScreenViewState extends State<_MapScreenView>
                     onVerticalDragStart: (details) => 
                       context
                           .read<CouponMapBloc>()
-                          .add(const CouponMapLocationCleared()),
-                    child: Stack(
-                      children: [
-                        Positioned(
+                          .add(const CouponMapLocationCleared())
+                  ),
+                ),
+              // top buttons if shop location selected
+              if (state.selectedShopLocationId != null)
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 48.0, horizontal: 24.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    mainAxisSize: MainAxisSize.max,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      CustomIconButton(
+                        icon: SvgPicture.asset('assets/icons/back.svg'),
+                        onTap: () {
+                          context
+                          .read<CouponMapBloc>()
+                          .add(const CouponMapLocationCleared());
+                        },
+                      ),
+                      
+                    ],
+                  ),
+                ),
+              ),
+              // selected location coupon list
+              if (state.selectedShopLocationId != null)
+              Positioned(
                           bottom: 20,
                           left: 8,
                           right: 8,
                           child: Container(
-                            padding: const EdgeInsets.all(16),
+                            padding: const EdgeInsets.symmetric(vertical: 16),
                             decoration: BoxDecoration(
                               color: AppColors.surface,
                               borderRadius: BorderRadius.circular(24),
@@ -946,29 +948,34 @@ class _MapScreenViewState extends State<_MapScreenView>
                                     : Column(
                                       spacing: 16,
                                       children: [
-                                        Row(
-                                          children:
-                                              state.selectedShopLocationCoupons
-                                                  .map(
-                                                    (coupon) =>
-                                                        CouponCardVertical(
-                                                          coupon: coupon,
-                                                        ),
-                                                  )
-                                                  .toList(),
+                                        SingleChildScrollView(
+                                          scrollDirection: Axis.horizontal,
+                                          child: Padding(
+                                            padding: const EdgeInsets.only(bottom: 4.0),
+                                            child: Row(
+                                              spacing: 10,
+                                              children: [
+                                                const SizedBox(width: 8),
+                                                ...state.selectedShopLocationCoupons
+                                                    .map(
+                                                      (coupon) =>
+                                                          CouponCardVertical(
+                                                            coupon: coupon,
+                                                          ),
+                                                    ),
+                                                const SizedBox(width: 8),
+                                              ],
+                                            ),
+                                          ),
                                         ),
                                         CustomTextButton(
                                           label: 'Pokaż więcej',
-                                          onTap: () {},
+                                          onTap: () {}, // TODO: coupon list screen redirect
                                         ),
                                       ],
                                     ),
                           ),
                         ),
-                      ],
-                    ),
-                  ),
-                ),
             ],
           ),
         );
