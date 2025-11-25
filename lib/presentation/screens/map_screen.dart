@@ -877,6 +877,7 @@ class _MapScreenViewState extends State<_MapScreenView>
           );
         }).toList();
 
+        final tileStyle = 'klokantech-basic';
         return Scaffold(
           body: Stack(
             children: [
@@ -913,7 +914,7 @@ class _MapScreenViewState extends State<_MapScreenView>
                           state is MapCacheGetStatusInProgress) {
                         return TileLayer(
                           urlTemplate:
-                              'https://maps.geoapify.com/v1/tile/carto/{z}/{x}/{y}.png?&apiKey=$apiKey',
+                              'https://maps.geoapify.com/v1/tile/$tileStyle/{z}/{x}/{y}.png?&apiKey=$apiKey',
                           userAgentPackageName: 'com.coupidyn.proj_inz',
                           maxZoom: 19,
                           panBuffer: 1,
@@ -929,7 +930,7 @@ class _MapScreenViewState extends State<_MapScreenView>
                       } else {
                         return TileLayer(
                           urlTemplate:
-                              'https://maps.geoapify.com/v1/tile/carto/{z}/{x}/{y}.png?&apiKey=$apiKey',
+                              'https://maps.geoapify.com/v1/tile/$tileStyle/{z}/{x}/{y}.png?&apiKey=$apiKey',
                           userAgentPackageName: 'com.coupidyn.proj_inz',
                           maxZoom: 19,
                           panBuffer: 1,
