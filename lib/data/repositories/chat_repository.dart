@@ -34,7 +34,7 @@ class ChatRepository {
       couponId: 'coupon-xyz',
       buyerId: 'buyer-22',
       sellerId: currentUserId,
-      lastMessage: 'Super, wszystko działa!',
+      lastMessage: 'Tak, sprawdź mój profil.',
       lastMessageTime: DateTime.now().subtract(const Duration(hours: 1)),
       isReadByCurrentUser: true,
     );
@@ -46,7 +46,7 @@ class ChatRepository {
         id: 'msg-1',
         conversationId: 'conv-1',
         senderId: 'seller-1',
-        text: 'Halo?',
+        text: 'Hej, ten kupon jest nadal dostępny?',
         timestamp: DateTime.now().subtract(const Duration(minutes: 5)),
         isRead: false,
       ),
@@ -64,7 +64,7 @@ class ChatRepository {
       Message(
         id: 'msg-3',
         conversationId: 'conv-2',
-        senderId: 'user-123',
+        senderId: currentUserId,
         text: 'Tak, sprawdź mój profil.',
         timestamp: DateTime.now().subtract(const Duration(hours: 1, minutes: 55)),
         isRead: true,

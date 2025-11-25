@@ -8,7 +8,6 @@ import 'package:proj_inz/data/models/conversation_model.dart';
 import 'package:proj_inz/presentation/widgets/conversation_tile.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-
 import 'chat_detail_screen.dart';
 
 class ChatScreen extends StatefulWidget {
@@ -24,7 +23,7 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   void initState() {
     super.initState();
-    // Automatyczne pobranie zakładki "Kupuję"
+    // automatically load buying conversations
     context.read<ChatListBloc>().add(LoadBuyingConversations());
   }
 
@@ -39,7 +38,7 @@ class _ChatScreenState extends State<ChatScreen> {
         children: [
           const SizedBox(height: 16),
 
-          /// Zakładki Kupuję/Sprzedaję
+          // Tabs
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -57,7 +56,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
           const SizedBox(height: 16),
 
-          /// LISTA ROZMÓW
+          // Conversation list
           Expanded(
             child: BlocBuilder<ChatListBloc, ChatListState>(
               builder: (context, state) {
@@ -88,7 +87,15 @@ class _ChatScreenState extends State<ChatScreen> {
                             MaterialPageRoute(
                               builder: (context) => ChatDetailScreen(conversation: c),
                             ),
-                          );
+                          )
+                          // reload after returning for updated last message
+                          .then((_) {
+                            if (isBuying) {
+                              context.read<ChatListBloc>().add(LoadBuyingConversations());
+                            } else {
+                              context.read<ChatListBloc>().add(LoadSellingConversations());
+                            }
+                          });
                         },
                         child: ConversationTile(
                           username: _getUsername(c),
