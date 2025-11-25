@@ -1,16 +1,23 @@
 import 'package:flutter/material.dart';
-import '../widgets/chat_bubble.dart';
 import 'package:proj_inz/core/theme.dart';
+import 'package:proj_inz/data/models/conversation_model.dart';
+import '../widgets/chat_bubble.dart';
 
 class ChatDetailScreen extends StatelessWidget {
-  const ChatDetailScreen({super.key});
+  final Conversation conversation;
+
+  const ChatDetailScreen({
+    super.key,
+    required this.conversation,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Szczegóły rozmowy'),
+        // później tu możesz wstawić nazwę użytkownika / tytuł kuponu
+        title: Text('Rozmowa: ${conversation.couponId}'),
       ),
       body: Column(
         children: [
