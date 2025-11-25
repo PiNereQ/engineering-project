@@ -75,6 +75,7 @@ class _MapScreenViewState extends State<_MapScreenView>
   LatLng? _currentUserLocation;
   bool _waitingForUserLocationSettings = false;
   Timer? _userLocationUpdateTimer;
+  double? _lastZoomLevel;
 
   @override
   void initState() {
@@ -544,11 +545,15 @@ class _MapScreenViewState extends State<_MapScreenView>
   void _onMapMove() {
     if (_mapController != null) {
       final zoomLevel = _mapController!.mapController.camera.zoom;
-      context.read<CouponMapBloc>().add(
-        CouponMapPositionChanged(zoomLevel: zoomLevel),
-      );
-      // Force rebuild so clustering reflects new zoom level.
-      setState(() {});
+      
+      if (_lastZoomLevel == null || zoomLevel != _lastZoomLevel) {
+        _lastZoomLevel = zoomLevel;
+        context.read<CouponMapBloc>().add(
+          CouponMapZoomLevelChanged(zoomLevel: zoomLevel),
+        );
+        // Force rebuild so clustering reflects new zoom level.
+        setState(() {});
+      }
     }
   }
 
@@ -556,7 +561,7 @@ class _MapScreenViewState extends State<_MapScreenView>
     if (_mapController != null) {
       final zoomLevel = _mapController!.mapController.camera.zoom;
       context.read<CouponMapBloc>().add(
-        CouponMapPositionChanged(zoomLevel: zoomLevel),
+        CouponMapZoomLevelChanged(zoomLevel: zoomLevel),
       );
     }
   }
