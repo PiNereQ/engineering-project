@@ -27,6 +27,7 @@ import 'package:proj_inz/presentation/widgets/input/buttons/custom_text_button.d
 import 'package:proj_inz/presentation/widgets/coupon_map/location_dot.dart';
 import 'package:proj_inz/presentation/widgets/coupon_map/shop_location.dart';
 import 'package:proj_inz/core/theme.dart';
+import 'package:proj_inz/core/map/grid_cluster.dart';
 
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});
@@ -546,6 +547,8 @@ class _MapScreenViewState extends State<_MapScreenView>
       context.read<CouponMapBloc>().add(
         CouponMapPositionChanged(zoomLevel: zoomLevel),
       );
+      // Force rebuild so clustering reflects new zoom level.
+      setState(() {});
     }
   }
 
@@ -612,102 +615,188 @@ class _MapScreenViewState extends State<_MapScreenView>
                     }
         }
 
-        final markers = state.locations
-            .where(
-              (location) =>
-                  state.selectedShopLocationId != location.shopLocationId,
-            )
-            .map((location) {
+        final double currentZoom =
+            _isMapLoading
+                ? 5.9
+                : (_mapController?.mapController.camera.zoom ?? 5.9);
+        final int zoomLevelInt = currentZoom.round();
 
-          final borderWidth = 1.2;
-          return Marker(
-            height: 53,
-            width: 253,
-            point: LatLng(location.latitude, location.longitude),
-            child: Transform.translate(
-              offset: const Offset(108, -19),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                spacing: 4,
-                children: [
-                  GestureDetector(
-                    onTap: () {
-                      _mapController!.animateTo(
-                        dest: LatLng(
-                          location.latitude,
-                          location.longitude,
-                        ),
-                        zoom:
-                            _mapController!.mapController.camera.zoom,
-                      );
-                      context.read<CouponMapBloc>().add(
-                        CouponMapLocationSelected(
-                          shopLocationId: location.shopLocationId,
-                          shopId: location.shopId,
-                        ),
-                      );
-                    },
-                    child: ShopLocationPin(
-                      active: state.selectedShopLocationId == null,
-                    ),
+        const clusteringMaxZoom = 17;
+        final bool enableClustering = zoomLevelInt < clusteringMaxZoom;
+
+        final clusteredLocations = enableClustering
+            ? clusterItems<Location>(
+                state.locations,
+                zoom: zoomLevelInt,
+                cellSizePx: 60,
+                toLatLng: (loc) => LatLng(loc.latitude, loc.longitude),
+              )
+            : state.locations
+                .map(
+                  (loc) => GridCluster<Location>(
+                    center: LatLng(loc.latitude, loc.longitude),
+                    items: [loc],
                   ),
-                  if (state.selectedShopLocationId == null) 
-                  SizedBox(
-                    width: 200,
-                    child: Stack(
-                      children: [
-                        Text(
-                          location.shopName ?? '',
-                          style: TextStyle(
-                            height: 0.8,
-                            fontFamily: 'Itim',
-                            fontSize: 18,
-                            color: AppColors.textPrimary,
-                            shadows: [
-                              Shadow(
-                                offset: Offset(-borderWidth, -borderWidth),
-                                color: AppColors.surface
-                              ),
-                              Shadow(
-                                offset: Offset(borderWidth, -borderWidth),
-                                color: AppColors.surface
-                              ),
-                              Shadow(
-                                offset: Offset(borderWidth, borderWidth),
-                                color: AppColors.surface
-                              ),
-                              Shadow(
-                                offset: Offset(-borderWidth, borderWidth),
-                                color: AppColors.surface
-                              ),
-                              Shadow(
-                                offset: Offset(-borderWidth, 0),
-                                color: AppColors.surface
-                              ),
-                              Shadow(
-                                offset: Offset(borderWidth, 0),
-                                color: AppColors.surface
-                              ),
-                              Shadow(
-                                offset: Offset(0, -borderWidth),
-                                color: AppColors.surface
-                              ),
-                              Shadow(
-                                offset: Offset(0, borderWidth),
-                                color: AppColors.surface
-                              ),
-                            ]
-                          ),
+                )
+                .toList();
+
+        final markers = <Marker>[];
+
+        for (final cluster in clusteredLocations) {
+          final hasSelected = cluster.items.any(
+            (loc) => loc.shopLocationId == state.selectedShopLocationId,
+          );
+          if (hasSelected) continue;
+
+          if (cluster.isCluster) {
+            final clusterMarkerSize = cluster.items.length > 10 ? 50.0 : 40.0;
+            final fontSize = cluster.items.length > 10 ? 24.0 : 20.0;
+            
+            markers.add(
+              Marker(
+                height: clusterMarkerSize,
+                width: clusterMarkerSize,
+                point: cluster.center,
+                child: GestureDetector(
+                  onTap: () {
+                    const double minDetailZoom = 16;
+                    final double zoomAfterTap = (currentZoom + 2).clamp(5.0, 20.0);
+                    final double targetZoom =
+                        zoomAfterTap < minDetailZoom ? minDetailZoom : zoomAfterTap;
+                    _mapController?.animateTo(
+                      dest: cluster.center,
+                      zoom: targetZoom
+                    );
+                  },
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.notificationDot,
+                      shape: BoxShape.circle,
+                      border: const Border.fromBorderSide(
+                        BorderSide(
+                          color: AppColors.textPrimary,
+                          width: 2,
+                        ),
+                      ),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: AppColors.textPrimary,
+                          offset: Offset(2, 2),
                         ),
                       ],
                     ),
+                    alignment: Alignment.center,
+                    child: Text(
+                      '${cluster.items.length}',
+                      style: TextStyle(
+                        fontFamily: 'Itim',
+                        fontSize: fontSize,
+                        color: AppColors.surface,
+                      ),
+                    ),
                   ),
-                ],
+                ),
               ),
-            ),
-          );
-        }).toList();
+            );
+          } else {
+            final location = cluster.items.first;
+            final borderWidth = 1.2;
+
+            markers.add(
+              Marker(
+                height: 53,
+                width: 253,
+                point: LatLng(location.latitude, location.longitude),
+                child: Transform.translate(
+                  offset: const Offset(108, -19),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    spacing: 4,
+                    children: [
+                      GestureDetector(
+                        onTap: () {
+                          _mapController!.animateTo(
+                            dest: LatLng(
+                              location.latitude,
+                              location.longitude,
+                            ),
+                            zoom:
+                                _mapController!.mapController.camera.zoom,
+                          );
+                          context.read<CouponMapBloc>().add(
+                            CouponMapLocationSelected(
+                              shopLocationId: location.shopLocationId,
+                              shopId: location.shopId,
+                            ),
+                          );
+                        },
+                        child: ShopLocationPin(
+                          active: state.selectedShopLocationId == null,
+                        ),
+                      ),
+                      if (state.selectedShopLocationId == null)
+                        SizedBox(
+                          width: 200,
+                          child: Stack(
+                            children: [
+                              Text(
+                                location.shopName ?? '',
+                                style: TextStyle(
+                                  height: 0.8,
+                                  fontFamily: 'Itim',
+                                  fontSize: 18,
+                                  color: AppColors.textPrimary,
+                                  shadows: [
+                                    Shadow(
+                                      offset:
+                                          Offset(-borderWidth, -borderWidth),
+                                      color: AppColors.surface,
+                                    ),
+                                    Shadow(
+                                      offset:
+                                          Offset(borderWidth, -borderWidth),
+                                      color: AppColors.surface,
+                                    ),
+                                    Shadow(
+                                      offset:
+                                          Offset(borderWidth, borderWidth),
+                                      color: AppColors.surface,
+                                    ),
+                                    Shadow(
+                                      offset:
+                                          Offset(-borderWidth, borderWidth),
+                                      color: AppColors.surface,
+                                    ),
+                                    Shadow(
+                                      offset: Offset(-borderWidth, 0),
+                                      color: AppColors.surface,
+                                    ),
+                                    Shadow(
+                                      offset: Offset(borderWidth, 0),
+                                      color: AppColors.surface,
+                                    ),
+                                    Shadow(
+                                      offset: Offset(0, -borderWidth),
+                                      color: AppColors.surface,
+                                    ),
+                                    Shadow(
+                                      offset: Offset(0, borderWidth),
+                                      color: AppColors.surface,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }
+        }
 
         final selectedMarker = state.locations
             .where(
@@ -802,8 +891,8 @@ class _MapScreenViewState extends State<_MapScreenView>
                     _updateZoomTip();
                   },
                   onPositionChanged: (position, hasGesture) {
+                    _onMapMove();
                     if (hasGesture) {
-                      _onMapMove();
                       _updateZoomTip();
                     }
                   },
