@@ -14,7 +14,7 @@ class CouponMapBloc extends Bloc<CouponMapEvent, CouponMapState> {
 
   CouponMapBloc({required this.mapRepository, required this.couponRepository}) : super(const CouponMapState()) {
     on<LoadLocationsInBounds>(_onLoadLocationsInBounds);
-    on<CouponMapPositionChanged>(_onPositionChanged);
+    on<CouponMapZoomLevelChanged>(_onZoomLevelChanged);
     on<CouponMapSearchExecuted>(_onSearchExecuted);
     on<CouponMapLocationSelected>(_onLocationSelected);
     on<CouponMapLocationCleared>(_onLocationCleared);
@@ -46,8 +46,8 @@ class CouponMapBloc extends Bloc<CouponMapEvent, CouponMapState> {
     }
   }
 
-  void _onPositionChanged(
-    CouponMapPositionChanged event,
+  void _onZoomLevelChanged(
+    CouponMapZoomLevelChanged event,
     Emitter<CouponMapState> emit,
   ) {
     final shouldShowZoomTip = event.zoomLevel < 11;

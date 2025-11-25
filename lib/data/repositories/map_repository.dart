@@ -8,7 +8,8 @@ class MapRepository {
     return [
       Location(shopLocationId: '0', latitude: 52.406374, longitude: 16.925168, shopId: '1', shopName: 'Media Expert'),
       Location(shopLocationId: '1', latitude: 52.406554, longitude: 16.925334, shopId: '3', shopName: 'MediaMarkt'),
-      Location(shopLocationId: '2', latitude: 52.467139, longitude: 16.927121, shopId: '1', shopName: 'Media Expert'),
+      Location(shopLocationId: '2', latitude: 52.409000, longitude: 16.925361, shopId: '1', shopName: 'Media Expert'),
+      Location(shopLocationId: '3', latitude: 52.406668, longitude: 16.928808, shopId: '3', shopName: 'MediaMarkt'),
     ];
   }
 
