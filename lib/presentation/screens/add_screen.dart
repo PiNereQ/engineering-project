@@ -41,6 +41,8 @@ class _AddScreenState extends State<AddScreen> {
   bool _inOnlineStore = false;
   bool _hasRestrictions = false; // null = brak wyboru, true = tak, false = nie
 
+  bool _userMadeInput = false;
+
   @override
   void dispose() {
     _priceController.dispose();
@@ -132,7 +134,13 @@ class _AddScreenState extends State<AddScreen> {
                           children: [
                             CustomIconButton(
                               icon: SvgPicture.asset('assets/icons/back.svg'),
-                              onTap: () => backDialog(),
+                              onTap: () {
+                                if (_userMadeInput) {
+                                  backDialog();
+                                } else {
+                                  Navigator.of(context).pop();
+                                }
+                              },
                             ),
                             CustomIconButton(
                               icon: const Icon(Icons.info_outline_rounded),
@@ -192,6 +200,7 @@ class _AddScreenState extends State<AddScreen> {
                                       onChanged: (val) {
                                         setState(() {
                                           _selectedShop = state.shops.firstWhere((s) => s.name == val);
+                                          _userMadeInput = true;
                                         });
                                       },
                                       widthType: CustomComponentWidth.full,
@@ -224,6 +233,11 @@ class _AddScreenState extends State<AddScreen> {
                                       if (double.tryParse(val) == null) return 'Niepoprawna liczba';
                                       return null;
                                     },
+                                    onChanged: (val) {
+                                      setState(() {
+                                        _userMadeInput = true;
+                                      });
+                                    },
                                   ),
                                   GestureDetector(
                                     onTap: () async {
@@ -239,6 +253,7 @@ class _AddScreenState extends State<AddScreen> {
                                       _expiryDateController.text =
                                         "${pickedDate.day.toString().padLeft(2, '0')}-${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.year}";
                                       _expiryDate = pickedDate;
+                                      _userMadeInput = true;
                                       });
                                     }
                                     },
@@ -268,6 +283,11 @@ class _AddScreenState extends State<AddScreen> {
                                 width: LabeledTextFieldWidth.full,
                                 iconOnLeft: true,
                                 controller: _codeController,
+                                onChanged: (val) {
+                                  setState(() {
+                                    _userMadeInput = true;
+                                  });
+                                },
                                 validator: (val) {
                                   if (val == null || val.isEmpty) return 'Wymagane';
                                   return null;
@@ -364,6 +384,7 @@ class _AddScreenState extends State<AddScreen> {
                                           onTap: () {
                                             setState(() {
                                               _selectedType = CouponType.percent;
+                                              _userMadeInput = true;
                                             });
                                           },
                                         ),
@@ -374,6 +395,7 @@ class _AddScreenState extends State<AddScreen> {
                                           onTap: () {
                                             setState(() {
                                               _selectedType = CouponType.fixed;
+                                              _userMadeInput = true;
                                             });
                                           },
                                         ),
@@ -391,6 +413,11 @@ class _AddScreenState extends State<AddScreen> {
                                             textAlign: TextAlign.right,
                                             controller: _reductionController,
                                             keyboardType: TextInputType.number,
+                                            onChanged: (val) {
+                                              setState(() {
+                                                _userMadeInput = true;
+                                              });
+                                            },
                                             validator: (val) {
                                               if (val == null || val.isEmpty) return 'Wymagane';
                                               if (double.tryParse(val) == null) return 'Niepoprawna liczba';
@@ -404,6 +431,11 @@ class _AddScreenState extends State<AddScreen> {
                                             textAlign: TextAlign.right,
                                             controller: _reductionController,
                                             keyboardType: TextInputType.number,
+                                            onChanged: (val) {
+                                              setState(() {
+                                                _userMadeInput = true;
+                                              });
+                                            },
                                             validator: (val) {
                                               if (val == null || val.isEmpty) return 'Wymagane';
                                               if (double.tryParse(val) == null) return 'Niepoprawna liczba';
@@ -436,6 +468,7 @@ class _AddScreenState extends State<AddScreen> {
                                     onTap: () {
                                       setState(() {
                                         _inPhysicalStores = !_inPhysicalStores;
+                                        _userMadeInput = true;
                                       });
                                     },
                                   ),
@@ -446,6 +479,7 @@ class _AddScreenState extends State<AddScreen> {
                                     onTap: () {
                                       setState(() {
                                         _inOnlineStore = !_inOnlineStore;
+                                        _userMadeInput = true;
                                       });
                                     },
                                   ),
@@ -481,6 +515,7 @@ class _AddScreenState extends State<AddScreen> {
                                           onTap: () {
                                             setState(() {
                                               _hasRestrictions = true;
+                                              _userMadeInput = true;
                                             });
                                           },
                                         ),
@@ -491,6 +526,7 @@ class _AddScreenState extends State<AddScreen> {
                                           onTap: () {
                                             setState(() {
                                               _hasRestrictions = false;
+                                              _userMadeInput = true;
                                             });
                                           },
                                         ),
@@ -548,6 +584,11 @@ class _AddScreenState extends State<AddScreen> {
                                 maxLines: 6,
                                 textAlign: TextAlign.left,
                                 controller: _descriptionController,
+                                onChanged: (val) {
+                                  setState(() {
+                                    _userMadeInput = true;
+                                  });
+                                },
                               ),
                               const SizedBox(height: 24),
                           

@@ -17,6 +17,7 @@ class LabeledTextField extends StatelessWidget {
   final TextEditingController? controller;
   final TextInputType? keyboardType;
   final FormFieldValidator<String?>? validator;
+  final ValueChanged<String>? onChanged;
 
   const LabeledTextField({
     super.key,
@@ -31,6 +32,7 @@ class LabeledTextField extends StatelessWidget {
     this.controller,
     this.keyboardType,
     this.validator,
+    this.onChanged,
   });
 
   @override
@@ -140,7 +142,8 @@ class LabeledTextField extends StatelessWidget {
                   obscuringCharacter: '♡',
                   controller: controller,
                   keyboardType: keyboardType,
-                  validator: validator
+                  validator: validator,
+                  onChanged: onChanged,
                 ),
               ),
             ],
