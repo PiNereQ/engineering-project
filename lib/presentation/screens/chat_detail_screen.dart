@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:proj_inz/core/theme.dart';
+import 'package:proj_inz/data/models/conversation_model.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../widgets/chat_bubble.dart';
+
 import 'package:proj_inz/bloc/chat/detail/chat_detail_bloc.dart';
 import 'package:proj_inz/bloc/chat/detail/chat_detail_event.dart';
 import 'package:proj_inz/bloc/chat/detail/chat_detail_state.dart';
-import 'package:proj_inz/data/models/conversation_model.dart';
-import 'package:proj_inz/presentation/widgets/chat_bubble.dart';
-import 'package:proj_inz/core/theme.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:proj_inz/data/repositories/chat_repository.dart';
 
 class ChatDetailScreen extends StatefulWidget {
   final Conversation conversation;
@@ -21,25 +23,25 @@ class ChatDetailScreen extends StatefulWidget {
 }
 
 class _ChatDetailScreenState extends State<ChatDetailScreen> {
-  final TextEditingController _controller = TextEditingController();
-
   @override
   void initState() {
     super.initState();
 
-    context
-        .read<ChatDetailBloc>()
-        .add(LoadMessages(widget.conversation.id));
+    // Mark conversation as read
+    context.read<ChatRepository>().markConversationAsRead(widget.conversation.id);
+
+    // Load messages
+    context.read<ChatDetailBloc>().add(
+          LoadMessages(widget.conversation.id),
+        );
   }
 
   @override
   Widget build(BuildContext context) {
-    final currentUser = FirebaseAuth.instance.currentUser?.uid;
-
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: Text("Rozmowa: ${widget.conversation.couponId}"),
+        title: Text('Rozmowa: ${widget.conversation.couponId}'),
       ),
       body: Column(
         children: [
@@ -50,36 +52,24 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                   return const Center(child: CircularProgressIndicator());
                 }
 
-                if (state is ChatDetailError) {
-                  return Center(child: Text("Błąd: ${state.message}"));
-                }
-
-                if (state is ChatDetailLoaded ||
-                    state is ChatDetailSending) {
-                  final messages = state is ChatDetailLoaded
-                      ? state.messages
-                      : (state as ChatDetailSending).messages;
-
-                  return ListView.builder(
+                if (state is ChatDetailLoaded) {
+                  return ListView(
                     padding: const EdgeInsets.all(16),
-                    itemCount: messages.length,
-                    itemBuilder: (context, index) {
-                      final msg = messages[index];
-                      final isMine = msg.senderId == currentUser;
+                    children: state.messages.map((msg) {
+                      final currentUserId = FirebaseAuth.instance.currentUser?.uid;
+                      final isMine = msg.senderId == currentUserId;
 
                       return Align(
-                        alignment: isMine
-                            ? Alignment.centerRight
-                            : Alignment.centerLeft,
+                        alignment:
+                            isMine ? Alignment.centerRight : Alignment.centerLeft,
                         child: ChatBubble(
                           text: msg.text,
-                          time:
-                              "${msg.timestamp.hour.toString().padLeft(2, '0')}:${msg.timestamp.minute.toString().padLeft(2, '0')}",
+                          time: _formatTime(msg.timestamp),
                           isMine: isMine,
                           isRead: msg.isRead,
                         ),
                       );
-                    },
+                    }).toList(),
                   );
                 }
 
@@ -88,7 +78,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
             ),
           ),
 
-          // input bar
+          // input
           _buildMessageInput(),
         ],
       ),
@@ -96,13 +86,15 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   }
 
   Widget _buildMessageInput() {
+    final controller = TextEditingController();
+
     return Padding(
       padding: const EdgeInsets.all(12),
       child: Row(
         children: [
           Expanded(
             child: TextField(
-              controller: _controller,
+              controller: controller,
               decoration: const InputDecoration(
                 hintText: 'Napisz wiadomość...',
                 border: OutlineInputBorder(),
@@ -112,22 +104,25 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
           const SizedBox(width: 8),
           IconButton(
             onPressed: () {
-              final text = _controller.text.trim();
-              if (text.isEmpty) return;
-
-              context.read<ChatDetailBloc>().add(
-                    SendMessage(
-                      conversationId: widget.conversation.id,
-                      text: text,
-                    ),
-                  );
-
-              _controller.clear();
+              final text = controller.text.trim();
+              if (text.isNotEmpty) {
+                context.read<ChatDetailBloc>().add(
+                      SendMessage(
+                        conversationId: widget.conversation.id,
+                        text: text,
+                      ),
+                    );
+                controller.clear();
+              }
             },
             icon: const Icon(Icons.send),
           ),
         ],
       ),
     );
+  }
+
+  String _formatTime(DateTime time) {
+    return "${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}";
   }
 }

@@ -26,7 +26,7 @@ class ChatRepository {
       sellerId: 'seller-1',
       lastMessage: 'Hej, ten kupon jest nadal dostępny?',
       lastMessageTime: DateTime.now().subtract(const Duration(minutes: 5)),
-      isReadByCurrentUser: false,
+      isReadByCurrentUser: true,
     );
 
     final conv2 = Conversation(
@@ -34,9 +34,9 @@ class ChatRepository {
       couponId: 'coupon-xyz',
       buyerId: 'buyer-22',
       sellerId: currentUserId,
-      lastMessage: 'Tak, sprawdź mój profil.',
+      lastMessage: 'Masz jeszcze inne kupony?',
       lastMessageTime: DateTime.now().subtract(const Duration(hours: 1)),
-      isReadByCurrentUser: true,
+      isReadByCurrentUser: false,
     );
 
     _mockConversations.addAll([conv1, conv2]);
@@ -45,10 +45,10 @@ class ChatRepository {
       Message(
         id: 'msg-1',
         conversationId: 'conv-1',
-        senderId: 'seller-1',
+        senderId: currentUserId,
         text: 'Hej, ten kupon jest nadal dostępny?',
         timestamp: DateTime.now().subtract(const Duration(minutes: 5)),
-        isRead: false,
+        isRead: true,
       ),
     ];
 
@@ -59,15 +59,7 @@ class ChatRepository {
         senderId: 'buyer-22',
         text: 'Masz jeszcze inne kupony?',
         timestamp: DateTime.now().subtract(const Duration(hours: 2)),
-        isRead: true,
-      ),
-      Message(
-        id: 'msg-3',
-        conversationId: 'conv-2',
-        senderId: currentUserId,
-        text: 'Tak, sprawdź mój profil.',
-        timestamp: DateTime.now().subtract(const Duration(hours: 1, minutes: 55)),
-        isRead: true,
+        isRead: false,
       ),
     ];
   }
@@ -95,6 +87,22 @@ class ChatRepository {
     await Future.delayed(const Duration(milliseconds: 200));
 
     return _mockMessages[conversationId] ?? [];
+  }
+
+  // Mark conversation as read
+  void markConversationAsRead(String conversationId) {
+    final index = _mockConversations.indexWhere((c) => c.id == conversationId);
+    if (index != -1) {
+      _mockConversations[index] = _mockConversations[index].copyWith(
+        isReadByCurrentUser: true,
+      );
+    }
+
+    final messages = _mockMessages[conversationId];
+    if (messages != null && messages.isNotEmpty) {
+      final last = messages.last;
+      messages[messages.length - 1] = last.copyWith(isRead: true);
+    }
   }
 
   // Sends a message (locally for now)
