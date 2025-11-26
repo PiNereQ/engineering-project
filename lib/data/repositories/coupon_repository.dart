@@ -358,7 +358,7 @@ class CouponRepository {
       'isSold': false,
       'createdAt': FieldValue.serverTimestamp(),
     });
-
+    
     await _firestore.collection('couponCodeData').doc(docRef.id).set({
       'code': coupon.code,      
       'owner': null,
