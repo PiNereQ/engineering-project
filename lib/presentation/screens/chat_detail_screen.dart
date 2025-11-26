@@ -41,7 +41,16 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: Text('Rozmowa: ${widget.conversation.couponId}'),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(widget.conversation.couponTitle, style: TextStyle(fontSize: 18)),
+            Text(
+              _getOtherUsername(),
+              style: const TextStyle(fontSize: 14, color: AppColors.textSecondary),
+            ),
+          ],
+        ),
       ),
       body: Column(
         children: [
@@ -84,6 +93,21 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       ),
     );
   }
+
+  String _getOtherUsername() {
+    final currentUserId = FirebaseAuth.instance.currentUser!.uid;
+
+    final c = widget.conversation;
+
+    // if current user is buyer, show seller username
+    if (c.buyerId == currentUserId) {
+      return c.sellerUsername;
+    }
+
+    // if current user is seller, show buyer username
+    return c.buyerUsername;
+  }
+
 
   Widget _buildMessageInput() {
     final controller = TextEditingController();

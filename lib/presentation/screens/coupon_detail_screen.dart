@@ -8,9 +8,11 @@ import 'package:proj_inz/bloc/payment/payment_bloc.dart';
 import 'package:proj_inz/core/theme.dart';
 import 'package:proj_inz/core/utils/utils.dart';
 import 'package:proj_inz/data/models/coupon_model.dart';
+import 'package:proj_inz/data/repositories/chat_repository.dart';
 import 'package:proj_inz/data/repositories/coupon_repository.dart';
 import 'package:proj_inz/data/repositories/user_repository.dart';
 import 'package:proj_inz/presentation/screens/bought_coupon_detail_screen.dart';
+import 'package:proj_inz/presentation/screens/chat_detail_screen.dart';
 import 'package:proj_inz/presentation/widgets/custom_snack_bar.dart';
 import 'package:proj_inz/presentation/widgets/dashed_separator.dart';
 import 'package:proj_inz/presentation/widgets/error_card.dart';
@@ -41,7 +43,7 @@ class CouponDetailsScreen extends StatelessWidget {
       child: Scaffold(
         backgroundColor: AppColors.background,
         body: SafeArea(
-          child: Padding(
+          child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
             child: Column(
               children: [
@@ -591,6 +593,37 @@ class _SellerDetails extends StatelessWidget {
                         fontFamily: 'Itim',
                         fontWeight: FontWeight.w400,
                         height: 0.75,
+                      ),
+                    ),
+                    SizedBox(height: 16),
+
+                    Center(
+                      child: CustomTextButton.primary(
+                        label: "Zapytaj o ten kupon",
+                        onTap: () async {
+                          final currentUser = await getCurrentUser();
+                          final buyerId = currentUser.uid;
+                          final sellerId = this.sellerId; // from widget
+                          final couponId = (context.findAncestorWidgetOfExactType<CouponDetailsScreen>()!).couponId;
+
+                          final chatRepo = context.read<ChatRepository>();
+
+                          // create or get conversation
+                          final conversation = await chatRepo.createConversationIfNotExists(
+                            couponId: couponId,
+                            buyerId: buyerId,
+                            sellerId: sellerId,
+                          );
+
+                          if (!context.mounted) return;
+
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => ChatDetailScreen(conversation: conversation),
+                            ),
+                          );
+                        },
                       ),
                     ),
                   ],

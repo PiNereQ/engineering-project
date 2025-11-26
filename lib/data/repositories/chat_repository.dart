@@ -1,7 +1,10 @@
 import 'dart:async';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:proj_inz/data/models/message_model.dart';
 import 'package:proj_inz/data/models/conversation_model.dart';
+import 'package:collection/collection.dart';
+import 'package:proj_inz/data/repositories/user_repository.dart';
 
 // TODO: Replace mock data with real API
 
@@ -22,8 +25,11 @@ class ChatRepository {
     final conv1 = Conversation(
       id: 'conv-1',
       couponId: 'coupon-abc',
+      couponTitle: 'Kupon 20% Empik',
       buyerId: currentUserId,
       sellerId: 'seller-1',
+      buyerUsername: 'Ty',
+      sellerUsername: 'Sprzedawca1',
       lastMessage: 'Hej, ten kupon jest nadal dostępny?',
       lastMessageTime: DateTime.now().subtract(const Duration(minutes: 5)),
       isReadByCurrentUser: true,
@@ -32,8 +38,11 @@ class ChatRepository {
     final conv2 = Conversation(
       id: 'conv-2',
       couponId: 'coupon-xyz',
+      couponTitle: 'Kupon 5% Zooplus',
       buyerId: 'buyer-22',
       sellerId: currentUserId,
+      buyerUsername: 'Kupujacy22',
+      sellerUsername: 'Ty',
       lastMessage: 'Masz jeszcze inne kupony?',
       lastMessageTime: DateTime.now().subtract(const Duration(hours: 1)),
       isReadByCurrentUser: false,
@@ -58,7 +67,7 @@ class ChatRepository {
         conversationId: 'conv-2',
         senderId: 'buyer-22',
         text: 'Masz jeszcze inne kupony?',
-        timestamp: DateTime.now().subtract(const Duration(hours: 2)),
+        timestamp: DateTime.now().subtract(const Duration(hours: 1)),
         isRead: false,
       ),
     ];
@@ -80,6 +89,70 @@ class ChatRepository {
     } else {
       return _mockConversations.where((c) => c.sellerId == userId).toList();
     }
+  }
+
+  // Create a conversation if it does not exist
+  Future<Conversation> createConversationIfNotExists({
+    required String couponId,
+    required String buyerId,
+    required String sellerId,
+  }) async {
+    final existing = _mockConversations.firstWhereOrNull(
+      (c) => c.couponId == couponId && c.buyerId == buyerId && c.sellerId == sellerId,
+    );
+
+    if (existing != null) {
+      return existing;
+    }
+
+    // Load usernames (global helper from user_repository.dart)
+    final buyerProfile = await getUserProfile(buyerId);
+    final sellerProfile = await getUserProfile(sellerId);
+    
+    final buyerUsername = buyerProfile?['username'] ?? 'Konto';
+    final sellerUsername = sellerProfile?['username'] ?? 'Użytkownik';
+    
+    // Load coupon title
+    final couponDoc = await FirebaseFirestore.instance
+        .collection('couponOffers')
+        .doc(couponId)
+        .get();
+
+    final data = couponDoc.data() ?? {};
+
+    final reduction = data['reduction'] as num? ?? 0;
+    final reductionIsPercentage = data['reductionIsPercentage'] as bool? ?? true;
+
+  // Format reduction text
+  final String reductionText;
+  if (reductionIsPercentage) {
+    reductionText = reduction.toString().replaceAll('.', ',');
+  } else {
+    reductionText = reduction.toStringAsFixed(2).replaceAll('.', ',');
+  }
+
+  // Generate title exactly like coupon details screen
+  final String couponTitle = reductionIsPercentage
+      ? "Kupon -$reductionText%"
+      : "Kupon na $reductionText zł";
+      
+    final newConv = Conversation(
+      id: 'conv-${DateTime.now().millisecondsSinceEpoch}',
+      couponId: couponId,
+      couponTitle: couponTitle,
+      buyerId: buyerId,
+      sellerId: sellerId,
+      buyerUsername: buyerUsername,
+      sellerUsername: sellerUsername,
+      lastMessage: "",
+      lastMessageTime: DateTime.now(),
+      isReadByCurrentUser: true,
+    );
+
+    _mockConversations.add(newConv);
+    _mockMessages[newConv.id] = [];
+
+    return newConv;
   }
 
   // Get messages for a given conversation

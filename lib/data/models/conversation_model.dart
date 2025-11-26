@@ -5,6 +5,9 @@ class Conversation extends Equatable {
   final String couponId;
   final String buyerId;
   final String sellerId;
+  final String buyerUsername;
+  final String sellerUsername;
+  final String couponTitle;
   final String lastMessage;
   final DateTime lastMessageTime;
   final bool isReadByCurrentUser;
@@ -14,6 +17,9 @@ class Conversation extends Equatable {
     required this.couponId,
     required this.buyerId,
     required this.sellerId,
+    required this.buyerUsername,
+    required this.sellerUsername,    
+    required this.couponTitle,
     required this.lastMessage,
     required this.lastMessageTime,
     required this.isReadByCurrentUser,
@@ -25,6 +31,9 @@ class Conversation extends Equatable {
         couponId,
         buyerId,
         sellerId,
+        buyerUsername,
+        sellerUsername,
+        couponTitle,
         lastMessage,
         lastMessageTime,
         isReadByCurrentUser,
@@ -36,6 +45,9 @@ class Conversation extends Equatable {
       couponId: json['couponId'] as String,
       buyerId: json['buyerId'] as String,
       sellerId: json['sellerId'] as String,
+      buyerUsername: json['buyerUsername'] as String,
+      sellerUsername: json['sellerUsername'] as String,
+      couponTitle: json['couponTitle'] as String,
       lastMessage: json['lastMessage'] as String,
       lastMessageTime: DateTime.parse(json['lastMessageTime'] as String),
       isReadByCurrentUser: json['isReadByCurrentUser'] as bool,
@@ -48,6 +60,9 @@ class Conversation extends Equatable {
       'couponId': couponId,
       'buyerId': buyerId,
       'sellerId': sellerId,
+      'buyerUsername': buyerUsername,
+      'sellerUsername': sellerUsername,
+      'couponTitle': couponTitle,
       'lastMessage': lastMessage,
       'lastMessageTime': lastMessageTime.toIso8601String(),
       'isReadByCurrentUser': isReadByCurrentUser,
@@ -59,6 +74,9 @@ class Conversation extends Equatable {
     String? couponId,
     String? buyerId,
     String? sellerId,
+    String? buyerUsername,
+    String? sellerUsername,
+    String? couponTitle,
     String? lastMessage,
     DateTime? lastMessageTime,
     bool? isReadByCurrentUser,
@@ -68,6 +86,9 @@ class Conversation extends Equatable {
       couponId: couponId ?? this.couponId,
       buyerId: buyerId ?? this.buyerId,
       sellerId: sellerId ?? this.sellerId,
+      buyerUsername: buyerUsername ?? this.buyerUsername,
+      sellerUsername: sellerUsername ?? this.sellerUsername,
+      couponTitle: couponTitle ?? this.couponTitle,
       lastMessage: lastMessage ?? this.lastMessage,
       lastMessageTime: lastMessageTime ?? this.lastMessageTime,
       isReadByCurrentUser:

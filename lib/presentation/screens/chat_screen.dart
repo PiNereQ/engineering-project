@@ -99,7 +99,7 @@ class _ChatScreenState extends State<ChatScreen> {
                         },
                         child: ConversationTile(
                           username: _getUsername(c),
-                          title: "Kupon: ${c.couponId}",
+                          title: "${c.couponTitle}",
                           message: c.lastMessage,
                           isRead: c.isReadByCurrentUser,
                         ),
@@ -122,7 +122,9 @@ class _ChatScreenState extends State<ChatScreen> {
     if (user == null) {
       return 'Użytkownik';
     }
-    return user.uid == c.buyerId ? c.sellerId : c.buyerId;
+
+    // if current user is buyer, show seller username
+    return user.uid == c.buyerId ? c.sellerUsername : c.buyerUsername;
   }
 
   Widget _buildTabButton(String label,
