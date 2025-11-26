@@ -46,6 +46,7 @@ class _AddScreenState extends State<AddScreen> {
 
   bool _userMadeInput = false;
   bool _showMissingValuesTip = false;
+  bool _showUsageLocationTip = false;
 
   @override
   void dispose() {
@@ -285,6 +286,7 @@ class _AddScreenState extends State<AddScreen> {
                                     validator: (val) {
                                       if (val == null || val.isEmpty) return 'Wymagane';
                                       if (double.tryParse(val) == null) return 'Niepoprawna liczba';
+                                      if (double.tryParse(val)! <= 0) return 'Wpisz więcej niż 0';
                                       return null;
                                     },
                                     onChanged: (val) {
@@ -295,10 +297,13 @@ class _AddScreenState extends State<AddScreen> {
                                   ),
                                   GestureDetector(
                                     onTap: () async {
+                                    DateTime now = DateTime.now();
+                                    DateTime today = DateTime(now.year, now.month, now.day);
+
                                     DateTime? pickedDate = await showDatePicker(
                                       context: context,
-                                      initialDate: DateTime.now(),
-                                      firstDate: DateTime(DateTime.now().year),
+                                      initialDate: today,
+                                      firstDate: today,
                                       lastDate: DateTime(2100),
                                     );
                                     if (pickedDate != null) {
@@ -474,6 +479,8 @@ class _AddScreenState extends State<AddScreen> {
                                             validator: (val) {
                                               if (val == null || val.isEmpty) return 'Wymagane';
                                               if (double.tryParse(val) == null) return 'Niepoprawna liczba';
+                                              if (double.tryParse(val)! <= 0) return 'Wpisz więcej niż 0';
+                                              if (double.tryParse(val)! > 100) return 'Wpisz conajwyżej 100';
                                               return null;
                                               },
                                           )
@@ -492,6 +499,7 @@ class _AddScreenState extends State<AddScreen> {
                                             validator: (val) {
                                               if (val == null || val.isEmpty) return 'Wymagane';
                                               if (double.tryParse(val) == null) return 'Niepoprawna liczba';
+                                              if (double.tryParse(val)! <= 0) return 'Wpisz więcej niż 0';
                                               return null;
                                             },
                                           ),
@@ -523,6 +531,9 @@ class _AddScreenState extends State<AddScreen> {
                                         _inPhysicalStores = !_inPhysicalStores;
                                         _userMadeInput = true;
                                       });
+                                      setState(() {
+                                        _showUsageLocationTip = _inPhysicalStores == false && _inOnlineStore == false;
+                                      });
                                     },
                                   ),
                                   const SizedBox(height: 12),
@@ -534,10 +545,27 @@ class _AddScreenState extends State<AddScreen> {
                                         _inOnlineStore = !_inOnlineStore;
                                         _userMadeInput = true;
                                       });
+                                      setState(() {
+                                        _showUsageLocationTip = _inPhysicalStores == false && _inOnlineStore == false;
+                                      });
                                     },
                                   ),
                                 ],
                               ),
+
+                              if (_showUsageLocationTip)
+                                const Padding(
+                                  padding: EdgeInsets.only(top: 8.0),
+                                  child: Text(
+                                    'Zaznacz przynajmniej jedną opcję.',
+                                    style: TextStyle(
+                                      color: AppColors.alertText,
+                                      fontSize: 14,
+                                      fontFamily: 'Itim',
+                                      fontWeight: FontWeight.w400,
+                                    ),
+                                  ),
+                                ),
                           
                               const SizedBox(height: 24),
                           
@@ -707,6 +735,12 @@ class _AddScreenState extends State<AddScreen> {
                                   FocusScope.of(context).unfocus();
 
                                   if (_formKey.currentState?.validate() ?? false) {
+                                    if (!_inPhysicalStores && !_inOnlineStore) {
+                                      setState(() {
+                                        _showUsageLocationTip = true;
+                                      });
+                                      return;
+                                    }
                                     final offer = CouponOffer(
                                       description: _descriptionController.text,
                                       reduction:
