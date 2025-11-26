@@ -1,0 +1,98 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:proj_inz/bloc/navbar/navbar_bloc.dart';
+import 'package:proj_inz/bloc/navbar/navbar_event.dart';
+import 'package:proj_inz/bloc/navbar/navbar_state.dart';
+import 'package:proj_inz/core/theme.dart';
+import 'package:proj_inz/presentation/widgets/navbar/navbar_item.dart';
+import 'package:proj_inz/presentation/screens/add_screen.dart';
+
+class Navbar extends StatelessWidget {
+  const Navbar({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<NavbarBloc, NavbarState>(
+      builder: (context, state) {
+        return Container(
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            border: BoxBorder.all(color: AppColors.textPrimary, width: 2),
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: const [
+              BoxShadow(
+                color: AppColors.textPrimary,
+                blurRadius: 0,
+                offset: Offset(4, 4),
+                spreadRadius: 0,
+              ),
+            ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 20.0,
+              vertical: 8.0,
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisSize: MainAxisSize.max,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                NavbarItem(
+                  label: "Dla Ciebie",
+                  icon: Icons.home_outlined,
+                  isSelected: state.selectedIndex == 0,
+                  hasBadge: false,
+                  onTap:
+                      () =>
+                          context.read<NavbarBloc>().add(NavbarItemSelected(0)),
+                ),
+                NavbarItem(
+                  label: "Kupony",
+                  icon: Icons.card_giftcard_outlined,
+                  isSelected: state.selectedIndex == 1,
+                  hasBadge: false,
+                  onTap:
+                      () =>
+                          context.read<NavbarBloc>().add(NavbarItemSelected(1)),
+                ),
+                NavbarItem(
+                  label: "Dodaj",
+                  icon: Icons.add_box_outlined,
+                  isSelected: state.selectedIndex == 2,
+                  hasBadge: false,
+                  onTap:
+                      // makes back button in AddScreen work properly
+                      () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const AddScreen(),
+                        ),
+                      ),
+                ),
+                NavbarItem(
+                  label: "Czat",
+                  icon: Icons.chat_outlined,
+                  isSelected: state.selectedIndex == 3,
+                  hasBadge: false,
+                  onTap:
+                      () =>
+                          context.read<NavbarBloc>().add(NavbarItemSelected(3)),
+                ),
+                NavbarItem(
+                  label: "Profil",
+                  icon: Icons.account_circle_outlined,
+                  isSelected: state.selectedIndex == 4,
+                  hasBadge: false,
+                  onTap:
+                      () =>
+                          context.read<NavbarBloc>().add(NavbarItemSelected(4)),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
