@@ -8,6 +8,7 @@ import 'package:proj_inz/data/repositories/coupon_repository.dart';
 import 'package:proj_inz/bloc/shop/shop_bloc.dart';
 import 'package:proj_inz/data/models/shop_model.dart';
 import 'package:proj_inz/data/repositories/shop_repository.dart';
+import 'package:proj_inz/presentation/widgets/custom_snack_bar.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_icon_button.dart';
 import '../widgets/input/text_fields/labeled_text_field.dart';
 import '../widgets/input/search_dropdown_field.dart';
@@ -27,6 +28,8 @@ class AddScreen extends StatefulWidget {
 class _AddScreenState extends State<AddScreen> {
   final _formKey = GlobalKey<FormState>();
 
+  final FocusScopeNode _focusScopeNode = FocusScopeNode();
+
   // Controllers for text fields
   final TextEditingController _priceController = TextEditingController();
   final TextEditingController _expiryDateController = TextEditingController();
@@ -41,8 +44,13 @@ class _AddScreenState extends State<AddScreen> {
   bool _inOnlineStore = false;
   bool _hasRestrictions = false; // null = brak wyboru, true = tak, false = nie
 
+  bool _userMadeInput = false;
+  bool _showMissingValuesTip = false;
+  bool _showUsageLocationTip = false;
+
   @override
   void dispose() {
+    _focusScopeNode.dispose();
     _priceController.dispose();
     _expiryDateController.dispose();
     _codeController.dispose();
@@ -110,9 +118,56 @@ class _AddScreenState extends State<AddScreen> {
               ShopBloc(context.read<ShopRepository>())..add(LoadShops()),
         ),
       ],
-      child: Scaffold(
-        backgroundColor: AppColors.background,
-        body: SafeArea(
+      child: BlocListener<CouponAddBloc, CouponAddState>(
+        listener: (context, state) {
+          if (state is CouponAddSuccess) {
+            showDialog(
+              context: context,
+              builder: (context) => AlertDialog(
+                backgroundColor: AppColors.surface,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(24),
+                  side: const BorderSide(width: 2, color: AppColors.textPrimary),
+                ),
+                title: const Text(
+                  'Sukces',
+                  style: TextStyle(
+                    fontFamily: 'Itim',
+                    fontSize: 22,
+                    fontWeight: FontWeight.w400,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                content: const Text(
+                  'Kupon został dodany.',
+                  style: TextStyle(
+                    fontFamily: 'Itim',
+                    fontSize: 16,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                actionsPadding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                actions: [
+                  CustomTextButton.primarySmall(
+                    label: 'OK',
+                    width: 100,
+                    onTap: () {
+                      Navigator.of(context).pop();
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                ],
+              ),
+            );
+          } else if (state is CouponAddFailure) {
+            _focusScopeNode.unfocus();
+            showCustomSnackBar(context, state.message);
+          }
+        },
+        child: Scaffold(
+          backgroundColor: AppColors.background,
+          body: SafeArea(
           child: LayoutBuilder(
             builder: (context, constraints) {
               double maxWidth =
@@ -132,7 +187,13 @@ class _AddScreenState extends State<AddScreen> {
                           children: [
                             CustomIconButton(
                               icon: SvgPicture.asset('assets/icons/back.svg'),
-                              onTap: () => backDialog(),
+                              onTap: () {
+                                if (_userMadeInput) {
+                                  backDialog();
+                                } else {
+                                  Navigator.of(context).pop();
+                                }
+                              },
                             ),
                             CustomIconButton(
                               icon: const Icon(Icons.info_outline_rounded),
@@ -160,11 +221,13 @@ class _AddScreenState extends State<AddScreen> {
                             ),
                           ],
                         ),
-                        child: Form(
-                          key: _formKey,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
+                        child: FocusScope(
+                          node: _focusScopeNode,
+                          child: Form(
+                            key: _formKey,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
                               // 1. Tytul
                               const SizedBox(
                                 width: 332,
@@ -192,6 +255,7 @@ class _AddScreenState extends State<AddScreen> {
                                       onChanged: (val) {
                                         setState(() {
                                           _selectedShop = state.shops.firstWhere((s) => s.name == val);
+                                          _userMadeInput = true;
                                         });
                                       },
                                       widthType: CustomComponentWidth.full,
@@ -222,16 +286,24 @@ class _AddScreenState extends State<AddScreen> {
                                     validator: (val) {
                                       if (val == null || val.isEmpty) return 'Wymagane';
                                       if (double.tryParse(val) == null) return 'Niepoprawna liczba';
+                                      if (double.tryParse(val)! <= 0) return 'Wpisz więcej niż 0';
                                       return null;
+                                    },
+                                    onChanged: (val) {
+                                      setState(() {
+                                        _userMadeInput = true;
+                                      });
                                     },
                                   ),
                                   GestureDetector(
                                     onTap: () async {
-                                    FocusScope.of(context).unfocus();
+                                    DateTime now = DateTime.now();
+                                    DateTime today = DateTime(now.year, now.month, now.day);
+
                                     DateTime? pickedDate = await showDatePicker(
                                       context: context,
-                                      initialDate: DateTime.now(),
-                                      firstDate: DateTime(DateTime.now().year),
+                                      initialDate: today,
+                                      firstDate: today,
                                       lastDate: DateTime(2100),
                                     );
                                     if (pickedDate != null) {
@@ -239,6 +311,7 @@ class _AddScreenState extends State<AddScreen> {
                                       _expiryDateController.text =
                                         "${pickedDate.day.toString().padLeft(2, '0')}-${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.year}";
                                       _expiryDate = pickedDate;
+                                      _userMadeInput = true;
                                       });
                                     }
                                     },
@@ -268,6 +341,11 @@ class _AddScreenState extends State<AddScreen> {
                                 width: LabeledTextFieldWidth.full,
                                 iconOnLeft: true,
                                 controller: _codeController,
+                                onChanged: (val) {
+                                  setState(() {
+                                    _userMadeInput = true;
+                                  });
+                                },
                                 validator: (val) {
                                   if (val == null || val.isEmpty) return 'Wymagane';
                                   return null;
@@ -364,6 +442,7 @@ class _AddScreenState extends State<AddScreen> {
                                           onTap: () {
                                             setState(() {
                                               _selectedType = CouponType.percent;
+                                              _userMadeInput = true;
                                             });
                                           },
                                         ),
@@ -374,6 +453,7 @@ class _AddScreenState extends State<AddScreen> {
                                           onTap: () {
                                             setState(() {
                                               _selectedType = CouponType.fixed;
+                                              _userMadeInput = true;
                                             });
                                           },
                                         ),
@@ -391,9 +471,16 @@ class _AddScreenState extends State<AddScreen> {
                                             textAlign: TextAlign.right,
                                             controller: _reductionController,
                                             keyboardType: TextInputType.number,
+                                            onChanged: (val) {
+                                              setState(() {
+                                                _userMadeInput = true;
+                                              });
+                                            },
                                             validator: (val) {
                                               if (val == null || val.isEmpty) return 'Wymagane';
                                               if (double.tryParse(val) == null) return 'Niepoprawna liczba';
+                                              if (double.tryParse(val)! <= 0) return 'Wpisz więcej niż 0';
+                                              if (double.tryParse(val)! > 100) return 'Wpisz conajwyżej 100';
                                               return null;
                                               },
                                           )
@@ -404,9 +491,15 @@ class _AddScreenState extends State<AddScreen> {
                                             textAlign: TextAlign.right,
                                             controller: _reductionController,
                                             keyboardType: TextInputType.number,
+                                            onChanged: (val) {
+                                              setState(() {
+                                                _userMadeInput = true;
+                                              });
+                                            },
                                             validator: (val) {
                                               if (val == null || val.isEmpty) return 'Wymagane';
                                               if (double.tryParse(val) == null) return 'Niepoprawna liczba';
+                                              if (double.tryParse(val)! <= 0) return 'Wpisz więcej niż 0';
                                               return null;
                                             },
                                           ),
@@ -436,6 +529,10 @@ class _AddScreenState extends State<AddScreen> {
                                     onTap: () {
                                       setState(() {
                                         _inPhysicalStores = !_inPhysicalStores;
+                                        _userMadeInput = true;
+                                      });
+                                      setState(() {
+                                        _showUsageLocationTip = _inPhysicalStores == false && _inOnlineStore == false;
                                       });
                                     },
                                   ),
@@ -446,11 +543,29 @@ class _AddScreenState extends State<AddScreen> {
                                     onTap: () {
                                       setState(() {
                                         _inOnlineStore = !_inOnlineStore;
+                                        _userMadeInput = true;
+                                      });
+                                      setState(() {
+                                        _showUsageLocationTip = _inPhysicalStores == false && _inOnlineStore == false;
                                       });
                                     },
                                   ),
                                 ],
                               ),
+
+                              if (_showUsageLocationTip)
+                                const Padding(
+                                  padding: EdgeInsets.only(top: 8.0),
+                                  child: Text(
+                                    'Zaznacz przynajmniej jedną opcję.',
+                                    style: TextStyle(
+                                      color: AppColors.alertText,
+                                      fontSize: 14,
+                                      fontFamily: 'Itim',
+                                      fontWeight: FontWeight.w400,
+                                    ),
+                                  ),
+                                ),
                           
                               const SizedBox(height: 24),
                           
@@ -481,6 +596,7 @@ class _AddScreenState extends State<AddScreen> {
                                           onTap: () {
                                             setState(() {
                                               _hasRestrictions = true;
+                                              _userMadeInput = true;
                                             });
                                           },
                                         ),
@@ -491,6 +607,7 @@ class _AddScreenState extends State<AddScreen> {
                                           onTap: () {
                                             setState(() {
                                               _hasRestrictions = false;
+                                              _userMadeInput = true;
                                             });
                                           },
                                         ),
@@ -548,6 +665,11 @@ class _AddScreenState extends State<AddScreen> {
                                 maxLines: 6,
                                 textAlign: TextAlign.left,
                                 controller: _descriptionController,
+                                onChanged: (val) {
+                                  setState(() {
+                                    _userMadeInput = true;
+                                  });
+                                },
                               ),
                               const SizedBox(height: 24),
                           
@@ -591,20 +713,43 @@ class _AddScreenState extends State<AddScreen> {
                               ),
                           
                               const SizedBox(height: 18),
-                          
+
+                              if (_showMissingValuesTip)
+                                const Text(
+                                  'Uzupełnij brakujące pola, aby móc dodać kupon.',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    color: AppColors.alertText,
+                                    fontSize: 16,
+                                    fontFamily: 'Itim',
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                ),
+                              const SizedBox(height: 8),
                               // 11. Przycisk dodaj
                               CustomTextButton.primary(
                                 height: 56,
                                 width: double.infinity,
                                 label: 'Dodaj',
-                                onTap: () {
+                                onTap: () async {
+                                  FocusScope.of(context).unfocus();
+
                                   if (_formKey.currentState?.validate() ?? false) {
-                                    debugPrint('Kliknięto Dodaj');
+                                    if (!_inPhysicalStores && !_inOnlineStore) {
+                                      setState(() {
+                                        _showUsageLocationTip = true;
+                                      });
+                                      return;
+                                    }
                                     final offer = CouponOffer(
                                       description: _descriptionController.text,
-                                      reduction: double.tryParse(_reductionController.text) ?? 0,
-                                      reductionIsPercentage: _selectedType == CouponType.percent,
-                                      price: double.tryParse(_priceController.text) ?? 0,
+                                      reduction:
+                                          double.tryParse(_reductionController.text) ??
+                                              0,
+                                      reductionIsPercentage:
+                                          _selectedType == CouponType.percent,
+                                      price:
+                                          double.tryParse(_priceController.text) ?? 0,
                                       code: _codeController.text,
                                       hasLimits: _hasRestrictions,
                                       worksOnline: _inOnlineStore,
@@ -612,9 +757,69 @@ class _AddScreenState extends State<AddScreen> {
                                       expiryDate: _expiryDate,
                                       shopId: _selectedShop?.id ?? '',
                                     );
-                                    context.read<CouponAddBloc>().add(AddCouponOffer(offer));
+
+                                    final confirmed = await showDialog<bool>(
+                                      context: context,
+                                      builder: (context) => AlertDialog(
+                                        backgroundColor: AppColors.surface,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(24),
+                                          side: const BorderSide(
+                                            width: 2,
+                                            color: AppColors.textPrimary,
+                                          ),
+                                        ),
+                                        title: const Text(
+                                          'Potwierdzenie',
+                                          style: TextStyle(
+                                            fontFamily: 'Itim',
+                                            fontSize: 22,
+                                            fontWeight: FontWeight.w400,
+                                            color: AppColors.textPrimary,
+                                          ),
+                                        ),
+                                        content: const Text(
+                                          'Czy na pewno chcesz dodać ten kupon?',
+                                          style: TextStyle(
+                                            fontFamily: 'Itim',
+                                            fontSize: 16,
+                                            color: AppColors.textSecondary,
+                                          ),
+                                        ),
+                                        actionsPadding:
+                                            const EdgeInsets.symmetric(
+                                          horizontal: 16,
+                                          vertical: 12,
+                                        ),
+                                        actions: [
+                                          CustomTextButton.small(
+                                            label: 'Anuluj',
+                                            width: 100,
+                                            onTap: () =>
+                                                Navigator.of(context)
+                                                    .pop(false),
+                                          ),
+                                          CustomTextButton.primarySmall(
+                                            label: 'Dodaj',
+                                            width: 100,
+                                            onTap: () =>
+                                                Navigator.of(context)
+                                                    .pop(true),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+
+                                    if (confirmed == true) {
+                                      context
+                                          .read<CouponAddBloc>()
+                                          .add(AddCouponOffer(offer));
+                                    }
                                   } else {
-                                    debugPrint('Formularz nie jest kompletny!');
+                                    setState(() {
+                                      _showMissingValuesTip = true;
+                                    });
                                   }
                                 },
                               ),
@@ -623,11 +828,13 @@ class _AddScreenState extends State<AddScreen> {
                           ),
                         ),
                       ),
+                      ),
                     ],
                   ),
                 ),
               );
             },
+          ),
           ),
         ),
       ),
