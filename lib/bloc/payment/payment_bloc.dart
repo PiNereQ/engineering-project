@@ -14,19 +14,18 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
       emit(PaymentInProgress());
       try {
         final response = await http.post(
-          Uri.parse('https://europe-west1-projektinzynierski-44c9d.cloudfunctions.net/createPaymentIntent'),
+          Uri.parse('http://49.13.155.21:8000/payments/create-payment-intent'),
           headers: {'Content-Type': 'application/json'},
-          body: jsonEncode({
-            'amount': event.amount,
-          }),
+          body: jsonEncode({'amount': event.amount}), // smallest currency unit, e.g., 1999 = 19.99 PLN
         );
 
         if (response.statusCode != 200) {
-          throw Exception('Błąd połączenia z systemem płatności.');
+          throw Exception('Failed to create PaymentIntent: ${response.body}');
         }
 
         final data = jsonDecode(response.body);
         final clientSecret = data['clientSecret'];
+
 
         await Stripe.instance.initPaymentSheet(
           paymentSheetParameters: SetupPaymentSheetParameters(
