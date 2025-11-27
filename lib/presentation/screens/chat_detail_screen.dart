@@ -10,17 +10,15 @@ import 'package:proj_inz/bloc/chat/detail/chat_detail_event.dart';
 import 'package:proj_inz/bloc/chat/detail/chat_detail_state.dart';
 import 'package:proj_inz/data/repositories/chat_repository.dart';
 
-class ChatDetailScreen extends StatefulWidget {
-  /// If the conversation already exists (e.g., we come from the chat list),
-  /// we pass it here.
+// main wrapper providing the bloc
+class ChatDetailScreen extends StatelessWidget {
+  // if conversation already exists
   final Conversation? initialConversation;
 
-  /// Data needed to create a conversation when it doesn't exist yet.
   final String buyerId;
   final String sellerId;
   final String couponId;
 
-  /// Constructor used when we open a chat from a coupon (conversation doesn't exist yet)
   const ChatDetailScreen({
     super.key,
     this.initialConversation,
@@ -29,7 +27,7 @@ class ChatDetailScreen extends StatefulWidget {
     required this.couponId,
   });
 
-  /// Helper constructor when we already have a Conversation (e.g., from the chat list)
+  // helper when entering from the chat list (conversation already exists)
   factory ChatDetailScreen.fromConversation(Conversation conversation, {Key? key}) {
     return ChatDetailScreen(
       key: key,
@@ -41,25 +39,57 @@ class ChatDetailScreen extends StatefulWidget {
   }
 
   @override
-  State<ChatDetailScreen> createState() => _ChatDetailScreenState();
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (_) => ChatDetailBloc(
+        chatRepository: context.read<ChatRepository>(),
+      ),
+      child: ChatDetailView(
+        initialConversation: initialConversation,
+        buyerId: buyerId,
+        sellerId: sellerId,
+        couponId: couponId,
+      ),
+    );
+  }
+}
+// actual stateful view
+class ChatDetailView extends StatefulWidget {
+  final Conversation? initialConversation;
+  final String buyerId;
+  final String sellerId;
+  final String couponId;
+
+  const ChatDetailView({
+    super.key,
+    required this.initialConversation,
+    required this.buyerId,
+    required this.sellerId,
+    required this.couponId,
+  });
+
+  @override
+  State<ChatDetailView> createState() => _ChatDetailViewState();
 }
 
-class _ChatDetailScreenState extends State<ChatDetailScreen> {
+class _ChatDetailViewState extends State<ChatDetailView> {
   Conversation? _conversation;
   late final TextEditingController _controller;
 
   @override
   void initState() {
     super.initState();
-    _conversation = widget.initialConversation;
     _controller = TextEditingController();
+    _conversation = widget.initialConversation;
 
-    // if conversation already exists (e.g., we came from the chat list),
-    // mark it as read and load messages.
+    // If the conversation already exists -> mark as read and load messages
     if (_conversation != null) {
       final repo = context.read<ChatRepository>();
       repo.markConversationAsRead(_conversation!.id);
-      context.read<ChatDetailBloc>().add(LoadMessages(_conversation!.id));
+
+      context.read<ChatDetailBloc>().add(
+            LoadMessages(_conversation!.id),
+          );
     }
   }
 
@@ -71,7 +101,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final titleText = _conversation?.couponTitle ?? 'Zapytaj o kupon';
+    final titleText = _conversation?.couponTitle ?? "Zapytaj o kupon";
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -95,11 +125,11 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
           Expanded(
             child: BlocBuilder<ChatDetailBloc, ChatDetailState>(
               builder: (context, state) {
+                // Conversation does not exist yet -> prompt to write something
                 if (_conversation == null) {
-                  // conversation doesn't exist yet, no messages
                   return const Center(
                     child: Text(
-                      'Napisz pierwszą wiadomość, żeby rozpocząć rozmowę.',
+                      "Zapytaj o ten kupon, wysyłając pierwszą wiadomość!",
                       textAlign: TextAlign.center,
                     ),
                   );
@@ -112,7 +142,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                 if (state is ChatDetailLoaded) {
                   if (state.messages.isEmpty) {
                     return const Center(
-                      child: Text('Brak wiadomości. Napisz coś jako pierwszy!'),
+                      child: Text("Brak wiadomości. Napisz coś jako pierwszy!"),
                     );
                   }
 
@@ -153,16 +183,16 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     final c = _conversation;
 
     if (c == null || currentUserId == null) {
-      // Conversation doesn't exist yet - show a general label
-      return 'Sprzedający';
+      // conversation not created yet
+      return "Sprzedający";
     }
 
-    // if current user is  a buyer -> show seller
+    // if I am the buyer -> show the seller
     if (c.buyerId == currentUserId) {
       return c.sellerUsername;
     }
 
-    // if current user is a seller -> show buyer
+    // if I am the seller -> show the buyer
     return c.buyerUsername;
   }
 
@@ -188,7 +218,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
 
               final repo = context.read<ChatRepository>();
 
-              // if conversation doesn't exist yet, create it
+              // If the conversation does not exist -> create it NOW
               if (_conversation == null) {
                 final conv = await repo.createConversationIfNotExists(
                   couponId: widget.couponId,
@@ -203,11 +233,15 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
 
               final convId = _conversation!.id;
 
+              // Send the message directly through the repo
+              await repo.sendMessage(
+                conversationId: convId,
+                text: text,
+              );
+
+              // Reload messages through bloc
               context.read<ChatDetailBloc>().add(
-                    SendMessage(
-                      conversationId: convId,
-                      text: text,
-                    ),
+                    LoadMessages(convId),
                   );
 
               _controller.clear();
@@ -220,6 +254,8 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   }
 
   String _formatTime(DateTime time) {
-    return "${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}";
+    final h = time.hour.toString().padLeft(2, '0');
+    final m = time.minute.toString().padLeft(2, '0');
+    return "$h:$m";
   }
 }
