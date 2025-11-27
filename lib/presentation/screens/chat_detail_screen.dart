@@ -11,6 +11,11 @@ import 'package:proj_inz/bloc/chat/detail/chat_detail_event.dart';
 import 'package:proj_inz/bloc/chat/detail/chat_detail_state.dart';
 import 'package:proj_inz/data/repositories/chat_repository.dart';
 
+
+// =========================
+//     CUSTOM HEADER
+// =========================
+
 class ChatHeader extends StatelessWidget {
   final String couponTitle;
   final VoidCallback onBack;
@@ -96,114 +101,68 @@ class ChatHeader extends StatelessWidget {
 }
 
 
-class ChatUserCard extends StatelessWidget {
-  final String username;
-  final int reputation;
-  final String joinDate;
+// =========================
+//     CONTAINER NA WIADOMOŚCI
+// =========================
 
-  const ChatUserCard({
-    super.key,
-    required this.username,
-    required this.reputation,
-    required this.joinDate,
-  });
+class ChatMessagesContainer extends StatelessWidget {
+  final Widget child;
+
+  const ChatMessagesContainer({super.key, required this.child});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: ShapeDecoration(
         color: AppColors.surface,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(24),
           side: const BorderSide(width: 2, color: AppColors.textPrimary),
         ),
         shadows: const [
           BoxShadow(
             color: AppColors.textPrimary,
-            blurRadius: 0,
             offset: Offset(4, 4),
-          )
+            blurRadius: 0,
+          ),
         ],
       ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Column(
         children: [
-          // AVATAR
+          // WYPUSTKA
           Container(
-            width: 60,
-            height: 60,
+            width: 120,
+            height: 22,
+            margin: const EdgeInsets.only(top: 4),
             decoration: ShapeDecoration(
               color: AppColors.surface,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(1000),
+                borderRadius: BorderRadius.circular(16),
                 side: const BorderSide(width: 2, color: AppColors.textPrimary),
               ),
               shadows: const [
                 BoxShadow(
                   color: AppColors.textPrimary,
+                  offset: Offset(3, 3),
                   blurRadius: 0,
-                  offset: Offset(4, 4),
-                )
-              ],
-            ),
-            child: const Icon(Icons.person, size: 32),
-          ),
-
-          const SizedBox(width: 16),
-
-          // TEXTY I PASEK
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // USERNAME
-                Text(
-                  username,
-                  style: const TextStyle(
-                    fontFamily: 'Itim',
-                    fontSize: 20,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-
-                const SizedBox(height: 6),
-
-                // PASEK REPUTACJI (kolor zielony)
-                SizedBox(
-                  height: 10,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: LinearProgressIndicator(
-                      value: (reputation / 100).clamp(0.0, 1.0),
-                      backgroundColor: Colors.grey.shade300,
-                      valueColor: const AlwaysStoppedAnimation<Color>(Colors.green),
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 6),
-
-                // DATA DOŁĄCZENIA
-                Text(
-                  "Na Coupidynie od $joinDate",
-                  style: const TextStyle(
-                    fontFamily: 'Itim',
-                    fontSize: 14,
-                    color: AppColors.textSecondary,
-                  ),
                 ),
               ],
             ),
           ),
+
+          // LISTA WIADOMOŚCI
+          Flexible(child: child),
         ],
       ),
     );
   }
 }
 
+
+// =========================
+//     INPUT NA WIADOMOŚĆ
+// =========================
 
 class ChatInputBar extends StatelessWidget {
   final TextEditingController controller;
@@ -218,26 +177,55 @@ class ChatInputBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
       color: Colors.transparent,
       child: Row(
         children: [
           Expanded(
-            child: TextField(controller: controller),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              decoration: ShapeDecoration(
+                color: AppColors.surface,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  side: const BorderSide(width: 2, color: AppColors.textPrimary),
+                ),
+                shadows: const [
+                  BoxShadow(
+                    color: AppColors.textPrimary,
+                    offset: Offset(4, 4),
+                    blurRadius: 0,
+                  ),
+                ],
+              ),
+              child: TextField(
+                controller: controller,
+                decoration: const InputDecoration(
+                  hintText: 'treść wiadomości...',
+                  border: InputBorder.none,
+                ),
+              ),
+            ),
           ),
-          IconButton(
-            icon: const Icon(Icons.send),
-            onPressed: onSend,
-          )
+
+          const SizedBox(width: 12),
+
+          CustomIconButton(
+            icon: const Icon(Icons.send, color: AppColors.textPrimary),
+            onTap: onSend,
+          ),
         ],
       ),
     );
   }
 }
 
-// main wrapper providing the bloc
+
+// =========================
+//     GŁÓWNY EKRAN
+// =========================
+
 class ChatDetailScreen extends StatelessWidget {
-  // if conversation already exists
   final Conversation? initialConversation;
 
   final String buyerId;
@@ -252,7 +240,6 @@ class ChatDetailScreen extends StatelessWidget {
     required this.couponId,
   });
 
-  // helper when entering from the chat list (conversation already exists)
   factory ChatDetailScreen.fromConversation(Conversation conversation, {Key? key}) {
     return ChatDetailScreen(
       key: key,
@@ -278,7 +265,12 @@ class ChatDetailScreen extends StatelessWidget {
     );
   }
 }
-// actual stateful view
+
+
+// =========================
+//     STATEFUL VIEW
+// =========================
+
 class ChatDetailView extends StatefulWidget {
   final Conversation? initialConversation;
   final String buyerId;
@@ -307,7 +299,6 @@ class _ChatDetailViewState extends State<ChatDetailView> {
     _controller = TextEditingController();
     _conversation = widget.initialConversation;
 
-    // If the conversation already exists -> mark as read and load messages
     if (_conversation != null) {
       final repo = context.read<ChatRepository>();
       repo.markConversationAsRead(_conversation!.id);
@@ -324,208 +315,120 @@ class _ChatDetailViewState extends State<ChatDetailView> {
     super.dispose();
   }
 
-@override
-Widget build(BuildContext context) {
-  return Scaffold(
-    backgroundColor: AppColors.background,
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.background,
 
-    // CUSTOM HEADER – zrobimy go w kolejnym kroku
-    appBar: PreferredSize(
-      preferredSize: const Size.fromHeight(120),
-      child: ChatHeader(
-        couponTitle: _conversation?.couponTitle ?? "Kupon",
-        onBack: () => Navigator.pop(context),
-        onReport: () {
-          // TODO: przejście do zgłoszenia
-        },
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(120),
+        child: ChatHeader(
+          couponTitle: _conversation?.couponTitle ?? "Kupon",
+          onBack: () => Navigator.pop(context),
+          onReport: () {},
+        ),
       ),
-    ),
 
-    body: Column(
-      children: [
-        // USER CARD POD HEADEREM
-        ChatUserCard(
-          username: _getOtherUsername(),
-          reputation: 50,            // tu potem wstawimy prawdziwe dane
-          joinDate: "01.06.2025",    // również do podmiany
-        ),
-
-        // LISTA WIADOMOŚCI
-        Expanded(
-          child: BlocBuilder<ChatDetailBloc, ChatDetailState>(
-            builder: (context, state) {
-              if (_conversation == null) {
-                return const Center(
-                  child: Text(
-                    "Zapytaj o ten kupon, wysyłając pierwszą wiadomość!",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontFamily: 'Itim',
-                      fontSize: 16,
-                    ),
-                  ),
-                );
-              }
-
-              if (state is ChatDetailLoading) {
-                return const Center(child: CircularProgressIndicator());
-              }
-
-              if (state is ChatDetailLoaded) {
-                if (state.messages.isEmpty) {
-                  return const Center(
-                    child: Text(
-                      "Brak wiadomości. Napisz coś jako pierwszy!",
-                      style: TextStyle(
-                        fontFamily: 'Itim',
-                        fontSize: 16,
-                      ),
-                    ),
-                  );
-                }
-
-                return ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  itemCount: state.messages.length,
-                  itemBuilder: (context, index) {
-                    final msg = state.messages[index];
-                    final currentUserId = FirebaseAuth.instance.currentUser?.uid;
-                    final isMine = msg.senderId == currentUserId;
-
-                    return ChatBubble(
-                      text: msg.text,
-                      time: _formatTime(msg.timestamp),
-                      isMine: isMine,
-                      isRead: msg.isRead,
-                    );
-                  },
-                );
-              }
-
-              return const SizedBox();
-            },
-          ),
-        ),
-
-        // DOLNY PASEK WIADOMOŚCI
-        ChatInputBar(
-          controller: _controller,
-          onSend: _handleSendMessage,
-        ),
-      ],
-    ),
-  );
-}
-
-
-  String _getOtherUsername() {
-    final currentUserId = FirebaseAuth.instance.currentUser?.uid;
-    final c = _conversation;
-
-    if (c == null || currentUserId == null) {
-      // conversation not created yet
-      return "Sprzedający";
-    }
-
-    // if I am the buyer -> show the seller
-    if (c.buyerId == currentUserId) {
-      return c.sellerUsername;
-    }
-
-    // if I am the seller -> show the buyer
-    return c.buyerUsername;
-  }
-
-  Widget _buildMessageInput() {
-    return Padding(
-      padding: const EdgeInsets.all(12),
-      child: Row(
+      body: Column(
         children: [
+          // SCROLLABLE MESSAGE CONTAINER
           Expanded(
-            child: TextField(
-              controller: _controller,
-              decoration: const InputDecoration(
-                hintText: 'Napisz wiadomość...',
-                border: OutlineInputBorder(),
+            child: ChatMessagesContainer(
+              child: BlocBuilder<ChatDetailBloc, ChatDetailState>(
+                builder: (context, state) {
+                  if (_conversation == null) {
+                    return const Center(
+                      child: Text(
+                        "Zapytaj o ten kupon, wysyłając pierwszą wiadomość!",
+                        style: TextStyle(fontFamily: 'Itim', fontSize: 16),
+                        textAlign: TextAlign.center,
+                      ),
+                    );
+                  }
+
+                  if (state is ChatDetailLoading) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  if (state is ChatDetailLoaded) {
+                    if (state.messages.isEmpty) {
+                      return const Center(
+                        child: Text(
+                          "Brak wiadomości. Napisz coś jako pierwszy!",
+                          style: TextStyle(
+                            fontFamily: 'Itim',
+                            fontSize: 16,
+                          ),
+                        ),
+                      );
+                    }
+
+                    return ListView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      itemCount: state.messages.length,
+                      itemBuilder: (context, index) {
+                        final msg = state.messages[index];
+                        final currentUserId = FirebaseAuth.instance.currentUser?.uid;
+                        final isMine = msg.senderId == currentUserId;
+
+                        return ChatBubble(
+                          text: msg.text,
+                          time: _formatTime(msg.timestamp),
+                          isMine: isMine,
+                          isRead: msg.isRead,
+                        );
+                      },
+                    );
+                  }
+
+                  return const SizedBox();
+                },
               ),
             ),
           ),
-          const SizedBox(width: 8),
-          IconButton(
-            onPressed: () async {
-              final text = _controller.text.trim();
-              if (text.isEmpty) return;
 
-              final repo = context.read<ChatRepository>();
-
-              // If the conversation does not exist -> create it NOW
-              if (_conversation == null) {
-                final conv = await repo.createConversationIfNotExists(
-                  couponId: widget.couponId,
-                  buyerId: widget.buyerId,
-                  sellerId: widget.sellerId,
-                );
-
-                setState(() {
-                  _conversation = conv;
-                });
-              }
-
-              final convId = _conversation!.id;
-
-              // Send the message directly through the repo
-              await repo.sendMessage(
-                conversationId: convId,
-                text: text,
-              );
-
-              // Reload messages through bloc
-              context.read<ChatDetailBloc>().add(
-                    LoadMessages(convId),
-                  );
-
-              _controller.clear();
-            },
-            icon: const Icon(Icons.send),
-          ),
+          // INPUT
+          ChatInputBar(
+            controller: _controller,
+            onSend: _handleSendMessage,
+          )
         ],
       ),
     );
   }
-Future<void> _handleSendMessage() async {
-  final text = _controller.text.trim();
-  if (text.isEmpty) return;
 
-  final repo = context.read<ChatRepository>();
 
-  // Jeśli rozmowa jeszcze nie istnieje → utwórz ją
-  if (_conversation == null) {
-    final conv = await repo.createConversationIfNotExists(
-      couponId: widget.couponId,
-      buyerId: widget.buyerId,
-      sellerId: widget.sellerId,
-    );
+  Future<void> _handleSendMessage() async {
+    final text = _controller.text.trim();
+    if (text.isEmpty) return;
 
-    setState(() {
-      _conversation = conv;
-    });
-  }
+    final repo = context.read<ChatRepository>();
 
-  final convId = _conversation!.id;
-
-  // Wyślij wiadomość
-  await repo.sendMessage(
-    conversationId: convId,
-    text: text,
-  );
-
-  // Przeładuj wiadomości
-  context.read<ChatDetailBloc>().add(
-        LoadMessages(convId),
+    if (_conversation == null) {
+      final conv = await repo.createConversationIfNotExists(
+        couponId: widget.couponId,
+        buyerId: widget.buyerId,
+        sellerId: widget.sellerId,
       );
 
-  _controller.clear();
-}
+      setState(() {
+        _conversation = conv;
+      });
+    }
+
+    final convId = _conversation!.id;
+
+    await repo.sendMessage(
+      conversationId: convId,
+      text: text,
+    );
+
+    context.read<ChatDetailBloc>().add(
+          LoadMessages(convId),
+        );
+
+    _controller.clear();
+  }
 
   String _formatTime(DateTime time) {
     final h = time.hour.toString().padLeft(2, '0');
