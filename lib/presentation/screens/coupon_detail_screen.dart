@@ -617,7 +617,7 @@ class _SellerDetails extends StatelessWidget {
                             if (!context.mounted) return;
 
                             if (existing != null) {
-                              // 🔥 open existing conversation
+                              // open existing conversation
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
