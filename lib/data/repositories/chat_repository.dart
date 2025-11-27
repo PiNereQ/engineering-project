@@ -154,6 +154,19 @@ class ChatRepository {
 
     return newConv;
   }
+  // check if a conversation already exists
+  Conversation? findExistingConversation({
+    required String couponId,
+    required String buyerId,
+    required String sellerId,
+  }) {
+    return _mockConversations.firstWhereOrNull(
+      (c) =>
+          c.couponId == couponId &&
+          c.buyerId == buyerId &&
+          c.sellerId == sellerId,
+    );
+  }
 
   // Get messages for a given conversation
   Future<List<Message>> getMessages(String conversationId) async {

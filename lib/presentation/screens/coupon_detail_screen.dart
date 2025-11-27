@@ -313,7 +313,6 @@ class _CouponDetails extends StatelessWidget {
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 children: [
-                   // Sklep
                   Container(
                     width: double.infinity,
                     height: 90.0,
@@ -340,7 +339,6 @@ class _CouponDetails extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  // Tytuł, cena
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 8),
                     child: Column(
@@ -361,7 +359,6 @@ class _CouponDetails extends StatelessWidget {
                     ),
                   ),
                   const Divider(color: AppColors.textPrimary, thickness: 2),
-                  // Szczegóły
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 8),
                     child: Column(
@@ -596,34 +593,53 @@ class _SellerDetails extends StatelessWidget {
                       ),
                     ),
                     SizedBox(height: 16),
-
                     Center(
                       child: CustomTextButton.primary(
                         label: "Zapytaj o ten kupon",
-                        onTap: () async {
-                          final currentUser = await getCurrentUser();
-                          final buyerId = currentUser.uid;
-                          final sellerId = this.sellerId; // from widget
-                          final couponId = (context.findAncestorWidgetOfExactType<CouponDetailsScreen>()!).couponId;
+                          onTap: () async {
+                            final currentUser = await getCurrentUser();
+                            final buyerId = currentUser.uid;
+                            final sellerId = this.sellerId;
 
-                          final chatRepo = context.read<ChatRepository>();
+                            final couponId =
+                                (context.findAncestorWidgetOfExactType<CouponDetailsScreen>()!)
+                                    .couponId;
 
-                          // create or get conversation
-                          final conversation = await chatRepo.createConversationIfNotExists(
-                            couponId: couponId,
-                            buyerId: buyerId,
-                            sellerId: sellerId,
-                          );
+                            final chatRepo = context.read<ChatRepository>();
 
-                          if (!context.mounted) return;
+                            // check if conversation already exists
+                            final existing = chatRepo.findExistingConversation(
+                              couponId: couponId,
+                              buyerId: buyerId,
+                              sellerId: sellerId,
+                            );
 
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => ChatDetailScreen(conversation: conversation),
-                            ),
-                          );
-                        },
+                            if (!context.mounted) return;
+
+                            if (existing != null) {
+                              // 🔥 open existing conversation
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => ChatDetailScreen.fromConversation(existing),
+                                ),
+                              );
+                            } else {
+                              // conversation does not exist yet -> open empty screen
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => ChatDetailScreen(
+                                    initialConversation: null,
+                                    buyerId: buyerId,
+                                    sellerId: sellerId,
+                                    couponId: couponId,
+                                  ),
+                                ),
+                              );
+                            }
+                          }
+
                       ),
                     ),
                   ],

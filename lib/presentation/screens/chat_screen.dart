@@ -85,7 +85,7 @@ class _ChatScreenState extends State<ChatScreen> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => ChatDetailScreen(conversation: c),
+                              builder: (context) => ChatDetailScreen.fromConversation(c),
                             ),
                           )
                           // reload after returning for updated last message
