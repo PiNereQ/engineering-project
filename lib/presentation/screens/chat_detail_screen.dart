@@ -12,18 +12,24 @@ import 'package:proj_inz/bloc/chat/detail/chat_detail_state.dart';
 import 'package:proj_inz/data/repositories/chat_repository.dart';
 
 
-// =========================
-//     CUSTOM HEADER
-// =========================
+// =====================================================
+//                     HEADER
+// =====================================================
 
 class ChatHeader extends StatelessWidget {
   final String couponTitle;
+  final String username;
+  final int reputation;
+  final String joinDate;
   final VoidCallback onBack;
   final VoidCallback onReport;
 
   const ChatHeader({
     super.key,
     required this.couponTitle,
+    required this.username,
+    required this.reputation,
+    required this.joinDate,
     required this.onBack,
     required this.onReport,
   });
@@ -32,67 +38,256 @@ class ChatHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.only(top: 40, left: 16, right: 16, bottom: 12),
-      decoration: const BoxDecoration(
-        color: AppColors.background,
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.textPrimary,
-            offset: Offset(0, 4),
-            blurRadius: 0,
-          ),
-        ],
-      ),
-      child: Row(
+      color: AppColors.background,
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // BACK BUTTON
-          CustomIconButton(
-            icon: const Icon(
-              Icons.arrow_back,
-              size: 24,
-              color: AppColors.textPrimary,
-            ),
-            onTap: onBack,
+          // === TOP ROW (back, title, report) ===
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              CustomIconButton(
+                icon: const Icon(Icons.arrow_back,
+                    size: 24, color: AppColors.textPrimary),
+                onTap: onBack,
+              ),
+              const SizedBox(width: 16),
+
+              // Titles
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      "Chat dotyczący:",
+                      style: TextStyle(
+                        fontFamily: 'Itim',
+                        color: AppColors.textSecondary,
+                        fontSize: 16,
+                      ),
+                    ),
+                    Text(
+                      couponTitle,
+                      style: const TextStyle(
+                        fontFamily: 'Itim',
+                        color: AppColors.textPrimary,
+                        fontSize: 22,
+                        height: 1.2,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(width: 12),
+
+              CustomIconButton(
+                icon: const Icon(Icons.error_outline,
+                    size: 24, color: AppColors.alertText),
+                onTap: onReport,
+              ),
+            ],
           ),
 
-          const SizedBox(width: 16),
+          const SizedBox(height: 16),
 
-          // TEXTS
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  "Chat dotyczący:",
-                  style: TextStyle(
-                    fontFamily: 'Itim',
-                    color: AppColors.textSecondary,
-                    fontSize: 16,
+          // === USER INFO (avatar + teksty) ===
+          Row(
+            children: [
+              Container(
+                width: 54,
+                height: 54,
+                decoration: ShapeDecoration(
+                  color: AppColors.surface,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(100),
+                    side: const BorderSide(width: 2, color: AppColors.textPrimary),
                   ),
+                  shadows: const [
+                    BoxShadow(
+                      color: AppColors.textPrimary,
+                      offset: Offset(3, 3),
+                      blurRadius: 0,
+                    )
+                  ],
                 ),
-                Text(
-                  couponTitle,
-                  style: const TextStyle(
-                    fontFamily: 'Itim',
-                    color: AppColors.textPrimary,
-                    fontSize: 22,
-                    height: 1.2,
+                child: const Icon(Icons.person, size: 30),
+              ),
+
+              const SizedBox(width: 12),
+
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    username,
+                    style: const TextStyle(
+                      fontFamily: 'Itim',
+                      fontSize: 18,
+                      color: AppColors.textPrimary,
+                    ),
                   ),
-                ),
+                  const SizedBox(height: 4),
+
+                  Row(
+                    children: [
+                      Container(
+                        width: 120,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(6),
+                          color: Colors.grey.shade300,
+                        ),
+                        child: FractionallySizedBox(
+                          alignment: Alignment.centerLeft,
+                          widthFactor: (reputation / 100).clamp(0.0, 1.0),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(6),
+                              color: Colors.green,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        reputation.toString(),
+                        style: const TextStyle(
+                          fontFamily: 'Itim',
+                          fontSize: 14,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 4),
+
+                  Text(
+                    "Na Coupidynie od $joinDate",
+                    style: const TextStyle(
+                      fontFamily: 'Itim',
+                      fontSize: 14,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          )
+        ],
+      ),
+    );
+  }
+}
+
+
+// =====================================================
+//                USER INFO (avatar + tekst)
+// =====================================================
+
+class ChatUserInfo extends StatelessWidget {
+  final String username;
+  final int reputation;
+  final String joinDate;
+
+  const ChatUserInfo({
+    super.key,
+    required this.username,
+    required this.reputation,
+    required this.joinDate,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+      child: Row(
+        children: [
+          // avatar
+          Container(
+            width: 54,
+            height: 54,
+            decoration: ShapeDecoration(
+              color: AppColors.surface,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(100),
+                side: const BorderSide(width: 2, color: AppColors.textPrimary),
+              ),
+              shadows: const [
+                BoxShadow(
+                  color: AppColors.textPrimary,
+                  offset: Offset(3, 3),
+                  blurRadius: 0,
+                )
               ],
             ),
+            child: const Icon(Icons.person, size: 30),
           ),
 
           const SizedBox(width: 12),
 
-          // ALERT BUTTON
-          CustomIconButton(
-            icon: const Icon(
-              Icons.error_outline,
-              size: 24,
-              color: AppColors.alertText,
-            ),
-            onTap: onReport,
+          // teksty
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                username,
+                style: const TextStyle(
+                  fontFamily: 'Itim',
+                  fontSize: 18,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+
+              const SizedBox(height: 4),
+
+              // pasek reputacji
+              Row(
+                children: [
+                  Container(
+                    width: 120,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(6),
+                      color: Colors.grey.shade300,
+                    ),
+                    child: FractionallySizedBox(
+                      alignment: Alignment.centerLeft,
+                      widthFactor: (reputation / 100).clamp(0.0, 1.0),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(6),
+                          color: Colors.green,
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(width: 6),
+
+                  Text(
+                    reputation.toString(),
+                    style: const TextStyle(
+                      fontFamily: 'Itim',
+                      fontSize: 14,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 2),
+
+              Text(
+                "Na Coupidynie od $joinDate",
+                style: const TextStyle(
+                  fontFamily: 'Itim',
+                  fontSize: 14,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -101,9 +296,9 @@ class ChatHeader extends StatelessWidget {
 }
 
 
-// =========================
-//     CONTAINER NA WIADOMOŚCI
-// =========================
+// =====================================================
+//             CONTAINER NA WIADOMOŚCI (bez wypustki!)
+// =====================================================
 
 class ChatMessagesContainer extends StatelessWidget {
   final Widget child;
@@ -128,41 +323,15 @@ class ChatMessagesContainer extends StatelessWidget {
           ),
         ],
       ),
-      child: Column(
-        children: [
-          // WYPUSTKA
-          Container(
-            width: 120,
-            height: 22,
-            margin: const EdgeInsets.only(top: 4),
-            decoration: ShapeDecoration(
-              color: AppColors.surface,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-                side: const BorderSide(width: 2, color: AppColors.textPrimary),
-              ),
-              shadows: const [
-                BoxShadow(
-                  color: AppColors.textPrimary,
-                  offset: Offset(3, 3),
-                  blurRadius: 0,
-                ),
-              ],
-            ),
-          ),
-
-          // LISTA WIADOMOŚCI
-          Flexible(child: child),
-        ],
-      ),
+      child: child,
     );
   }
 }
 
 
-// =========================
-//     INPUT NA WIADOMOŚĆ
-// =========================
+// =====================================================
+//                   INPUT BAR
+// =====================================================
 
 class ChatInputBar extends StatelessWidget {
   final TextEditingController controller;
@@ -221,9 +390,9 @@ class ChatInputBar extends StatelessWidget {
 }
 
 
-// =========================
-//     GŁÓWNY EKRAN
-// =========================
+// =====================================================
+//                   GŁÓWNY EKRAN
+// =====================================================
 
 class ChatDetailScreen extends StatelessWidget {
   final Conversation? initialConversation;
@@ -267,9 +436,9 @@ class ChatDetailScreen extends StatelessWidget {
 }
 
 
-// =========================
-//     STATEFUL VIEW
-// =========================
+// =====================================================
+//                   STATEFUL VIEW
+// =====================================================
 
 class ChatDetailView extends StatefulWidget {
   final Conversation? initialConversation;
@@ -304,8 +473,8 @@ class _ChatDetailViewState extends State<ChatDetailView> {
       repo.markConversationAsRead(_conversation!.id);
 
       context.read<ChatDetailBloc>().add(
-            LoadMessages(_conversation!.id),
-          );
+        LoadMessages(_conversation!.id),
+      );
     }
   }
 
@@ -315,15 +484,19 @@ class _ChatDetailViewState extends State<ChatDetailView> {
     super.dispose();
   }
 
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
 
       appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(120),
+        preferredSize: const Size.fromHeight(180),
         child: ChatHeader(
           couponTitle: _conversation?.couponTitle ?? "Kupon",
+          username: _getOtherUsername(),
+          reputation: 50,
+          joinDate: "01.06.2025",
           onBack: () => Navigator.pop(context),
           onReport: () {},
         ),
@@ -331,7 +504,7 @@ class _ChatDetailViewState extends State<ChatDetailView> {
 
       body: Column(
         children: [
-          // SCROLLABLE MESSAGE CONTAINER
+          // 🔹 wielka ramka
           Expanded(
             child: ChatMessagesContainer(
               child: BlocBuilder<ChatDetailBloc, ChatDetailState>(
@@ -387,7 +560,6 @@ class _ChatDetailViewState extends State<ChatDetailView> {
             ),
           ),
 
-          // INPUT
           ChatInputBar(
             controller: _controller,
             onSend: _handleSendMessage,
@@ -424,10 +596,22 @@ class _ChatDetailViewState extends State<ChatDetailView> {
     );
 
     context.read<ChatDetailBloc>().add(
-          LoadMessages(convId),
-        );
+      LoadMessages(convId),
+    );
 
     _controller.clear();
+  }
+
+
+  String _getOtherUsername() {
+    final currentUserId = FirebaseAuth.instance.currentUser?.uid;
+    final c = _conversation;
+
+    if (c == null || currentUserId == null) return "Sprzedający";
+
+    return c.buyerId == currentUserId
+        ? c.sellerUsername
+        : c.buyerUsername;
   }
 
   String _formatTime(DateTime time) {
