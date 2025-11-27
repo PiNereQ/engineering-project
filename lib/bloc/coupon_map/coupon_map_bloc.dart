@@ -79,7 +79,7 @@ class CouponMapBloc extends Bloc<CouponMapEvent, CouponMapState> {
     ));
 
     try {
-      final coupons = await couponRepository.fetchThreeCouponsForShop(event.shopLocationId);
+      final coupons = await couponRepository.fetchThreeCouponsForShop(event.shopId);
       emit(state.copyWith(
         status: CouponMapStatus.success,
         selectedShopLocationCoupons: coupons,

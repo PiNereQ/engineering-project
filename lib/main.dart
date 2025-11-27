@@ -14,6 +14,8 @@ import 'package:proj_inz/data/repositories/shop_repository.dart';
 import 'package:proj_inz/data/repositories/user_repository.dart';
 import 'package:proj_inz/presentation/screens/sign_in_screen.dart';
 import 'package:proj_inz/presentation/screens/main_screen.dart';
+import 'package:proj_inz/data/repositories/chat_repository.dart';
+import 'package:proj_inz/bloc/chat/list/chat_list_bloc.dart';
 
 import 'firebase_options.dart';
 
@@ -49,6 +51,7 @@ class MainApp extends StatelessWidget {
         RepositoryProvider(create: (_) => UserRepository()),
         RepositoryProvider(create: (_) => ShopRepository()),
         RepositoryProvider(create: (_) => CategoryRepository()),
+        RepositoryProvider(create: (_) => ChatRepository()),
       ],
       child: MultiBlocProvider(
         providers: [
@@ -58,7 +61,11 @@ class MainApp extends StatelessWidget {
               userRepository: context.read<UserRepository>(),
             )
           ),
-          BlocProvider(create: (_) => NumberVerificationBloc())
+          BlocProvider(create: (_) => NumberVerificationBloc()),
+          BlocProvider(
+            create: (context) =>
+              ChatListBloc(chatRepository: context.read<ChatRepository>()),         
+          ),
         ],
         child: MaterialApp(
           title: 'Flutter Demo',
