@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:proj_inz/core/theme.dart';
 import 'package:proj_inz/data/models/conversation_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:proj_inz/presentation/widgets/input/buttons/custom_icon_button.dart';
 import '../widgets/chat_bubble.dart';
 
 import 'package:proj_inz/bloc/chat/detail/chat_detail_bloc.dart';
@@ -10,9 +11,369 @@ import 'package:proj_inz/bloc/chat/detail/chat_detail_event.dart';
 import 'package:proj_inz/bloc/chat/detail/chat_detail_state.dart';
 import 'package:proj_inz/data/repositories/chat_repository.dart';
 
-// main wrapper providing the bloc
+class ChatHeader extends StatelessWidget {
+  final String couponTitle;
+  final String username;
+  final int reputation;
+  final String joinDate;
+  final VoidCallback onBack;
+  final VoidCallback onReport;
+
+  const ChatHeader({
+    super.key,
+    required this.couponTitle,
+    required this.username,
+    required this.reputation,
+    required this.joinDate,
+    required this.onBack,
+    required this.onReport,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.only(top: 40, left: 16, right: 16, bottom: 12),
+      color: AppColors.background,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // top row with back and report button, titles
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              CustomIconButton(
+                icon: const Icon(Icons.arrow_back,
+                    size: 24, color: AppColors.textPrimary),
+                onTap: onBack,
+              ),
+              const SizedBox(width: 16),
+
+              // titles
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      "Chat dotyczący:",
+                      style: TextStyle(
+                        fontFamily: 'Itim',
+                        color: AppColors.textSecondary,
+                        fontSize: 16,
+                      ),
+                    ),
+                    Text(
+                      couponTitle,
+                      style: const TextStyle(
+                        fontFamily: 'Itim',
+                        color: AppColors.textPrimary,
+                        fontSize: 22,
+                        height: 1.2,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(width: 12),
+
+              CustomIconButton(
+                icon: const Icon(Icons.error_outline,
+                    size: 24, color: AppColors.alertText),
+                onTap: onReport,
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 16),
+
+          // user info - avatar, username, reputation, join date
+          Row(
+            children: [
+              Container(
+                width: 54,
+                height: 54,
+                decoration: ShapeDecoration(
+                  color: AppColors.surface,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(100),
+                    side: const BorderSide(width: 2, color: AppColors.textPrimary),
+                  ),
+                  shadows: const [
+                    BoxShadow(
+                      color: AppColors.textPrimary,
+                      offset: Offset(3, 3),
+                      blurRadius: 0,
+                    )
+                  ],
+                ),
+                child: const Icon(Icons.person, size: 30),
+              ),
+
+              const SizedBox(width: 12),
+
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    username,
+                    style: const TextStyle(
+                      fontFamily: 'Itim',
+                      fontSize: 18,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+
+                  Row(
+                    children: [
+                      Container(
+                        width: 120,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(6),
+                          color: Colors.grey.shade300,
+                        ),
+                        child: FractionallySizedBox(
+                          alignment: Alignment.centerLeft,
+                          widthFactor: (reputation / 100).clamp(0.0, 1.0),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(6),
+                              color: Colors.green,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        reputation.toString(),
+                        style: const TextStyle(
+                          fontFamily: 'Itim',
+                          fontSize: 14,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 4),
+
+                  Text(
+                    "Na Coupidynie od $joinDate",
+                    style: const TextStyle(
+                      fontFamily: 'Itim',
+                      fontSize: 14,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          )
+        ],
+      ),
+    );
+  }
+}
+
+class ChatUserInfo extends StatelessWidget {
+  final String username;
+  final int reputation;
+  final String joinDate;
+
+  const ChatUserInfo({
+    super.key,
+    required this.username,
+    required this.reputation,
+    required this.joinDate,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+      child: Row(
+        children: [
+          // avatar
+          Container(
+            width: 54,
+            height: 54,
+            decoration: ShapeDecoration(
+              color: AppColors.surface,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(100),
+                side: const BorderSide(width: 2, color: AppColors.textPrimary),
+              ),
+              shadows: const [
+                BoxShadow(
+                  color: AppColors.textPrimary,
+                  offset: Offset(3, 3),
+                  blurRadius: 0,
+                )
+              ],
+            ),
+            child: const Icon(Icons.person, size: 30),
+          ),
+
+          const SizedBox(width: 12),
+
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                username,
+                style: const TextStyle(
+                  fontFamily: 'Itim',
+                  fontSize: 18,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+
+              const SizedBox(height: 4),
+
+              Row(
+                children: [
+                  Container(
+                    width: 120,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(6),
+                      color: Colors.grey.shade300,
+                    ),
+                    child: FractionallySizedBox(
+                      alignment: Alignment.centerLeft,
+                      widthFactor: (reputation / 100).clamp(0.0, 1.0),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(6),
+                          color: Colors.green,
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(width: 6),
+
+                  Text(
+                    reputation.toString(),
+                    style: const TextStyle(
+                      fontFamily: 'Itim',
+                      fontSize: 14,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 2),
+
+              Text(
+                "Na Coupidynie od $joinDate",
+                style: const TextStyle(
+                  fontFamily: 'Itim',
+                  fontSize: 14,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class ChatMessagesContainer extends StatelessWidget {
+  final Widget child;
+
+  const ChatMessagesContainer({super.key, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: ShapeDecoration(
+        color: AppColors.surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+          side: const BorderSide(width: 2, color: AppColors.textPrimary),
+        ),
+        shadows: const [
+          BoxShadow(
+            color: AppColors.textPrimary,
+            offset: Offset(4, 4),
+            blurRadius: 0,
+          ),
+        ],
+      ),
+      child: child,
+    );
+  }
+}
+
+class ChatInputBar extends StatelessWidget {
+  final TextEditingController controller;
+  final VoidCallback onSend;
+
+  const ChatInputBar({
+    super.key,
+    required this.controller,
+    required this.onSend,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+      color: Colors.transparent,
+      child: Row(
+        children: [
+          Expanded(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              decoration: ShapeDecoration(
+                color: AppColors.surface,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  side: const BorderSide(width: 2, color: AppColors.textPrimary),
+                ),
+                shadows: const [
+                  BoxShadow(
+                    color: AppColors.textPrimary,
+                    offset: Offset(4, 4),
+                    blurRadius: 0,
+                  ),
+                ],
+              ),
+              child: TextField(
+                controller: controller,
+                decoration: const InputDecoration(
+                  hintText: 'treść wiadomości...',
+                  hintStyle: const TextStyle(
+                    fontFamily: 'Itim',
+                    fontSize: 16,
+                    color: AppColors.textSecondary,
+                  ),
+                  border: InputBorder.none,
+                ),
+              ),
+            ),
+          ),
+
+          const SizedBox(width: 12),
+
+          CustomIconButton(
+            icon: const Icon(Icons.send, color: AppColors.textPrimary),
+            onTap: onSend,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// main screen
 class ChatDetailScreen extends StatelessWidget {
-  // if conversation already exists
   final Conversation? initialConversation;
 
   final String buyerId;
@@ -27,7 +388,6 @@ class ChatDetailScreen extends StatelessWidget {
     required this.couponId,
   });
 
-  // helper when entering from the chat list (conversation already exists)
   factory ChatDetailScreen.fromConversation(Conversation conversation, {Key? key}) {
     return ChatDetailScreen(
       key: key,
@@ -53,7 +413,9 @@ class ChatDetailScreen extends StatelessWidget {
     );
   }
 }
-// actual stateful view
+
+
+// statefdul view
 class ChatDetailView extends StatefulWidget {
   final Conversation? initialConversation;
   final String buyerId;
@@ -82,14 +444,13 @@ class _ChatDetailViewState extends State<ChatDetailView> {
     _controller = TextEditingController();
     _conversation = widget.initialConversation;
 
-    // If the conversation already exists -> mark as read and load messages
     if (_conversation != null) {
       final repo = context.read<ChatRepository>();
       repo.markConversationAsRead(_conversation!.id);
 
       context.read<ChatDetailBloc>().add(
-            LoadMessages(_conversation!.id),
-          );
+        LoadMessages(_conversation!.id),
+      );
     }
   }
 
@@ -99,158 +460,134 @@ class _ChatDetailViewState extends State<ChatDetailView> {
     super.dispose();
   }
 
+
   @override
   Widget build(BuildContext context) {
-    final titleText = _conversation?.couponTitle ?? "Zapytaj o kupon";
-
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              titleText,
-              style: const TextStyle(fontSize: 18),
-            ),
-            Text(
-              _getOtherUsername(),
-              style: const TextStyle(fontSize: 14, color: AppColors.textSecondary),
-            ),
-          ],
+
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(180),
+        child: ChatHeader(
+          couponTitle: _conversation?.couponTitle ?? "Kupon",
+          username: _getOtherUsername(),
+          reputation: 50,
+          joinDate: "01.06.2025",
+          onBack: () => Navigator.pop(context),
+          onReport: () {},
         ),
       ),
+
       body: Column(
         children: [
+          // big container
           Expanded(
-            child: BlocBuilder<ChatDetailBloc, ChatDetailState>(
-              builder: (context, state) {
-                // Conversation does not exist yet -> prompt to write something
-                if (_conversation == null) {
-                  return const Center(
-                    child: Text(
-                      "Zapytaj o ten kupon, wysyłając pierwszą wiadomość!",
-                      textAlign: TextAlign.center,
-                    ),
-                  );
-                }
-
-                if (state is ChatDetailLoading) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-
-                if (state is ChatDetailLoaded) {
-                  if (state.messages.isEmpty) {
+            child: ChatMessagesContainer(
+              child: BlocBuilder<ChatDetailBloc, ChatDetailState>(
+                builder: (context, state) {
+                  if (_conversation == null) {
                     return const Center(
-                      child: Text("Brak wiadomości. Napisz coś jako pierwszy!"),
+                      child: Text(
+                        "Zapytaj o ten kupon, wysyłając pierwszą wiadomość!",
+                        style: TextStyle(fontFamily: 'Itim', fontSize: 16),
+                        textAlign: TextAlign.center,
+                      ),
                     );
                   }
 
-                  return ListView(
-                    padding: const EdgeInsets.all(16),
-                    children: state.messages.map((msg) {
-                      final currentUserId = FirebaseAuth.instance.currentUser?.uid;
-                      final isMine = msg.senderId == currentUserId;
+                  if (state is ChatDetailLoading) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
 
-                      return Align(
-                        alignment:
-                            isMine ? Alignment.centerRight : Alignment.centerLeft,
-                        child: ChatBubble(
+                  if (state is ChatDetailLoaded) {
+                    if (state.messages.isEmpty) {
+                      return const Center(
+                        child: Text(
+                          "Brak wiadomości. Napisz coś jako pierwszy!",
+                          style: TextStyle(
+                            fontFamily: 'Itim',
+                            fontSize: 16,
+                          ),
+                        ),
+                      );
+                    }
+
+                    return ListView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      itemCount: state.messages.length,
+                      itemBuilder: (context, index) {
+                        final msg = state.messages[index];
+                        final currentUserId = FirebaseAuth.instance.currentUser?.uid;
+                        final isMine = msg.senderId == currentUserId;
+
+                        return ChatBubble(
                           text: msg.text,
                           time: _formatTime(msg.timestamp),
                           isMine: isMine,
-                          isRead: msg.isRead,
-                        ),
-                      );
-                    }).toList(),
-                  );
-                }
+                          isUnread: !msg.isRead,
+                        );
+                      },
+                    );
+                  }
 
-                return const SizedBox();
-              },
+                  return const SizedBox();
+                },
+              ),
             ),
           ),
 
-          // input
-          _buildMessageInput(),
+          ChatInputBar(
+            controller: _controller,
+            onSend: _handleSendMessage,
+          )
         ],
       ),
     );
   }
+
+
+  Future<void> _handleSendMessage() async {
+    final text = _controller.text.trim();
+    if (text.isEmpty) return;
+
+    final repo = context.read<ChatRepository>();
+
+    if (_conversation == null) {
+      final conv = await repo.createConversationIfNotExists(
+        couponId: widget.couponId,
+        buyerId: widget.buyerId,
+        sellerId: widget.sellerId,
+      );
+
+      setState(() {
+        _conversation = conv;
+      });
+    }
+
+    final convId = _conversation!.id;
+
+    await repo.sendMessage(
+      conversationId: convId,
+      text: text,
+    );
+
+    context.read<ChatDetailBloc>().add(
+      LoadMessages(convId),
+    );
+
+    _controller.clear();
+  }
+
 
   String _getOtherUsername() {
     final currentUserId = FirebaseAuth.instance.currentUser?.uid;
     final c = _conversation;
 
-    if (c == null || currentUserId == null) {
-      // conversation not created yet
-      return "Sprzedający";
-    }
+    if (c == null || currentUserId == null) return "Sprzedający";
 
-    // if I am the buyer -> show the seller
-    if (c.buyerId == currentUserId) {
-      return c.sellerUsername;
-    }
-
-    // if I am the seller -> show the buyer
-    return c.buyerUsername;
-  }
-
-  Widget _buildMessageInput() {
-    return Padding(
-      padding: const EdgeInsets.all(12),
-      child: Row(
-        children: [
-          Expanded(
-            child: TextField(
-              controller: _controller,
-              decoration: const InputDecoration(
-                hintText: 'Napisz wiadomość...',
-                border: OutlineInputBorder(),
-              ),
-            ),
-          ),
-          const SizedBox(width: 8),
-          IconButton(
-            onPressed: () async {
-              final text = _controller.text.trim();
-              if (text.isEmpty) return;
-
-              final repo = context.read<ChatRepository>();
-
-              // If the conversation does not exist -> create it NOW
-              if (_conversation == null) {
-                final conv = await repo.createConversationIfNotExists(
-                  couponId: widget.couponId,
-                  buyerId: widget.buyerId,
-                  sellerId: widget.sellerId,
-                );
-
-                setState(() {
-                  _conversation = conv;
-                });
-              }
-
-              final convId = _conversation!.id;
-
-              // Send the message directly through the repo
-              await repo.sendMessage(
-                conversationId: convId,
-                text: text,
-              );
-
-              // Reload messages through bloc
-              context.read<ChatDetailBloc>().add(
-                    LoadMessages(convId),
-                  );
-
-              _controller.clear();
-            },
-            icon: const Icon(Icons.send),
-          ),
-        ],
-      ),
-    );
+    return c.buyerId == currentUserId
+        ? c.sellerUsername
+        : c.buyerUsername;
   }
 
   String _formatTime(DateTime time) {
