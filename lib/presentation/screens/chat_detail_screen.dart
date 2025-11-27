@@ -11,11 +11,6 @@ import 'package:proj_inz/bloc/chat/detail/chat_detail_event.dart';
 import 'package:proj_inz/bloc/chat/detail/chat_detail_state.dart';
 import 'package:proj_inz/data/repositories/chat_repository.dart';
 
-
-// =====================================================
-//                     HEADER
-// =====================================================
-
 class ChatHeader extends StatelessWidget {
   final String couponTitle;
   final String username;
@@ -42,7 +37,7 @@ class ChatHeader extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // === TOP ROW (back, title, report) ===
+          // top row with back and report button, titles
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -53,7 +48,7 @@ class ChatHeader extends StatelessWidget {
               ),
               const SizedBox(width: 16),
 
-              // Titles
+              // titles
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -91,7 +86,7 @@ class ChatHeader extends StatelessWidget {
 
           const SizedBox(height: 16),
 
-          // === USER INFO (avatar + teksty) ===
+          // user info - avatar, username, reputation, join date
           Row(
             children: [
               Container(
@@ -181,11 +176,6 @@ class ChatHeader extends StatelessWidget {
   }
 }
 
-
-// =====================================================
-//                USER INFO (avatar + tekst)
-// =====================================================
-
 class ChatUserInfo extends StatelessWidget {
   final String username;
   final int reputation;
@@ -227,7 +217,6 @@ class ChatUserInfo extends StatelessWidget {
 
           const SizedBox(width: 12),
 
-          // teksty
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -242,7 +231,6 @@ class ChatUserInfo extends StatelessWidget {
 
               const SizedBox(height: 4),
 
-              // pasek reputacji
               Row(
                 children: [
                   Container(
@@ -295,11 +283,6 @@ class ChatUserInfo extends StatelessWidget {
   }
 }
 
-
-// =====================================================
-//             CONTAINER NA WIADOMOŚCI (bez wypustki!)
-// =====================================================
-
 class ChatMessagesContainer extends StatelessWidget {
   final Widget child;
 
@@ -327,11 +310,6 @@ class ChatMessagesContainer extends StatelessWidget {
     );
   }
 }
-
-
-// =====================================================
-//                   INPUT BAR
-// =====================================================
 
 class ChatInputBar extends StatelessWidget {
   final TextEditingController controller;
@@ -371,6 +349,11 @@ class ChatInputBar extends StatelessWidget {
                 controller: controller,
                 decoration: const InputDecoration(
                   hintText: 'treść wiadomości...',
+                  hintStyle: const TextStyle(
+                    fontFamily: 'Itim',
+                    fontSize: 16,
+                    color: AppColors.textSecondary,
+                  ),
                   border: InputBorder.none,
                 ),
               ),
@@ -389,11 +372,7 @@ class ChatInputBar extends StatelessWidget {
   }
 }
 
-
-// =====================================================
-//                   GŁÓWNY EKRAN
-// =====================================================
-
+// main screen
 class ChatDetailScreen extends StatelessWidget {
   final Conversation? initialConversation;
 
@@ -436,10 +415,7 @@ class ChatDetailScreen extends StatelessWidget {
 }
 
 
-// =====================================================
-//                   STATEFUL VIEW
-// =====================================================
-
+// statefdul view
 class ChatDetailView extends StatefulWidget {
   final Conversation? initialConversation;
   final String buyerId;
@@ -504,7 +480,7 @@ class _ChatDetailViewState extends State<ChatDetailView> {
 
       body: Column(
         children: [
-          // 🔹 wielka ramka
+          // big container with messages
           Expanded(
             child: ChatMessagesContainer(
               child: BlocBuilder<ChatDetailBloc, ChatDetailState>(
@@ -548,7 +524,7 @@ class _ChatDetailViewState extends State<ChatDetailView> {
                           text: msg.text,
                           time: _formatTime(msg.timestamp),
                           isMine: isMine,
-                          isRead: msg.isRead,
+                          isUnread: !msg.isRead,
                         );
                       },
                     );

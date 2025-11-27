@@ -5,94 +5,75 @@ class ChatBubble extends StatelessWidget {
   final String text;
   final String time;
   final bool isMine;
-  final bool isRead;
+  final bool isUnread;
 
   const ChatBubble({
     super.key,
     required this.text,
     required this.time,
     required this.isMine,
-    this.isRead = true,
+    this.isUnread = false,
   });
 
   @override
   Widget build(BuildContext context) {
+    final bubbleColor = isMine
+        ? AppColors.surface
+        : (isUnread ? AppColors.background : AppColors.surface);
+
+    final bubbleTextColor = AppColors.textPrimary;
+
     final alignment =
         isMine ? CrossAxisAlignment.end : CrossAxisAlignment.start;
 
-    final timeColor = isMine
-        ? AppColors.textSecondary
-        : (isRead ? AppColors.textSecondary : AppColors.textPrimary);
-
-    final backgroundColor = isMine
-        ? AppColors.surface
-        : (isRead ? AppColors.surface : AppColors.background);
-
-    final textColor = isMine
-        ? AppColors.textSecondary
-        : (isRead ? AppColors.textSecondary : AppColors.textPrimary);
-    final borderSide = BorderSide(width: 2);
-    final borderRadius = BorderRadius.circular(16);
-
     return Container(
-      width: 204,
-      margin: const EdgeInsets.symmetric(vertical: 4),
+      margin: const EdgeInsets.symmetric(vertical: 8),
       child: Column(
-        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: alignment,
         children: [
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.only(left: 4, bottom: 4),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment:
-                  isMine ? MainAxisAlignment.end : MainAxisAlignment.start,
-              children: [
-                SizedBox(
-                  width: 39,
-                  child: Text(
-                    time,
-                    style: TextStyle(
-                      color: timeColor,
-                      fontSize: 14,
-                      fontFamily: 'Itim',
-                      fontWeight: FontWeight.w400,
-                    ),
-                  ),
-                ),
-              ],
+          Padding(
+            padding: EdgeInsets.only(
+              left: isMine ? 0 : 8,
+              right: isMine ? 8 : 0,
+              bottom: 4,
+            ),
+            child: Text(
+              time,
+              style: const TextStyle(
+                fontFamily: 'Itim',
+                fontSize: 14,
+                color: AppColors.textSecondary,
+              ),
             ),
           ),
+
           Container(
-            width: 200,
+            constraints: const BoxConstraints(maxWidth: 260),
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: ShapeDecoration(
-              color: backgroundColor,
+              color: bubbleColor,
               shape: RoundedRectangleBorder(
-                side: borderSide,
-                borderRadius: borderRadius,
+                side: const BorderSide(
+                  width: 2,
+                  color: AppColors.textPrimary,
+                ),
+                borderRadius: BorderRadius.circular(16), // FULL ROUND
               ),
               shadows: const [
                 BoxShadow(
                   color: AppColors.textPrimary,
-                  blurRadius: 0,
                   offset: Offset(4, 4),
-                  spreadRadius: 0,
+                  blurRadius: 0,
                 )
               ],
             ),
-            child: SizedBox(
-              width: 168,
-              child: Text(
-                text,
-                textAlign: isMine ? TextAlign.right : TextAlign.left,
-                style: TextStyle(
-                  color: textColor,
-                  fontSize: 18,
-                  fontFamily: 'Itim',
-                  fontWeight: FontWeight.w400,
-                ),
+            child: Text(
+              text,
+              textAlign: isMine ? TextAlign.right : TextAlign.left,
+              style: TextStyle(
+                fontFamily: 'Itim',
+                fontSize: 18,
+                color: bubbleTextColor,
               ),
             ),
           ),
