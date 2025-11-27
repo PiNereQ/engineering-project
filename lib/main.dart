@@ -7,6 +7,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:proj_inz/bloc/auth/auth_bloc.dart';
 import 'package:proj_inz/bloc/number_verification/number_verification_bloc.dart';
+import 'package:proj_inz/core/theme.dart';
 import 'package:proj_inz/data/repositories/auth_repository.dart';
 import 'package:proj_inz/data/repositories/category_repository.dart';
 import 'package:proj_inz/data/repositories/coupon_repository.dart';
@@ -26,7 +27,7 @@ void main() async {
 
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
+      statusBarColor: AppColors.background,
       statusBarIconBrightness: Brightness.dark,
       statusBarBrightness: Brightness.light,
     ),

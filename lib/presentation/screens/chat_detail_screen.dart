@@ -480,7 +480,7 @@ class _ChatDetailViewState extends State<ChatDetailView> {
 
       body: Column(
         children: [
-          // big container with messages
+          // big container
           Expanded(
             child: ChatMessagesContainer(
               child: BlocBuilder<ChatDetailBloc, ChatDetailState>(
