@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:proj_inz/bloc/chat/list/chat_list_bloc.dart';
+import 'package:proj_inz/bloc/chat/list/chat_list_event.dart';
+import 'package:proj_inz/bloc/chat/list/chat_list_state.dart';
 import 'package:proj_inz/core/theme.dart';
+import 'package:proj_inz/data/models/conversation_model.dart';
 import 'package:proj_inz/presentation/widgets/conversation_tile.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import 'chat_detail_screen.dart';
 
@@ -14,42 +20,15 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   bool isBuying = true;
 
-  final dummyBuyingConversations = [
-    {
-      'username': 'Sprzedawca1',
-      'title': 'Kod do Zalando',
-      'message': 'Wysłałem Ci kod, daj znać czy działa.',
-      'isRead': false,
-    },
-    {
-      'username': 'Sprzedawca2',
-      'title': 'Kod do Empiku',
-      'message': 'Dzięki za zakup!',
-      'isRead': true,
-    },
-  ];
-
-  final dummySellingConversations = [
-    {
-      'username': 'Kupujący1',
-      'title': 'Kod do Allegro',
-      'message': 'Kiedy otrzymam kod?',
-      'isRead': false,
-    },
-    {
-      'username': 'Kupujący2',
-      'title': 'Kupon Rossmann',
-      'message': 'Super, wszystko działa!',
-      'isRead': true,
-    },
-  ];
+  @override
+  void initState() {
+    super.initState();
+    // automatically load buying conversations
+    context.read<ChatListBloc>().add(LoadBuyingConversations());
+  }
 
   @override
   Widget build(BuildContext context) {
-    final currentConversations = isBuying
-        ? dummyBuyingConversations
-        : dummySellingConversations;
-
     return Scaffold(
       backgroundColor: AppColors.surface,
       appBar: AppBar(
@@ -58,46 +37,78 @@ class _ChatScreenState extends State<ChatScreen> {
       body: Column(
         children: [
           const SizedBox(height: 16),
+
+          // Tabs
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               _buildTabButton('Kupuję', isSelected: isBuying, onTap: () {
-                setState(() {
-                  isBuying = true;
-                });
+                setState(() => isBuying = true);
+                context.read<ChatListBloc>().add(LoadBuyingConversations());
               }),
               const SizedBox(width: 16),
               _buildTabButton('Sprzedaję', isSelected: !isBuying, onTap: () {
-                setState(() {
-                  isBuying = false;
-                });
+                setState(() => isBuying = false);
+                context.read<ChatListBloc>().add(LoadSellingConversations());
               }),
             ],
           ),
+
           const SizedBox(height: 16),
+
+          // Conversation list
           Expanded(
-            child: ListView.separated(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              itemCount: currentConversations.length,
-              separatorBuilder: (_, _) => const SizedBox(height: 12),
-              itemBuilder: (context, index) {
-                final c = currentConversations[index];
-                return GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const ChatDetailScreen(),
-                      ),
-                    );
-                  },
-                  child: ConversationTile(
-                    username: c['username'] as String,
-                    title: c['title'] as String,
-                    message: c['message'] as String,
-                    isRead: c['isRead'] as bool,
-                  ),
-                );
+            child: BlocBuilder<ChatListBloc, ChatListState>(
+              builder: (context, state) {
+                if (state is ChatListLoading) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                if (state is ChatListError) {
+                  return Center(child: Text('Błąd: ${state.message}'));
+                }
+
+                if (state is ChatListLoaded) {
+                  if (state.conversations.isEmpty) {
+                    return const Center(child: Text('Brak rozmów'));
+                  }
+
+                  return ListView.separated(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    itemCount: state.conversations.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 12),
+                    itemBuilder: (context, index) {
+                      final c = state.conversations[index];
+
+                      return GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ChatDetailScreen.fromConversation(c),
+                            ),
+                          )
+                          // reload after returning for updated last message
+                          .then((_) {
+                            if (isBuying) {
+                              context.read<ChatListBloc>().add(LoadBuyingConversations());
+                            } else {
+                              context.read<ChatListBloc>().add(LoadSellingConversations());
+                            }
+                          });
+                        },
+                        child: ConversationTile(
+                          username: _getUsername(c),
+                          title: "${c.couponTitle}",
+                          message: c.lastMessage,
+                          isRead: c.isReadByCurrentUser,
+                        ),
+                      );
+                    },
+                  );
+                }
+
+                return const SizedBox();
               },
             ),
           ),
@@ -106,7 +117,18 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-  Widget _buildTabButton(String label, {required bool isSelected, required VoidCallback onTap}) {
+  String _getUsername(Conversation c) {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      return 'Użytkownik';
+    }
+
+    // if current user is buyer, show seller username
+    return user.uid == c.buyerId ? c.sellerUsername : c.buyerUsername;
+  }
+
+  Widget _buildTabButton(String label,
+      {required bool isSelected, required VoidCallback onTap}) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
