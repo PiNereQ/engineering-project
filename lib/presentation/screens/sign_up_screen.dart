@@ -47,7 +47,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 spacing: 36,
                 children: [
-                  const SizedBox(width: 176, height: 158, child: Placeholder()),
+                  Image.asset(
+                    'assets/logo/coupidyn.png',
+                    width: 200,
+                    height: 200,
+                    fit: BoxFit.contain,
+                    ),
                   _RegistrationCard(
                     isLoading: state is AuthSignUpInProgress,
                   ),
