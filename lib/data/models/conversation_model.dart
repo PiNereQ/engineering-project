@@ -10,6 +10,10 @@ class Conversation extends Equatable {
   final String couponTitle;
   final String lastMessage;
   final DateTime lastMessageTime;
+  final bool isReadByBuyer;
+  final bool isReadBySeller;
+
+  // this field should not be saved to backend
   final bool isReadByCurrentUser;
 
   const Conversation({
@@ -18,11 +22,16 @@ class Conversation extends Equatable {
     required this.buyerId,
     required this.sellerId,
     required this.buyerUsername,
-    required this.sellerUsername,    
+    required this.sellerUsername,
     required this.couponTitle,
     required this.lastMessage,
     required this.lastMessageTime,
-    required this.isReadByCurrentUser,
+    required this.isReadByBuyer,
+    required this.isReadBySeller,
+
+    // this field should not be saved to backend
+    // chatrepository will set it based on current user
+    this.isReadByCurrentUser = true,
   });
 
   @override
@@ -36,6 +45,8 @@ class Conversation extends Equatable {
         couponTitle,
         lastMessage,
         lastMessageTime,
+        isReadByBuyer,
+        isReadBySeller,
         isReadByCurrentUser,
       ];
 
@@ -50,7 +61,11 @@ class Conversation extends Equatable {
       couponTitle: json['couponTitle'] as String,
       lastMessage: json['lastMessage'] as String,
       lastMessageTime: DateTime.parse(json['lastMessageTime'] as String),
-      isReadByCurrentUser: json['isReadByCurrentUser'] as bool,
+      isReadByBuyer: json['isReadByBuyer'] as bool? ?? true,
+      isReadBySeller: json['isReadBySeller'] as bool? ?? true,
+
+      // is calculated in repository
+      isReadByCurrentUser: true,
     );
   }
 
@@ -65,7 +80,11 @@ class Conversation extends Equatable {
       'couponTitle': couponTitle,
       'lastMessage': lastMessage,
       'lastMessageTime': lastMessageTime.toIso8601String(),
-      'isReadByCurrentUser': isReadByCurrentUser,
+
+      'isReadByBuyer': isReadByBuyer,
+      'isReadBySeller': isReadBySeller,
+
+      // dont save isReadByCurrentUser because it's view-only
     };
   }
 
@@ -79,6 +98,8 @@ class Conversation extends Equatable {
     String? couponTitle,
     String? lastMessage,
     DateTime? lastMessageTime,
+    bool? isReadByBuyer,
+    bool? isReadBySeller,
     bool? isReadByCurrentUser,
   }) {
     return Conversation(
@@ -91,6 +112,10 @@ class Conversation extends Equatable {
       couponTitle: couponTitle ?? this.couponTitle,
       lastMessage: lastMessage ?? this.lastMessage,
       lastMessageTime: lastMessageTime ?? this.lastMessageTime,
+
+      isReadByBuyer: isReadByBuyer ?? this.isReadByBuyer,
+      isReadBySeller: isReadBySeller ?? this.isReadBySeller,
+
       isReadByCurrentUser:
           isReadByCurrentUser ?? this.isReadByCurrentUser,
     );

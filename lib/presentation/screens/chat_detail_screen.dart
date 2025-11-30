@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:proj_inz/bloc/chat/unread/chat_unread_bloc.dart';
+import 'package:proj_inz/bloc/chat/unread/chat_unread_event.dart';
 import 'package:proj_inz/core/theme.dart';
 import 'package:proj_inz/data/models/conversation_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -448,6 +450,8 @@ class _ChatDetailViewState extends State<ChatDetailView> {
       final repo = context.read<ChatRepository>();
       repo.markConversationAsRead(_conversation!.id);
 
+      context.read<ChatUnreadBloc>().add(CheckUnreadStatus());
+      
       context.read<ChatDetailBloc>().add(
         LoadMessages(_conversation!.id),
       );
@@ -576,6 +580,8 @@ class _ChatDetailViewState extends State<ChatDetailView> {
     );
 
     _controller.clear();
+
+    context.read<ChatUnreadBloc>().add(CheckUnreadStatus());
   }
 
 
