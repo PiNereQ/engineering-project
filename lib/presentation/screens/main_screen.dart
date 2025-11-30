@@ -4,6 +4,10 @@ import 'package:proj_inz/bloc/coupon_list/coupon_list_bloc.dart';
 import 'package:proj_inz/bloc/navbar/navbar_bloc.dart';
 import 'package:proj_inz/bloc/navbar/navbar_state.dart';
 import 'package:proj_inz/bloc/number_verification/number_verification_bloc.dart';
+import 'package:proj_inz/bloc/chat/unread/chat_unread_bloc.dart';
+import 'package:proj_inz/bloc/chat/unread/chat_unread_event.dart';
+import 'package:proj_inz/bloc/chat/list/chat_list_bloc.dart';
+import 'package:proj_inz/bloc/chat/list/chat_list_event.dart';
 import 'package:proj_inz/data/repositories/coupon_repository.dart';
 import 'package:proj_inz/presentation/screens/chat_screen.dart';
 import 'package:proj_inz/presentation/screens/coupon_list_screen.dart';
@@ -13,8 +17,24 @@ import 'package:proj_inz/presentation/screens/profile_screen.dart';
 import 'package:proj_inz/core/theme.dart';
 import 'package:proj_inz/presentation/widgets/navbar/navbar.dart';
 
-class MainScreen extends StatelessWidget {
+class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
+
+  @override
+  State<MainScreen> createState() => _MainScreenState();
+}
+
+class _MainScreenState extends State<MainScreen> {
+  @override
+  void initState() {
+    super.initState();
+
+    // late initialization to ensure context is available, load conversations, check unread messages
+    Future.microtask(() {
+      context.read<ChatListBloc>().add(LoadBuyingConversations());
+      context.read<ChatUnreadBloc>().add(CheckUnreadStatus());
+    });
+  }
 
   static const List<Widget> _screens = <Widget>[
     HomeScreen(),
