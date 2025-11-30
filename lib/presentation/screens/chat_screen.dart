@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:proj_inz/bloc/chat/list/chat_list_bloc.dart';
 import 'package:proj_inz/bloc/chat/list/chat_list_event.dart';
 import 'package:proj_inz/bloc/chat/list/chat_list_state.dart';
+import 'package:proj_inz/bloc/chat/unread/chat_unread_bloc.dart';
+import 'package:proj_inz/bloc/chat/unread/chat_unread_event.dart';
 import 'package:proj_inz/core/theme.dart';
 import 'package:proj_inz/data/models/conversation_model.dart';
 import 'package:proj_inz/presentation/widgets/conversation_tile.dart';
@@ -116,6 +118,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   }
 
                   if (state is ChatListLoaded) {
+                    context.read<ChatUnreadBloc>().add(CheckUnreadStatus());
                     if (state.conversations.isEmpty) {
                       return const Center(
                         child: Text(
