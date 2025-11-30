@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:proj_inz/bloc/auth/auth_bloc.dart';
+import 'package:proj_inz/bloc/chat/unread/chat_unread_bloc.dart';
 import 'package:proj_inz/bloc/number_verification/number_verification_bloc.dart';
 import 'package:proj_inz/core/theme.dart';
 import 'package:proj_inz/data/repositories/auth_repository.dart';
@@ -66,6 +67,10 @@ class MainApp extends StatelessWidget {
           BlocProvider(
             create: (context) =>
               ChatListBloc(chatRepository: context.read<ChatRepository>()),         
+          ),
+          BlocProvider(
+            create: (context) =>
+                ChatUnreadBloc(chatRepository: context.read<ChatRepository>()),
           ),
         ],
         child: MaterialApp(

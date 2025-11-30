@@ -243,4 +243,19 @@ class ChatRepository {
 
     await Future.delayed(const Duration(milliseconds: 150));
   }
+  
+  bool hasUnreadMessages() {
+    final currentUserId = _firebaseAuth.currentUser?.uid;
+    if (currentUserId == null) return false;
+
+    for (final c in _mockConversations) {
+      if (c.buyerId == currentUserId && c.isReadByBuyer == false) {
+        return true;
+      }
+      if (c.sellerId == currentUserId && c.isReadBySeller == false) {
+        return true;
+      }
+    }
+    return false;
+  }
 }
