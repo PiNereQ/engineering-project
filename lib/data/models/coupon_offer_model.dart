@@ -10,7 +10,7 @@ class CouponOffer extends Equatable {
   final bool hasLimits;
   final bool worksOnline;
   final bool worksInStore;
-  final DateTime expiryDate;
+  final DateTime? expiryDate;
   final String? description;
 
   final String shopId;
@@ -23,7 +23,7 @@ class CouponOffer extends Equatable {
     required this.hasLimits,
     required this.worksOnline,
     required this.worksInStore,
-    required this.expiryDate,
+    this.expiryDate,
     this.description,
 
     required this.shopId,
