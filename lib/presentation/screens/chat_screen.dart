@@ -137,9 +137,13 @@ class _ChatScreenState extends State<ChatScreen> {
                         horizontal: 16,
                         vertical: 8,
                       ),
-                      itemCount: state.conversations.length,
+                      itemCount: state.conversations.length + 1,
                       separatorBuilder: (_, __) => const SizedBox(height: 12),
                       itemBuilder: (context, index) {
+                        if (index == state.conversations.length) {
+                          return const SizedBox(height: 80); // padding for navbar
+                        }
+
                         final c = state.conversations[index];
 
                         return GestureDetector(

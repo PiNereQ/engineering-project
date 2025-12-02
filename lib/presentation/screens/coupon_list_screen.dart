@@ -123,13 +123,20 @@ class _CouponListScreenContentState extends State<_CouponListScreenContent> {
                   return SliverPadding(
                     padding: const EdgeInsets.symmetric(horizontal: 24),
                     sliver: SliverList(
-                      delegate: SliverChildBuilderDelegate((context, index) {
-                        final coupon = state.coupons[index];
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 16.0),
-                          child: CouponCardHorizontal(coupon: coupon),
-                        );
-                      }, childCount: state.coupons.length),
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) {
+                          if (index == state.coupons.length) {
+                            return const SizedBox(height: 86); // padding for navbar
+                          }
+
+                          final coupon = state.coupons[index];
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 16.0),
+                            child: CouponCardHorizontal(coupon: coupon),
+                          );
+                        },
+                        childCount: state.coupons.length + 1,
+                      ),
                     ),
                   );
                 } else if (state is CouponListLoadEmpty) {
