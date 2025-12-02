@@ -6,6 +6,7 @@ import 'package:proj_inz/bloc/chat/unread/chat_unread_event.dart';
 import 'package:proj_inz/core/theme.dart';
 import 'package:proj_inz/data/models/conversation_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:proj_inz/presentation/widgets/chat_report_popup.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_icon_button.dart';
 import '../widgets/chat_bubble.dart';
 
@@ -439,6 +440,7 @@ class ChatDetailView extends StatefulWidget {
 class _ChatDetailViewState extends State<ChatDetailView> {
   Conversation? _conversation;
   late final TextEditingController _controller;
+  bool _showPopup = false;
 
   @override
   void initState() {
@@ -467,85 +469,112 @@ class _ChatDetailViewState extends State<ChatDetailView> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
+    return Stack(
+      children: [
+        Scaffold(
+          backgroundColor: AppColors.background,
 
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(180),
-        child: ChatHeader(
-          couponTitle: _conversation?.couponTitle ?? "Kupon",
-          username: _getOtherUsername(),
-          reputation: 50,
-          joinDate: "01.06.2025",
-          onBack: () => Navigator.pop(context),
-          onReport: () {},
-        ),
-      ),
+          appBar: PreferredSize(
+            preferredSize: const Size.fromHeight(180),
+            child: ChatHeader(
+              couponTitle: _conversation?.couponTitle ?? "Kupon",
+              username: _getOtherUsername(),
+              reputation: 50,
+              joinDate: "01.06.2025",
+              onBack: () => Navigator.pop(context),
+              onReport: () {
+                setState(() => _showPopup = true);
+              },
+            ),
+          ),
 
-      body: Column(
-        children: [
-          // big container
-          Expanded(
-            child: ChatMessagesContainer(
-              child: BlocBuilder<ChatDetailBloc, ChatDetailState>(
-                builder: (context, state) {
-                  if (_conversation == null) {
-                    return const Center(
-                      child: Text(
-                        "Zapytaj o ten kupon, wysyłając pierwszą wiadomość!",
-                        style: TextStyle(fontFamily: 'Itim', fontSize: 16),
-                        textAlign: TextAlign.center,
-                      ),
-                    );
-                  }
-
-                  if (state is ChatDetailLoading) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-
-                  if (state is ChatDetailLoaded) {
-                    if (state.messages.isEmpty) {
-                      return const Center(
-                        child: Text(
-                          "Brak wiadomości. Napisz coś jako pierwszy!",
-                          style: TextStyle(
-                            fontFamily: 'Itim',
-                            fontSize: 16,
+          body: Column(
+            children: [
+              // big container
+              Expanded(
+                child: ChatMessagesContainer(
+                  child: BlocBuilder<ChatDetailBloc, ChatDetailState>(
+                    builder: (context, state) {
+                      if (_conversation == null) {
+                        return const Center(
+                          child: Text(
+                            "Zapytaj o ten kupon, wysyłając pierwszą wiadomość!",
+                            style: TextStyle(fontFamily: 'Itim', fontSize: 16),
+                            textAlign: TextAlign.center,
                           ),
-                        ),
-                      );
-                    }
-
-                    return ListView.builder(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                      itemCount: state.messages.length,
-                      itemBuilder: (context, index) {
-                        final msg = state.messages[index];
-                        final currentUserId = FirebaseAuth.instance.currentUser?.uid;
-                        final isMine = msg.senderId == currentUserId;
-
-                        return ChatBubble(
-                          text: msg.text,
-                          time: _formatTime(msg.timestamp),
-                          isMine: isMine,
-                          isUnread: !msg.isRead,
                         );
-                      },
-                    );
-                  }
+                      }
 
-                  return const SizedBox();
+                      if (state is ChatDetailLoading) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+
+                      if (state is ChatDetailLoaded) {
+                        if (state.messages.isEmpty) {
+                          return const Center(
+                            child: Text(
+                              "Brak wiadomości. Napisz coś jako pierwszy!",
+                              style: TextStyle(
+                                fontFamily: 'Itim',
+                                fontSize: 16,
+                              ),
+                            ),
+                          );
+                        }
+
+                        return ListView.builder(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          itemCount: state.messages.length,
+                          itemBuilder: (context, index) {
+                            final msg = state.messages[index];
+                            final currentUserId = FirebaseAuth.instance.currentUser?.uid;
+                            final isMine = msg.senderId == currentUserId;
+
+                            return ChatBubble(
+                              text: msg.text,
+                              time: _formatTime(msg.timestamp),
+                              isMine: isMine,
+                              isUnread: !msg.isRead,
+                            );
+                          },
+                        );
+                      }
+
+                      return const SizedBox();
+                    },
+                  ),
+                ),
+              ),
+
+              ChatInputBar(
+                controller: _controller,
+                onSend: _handleSendMessage,
+              )
+            ],
+          ),
+        ),
+
+        // report popup
+        if (_showPopup)
+          Positioned.fill(
+            child: Container(
+              color: Colors.black.withOpacity(0.25),
+              child: ChatReportPopup(
+                onReport: () {
+                  // TODO backend
+                  setState(() => _showPopup = false);
+                },
+                onBlock: () {
+                  // TODO backend
+                  setState(() => _showPopup = false);
+                },
+                onClose: () {
+                  setState(() => _showPopup = false);
                 },
               ),
             ),
           ),
-
-          ChatInputBar(
-            controller: _controller,
-            onSend: _handleSendMessage,
-          )
-        ],
-      ),
+      ],
     );
   }
 
