@@ -112,7 +112,7 @@ class CouponCardHorizontal extends StatelessWidget {
               ? 'stacjonarnie i online'
               : worksOnline
               ? 'w sklepach internetowych'
-              : 'w sklepach stacjonarnie'}',
+              : 'w sklepach stacjonarnych'}',
       style: const TextStyle(
         color: AppColors.textPrimary,
         fontSize: 12,
