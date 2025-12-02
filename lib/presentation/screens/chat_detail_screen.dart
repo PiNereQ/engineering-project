@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:proj_inz/bloc/chat/unread/chat_unread_bloc.dart';
 import 'package:proj_inz/bloc/chat/unread/chat_unread_event.dart';
 import 'package:proj_inz/core/theme.dart';
@@ -44,10 +45,9 @@ class ChatHeader extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               CustomIconButton(
-                icon: const Icon(Icons.arrow_back,
-                    size: 24, color: AppColors.textPrimary),
-                onTap: onBack,
-              ),
+                icon: SvgPicture.asset('assets/icons/back.svg'),
+                  onTap: onBack,
+                ),
               const SizedBox(width: 16),
 
               // titles
@@ -79,7 +79,7 @@ class ChatHeader extends StatelessWidget {
               const SizedBox(width: 12),
 
               CustomIconButton(
-                icon: const Icon(Icons.error_outline,
+                icon: const Icon(Icons.report,
                     size: 24, color: AppColors.alertText),
                 onTap: onReport,
               ),

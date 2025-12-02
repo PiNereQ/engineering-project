@@ -82,7 +82,7 @@ class _CustomFollowButtonState extends State<CustomFollowButton> {
             child: Center(
               child: widget._size == 48
                 ? Icon(
-                    Icons.favorite,
+                    Icons.bookmark,
                     color: _isPressed ? AppColors.surface : AppColors.notificationDot,
                   )
                 : SizedBox(
@@ -90,7 +90,7 @@ class _CustomFollowButtonState extends State<CustomFollowButton> {
                   height: 18,
                   child: FittedBox(
                     child: Icon(
-                        Icons.favorite,
+                        Icons.bookmark,
                         color: _isPressed ? AppColors.surface : AppColors.notificationDot,
                       ),
                   ),
