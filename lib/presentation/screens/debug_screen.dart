@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:proj_inz/data/models/coupon_model.dart';
 import 'package:proj_inz/presentation/widgets/coupon_card.dart';
 import 'package:proj_inz/presentation/widgets/dashed_separator.dart';
+import 'package:proj_inz/presentation/widgets/help/help_button.dart';
+import 'package:proj_inz/presentation/widgets/help/help_popup.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_follow_button.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_icon_button.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_text_button.dart';
@@ -44,23 +46,7 @@ class _DebugScreenState extends State<DebugScreen> {
         child: Column(
           spacing: 8,
           children: [
-            CustomTextButton(
-              label: '_checkUser',
-              onTap: _checkUser
-            ),
-            TicketButton(
-              label: 'Twoje punkty',
-              value: '999',
-              icon: const Icon(Icons.favorite),
-              onTap: () {}
-            ),
-            DashedSeparator(),
-            CustomIconButton(icon: const Icon(Icons.texture_sharp), onTap: () {}),
-            CustomIconButton.small(icon: const Icon(Icons.texture_sharp), onTap: () {}),
-            CustomFollowButton(onTap: () {}),
-            CustomFollowButton.small(onTap: () {}),
-            CouponCardHorizontal(coupon: coupon),
-            CouponCardVertical(coupon: coupon)
+            HelpButton(title: "Pomoc - Lorem ipsum", body: Text("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.")),
           ],
         ),
       )
