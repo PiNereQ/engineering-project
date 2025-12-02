@@ -10,6 +10,7 @@ import 'package:proj_inz/data/models/shop_model.dart';
 import 'package:proj_inz/data/repositories/shop_repository.dart';
 import 'package:proj_inz/presentation/widgets/custom_snack_bar.dart';
 import 'package:proj_inz/presentation/widgets/dashed_separator.dart';
+import 'package:proj_inz/presentation/widgets/help/help_button.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_icon_button.dart';
 import '../widgets/input/text_fields/labeled_text_field.dart';
 import '../widgets/input/search_dropdown_field.dart';
@@ -207,10 +208,7 @@ class _AddScreenState extends State<AddScreen> {
                                   }
                                 },
                               ),
-                              CustomIconButton(
-                                icon: const Icon(Icons.info_outline_rounded),
-                                onTap: () {},
-                              ),
+                              HelpButton(title: "Pomoc - Dodawanie kuponu", body: _HelpBody())
                             ],
                           ),
                         ),
@@ -947,6 +945,29 @@ class _AddScreenState extends State<AddScreen> {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _HelpBody extends StatelessWidget {
+  const _HelpBody();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+      child: Text(
+        '''1. Wybierz sklep, w którym chcesz dodać kupon.\n
+2. Wpisz cenę, za którą chcesz wystawić kupon na sprzedaż.\n
+3. Jeżeli kupon ma datę wygaśnięcia - wpisz ją. Niektóre kupony są bezterminowe - jeżeli Twój kupon taki jest, zaznacz\n
+4. Wpisz kod kuponu dokładnie tak, jak jest on podany w sklepie (uwzględniając wielkość liter).\n
+5. Wybierz typ kuponu - czy jest to rabat procentowy czy na stałą kwotę, a następnie wpisz wartość rabatu.\n
+6. Zaznacz, gdzie można wykorzystać kupon - w sklepach stacjonarnych, w sklepie internetowym lub w obu miejscach.\n
+7. Określ, czy kupon ma jakieś ograniczenia (np. wyłączone produkty lub kategorie). Jeśli tak, opisz je w polu "Opis".\n
+8. Po uzupełnieniu wszystkich wymaganych pól, kliknij przycisk "Dodaj", aby dodać kupon do systemu.''',
+        style: TextStyle(fontFamily: 'Itim', fontSize: 18),
+        textAlign: TextAlign.justify,
       ),
     );
   }
