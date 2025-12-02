@@ -240,6 +240,7 @@ class ProfileScreen extends StatelessWidget {
                         );
                       },
                     ),
+                  SizedBox(height: 64), // padding for navbar
                 ],
               ),
             ),
