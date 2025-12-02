@@ -218,10 +218,10 @@ class _CouponDetails extends StatelessWidget {
 
     final locationText = Text(
       worksInStore && worksOnline
-        ? 'stacjonarnie i online'  
+        ? 'stacjonarnie i online'
         : worksOnline
-          ? 'w sklepach internetowych'
-          : 'w sklepach online',
+        ? 'w sklepach internetowych'
+        : 'w sklepach stacjonarnych',
       style: const TextStyle(
         color: AppColors.textSecondary,
         fontSize: 18,
