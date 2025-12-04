@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:proj_inz/core/theme.dart';
 import 'package:proj_inz/data/models/coupon_model.dart';
 import 'package:proj_inz/presentation/widgets/coupon_card.dart';
-import 'package:proj_inz/presentation/widgets/input/buttons/radio_button.dart';
+import 'package:proj_inz/presentation/widgets/input/buttons/custom_icon_button.dart';
+import 'package:proj_inz/presentation/widgets/input/buttons/custom_text_button.dart';
 
 class ReportScreen extends StatefulWidget {
   final String reportedUserId;
@@ -28,6 +30,7 @@ class ReportScreen extends StatefulWidget {
 class _ReportScreenState extends State<ReportScreen> {
   String? selectedReason;
   final TextEditingController descriptionController = TextEditingController();
+  bool showMissingReasonTip = false;
 
   @override
   Widget build(BuildContext context) {
@@ -55,122 +58,136 @@ class _ReportScreenState extends State<ReportScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.background,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
-          "Zgłoszenie",
-          style: TextStyle(fontFamily: 'Itim', color: AppColors.textPrimary),
-        ),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
 
-            // user tile
-            _UserTile(
-              username: widget.reportedUsername,
-              reputation: widget.reportedUserReputation,
-              joinDate: widget.reportedUserJoinDate,
-            ),
-
-            const SizedBox(height: 16),
-
-            // coupon tile
-            if (widget.reportedCoupon != null)
-              _CouponTile(coupon: widget.reportedCoupon!),
-
-            const SizedBox(height: 24),
-
-            // reasons for reporting
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: ShapeDecoration(
-                color: AppColors.surface,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  side: const BorderSide(width: 2, color: AppColors.textPrimary),
+              SizedBox(
+                width: double.infinity,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    CustomIconButton(
+                      icon: SvgPicture.asset('assets/icons/back.svg'),
+                      onTap: () => Navigator.of(context).pop(),
+                    ),
+                  ],
                 ),
-                shadows: const [
-                  BoxShadow(
-                    color: AppColors.textPrimary,
-                    offset: Offset(4,4),
-                  ),
-                ],
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    "Wybierz powód zgłoszenia",
-                    style: TextStyle(
-                      fontFamily: 'Itim',
-                      fontSize: 20,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  const Text(
-                    "Użytkownik nie dowie się o twoim zgłoszeniu",
-                    style: TextStyle(
-                      fontFamily: 'Itim',
-                      fontSize: 14,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
 
-                  ...reasons.map((reason) {
-                    final selected = selectedReason == reason;
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: CustomRadioButton(
-                        label: reason,
-                        selected: selected,
-                        onTap: () => setState(() => selectedReason = reason),
+              const SizedBox(height: 16),
+
+              // user tile
+              _UserTile(
+                username: widget.reportedUsername,
+                reputation: widget.reportedUserReputation,
+                joinDate: widget.reportedUserJoinDate,
+              ),
+
+              const SizedBox(height: 16),
+
+              // coupon tile)
+              if (widget.reportedCoupon != null) ...[
+                _CouponTile(coupon: widget.reportedCoupon!),
+                const SizedBox(height: 24),
+              ],
+
+              // reasons
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: ShapeDecoration(
+                  color: AppColors.surface,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    side: const BorderSide(width: 2, color: AppColors.textPrimary),
+                  ),
+                  shadows: const [
+                    BoxShadow(color: AppColors.textPrimary, offset: Offset(4, 4)),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      "Wybierz powód zgłoszenia",
+                      style: TextStyle(
+                        fontFamily: 'Itim',
+                        fontSize: 20,
+                        color: AppColors.textPrimary,
                       ),
-                    );
-                  }).toList(),
-                ],
-              ),
-            ),
+                    ),
+                    const SizedBox(height: 4),
+                    const Text(
+                      "Użytkownik nie dowie się o twoim zgłoszeniu",
+                      style: TextStyle(
+                        fontFamily: 'Itim',
+                        fontSize: 14,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
 
-            const SizedBox(height: 24),
-
-            // description
-            _DescriptionBox(controller: descriptionController),
-
-            const SizedBox(height: 32),
-
-            // send button
-            Center(
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryButton,
-                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(40)),
+                    ...reasons.map((reason) {
+                      final selected = selectedReason == reason;
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: _WrappingRadioButton(
+                          label: reason,
+                          selected: selected,
+                          onTap: () => setState(() => selectedReason = reason),
+                        ),
+                      );
+                    }).toList(),
+                    if (showMissingReasonTip)
+                      const Padding(
+                        padding: EdgeInsets.only(top: 8),
+                        child: Text(
+                          "Wybierz powód zgłoszenia.",
+                          style: TextStyle(
+                            color: AppColors.alertText,
+                            fontSize: 14,
+                            fontFamily: 'Itim',
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
-                onPressed: () {
-                  // TODO backend
-                  Navigator.pop(context);
-                },
-                child: const Text(
-                  "Wyślij zgłoszenie  ➤",
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontFamily: 'Itim',
-                    color: AppColors.textPrimary,
-                  ),
+              ),
+
+              const SizedBox(height: 24),
+
+              // description
+              _DescriptionBox(controller: descriptionController),
+
+              const SizedBox(height: 32),
+
+              // send
+              Center(
+                child: CustomTextButton.primary(
+                  label: "Wyślij zgłoszenie",
+                  icon: const Icon(Icons.send, color: AppColors.textPrimary, size: 20),
+                  width: 220,
+                  height: 56,
+                  onTap: () {
+                    FocusScope.of(context).unfocus();
+
+                    if (selectedReason == null) {
+                      setState(() {
+                        showMissingReasonTip = true;
+                      });
+                      return;
+                    }
+
+                    // TODO backend
+                    Navigator.pop(context);
+                  },
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -184,36 +201,22 @@ class _CouponTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      margin: const EdgeInsets.only(top: 8),
-      decoration: ShapeDecoration(
-        color: AppColors.surface,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(width: 2, color: AppColors.textPrimary),
-        ),
-        shadows: const [
-          BoxShadow(color: AppColors.textPrimary, offset: Offset(4, 4)),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        spacing: 12,
-        children: [
-          const Text(
-            "Dotyczy kuponu:",
-            style: TextStyle(
-              fontFamily: 'Itim',
-              fontSize: 18,
-              color: AppColors.textPrimary,
-            ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          "Dotyczy kuponu:",
+          style: TextStyle(
+            fontFamily: 'Itim',
+            fontSize: 18,
+            color: AppColors.textPrimary,
           ),
+        ),
 
-          CouponCardHorizontal(coupon: coupon),
+        const SizedBox(height: 12),
 
-        ],
-      ),
+        CouponCardHorizontal(coupon: coupon),
+      ],
     );
   }
 }
@@ -394,7 +397,8 @@ class _DescriptionBox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       decoration: ShapeDecoration(
         color: AppColors.surface,
         shape: RoundedRectangleBorder(
@@ -419,28 +423,103 @@ class _DescriptionBox extends StatelessWidget {
               color: AppColors.textPrimary,
             ),
           ),
+
           const SizedBox(height: 12),
 
-          Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: AppColors.textPrimary, width: 1),
+          TextField(
+            controller: controller,
+            maxLines: 6,
+            minLines: 4,
+            textAlign: TextAlign.left,
+            style: const TextStyle(
+              fontFamily: 'Itim',
+              fontSize: 16,
+              color: AppColors.textPrimary,
             ),
-            padding: const EdgeInsets.all(8),
-            child: TextField(
-              controller: controller,
-              maxLines: null,
-              decoration: const InputDecoration(
-                border: InputBorder.none,
-                hintText: "Opisz problem...",
-                hintStyle: TextStyle(
-                  fontFamily: 'Itim',
-                  color: AppColors.textSecondary,
-                ),
+            decoration: const InputDecoration(
+              hintText: "Opisz problem...",
+              hintStyle: TextStyle(
+                fontFamily: 'Itim',
+                color: AppColors.textSecondary,
               ),
+              border: InputBorder.none,
+              contentPadding: EdgeInsets.zero,
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _WrappingRadioButton extends StatelessWidget {
+  final bool selected;
+  final String label;
+  final VoidCallback onTap;
+
+  const _WrappingRadioButton({
+    required this.selected,
+    required this.label,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: GestureDetector(
+        onTap: onTap,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // radio
+            Container(
+              width: 24,
+              height: 24,
+              margin: const EdgeInsets.only(top: 4),
+              decoration: ShapeDecoration(
+                color: AppColors.surface,
+                shape: RoundedRectangleBorder(
+                  side: const BorderSide(width: 2),
+                  borderRadius: BorderRadius.circular(100),
+                ),
+                shadows: const [
+                  BoxShadow(
+                    color: AppColors.textPrimary,
+                    blurRadius: 0,
+                    offset: Offset(2, 2),
+                  ),
+                ],
+              ),
+              child: selected
+                  ? Center(
+                      child: Container(
+                        width: 12,
+                        height: 12,
+                        decoration: const BoxDecoration(
+                          color: AppColors.checkIcon,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    )
+                  : null,
+            ),
+
+            const SizedBox(width: 12),
+
+            Expanded(
+              child: Text(
+                label,
+                softWrap: true,
+                style: const TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 18,
+                  fontFamily: 'Itim',
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
