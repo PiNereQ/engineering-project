@@ -25,6 +25,7 @@ class AuthRepository {
       if (user != null) {
         await _userRepository.createUserProfile(
           uid: user.uid,
+          email: user.email ?? '',
           username: username,
         );
       }

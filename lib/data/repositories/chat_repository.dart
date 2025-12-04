@@ -11,6 +11,8 @@ import 'package:proj_inz/data/repositories/user_repository.dart';
 class ChatRepository {
   final _firebaseAuth = FirebaseAuth.instance;
 
+  final _userRepository = UserRepository();
+
   final List<Conversation> _mockConversations = [];
   final Map<String, List<Message>> _mockMessages = {};
 
@@ -129,8 +131,8 @@ class ChatRepository {
     }
 
     // Load usernames
-    final buyerProfile = await getUserProfile(buyerId);
-    final sellerProfile = await getUserProfile(sellerId);
+    final buyerProfile = await _userRepository.getUserProfile(buyerId);
+    final sellerProfile = await _userRepository.getUserProfile(sellerId);
 
     final buyerUsername = buyerProfile?['username'] ?? 'Konto';
     final sellerUsername = sellerProfile?['username'] ?? 'Użytkownik';
