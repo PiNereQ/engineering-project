@@ -6,6 +6,7 @@ import 'package:proj_inz/bloc/chat/unread/chat_unread_event.dart';
 import 'package:proj_inz/core/theme.dart';
 import 'package:proj_inz/data/models/conversation_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:proj_inz/presentation/screens/report_screen.dart';
 import 'package:proj_inz/presentation/widgets/chat_report_popup.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_icon_button.dart';
 import '../widgets/chat_bubble.dart';
@@ -14,6 +15,8 @@ import 'package:proj_inz/bloc/chat/detail/chat_detail_bloc.dart';
 import 'package:proj_inz/bloc/chat/detail/chat_detail_event.dart';
 import 'package:proj_inz/bloc/chat/detail/chat_detail_state.dart';
 import 'package:proj_inz/data/repositories/chat_repository.dart';
+import 'package:proj_inz/data/models/coupon_model.dart';
+import 'package:proj_inz/data/repositories/coupon_repository.dart';
 
 class ChatHeader extends StatelessWidget {
   final String couponTitle;
@@ -382,6 +385,7 @@ class ChatDetailScreen extends StatelessWidget {
   final String buyerId;
   final String sellerId;
   final String couponId;
+  final Coupon? relatedCoupon;
 
   const ChatDetailScreen({
     super.key,
@@ -389,6 +393,7 @@ class ChatDetailScreen extends StatelessWidget {
     required this.buyerId,
     required this.sellerId,
     required this.couponId,
+    this.relatedCoupon,
   });
 
   factory ChatDetailScreen.fromConversation(Conversation conversation, {Key? key}) {
@@ -398,24 +403,43 @@ class ChatDetailScreen extends StatelessWidget {
       buyerId: conversation.buyerId,
       sellerId: conversation.sellerId,
       couponId: conversation.couponId,
+      relatedCoupon: null,
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => ChatDetailBloc(
-        chatRepository: context.read<ChatRepository>(),
-      ),
-      child: ChatDetailView(
-        initialConversation: initialConversation,
-        buyerId: buyerId,
-        sellerId: sellerId,
-        couponId: couponId,
-      ),
-    );
-  }
+@override
+Widget build(BuildContext context) {
+  final couponRepo = context.read<CouponRepository>();
+
+  return FutureBuilder<Coupon>(
+    future: couponRepo.fetchCouponDetailsById(couponId),
+    builder: (context, snapshot) {
+      if (!snapshot.hasData) {
+        return const Scaffold(
+          backgroundColor: AppColors.background,
+          body: Center(child: CircularProgressIndicator()),
+        );
+      }
+
+      final loadedCoupon = snapshot.data!;
+
+      return BlocProvider(
+        create: (_) => ChatDetailBloc(
+          chatRepository: context.read<ChatRepository>(),
+        ),
+        child: ChatDetailView(
+          initialConversation: initialConversation,
+          buyerId: buyerId,
+          sellerId: sellerId,
+          couponId: couponId,
+          relatedCoupon: loadedCoupon, // ← GOTOWO PRZEKAZANY KUPON
+        ),
+      );
+    },
+  );
 }
+}
+
 
 
 // statefdul view
@@ -424,6 +448,7 @@ class ChatDetailView extends StatefulWidget {
   final String buyerId;
   final String sellerId;
   final String couponId;
+  final Coupon? relatedCoupon; // ← NOWE POLE
 
   const ChatDetailView({
     super.key,
@@ -431,6 +456,7 @@ class ChatDetailView extends StatefulWidget {
     required this.buyerId,
     required this.sellerId,
     required this.couponId,
+    this.relatedCoupon,
   });
 
   @override
@@ -439,6 +465,7 @@ class ChatDetailView extends StatefulWidget {
 
 class _ChatDetailViewState extends State<ChatDetailView> {
   Conversation? _conversation;
+  Coupon? _coupon;
   late final TextEditingController _controller;
   bool _showPopup = false;
 
@@ -447,13 +474,14 @@ class _ChatDetailViewState extends State<ChatDetailView> {
     super.initState();
     _controller = TextEditingController();
     _conversation = widget.initialConversation;
+    _coupon = widget.relatedCoupon;
 
     if (_conversation != null) {
       final repo = context.read<ChatRepository>();
       repo.markConversationAsRead(_conversation!.id);
 
       context.read<ChatUnreadBloc>().add(CheckUnreadStatus());
-      
+
       context.read<ChatDetailBloc>().add(
         LoadMessages(_conversation!.id),
       );
@@ -561,8 +589,30 @@ class _ChatDetailViewState extends State<ChatDetailView> {
               color: Colors.black.withOpacity(0.25),
               child: ChatReportPopup(
                 onReport: () {
-                  // TODO backend
+                  final currentUser = FirebaseAuth.instance.currentUser!.uid;
+
+                  final otherUserId = widget.buyerId == currentUser
+                      ? widget.sellerId
+                      : widget.buyerId;
+
                   setState(() => _showPopup = false);
+
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => ReportScreen(
+                        reportedUserId: otherUserId,
+                        reportedUsername: _getOtherUsername(),
+                        reportedUserReputation: 50,                // TODO backend
+                        reportedUserJoinDate: DateTime(2025, 6, 1),// TODO backend
+                        reportedCoupon: 
+                            _coupon != null && FirebaseAuth.instance.currentUser!.uid != _coupon!.sellerId
+                                ? _coupon
+                                : null,
+
+                      ),
+                    ),
+                  );
                 },
                 onBlock: () {
                   // TODO backend
