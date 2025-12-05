@@ -448,7 +448,7 @@ class ChatDetailView extends StatefulWidget {
   final String buyerId;
   final String sellerId;
   final String couponId;
-  final Coupon? relatedCoupon; // ← NOWE POLE
+  final Coupon? relatedCoupon;
 
   const ChatDetailView({
     super.key,
@@ -468,6 +468,28 @@ class _ChatDetailViewState extends State<ChatDetailView> {
   Coupon? _coupon;
   late final TextEditingController _controller;
   bool _showPopup = false;
+
+  String buildCouponTitle(Coupon c) {
+    final reduction = c.reduction;
+
+    final reductionText =
+        c.reductionIsPercentage
+            ? reduction.toString().replaceAll('.', ',')
+            : reduction.toStringAsFixed(2).replaceAll('.', ',');
+
+    return c.reductionIsPercentage
+        ? "Kupon -$reductionText%"
+        : "Kupon na $reductionText zł";
+  }
+
+  String buildJoinDate(Coupon? c) {
+    if (c == null || c.sellerJoinDate == null) return "—";
+
+    final d = c.sellerJoinDate!;
+    return "${d.day.toString().padLeft(2,'0')}"
+           ".${d.month.toString().padLeft(2,'0')}"
+           ".${d.year}";
+  }
 
   @override
   void initState() {
@@ -505,14 +527,26 @@ class _ChatDetailViewState extends State<ChatDetailView> {
           appBar: PreferredSize(
             preferredSize: const Size.fromHeight(180),
             child: ChatHeader(
-              couponTitle: _conversation?.couponTitle ?? "Kupon",
-              username: _getOtherUsername(),
-              reputation: 50,
-              joinDate: "01.06.2025",
+              couponTitle: _conversation != null
+                  ? _conversation!.couponTitle
+                  : (widget.relatedCoupon != null
+                      ? buildCouponTitle(widget.relatedCoupon!)
+                      : "Kupon"),
+
+              username: _conversation != null
+                  ? _getOtherUsername()
+                  : widget.relatedCoupon?.sellerUsername ?? "Sprzedający",
+
+              reputation: _conversation != null
+                  ? 50 // TODO backend
+                  : widget.relatedCoupon?.sellerReputation ?? 0,
+
+              joinDate: _conversation != null
+                  ? "01.06.2025" // TODO backend
+                  : buildJoinDate(widget.relatedCoupon),
+
               onBack: () => Navigator.pop(context),
-              onReport: () {
-                setState(() => _showPopup = true);
-              },
+              onReport: () => setState(() => _showPopup = true),
             ),
           ),
 
