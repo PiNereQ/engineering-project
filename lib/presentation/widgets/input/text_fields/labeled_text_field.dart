@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:proj_inz/core/theme.dart';
 
@@ -17,7 +18,9 @@ class LabeledTextField extends StatelessWidget {
   final TextEditingController? controller;
   final TextInputType? keyboardType;
   final FormFieldValidator<String?>? validator;
+  final List<TextInputFormatter>? inputFormatters;
   final ValueChanged<String>? onChanged;
+  final Widget? suffix;
 
   const LabeledTextField({
     super.key,
@@ -33,6 +36,8 @@ class LabeledTextField extends StatelessWidget {
     this.keyboardType,
     this.validator,
     this.onChanged,
+    this.inputFormatters,
+    this.suffix,
   });
 
   @override
@@ -121,10 +126,13 @@ class LabeledTextField extends StatelessWidget {
                   ],
                 ),
                 child: TextFormField(
+                  inputFormatters: inputFormatters,
                   maxLines: maxLines,
-                  decoration: InputDecoration.collapsed(
+                  decoration: InputDecoration(
+                    isCollapsed: true,
+                    border: InputBorder.none,
                     hintText: placeholder,
-                  ).copyWith(
+                    suffix: suffix,
                     errorStyle: const TextStyle(
                       color: AppColors.alertText,
                       fontSize: 12,
