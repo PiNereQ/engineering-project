@@ -143,13 +143,29 @@ class ChatRepository {
     final reduction = data['reduction'] as num? ?? 0;
     final reductionIsPercentage = data['reductionIsPercentage'] as bool? ?? true;
 
-    final String reductionText = reductionIsPercentage
-        ? reduction.toString().replaceAll('.', ',')
-        : reduction.toStringAsFixed(2).replaceAll('.', ',');
+    // TODO backend
+    final shopId = data['shopId'] as String?;
+
+    String shopName = "Sklep";
+
+    if (shopId != null) {
+      final shopDoc = await FirebaseFirestore.instance
+          .collection('shops')
+          .doc(shopId)
+          .get();
+
+      final shopData = shopDoc.data();
+      if (shopData != null && shopData['name'] != null) {
+        shopName = shopData['name'];
+      }
+    }
+
+    final reductionText = formatNumber(reduction);
 
     final String couponTitle = reductionIsPercentage
-        ? "Kupon -$reductionText%"
-        : "Kupon na $reductionText zł";
+        ? "-$reductionText% • $shopName"
+        : "-$reductionText zł • $shopName";
+
 
     final newConv = Conversation(
       id: 'conv-${DateTime.now().millisecondsSinceEpoch}',
@@ -258,4 +274,11 @@ class ChatRepository {
     }
     return false;
   }
+}
+
+String formatNumber(num value) {
+  if (value % 1 == 0) {
+    return value.toInt().toString();
+  }
+  return value.toString().replaceAll('.', ',');
 }

@@ -105,6 +105,9 @@ class ConversationTile extends StatelessWidget {
                     width: 185,
                     child: Text(
                       title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      softWrap: false,
                       style: const TextStyle(
                         color: AppColors.textPrimary,
                         fontSize: 20,
