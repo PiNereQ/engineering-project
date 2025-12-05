@@ -4,8 +4,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:proj_inz/bloc/owned_coupon_list/owned_coupon_list_bloc.dart';
 import 'package:proj_inz/core/theme.dart';
+import 'package:proj_inz/data/models/owned_coupon_model.dart';
 import 'package:proj_inz/data/repositories/coupon_repository.dart';
-import 'package:proj_inz/presentation/widgets/coupon_card.dart';
+import 'package:proj_inz/presentation/widgets/bought_coupon_card.dart';
 import 'package:proj_inz/presentation/widgets/error_card.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_icon_button.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/search_button.dart';
@@ -82,10 +83,11 @@ class _BoughtCouponListScreenState extends State<BoughtCouponListScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 24),
         sliver: SliverList(
           delegate: SliverChildBuilderDelegate((context, index) {
-            final coupon = state.coupons[index];
+            OwnedCoupon coupon = state.coupons[index];
+            if (index == 1) coupon = coupon.copyWith(isUsed: true); // for demo purposes
             return Padding(
               padding: const EdgeInsets.only(bottom: 16.0),
-              child: CouponCardHorizontal.bought(coupon: coupon),
+              child: OwnedCouponCardHorizontal(coupon: coupon),
             );
           }, childCount: state.coupons.length),
         ),

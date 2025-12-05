@@ -28,109 +28,116 @@ class BoughtCouponDetailsScreen extends StatelessWidget {
       child: Scaffold(
         backgroundColor: AppColors.surface,
         body: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-            child: Column(
-              children: [
-                SizedBox(
-                  width: double.infinity,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      CustomIconButton(
-                        icon: SvgPicture.asset('assets/icons/back.svg'),
-                        onTap: () {
-                          Navigator.of(context).pop();
-                        },
-                      ),
-                      CustomIconButton(
-                        icon: SvgPicture.asset('assets/icons/share.svg'),
-                        onTap: () {},
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 16,),
-                BlocBuilder<OwnedCouponBloc, OwnedCouponState>(
-                  builder: (context, state) {
-                    if (state is OwnedCouponLoadInProgress) {
-                      return const Center(child: CircularProgressIndicator());
-                    } else if (state is OwnedCouponLoadSuccess) {
-                      return SingleChildScrollView(
-                        child: Column(
-                          children: [
-                            Container(
-                              width: double.infinity,
-                              padding: const EdgeInsets.all(16),
-                              clipBehavior: Clip.antiAlias,
-                              decoration: ShapeDecoration(
-                                color: AppColors.surface,
-                                shape: RoundedRectangleBorder(
-                                  side: const BorderSide(width: 2),
-                                  borderRadius: BorderRadius.circular(24),
-                                ),
-                                shadows: const [
-                                  BoxShadow(
-                                    color: AppColors.textPrimary,
-                                    blurRadius: 0,
-                                    offset: Offset(4, 4),
-                                    spreadRadius: 0,
-                                  )
-                                ],
+          child: Column(
+            children: [
+              Divider(height: 0, color: AppColors.textSecondary,),
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                    child: Column(
+                      children: [
+                        SizedBox(
+                          width: double.infinity,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              CustomIconButton(
+                                icon: SvgPicture.asset('assets/icons/back.svg'),
+                                onTap: () {
+                                  Navigator.of(context).pop();
+                                },
                               ),
-                              child: const Row(
-                                children: [
-                                  Icon(
-                                    Icons.redeem_outlined,
-                                    color: AppColors.textPrimary,
-                                    size: 32,
-                                    ),
-                                  SizedBox(width: 16,),
-                                  Text(
-                                    "Ten kupon należy do Ciebie!",
-                                    style: TextStyle(
-                                    color: AppColors.textPrimary,
-                                    fontSize: 18,
-                                    fontFamily: 'Itim',
-                                    fontWeight: FontWeight.w400,
-                                    height: 1.2,
-                                    ),
-                                  ),
-                                ],
-                              )
-                            ),
-                            const SizedBox(height: 24,),
-                            _CouponDetails(coupon: state.coupon,),
-                            const SizedBox(height: 24),
-                            _SellerDetails(
-                              sellerId: state.coupon.sellerId,
-                              sellerUsername: state.coupon.sellerUsername.toString(),
-                              sellerReputation: state.coupon.sellerReputation,
-                              sellerJoinDate: state.coupon.sellerJoinDate ?? DateTime(1970, 1, 1),
-                            ),
-                          ],
-                        ),
-                      );
-                    }
-                    else if (state is OwnedCouponLoadFailure) {
-                      if (kDebugMode) debugPrint(state.message);
-                      return Expanded(
-                        child: Center(
-                          child: ErrorCard(
-                            text: "Przykro nam, wystąpił błąd w trakcie ładowania tego kuponu.",
-                            errorString: state.message,
-                            icon: const Icon(Icons.sentiment_dissatisfied),
+                              CustomIconButton(
+                                icon: SvgPicture.asset('assets/icons/share.svg'),
+                                onTap: () {},
+                              ),
+                            ],
                           ),
                         ),
-                      );
-                    }
-                    return const SizedBox();
-                  }
+                        const SizedBox(height: 16,),
+                        BlocBuilder<OwnedCouponBloc, OwnedCouponState>(
+                          builder: (context, state) {
+                            if (state is OwnedCouponLoadInProgress) {
+                              return const Center(child: CircularProgressIndicator());
+                            } else if (state is OwnedCouponLoadSuccess) {
+                              return Column(
+                                children: [
+                                  Container(
+                                    width: double.infinity,
+                                    padding: const EdgeInsets.all(16),
+                                    clipBehavior: Clip.antiAlias,
+                                    decoration: ShapeDecoration(
+                                      color: AppColors.surface,
+                                      shape: RoundedRectangleBorder(
+                                        side: const BorderSide(width: 2),
+                                        borderRadius: BorderRadius.circular(24),
+                                      ),
+                                      shadows: const [
+                                        BoxShadow(
+                                          color: AppColors.textPrimary,
+                                          blurRadius: 0,
+                                          offset: Offset(4, 4),
+                                          spreadRadius: 0,
+                                        )
+                                      ],
+                                    ),
+                                    child: const Row(
+                                      children: [
+                                        Icon(
+                                          Icons.redeem_outlined,
+                                          color: AppColors.textPrimary,
+                                          size: 32,
+                                          ),
+                                        SizedBox(width: 16,),
+                                        Text(
+                                          "Ten kupon należy do Ciebie!",
+                                          style: TextStyle(
+                                          color: AppColors.textPrimary,
+                                          fontSize: 18,
+                                          fontFamily: 'Itim',
+                                          fontWeight: FontWeight.w400,
+                                          height: 1.2,
+                                          ),
+                                        ),
+                                      ],
+                                    )
+                                  ),
+                                  const SizedBox(height: 24,),
+                                  _CouponDetails(coupon: state.coupon,),
+                                  const SizedBox(height: 24),
+                                  _SellerDetails(
+                                    sellerId: state.coupon.sellerId,
+                                    sellerUsername: state.coupon.sellerUsername.toString(),
+                                    sellerReputation: state.coupon.sellerReputation,
+                                    sellerJoinDate: state.coupon.sellerJoinDate ?? DateTime(1970, 1, 1),
+                                  ),
+                                ],
+                              );
+                            }
+                            else if (state is OwnedCouponLoadFailure) {
+                              if (kDebugMode) debugPrint(state.message);
+                              return Expanded(
+                                child: Center(
+                                  child: ErrorCard(
+                                    text: "Przykro nam, wystąpił błąd w trakcie ładowania tego kuponu.",
+                                    errorString: state.message,
+                                    icon: const Icon(Icons.sentiment_dissatisfied),
+                                  ),
+                                ),
+                              );
+                            }
+                            return const SizedBox();
+                          }
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
@@ -272,7 +279,7 @@ class _CouponDetails extends StatelessWidget {
                   alignment: Alignment.center,
                   padding: const EdgeInsets.symmetric(horizontal: 8),
                   decoration: ShapeDecoration(
-                    color: shopBgColor,
+                    color: coupon.isUsed ? AppColors.primaryButtonPressed : shopBgColor,
                     shape: RoundedRectangleBorder(
                       side: const BorderSide(width: 2),
                       borderRadius: BorderRadius.circular(8),
@@ -283,7 +290,7 @@ class _CouponDetails extends StatelessWidget {
                     child: Text(
                       shopName,
                       style: TextStyle(
-                        color: shopNameColor,
+                        color: coupon.isUsed ? AppColors.textSecondary : shopNameColor,
                         fontSize: 30,
                         fontFamily: 'Roboto',
                         fontWeight: FontWeight.w700,
@@ -441,22 +448,29 @@ class _CouponDetails extends StatelessWidget {
             padding: const EdgeInsets.all(16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
-              spacing: 18,
+              spacing: 12,
               children: [
-                const Text(
-                  'Gotowy do wykorzystania!',
-                  style: TextStyle(
-                      color: AppColors.textPrimary,
-                      fontSize: 20,
-                      fontFamily: 'Itim',
-                      fontWeight: FontWeight.w400,
-                      height: 0.75,
-                  ),
-                ),
                 CustomTextButton(
-                  label: 'Wyświetl kod',
+                  label: 'Wyświetl kod kuponu',
                   onTap: () => _showCodeDialog(context, code),
-                )
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  spacing: 8,
+                  children: [
+                    Switch(value: coupon.isUsed, onChanged: (_) {}, ), // TODO: implement change of state
+                    Text(
+                      'kupon wykorzystany',
+                      style: TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 20,
+                        fontFamily: 'Itim',
+                        fontWeight: FontWeight.w400,
+                        height: 0.75,
+                      ),
+                    ),
+                  ],
+                ),
               ],
             ),
           )
@@ -472,7 +486,7 @@ class _CouponDetails extends StatelessWidget {
         return Dialog(
           child: Container(
             decoration: ShapeDecoration(
-              color: AppColors.background,
+              color: AppColors.surface,
               shape: RoundedRectangleBorder(
                 side: const BorderSide(width: 2),
                 borderRadius: BorderRadius.circular(24),

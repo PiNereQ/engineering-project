@@ -85,7 +85,7 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
         ordering: _ordering,
         shopId: _selectedShopId,
       );
-      final coupons = result.coupons;
+      final coupons = result.ownedCoupons;
       final lastDoc = result.lastDocument;
       debugPrint('Fetched ${coupons.length} coupons: $coupons');
 
