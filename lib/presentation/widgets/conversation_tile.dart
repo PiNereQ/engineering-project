@@ -16,6 +16,13 @@ class ConversationTile extends StatelessWidget {
     required this.isRead,
   });
 
+  String _truncateMessage(String text, {int maxChars = 30}) {
+    if (text.length <= maxChars) return text;
+
+    // clipping long messages
+    return text.substring(0, maxChars).trimRight() + '...';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -116,7 +123,10 @@ class ConversationTile extends StatelessWidget {
                     width: 250,
                     height: 36,
                     child: Text(
-                      message,
+                      _truncateMessage(message),
+                      maxLines: 1,
+                      overflow: TextOverflow.visible, // może być też none – już my tniemy
+                      softWrap: false,
                       style: TextStyle(
                         color: isRead ? AppColors.textSecondary : AppColors.textPrimary,
                         fontSize: 15,
