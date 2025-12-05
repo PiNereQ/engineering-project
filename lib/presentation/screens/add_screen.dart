@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:proj_inz/bloc/coupon_add/coupon_add_bloc.dart';
 import 'package:proj_inz/core/theme.dart';
+import 'package:proj_inz/core/utils/text_formatters.dart';
 import 'package:proj_inz/data/models/coupon_offer_model.dart';
 import 'package:proj_inz/data/repositories/coupon_repository.dart';
 import 'package:proj_inz/bloc/shop/shop_bloc.dart';
@@ -313,6 +315,10 @@ class _AddScreenState extends State<AddScreen> {
                                               controller: _priceController,
                                               keyboardType:
                                                   TextInputType.number,
+                                              inputFormatters: [
+                                                PriceFormatter()
+                                              ],
+                                              suffix: Text('zł'),
                                               validator: (val) {
                                                 if (val == null || val.isEmpty) {
                                                   return 'Wymagane';
@@ -320,6 +326,11 @@ class _AddScreenState extends State<AddScreen> {
                                                 if (double.tryParse(val) ==
                                                     null) {
                                                   return 'Niepoprawna liczba';
+                                                }
+                                                // Check for at most 2 decimal places (grosze)
+                                                final parts = val.replaceAll(',', '.').split('.');
+                                                if (parts.length > 1 && parts[1].length > 2) {
+                                                  return 'Cena może mieć maksymalnie 2 miejsca po przecinku';
                                                 }
                                                 if (double.tryParse(val)! <= 0) {
                                                   return 'Wpisz więcej niż 0';
@@ -486,6 +497,7 @@ class _AddScreenState extends State<AddScreen> {
                                                         CouponType.percent,
                                                     onTap: () {
                                                       setState(() {
+                                                        _reductionController.text = '';
                                                         _selectedType =
                                                             CouponType.percent;
                                                         _userMadeInput = true;
@@ -500,6 +512,7 @@ class _AddScreenState extends State<AddScreen> {
                                                         CouponType.fixed,
                                                     onTap: () {
                                                       setState(() {
+                                                        _reductionController.text = '';
                                                         _selectedType =
                                                             CouponType.fixed;
                                                         _userMadeInput = true;
@@ -517,7 +530,6 @@ class _AddScreenState extends State<AddScreen> {
                                                           CouponType.percent
                                                       ? LabeledTextField(
                                                         label: 'Procent rabatu',
-                                                        placeholder: '%',
                                                         width:
                                                             LabeledTextFieldWidth
                                                                 .full,
@@ -525,6 +537,10 @@ class _AddScreenState extends State<AddScreen> {
                                                             TextAlign.right,
                                                         controller:
                                                             _reductionController,
+                                                        inputFormatters: [
+                                                          PercentFormatter()
+                                                        ],
+                                                        suffix: Text('%'),
                                                         keyboardType:
                                                             TextInputType
                                                                 .number,
@@ -562,7 +578,6 @@ class _AddScreenState extends State<AddScreen> {
                                                       )
                                                       : LabeledTextField(
                                                         label: 'Kwota rabatu',
-                                                        placeholder: 'zł',
                                                         width:
                                                             LabeledTextFieldWidth
                                                                 .full,
@@ -570,6 +585,10 @@ class _AddScreenState extends State<AddScreen> {
                                                             TextAlign.right,
                                                         controller:
                                                             _reductionController,
+                                                        inputFormatters: [
+                                                          PriceFormatter()
+                                                        ],
+                                                        suffix: Text('zł'),
                                                         keyboardType:
                                                             TextInputType
                                                                 .number,
