@@ -636,9 +636,17 @@ class _ChatDetailViewState extends State<ChatDetailView> {
                     MaterialPageRoute(
                       builder: (_) => ReportScreen(
                         reportedUserId: otherUserId,
-                        reportedUsername: _getOtherUsername(),
-                        reportedUserReputation: 50,                // TODO backend
-                        reportedUserJoinDate: DateTime(2025, 6, 1),// TODO backend
+                        reportedUsername: _conversation != null
+                            ? _getOtherUsername()
+                            : widget.relatedCoupon?.sellerUsername ?? "Użytkownik",
+
+                        reportedUserReputation: _conversation != null
+                            ? 50 // TODO backend
+                            : widget.relatedCoupon?.sellerReputation ?? 0,
+
+                        reportedUserJoinDate: _conversation != null
+                            ? DateTime(2025, 6, 1) // TODO backend
+                            : widget.relatedCoupon?.sellerJoinDate ?? DateTime.now(),
                         reportedCoupon: 
                             _coupon != null && FirebaseAuth.instance.currentUser!.uid != _coupon!.sellerId
                                 ? _coupon
