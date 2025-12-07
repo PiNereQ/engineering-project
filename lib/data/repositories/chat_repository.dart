@@ -19,59 +19,7 @@ class ChatRepository {
   }
 
   void _initializeMockData() {
-    final currentUserId = _firebaseAuth.currentUser?.uid ?? 'unknown';
 
-    final conv1 = Conversation(
-      id: 'conv-1',
-      couponId: 'coupon-abc',
-      couponTitle: 'Kupon 20% Empik',
-      buyerId: currentUserId,
-      sellerId: 'seller-1',
-      buyerUsername: 'Ty',
-      sellerUsername: 'Sprzedawca1',
-      lastMessage: 'Hej, ten kupon jest nadal dostępny?',
-      lastMessageTime: DateTime.now().subtract(const Duration(minutes: 5)),
-      isReadByBuyer: true,
-      isReadBySeller: true,
-    );
-
-    final conv2 = Conversation(
-      id: 'conv-2',
-      couponId: 'coupon-xyz',
-      couponTitle: 'Kupon 5% Zooplus',
-      buyerId: 'buyer-22',
-      sellerId: currentUserId,
-      buyerUsername: 'Kupujacy22',
-      sellerUsername: 'Ty',
-      lastMessage: 'Masz jeszcze inne kupony?',
-      lastMessageTime: DateTime.now().subtract(const Duration(hours: 1)),
-      isReadByBuyer: false,
-      isReadBySeller: true,
-    );
-
-    _mockConversations.addAll([conv1, conv2]);
-
-    _mockMessages['conv-1'] = [
-      Message(
-        id: 'msg-1',
-        conversationId: 'conv-1',
-        senderId: currentUserId,
-        text: 'Hej, ten kupon jest nadal dostępny?',
-        timestamp: DateTime.now().subtract(const Duration(minutes: 5)),
-        isRead: true,
-      ),
-    ];
-
-    _mockMessages['conv-2'] = [
-      Message(
-        id: 'msg-2',
-        conversationId: 'conv-2',
-        senderId: 'buyer-22',
-        text: 'Masz jeszcze inne kupony?',
-        timestamp: DateTime.now().subtract(const Duration(hours: 1)),
-        isRead: false,
-      ),
-    ];
   }
 
   // Get conversations for the current user
