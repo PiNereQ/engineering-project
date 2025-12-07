@@ -69,6 +69,9 @@ class ChatHeader extends StatelessWidget {
                     ),
                     Text(
                       couponTitle,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      softWrap: false,
                       style: const TextStyle(
                         fontFamily: 'Itim',
                         color: AppColors.textPrimary,
@@ -353,9 +356,14 @@ class ChatInputBar extends StatelessWidget {
               ),
               child: TextField(
                 controller: controller,
+                style: const TextStyle(
+                  fontFamily: 'Itim',
+                  fontSize: 16,
+                  color: AppColors.textPrimary,
+                ),
                 decoration: const InputDecoration(
                   hintText: 'treść wiadomości...',
-                  hintStyle: const TextStyle(
+                  hintStyle: TextStyle(
                     fontFamily: 'Itim',
                     fontSize: 16,
                     color: AppColors.textSecondary,
@@ -472,14 +480,13 @@ class _ChatDetailViewState extends State<ChatDetailView> {
   String buildCouponTitle(Coupon c) {
     final reduction = c.reduction;
 
-    final reductionText =
-        c.reductionIsPercentage
-            ? reduction.toString().replaceAll('.', ',')
-            : reduction.toStringAsFixed(2).replaceAll('.', ',');
+    final reductionText = formatNumber(reduction);
+
+    final shopName = c.shopName;
 
     return c.reductionIsPercentage
-        ? "Kupon -$reductionText%"
-        : "Kupon na $reductionText zł";
+        ? "-$reductionText% • $shopName"
+        : "-$reductionText zł • $shopName";
   }
 
   String buildJoinDate(Coupon? c) {
@@ -722,4 +729,11 @@ class _ChatDetailViewState extends State<ChatDetailView> {
     final m = time.minute.toString().padLeft(2, '0');
     return "$h:$m";
   }
+}
+
+String formatNumber(num value) {
+  if (value % 1 == 0) {
+    return value.toInt().toString();
+  }
+  return value.toString().replaceAll('.', ',');
 }
