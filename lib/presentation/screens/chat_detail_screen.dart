@@ -356,9 +356,14 @@ class ChatInputBar extends StatelessWidget {
               ),
               child: TextField(
                 controller: controller,
+                style: const TextStyle(
+                  fontFamily: 'Itim',
+                  fontSize: 16,
+                  color: AppColors.textPrimary,
+                ),
                 decoration: const InputDecoration(
                   hintText: 'treść wiadomości...',
-                  hintStyle: const TextStyle(
+                  hintStyle: TextStyle(
                     fontFamily: 'Itim',
                     fontSize: 16,
                     color: AppColors.textSecondary,
