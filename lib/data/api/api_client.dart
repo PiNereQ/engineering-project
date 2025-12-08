@@ -30,6 +30,7 @@ class ApiClient {
   }
 
   Future<dynamic> postJson(String path, Map<String, dynamic> body) async {
+    print('POST $path with body: ${jsonEncode(body)}');
     final resp = await _client.post(
       _uri(path),
       headers: {'Content-Type': 'application/json'},
@@ -38,7 +39,9 @@ class ApiClient {
     if (resp.statusCode >= 200 && resp.statusCode < 300) {
       return jsonDecode(resp.body);
     }
-    throw Exception('POST $path failed: ${resp.statusCode} ${resp.reasonPhrase}');
+    print('POST $path failed: ${resp.statusCode} ${resp.reasonPhrase}');
+    print('Response body: ${resp.body}');
+    throw Exception('POST $path failed: ${resp.statusCode} ${resp.reasonPhrase}\nResponse: ${resp.body}');
   }
 
   Future<dynamic> putJson(String path, String id, Map<String, dynamic> body) async {

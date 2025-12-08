@@ -22,7 +22,6 @@ import 'package:proj_inz/presentation/widgets/input/buttons/custom_text_button.d
 
 class CouponDetailsScreen extends StatelessWidget {
   final String couponId;
-
   const CouponDetailsScreen({super.key, required this.couponId});
 
   @override
@@ -269,8 +268,8 @@ class _CouponDetails extends StatelessWidget {
         } else if (state is PaymentSuccess) {
           Navigator.of(context, rootNavigator: true).pop();
           showCustomSnackBar(context, 'Płatność zakończona sukcesem!');
-          final user = await getCurrentUser();
-          if (context.mounted) {
+          final user = await context.read<UserRepository>().getCurrentUser();
+          if (context.mounted && user != null) {
             context.read<OwnedCouponBloc>().add(
               BuyCouponRequested(couponId: coupon.id, userId: user.uid),
             );
@@ -597,7 +596,8 @@ class _SellerDetails extends StatelessWidget {
                       child: CustomTextButton.primary(
                         label: "Zapytaj o ten kupon",
                           onTap: () async {
-                            final currentUser = await getCurrentUser();
+                            final currentUser = await context.read<UserRepository>().getCurrentUser();
+                            if (currentUser == null) return;
                             final buyerId = currentUser.uid;
                             final sellerId = this.sellerId;
 

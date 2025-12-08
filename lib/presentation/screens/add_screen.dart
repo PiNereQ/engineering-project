@@ -7,6 +7,7 @@ import 'package:proj_inz/core/theme.dart';
 import 'package:proj_inz/core/utils/text_formatters.dart';
 import 'package:proj_inz/data/models/coupon_offer_model.dart';
 import 'package:proj_inz/data/repositories/coupon_repository.dart';
+import 'package:proj_inz/data/repositories/user_repository.dart';
 import 'package:proj_inz/bloc/shop/shop_bloc.dart';
 import 'package:proj_inz/data/models/shop_model.dart';
 import 'package:proj_inz/data/repositories/shop_repository.dart';
@@ -831,15 +832,45 @@ class _AddScreenState extends State<AddScreen> {
                                                 });
                                                 return;
                                               }
+                                              // Get current user ID
+                                              final userRepo = context.read<UserRepository>();
+                                              final user = await userRepo.getCurrentUser();
+                                              if (user == null) {
+                                                setState(() {
+                                                  _showMissingValuesTip = true;
+                                                });
+                                                return;
+                                              }
+
+                                              // Ensure user exists in API database
+                                              try {
+                                                await userRepo.ensureUserExistsInApi();
+                                              } catch (e) {
+                                                if (mounted) {
+                                                  showCustomSnackBar(context, 'Błąd synchronizacji użytkownika: $e');
+                                                }
+                                                return;
+                                              }
+
+                                              // Format expiry date as YYYY-MM-DD or null
+                                              String? expiryDateStr;
+                                              if (_hasExpiryDate && _expiryDateController.text.isNotEmpty) {
+                                                expiryDateStr = "${_expiryDate.year}-${_expiryDate.month.toString().padLeft(2, '0')}-${_expiryDate.day.toString().padLeft(2, '0')}";
+                                              }
+
+                                              // Handle description (nullable if empty)
+                                              String? description = _descriptionController.text.trim().isEmpty 
+                                                  ? null 
+                                                  : _descriptionController.text.trim();
+
                                               final offer = CouponOffer(
-                                                description:
-                                                    _descriptionController.text,
-                                                reduction:
+                                                description: description,
+                                                discount:
                                                     double.tryParse(
                                                       _reductionController.text,
                                                     ) ??
                                                     0,
-                                                reductionIsPercentage:
+                                                isDiscountPercentage:
                                                     _selectedType ==
                                                     CouponType.percent,
                                                 price:
@@ -851,8 +882,10 @@ class _AddScreenState extends State<AddScreen> {
                                                 hasLimits: _hasRestrictions,
                                                 worksOnline: _inOnlineStore,
                                                 worksInStore: _inPhysicalStores,
-                                                expiryDate: _expiryDate,
-                                                shopId: _selectedShop?.id ?? '',
+                                                expiryDate: expiryDateStr,
+                                                shopId: int.tryParse(_selectedShop?.id ?? '0') ?? 0,
+                                                ownerId: user.uid,
+                                                isActive: true,
                                               );
 
                                               final confirmed = await showDialog<

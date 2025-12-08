@@ -6,6 +6,7 @@ import 'package:proj_inz/bloc/coupon_list/coupon_list_bloc.dart';
 import 'package:proj_inz/data/models/coupon_model.dart';
 import 'package:proj_inz/data/models/coupon_offer_model.dart';
 import 'package:proj_inz/data/models/owned_coupon_model.dart';
+import 'package:proj_inz/data/api/api_client.dart';
 
 class PaginatedCouponsResult {
   final List<Coupon> ownedCoupons;
@@ -22,6 +23,7 @@ class PaginatedOwnedCouponsResult {
 class CouponRepository {
   final _firebaseAuth = FirebaseAuth.instance;
   final _firestore = FirebaseFirestore.instance;
+  final ApiClient _api = ApiClient(baseUrl: 'http://49.13.155.21:8000');
   
   final _shopCache = <String, DocumentSnapshot>{};
   final _sellerCache = <String, DocumentSnapshot>{};
@@ -345,27 +347,30 @@ class CouponRepository {
     );
   }
 
-  Future<void> postCouponOffer(CouponOffer coupon) async { 
-    final docRef = await _firestore.collection('couponOffers').add({
-      'reduction': coupon.reduction,
-      'reductionIsPercentage': coupon.reductionIsPercentage,
-      'pricePLN': coupon.price,
-      'hasLimits': coupon.hasLimits,
-      'worksOnline': coupon.worksOnline,
-      'worksInStore': coupon.worksInStore,
-      'expiryDate': coupon.expiryDate,
-      'description': coupon.description,
-      'shopId': coupon.shopId,
-      'sellerId': _firebaseAuth.currentUser?.uid,
-      'isSold': false,
-      'createdAt': FieldValue.serverTimestamp(),
-    });
-    
-    await _firestore.collection('couponCodeData').doc(docRef.id).set({
-      'code': coupon.code,      
-      'owner': null,
-      'boughtAt': null,
-    });
+  // Future<void> postCouponOffer(CouponOffer coupon) async { 
+  //   final docRef = await _firestore.collection('couponOffers').add({
+  //     'reduction': coupon.reduction,
+  //     'reductionIsPercentage': coupon.reductionIsPercentage,
+  //     'pricePLN': coupon.price,
+  //     'hasLimits': coupon.hasLimits,
+  //     'worksOnline': coupon.worksOnline,
+  //     'worksInStore': coupon.worksInStore,
+  //     'expiryDate': coupon.expiryDate,
+  //     'description': coupon.description,
+  //     'shopId': coupon.shopId,
+  //     'sellerId': _firebaseAuth.currentUser?.uid,
+  //     'isSold': false,
+  //     'createdAt': FieldValue.serverTimestamp(),
+  //   });
+  //   await _firestore.collection('couponCodeData').doc(docRef.id).set({
+  //     'code': coupon.code,      
+  //     'owner': null,
+  //     'boughtAt': null,
+  //   });
+  // }
+
+   Future<void> postCouponOffer(CouponOffer coupon) async {
+    await _api.postJson('/coupons', coupon.toJson());
   }
 
 
