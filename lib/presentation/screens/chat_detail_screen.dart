@@ -86,8 +86,8 @@ class ChatHeader extends StatelessWidget {
               const SizedBox(width: 12),
 
               CustomIconButton(
-                icon: const Icon(Icons.report,
-                    size: 24, color: AppColors.alertText),
+                icon: const Icon(Icons.more_vert,
+                    size: 24, color: AppColors.textPrimary),
                 onTap: onReport,
               ),
             ],
@@ -440,7 +440,7 @@ Widget build(BuildContext context) {
           buyerId: buyerId,
           sellerId: sellerId,
           couponId: couponId,
-          relatedCoupon: loadedCoupon, // ← GOTOWO PRZEKAZANY KUPON
+          relatedCoupon: loadedCoupon,
         ),
       );
     },
@@ -629,6 +629,11 @@ class _ChatDetailViewState extends State<ChatDetailView> {
             child: Container(
               color: Colors.black.withOpacity(0.25),
               child: ChatReportPopup(
+                onShowCoupon: () {
+                  setState(() => _showPopup = false);
+
+                  // TODO: popup with coupon details
+                },                
                 onReport: () {
                   final currentUser = FirebaseAuth.instance.currentUser!.uid;
 
