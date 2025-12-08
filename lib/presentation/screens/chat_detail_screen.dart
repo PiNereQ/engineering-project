@@ -8,6 +8,7 @@ import 'package:proj_inz/data/models/conversation_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:proj_inz/presentation/screens/report_screen.dart';
 import 'package:proj_inz/presentation/widgets/chat_report_popup.dart';
+import 'package:proj_inz/presentation/widgets/coupon_preview_popup.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_icon_button.dart';
 import '../widgets/chat_bubble.dart';
 
@@ -86,8 +87,8 @@ class ChatHeader extends StatelessWidget {
               const SizedBox(width: 12),
 
               CustomIconButton(
-                icon: const Icon(Icons.report,
-                    size: 24, color: AppColors.alertText),
+                icon: const Icon(Icons.more_vert,
+                    size: 24, color: AppColors.textPrimary),
                 onTap: onReport,
               ),
             ],
@@ -440,7 +441,7 @@ Widget build(BuildContext context) {
           buyerId: buyerId,
           sellerId: sellerId,
           couponId: couponId,
-          relatedCoupon: loadedCoupon, // ← GOTOWO PRZEKAZANY KUPON
+          relatedCoupon: loadedCoupon,
         ),
       );
     },
@@ -629,6 +630,20 @@ class _ChatDetailViewState extends State<ChatDetailView> {
             child: Container(
               color: Colors.black.withOpacity(0.25),
               child: ChatReportPopup(
+                onShowCoupon: () {
+                  if (_coupon == null) return;
+
+                  setState(() => _showPopup = false);
+
+                  showDialog(
+                    context: context,
+                    barrierDismissible: true,
+                    builder: (_) => CouponPreviewPopup(
+                      coupon: _coupon!,
+                      onClose: () => Navigator.of(context).pop(),
+                    ),
+                  );
+                },            
                 onReport: () {
                   final currentUser = FirebaseAuth.instance.currentUser!.uid;
 

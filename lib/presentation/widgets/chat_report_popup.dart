@@ -5,12 +5,14 @@ import 'package:proj_inz/presentation/widgets/dashed_separator.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_text_button.dart';
 
 class ChatReportPopup extends StatelessWidget {
+  final VoidCallback onShowCoupon;
   final VoidCallback onReport;
   final VoidCallback onBlock;
   final VoidCallback onClose;
 
   const ChatReportPopup({
     super.key,
+    required this.onShowCoupon,
     required this.onReport,
     required this.onBlock,
     required this.onClose,
@@ -42,6 +44,17 @@ class ChatReportPopup extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             spacing: 20,
             children: [
+
+              // pokaz kupon
+              CustomTextButton(
+                label: "Kupon",
+                onTap: onShowCoupon,
+                backgroundColor: AppColors.surface,
+                icon: Icon(Icons.sell_outlined,
+                    color: AppColors.textPrimary, size: 20),
+                width: 150,
+                height: 52,
+              ),
 
               // zglos
               CustomTextButton(
