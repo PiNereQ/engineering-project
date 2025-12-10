@@ -48,6 +48,18 @@ class OwnedCouponListBloc extends Bloc<OwnedCouponListEvent, OwnedCouponListStat
 
   List<OwnedCoupon> get allCoupons => List.unmodifiable(_allCoupons);
 
+  List<({String id, String name})> get uniqueShops {
+    final map = <String, String>{};
+
+    for (final c in _allCoupons) {
+      map[c.shopId] = c.shopName;
+    }
+
+    return map.entries
+        .map((e) => (id: e.key, name: e.value))
+        .toList();
+  }
+
   OwnedCouponListBloc(this.couponRepository) : super(OwnedCouponListInitial()) {
     _resetFiltersAndOrdering();
     on<FetchCoupons>(_onFetchCoupons);

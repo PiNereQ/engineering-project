@@ -258,9 +258,12 @@ class _OwnedCouponFilterDialogState extends State<_OwnedCouponFilterDialog> {
     context.read<OwnedCouponListBloc>().add(ReadOwnedCouponFilters());
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return BlocListener<OwnedCouponListBloc, OwnedCouponListState>(
+@override
+Widget build(BuildContext context) {
+
+  final shops = context.read<OwnedCouponListBloc>().uniqueShops;
+
+  return BlocListener<OwnedCouponListBloc, OwnedCouponListState>(
       listenWhen: (_, state) => state is OwnedCouponFilterRead,
       listener: (context, state) {
         if (state is OwnedCouponFilterRead) {
@@ -371,16 +374,18 @@ class _OwnedCouponFilterDialogState extends State<_OwnedCouponFilterDialog> {
 
                     DropdownButton<String>(
                       value: selectedShopId,
+                      isExpanded: true,
                       hint: const Text("Wybierz sklep"),
-                      items: context.read<OwnedCouponListBloc>().allCoupons
-                          .map((c) => DropdownMenuItem(
-                                value: c.shopId,
-                                child: Text(c.shopName),
-                              ))
-                          .toSet()
-                          .toList(),
-                      onChanged: (v) {
-                        setState(() => selectedShopId = v);
+                      items: shops.map((shop) {
+                        return DropdownMenuItem<String>(
+                          value: shop.id,
+                          child: Text(shop.name),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          selectedShopId = value;
+                        });
                       },
                     ),
 
