@@ -38,8 +38,6 @@ class ApplyOwnedCouponFilters extends OwnedCouponListEvent {
 
 class ClearOwnedCouponFilters extends OwnedCouponListEvent {}
 
-class LeaveOwnedCouponFilterPopUp extends OwnedCouponListEvent {}
-
 // sorting
 class ReadOwnedCouponOrdering extends OwnedCouponListEvent {}
 
@@ -47,5 +45,3 @@ class ApplyOwnedCouponOrdering extends OwnedCouponListEvent {
   final OwnedCouponsOrdering ordering;
   const ApplyOwnedCouponOrdering(this.ordering);
 }
-
-class LeaveOwnedCouponSortPopUp extends OwnedCouponListEvent {}

@@ -198,7 +198,7 @@ class _Toolbar extends StatelessWidget {
                         ).then((_) {
                           if (context.mounted) {
                             context.read<OwnedCouponListBloc>()
-                                .add(LeaveOwnedCouponFilterPopUp());
+                                .add(FetchCoupons());
                           }
                         }),
                       ),
@@ -215,7 +215,7 @@ class _Toolbar extends StatelessWidget {
                         ).then((_) {
                           if (context.mounted) {
                             context.read<OwnedCouponListBloc>()
-                                .add(LeaveOwnedCouponSortPopUp());
+                                .add(FetchCoupons());
                           }
                         }),
                       ),

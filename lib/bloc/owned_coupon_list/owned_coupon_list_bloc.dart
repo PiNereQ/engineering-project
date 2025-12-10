@@ -16,6 +16,17 @@ enum OwnedCouponsOrdering {
   priceAsc,
   priceDesc,
 }
+
+void _resetFiltersAndOrdering() {
+  _reductionIsPercentage = true;
+  _reductionIsFixed = true;
+  _showUsed = true;
+  _showUnused = true;
+  _shopId = null;
+
+  _ordering = OwnedCouponsOrdering.purchaseDateDesc;
+}
+
 // filters state
 bool _reductionIsPercentage = true;
 bool _reductionIsFixed = true;
@@ -38,6 +49,7 @@ class OwnedCouponListBloc extends Bloc<OwnedCouponListEvent, OwnedCouponListStat
   List<OwnedCoupon> get allCoupons => List.unmodifiable(_allCoupons);
 
   OwnedCouponListBloc(this.couponRepository) : super(OwnedCouponListInitial()) {
+    _resetFiltersAndOrdering();
     on<FetchCoupons>(_onFetchCoupons);
     on<FetchMoreCoupons>(_onFetchMoreCoupons);
     on<RefreshCoupons>(_onRefreshCoupons);
@@ -46,12 +58,10 @@ class OwnedCouponListBloc extends Bloc<OwnedCouponListEvent, OwnedCouponListStat
     on<ReadOwnedCouponFilters>(_onReadFilters);
     on<ApplyOwnedCouponFilters>(_onApplyFilters);
     on<ClearOwnedCouponFilters>(_onClearFilters);
-    on<LeaveOwnedCouponFilterPopUp>((event, emit) {});
 
     // sorting
     on<ReadOwnedCouponOrdering>(_onReadOrdering);
     on<ApplyOwnedCouponOrdering>(_onApplyOrdering);
-    on<LeaveOwnedCouponSortPopUp>((event, emit) {});
   }
 
 
