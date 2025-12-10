@@ -4,7 +4,7 @@ sealed class OwnedCouponListEvent extends Equatable {
   const OwnedCouponListEvent();
 
   @override
-  List<Object> get props => [];
+  List<Object?> get props => [];
 }
 
 class FetchCoupons extends OwnedCouponListEvent {}
@@ -12,3 +12,38 @@ class FetchCoupons extends OwnedCouponListEvent {}
 class FetchMoreCoupons extends OwnedCouponListEvent {}
 
 class RefreshCoupons extends OwnedCouponListEvent {}
+
+// filters
+class ReadOwnedCouponFilters extends OwnedCouponListEvent {}
+
+class ApplyOwnedCouponFilters extends OwnedCouponListEvent {
+  final bool reductionIsPercentage;
+  final bool reductionIsFixed;
+  final double? minPrice;
+  final double? maxPrice;
+  final bool? onlyUsed;
+  final String? shopId;
+
+  const ApplyOwnedCouponFilters({
+    required this.reductionIsPercentage,
+    required this.reductionIsFixed,
+    this.minPrice,
+    this.maxPrice,
+    this.onlyUsed,
+    this.shopId,
+  });
+}
+
+class ClearOwnedCouponFilters extends OwnedCouponListEvent {}
+
+class LeaveOwnedCouponFilterPopUp extends OwnedCouponListEvent {}
+
+// sorting
+class ReadOwnedCouponOrdering extends OwnedCouponListEvent {}
+
+class ApplyOwnedCouponOrdering extends OwnedCouponListEvent {
+  final OwnedCouponsOrdering ordering;
+  const ApplyOwnedCouponOrdering(this.ordering);
+}
+
+class LeaveOwnedCouponSortPopUp extends OwnedCouponListEvent {}

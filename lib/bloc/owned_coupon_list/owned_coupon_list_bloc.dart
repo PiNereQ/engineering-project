@@ -8,6 +8,25 @@ import 'package:proj_inz/data/repositories/coupon_repository.dart';
 part 'owned_coupon_list_event.dart';
 part 'owned_coupon_list_state.dart';
 
+enum OwnedCouponsOrdering {
+  purchaseDateAsc,
+  purchaseDateDesc,
+  expiryDateAsc,
+  expiryDateDesc,
+  priceAsc,
+  priceDesc,
+}
+// filters state
+bool _reductionIsPercentage = true;
+bool _reductionIsFixed = true;
+double? _minPrice;
+double? _maxPrice;
+bool? _onlyUsed;
+String? _shopId;
+
+// ordering state
+OwnedCouponsOrdering _ordering = OwnedCouponsOrdering.purchaseDateDesc;
+
 class OwnedCouponListBloc extends Bloc<OwnedCouponListEvent, OwnedCouponListState> {
   final CouponRepository couponRepository;
   final int limit = 50;
@@ -17,11 +36,25 @@ class OwnedCouponListBloc extends Bloc<OwnedCouponListEvent, OwnedCouponListStat
   bool _hasMore = true;
   bool _isFetching = false;
 
+  List<OwnedCoupon> get allCoupons => List.unmodifiable(_allCoupons);
+
   OwnedCouponListBloc(this.couponRepository) : super(OwnedCouponListInitial()) {
     on<FetchCoupons>(_onFetchCoupons);
     on<FetchMoreCoupons>(_onFetchMoreCoupons);
     on<RefreshCoupons>(_onRefreshCoupons);
+
+    // filters
+    on<ReadOwnedCouponFilters>(_onReadFilters);
+    on<ApplyOwnedCouponFilters>(_onApplyFilters);
+    on<ClearOwnedCouponFilters>(_onClearFilters);
+    on<LeaveOwnedCouponFilterPopUp>((event, emit) {});
+
+    // sorting
+    on<ReadOwnedCouponOrdering>(_onReadOrdering);
+    on<ApplyOwnedCouponOrdering>(_onApplyOrdering);
+    on<LeaveOwnedCouponSortPopUp>((event, emit) {});
   }
+
 
     Future<void> _onFetchCoupons(FetchCoupons event, Emitter<OwnedCouponListState> emit) async {
     emit(OwnedCouponListLoadInProgress());
@@ -54,8 +87,47 @@ class OwnedCouponListBloc extends Bloc<OwnedCouponListEvent, OwnedCouponListStat
       _allCoupons.addAll(ownedCoupons);
       _lastDocument = lastDoc;
 
-      
-      emit(OwnedCouponListLoadSuccess(coupons: _allCoupons, hasMore: _hasMore));
+      // apply filters
+      var filtered = _allCoupons.where((c) {
+        if (!_reductionIsPercentage && c.reductionIsPercentage) return false;
+        if (!_reductionIsFixed && !c.reductionIsPercentage) return false;
+
+        if (_minPrice != null && c.price < _minPrice!) return false;
+        if (_maxPrice != null && c.price > _maxPrice!) return false;
+
+        if (_onlyUsed != null && c.isUsed != _onlyUsed) return false;
+
+        if (_shopId != null && c.shopId != _shopId) return false;
+
+        return true;
+      }).toList();
+
+      // apply ordering
+      filtered.sort((a, b) {
+        switch (_ordering) {
+          case OwnedCouponsOrdering.purchaseDateAsc:
+            return (a.purchaseDate ?? DateTime(0))
+                .compareTo(b.purchaseDate ?? DateTime(0));
+          case OwnedCouponsOrdering.purchaseDateDesc:
+            return (b.purchaseDate ?? DateTime(0))
+                .compareTo(a.purchaseDate ?? DateTime(0));
+          case OwnedCouponsOrdering.expiryDateAsc:
+            return a.expiryDate.compareTo(b.expiryDate);
+          case OwnedCouponsOrdering.expiryDateDesc:
+            return b.expiryDate.compareTo(a.expiryDate);
+          case OwnedCouponsOrdering.priceAsc:
+            return a.price.compareTo(b.price);
+          case OwnedCouponsOrdering.priceDesc:
+            return b.price.compareTo(a.price);
+        }
+      });
+
+      emit(OwnedCouponListLoadSuccess(coupons: filtered, hasMore: _hasMore));
+
+      if (filtered.isEmpty) {
+        emit(OwnedCouponListLoadEmpty());
+      }
+
 
       if (_allCoupons.isEmpty) {
         emit(OwnedCouponListLoadEmpty());
@@ -75,4 +147,49 @@ class OwnedCouponListBloc extends Bloc<OwnedCouponListEvent, OwnedCouponListStat
     _hasMore = true;
     add(FetchCoupons());
   }
+
+  // filter handlers
+  void _onReadFilters(ReadOwnedCouponFilters event, Emitter emit) {
+    emit(OwnedCouponFilterRead(
+      reductionIsPercentage: _reductionIsPercentage,
+      reductionIsFixed: _reductionIsFixed,
+      minPrice: _minPrice,
+      maxPrice: _maxPrice,
+      onlyUsed: _onlyUsed,
+      shopId: _shopId,
+    ));
+  }
+
+  void _onApplyFilters(ApplyOwnedCouponFilters event, Emitter emit) {
+    _reductionIsPercentage = event.reductionIsPercentage;
+    _reductionIsFixed = event.reductionIsFixed;
+    _minPrice = event.minPrice;
+    _maxPrice = event.maxPrice;
+    _onlyUsed = event.onlyUsed;
+    _shopId = event.shopId;
+
+    add(FetchCoupons());
+  }
+
+  void _onClearFilters(ClearOwnedCouponFilters event, Emitter emit) {
+    _reductionIsPercentage = true;
+    _reductionIsFixed = true;
+    _minPrice = null;
+    _maxPrice = null;
+    _onlyUsed = null;
+    _shopId = null;
+
+    add(FetchCoupons());
+  }
+
+  // sorting handlers
+  void _onReadOrdering(ReadOwnedCouponOrdering event, Emitter emit) {
+    emit(OwnedCouponOrderingRead(_ordering));
+  }
+
+  void _onApplyOrdering(ApplyOwnedCouponOrdering event, Emitter emit) {
+    _ordering = event.ordering;
+    add(FetchCoupons());
+  }
+
 }
