@@ -19,9 +19,8 @@ enum OwnedCouponsOrdering {
 // filters state
 bool _reductionIsPercentage = true;
 bool _reductionIsFixed = true;
-double? _minPrice;
-double? _maxPrice;
-bool? _onlyUsed;
+bool _showUsed = true;
+bool _showUnused = true;
 String? _shopId;
 
 // ordering state
@@ -89,13 +88,18 @@ class OwnedCouponListBloc extends Bloc<OwnedCouponListEvent, OwnedCouponListStat
 
       // apply filters
       var filtered = _allCoupons.where((c) {
-        if (!_reductionIsPercentage && c.reductionIsPercentage) return false;
-        if (!_reductionIsFixed && !c.reductionIsPercentage) return false;
+        if (_reductionIsPercentage && !_reductionIsFixed) {
+          if (!c.reductionIsPercentage) return false;
+        }
+        else if (!_reductionIsPercentage && _reductionIsFixed) {
+          if (c.reductionIsPercentage) return false;
+        }
+        else if (!_reductionIsPercentage && !_reductionIsFixed) {
+          return false;
+        }
 
-        if (_minPrice != null && c.price < _minPrice!) return false;
-        if (_maxPrice != null && c.price > _maxPrice!) return false;
-
-        if (_onlyUsed != null && c.isUsed != _onlyUsed) return false;
+        if (!_showUsed && c.isUsed) return false;
+        if (!_showUnused && !c.isUsed) return false;
 
         if (_shopId != null && c.shopId != _shopId) return false;
 
@@ -153,9 +157,8 @@ class OwnedCouponListBloc extends Bloc<OwnedCouponListEvent, OwnedCouponListStat
     emit(OwnedCouponFilterRead(
       reductionIsPercentage: _reductionIsPercentage,
       reductionIsFixed: _reductionIsFixed,
-      minPrice: _minPrice,
-      maxPrice: _maxPrice,
-      onlyUsed: _onlyUsed,
+      showUsed: _showUsed,
+      showUnused: _showUnused,
       shopId: _shopId,
     ));
   }
@@ -163,9 +166,8 @@ class OwnedCouponListBloc extends Bloc<OwnedCouponListEvent, OwnedCouponListStat
   void _onApplyFilters(ApplyOwnedCouponFilters event, Emitter emit) {
     _reductionIsPercentage = event.reductionIsPercentage;
     _reductionIsFixed = event.reductionIsFixed;
-    _minPrice = event.minPrice;
-    _maxPrice = event.maxPrice;
-    _onlyUsed = event.onlyUsed;
+    _showUsed = event.showUsed;
+    _showUnused = event.showUnused;
     _shopId = event.shopId;
 
     add(FetchCoupons());
@@ -174,9 +176,8 @@ class OwnedCouponListBloc extends Bloc<OwnedCouponListEvent, OwnedCouponListStat
   void _onClearFilters(ClearOwnedCouponFilters event, Emitter emit) {
     _reductionIsPercentage = true;
     _reductionIsFixed = true;
-    _minPrice = null;
-    _maxPrice = null;
-    _onlyUsed = null;
+    _showUsed = true;
+    _showUnused = true;
     _shopId = null;
 
     add(FetchCoupons());

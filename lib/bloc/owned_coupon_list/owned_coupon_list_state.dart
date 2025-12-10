@@ -37,7 +37,8 @@ class OwnedCouponFilterRead extends OwnedCouponListState {
   final bool? reductionIsFixed;
   final double? minPrice;
   final double? maxPrice;
-  final bool? onlyUsed;
+  final bool? showUsed;
+  final bool? showUnused;
   final String? shopId;
 
   const OwnedCouponFilterRead({
@@ -45,7 +46,8 @@ class OwnedCouponFilterRead extends OwnedCouponListState {
     this.reductionIsFixed,
     this.minPrice,
     this.maxPrice,
-    this.onlyUsed,
+    this.showUsed,
+    this.showUnused,
     this.shopId,
   });
 }

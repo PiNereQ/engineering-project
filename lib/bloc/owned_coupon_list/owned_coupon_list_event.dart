@@ -21,16 +21,18 @@ class ApplyOwnedCouponFilters extends OwnedCouponListEvent {
   final bool reductionIsFixed;
   final double? minPrice;
   final double? maxPrice;
-  final bool? onlyUsed;
   final String? shopId;
+  final bool showUsed;
+  final bool showUnused;
 
   const ApplyOwnedCouponFilters({
     required this.reductionIsPercentage,
     required this.reductionIsFixed,
     this.minPrice,
     this.maxPrice,
-    this.onlyUsed,
     this.shopId,
+    required this.showUsed,
+    required this.showUnused,
   });
 }
 

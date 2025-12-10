@@ -12,7 +12,6 @@ import 'package:proj_inz/presentation/widgets/input/buttons/checkbox.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_icon_button.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_text_button.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/radio_button.dart';
-import 'package:proj_inz/presentation/widgets/input/text_fields/custom_text_field.dart';
 
 class BoughtCouponListScreen extends StatefulWidget {
   const BoughtCouponListScreen({super.key});
@@ -246,7 +245,8 @@ class _OwnedCouponFilterDialogState extends State<_OwnedCouponFilterDialog> {
   bool reductionIsFixed = true;
   double? minPrice;
   double? maxPrice;
-  bool? onlyUsed;
+  bool showUsed = true;
+  bool showUnused = true;
   String? selectedShopId;
 
   final minPriceController = TextEditingController();
@@ -268,11 +268,9 @@ class _OwnedCouponFilterDialogState extends State<_OwnedCouponFilterDialog> {
           reductionIsFixed = state.reductionIsFixed ?? true;
           minPrice = state.minPrice;
           maxPrice = state.maxPrice;
-          onlyUsed = state.onlyUsed;
+          showUsed = state.showUsed ?? true;
+          showUnused = state.showUnused ?? true;
           selectedShopId = state.shopId;
-
-          minPriceController.text = minPrice?.toString() ?? "";
-          maxPriceController.text = maxPrice?.toString() ?? "";
 
           setState(() {});
         }
@@ -346,59 +344,22 @@ class _OwnedCouponFilterDialogState extends State<_OwnedCouponFilterDialog> {
                     const Divider(color: AppColors.textPrimary),
 
                     const Text(
-                      'Cena',
-                      style: TextStyle(fontSize: 20, color: AppColors.textPrimary),
-                    ),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: CustomTextField(
-                            label: 'od',
-                            controller: minPriceController,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: CustomTextField(
-                            label: 'do',
-                            controller: maxPriceController,
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    const Divider(color: AppColors.textPrimary),
-
-                    const Text(
                       'Status kuponu',
                       style: TextStyle(fontSize: 20, color: AppColors.textPrimary),
                     ),
                     CustomCheckbox(
-                      selected: onlyUsed == true,
+                      selected: showUsed,
                       onTap: () {
-                        setState(() {
-                          onlyUsed = true;
-                        });
+                        setState(() => showUsed = !showUsed);
                       },
                       label: 'wykorzystany',
                     ),
                     CustomCheckbox(
-                      selected: onlyUsed == false,
+                      selected: showUnused,
                       onTap: () {
-                        setState(() {
-                          onlyUsed = false;
-                        });
+                        setState(() => showUnused = !showUnused);
                       },
                       label: 'niewykorzystany',
-                    ),
-                    CustomCheckbox(
-                      selected: onlyUsed == null,
-                      onTap: () {
-                        setState(() {
-                          onlyUsed = null;
-                        });
-                      },
-                      label: 'oba',
                     ),
 
                     const Divider(color: AppColors.textPrimary),
@@ -447,13 +408,8 @@ class _OwnedCouponFilterDialogState extends State<_OwnedCouponFilterDialog> {
                                   ApplyOwnedCouponFilters(
                                     reductionIsPercentage: reductionIsPercentage,
                                     reductionIsFixed: reductionIsFixed,
-                                    minPrice: minPriceController.text.isEmpty
-                                        ? null
-                                        : double.tryParse(minPriceController.text),
-                                    maxPrice: maxPriceController.text.isEmpty
-                                        ? null
-                                        : double.tryParse(maxPriceController.text),
-                                    onlyUsed: onlyUsed,
+                                    showUsed: showUsed,
+                                    showUnused: showUnused,
                                     shopId: selectedShopId,
                                   ),
                                 );
