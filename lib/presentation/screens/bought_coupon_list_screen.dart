@@ -151,7 +151,7 @@ class _Toolbar extends StatelessWidget {
             right: 0,
             top: 0,
             height: 60,
-            child: Container(color: AppColors.surface),
+            child: Container(color: AppColors.background),
           ),
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 24, 16, 16),
@@ -243,14 +243,9 @@ class _OwnedCouponFilterDialog extends StatefulWidget {
 class _OwnedCouponFilterDialogState extends State<_OwnedCouponFilterDialog> {
   bool reductionIsPercentage = true;
   bool reductionIsFixed = true;
-  double? minPrice;
-  double? maxPrice;
   bool showUsed = true;
   bool showUnused = true;
   String? selectedShopId;
-
-  final minPriceController = TextEditingController();
-  final maxPriceController = TextEditingController();
 
   @override
   void initState() {
@@ -258,174 +253,205 @@ class _OwnedCouponFilterDialogState extends State<_OwnedCouponFilterDialog> {
     context.read<OwnedCouponListBloc>().add(ReadOwnedCouponFilters());
   }
 
-@override
-Widget build(BuildContext context) {
+  @override
+  Widget build(BuildContext context) {
+    final shops = context.read<OwnedCouponListBloc>().uniqueShops;
 
-  final shops = context.read<OwnedCouponListBloc>().uniqueShops;
-
-  return BlocListener<OwnedCouponListBloc, OwnedCouponListState>(
+    return BlocListener<OwnedCouponListBloc, OwnedCouponListState>(
       listenWhen: (_, state) => state is OwnedCouponFilterRead,
       listener: (context, state) {
         if (state is OwnedCouponFilterRead) {
-          reductionIsPercentage = state.reductionIsPercentage ?? true;
-          reductionIsFixed = state.reductionIsFixed ?? true;
-          minPrice = state.minPrice;
-          maxPrice = state.maxPrice;
-          showUsed = state.showUsed ?? true;
-          showUnused = state.showUnused ?? true;
-          selectedShopId = state.shopId;
-
-          setState(() {});
+          setState(() {
+            reductionIsPercentage = state.reductionIsPercentage ?? true;
+            reductionIsFixed = state.reductionIsFixed ?? true;
+            showUsed = state.showUsed ?? true;
+            showUnused = state.showUnused ?? true;
+            selectedShopId = state.shopId;
+          });
         }
       },
       child: Material(
         color: Colors.transparent,
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            children: [
-              Row(
-                children: [
-                  CustomIconButton(
-                    icon: SvgPicture.asset('assets/icons/back.svg'),
-                    onTap: () => Navigator.of(context).pop(),
-                  )
-                ],
-              ),
-              const SizedBox(height: 16),
-
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: ShapeDecoration(
-                  color: AppColors.surface,
-                  shape: RoundedRectangleBorder(
-                    side: const BorderSide(width: 2),
-                    borderRadius: BorderRadius.circular(24),
-                  ),
-                  shadows: const [
-                    BoxShadow(
-                      color: AppColors.textPrimary,
-                      blurRadius: 0,
-                      offset: Offset(4, 4),
-                      spreadRadius: 0,
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  spacing: 18,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                Row(
                   children: [
-                    const Text(
-                      'Filtry',
-                      style: TextStyle(
-                        color: AppColors.textPrimary,
-                        fontSize: 24,
-                        fontFamily: 'Itim',
-                      ),
+                    CustomIconButton(
+                      icon: SvgPicture.asset('assets/icons/back.svg'),
+                      onTap: () => Navigator.of(context).pop(),
                     ),
-                    const Divider(color: AppColors.textPrimary, thickness: 2),
-
-                    const Text(
-                      'Typ kuponu',
-                      style: TextStyle(fontSize: 20, color: AppColors.textPrimary),
-                    ),
-                    CustomCheckbox(
-                      selected: reductionIsPercentage,
-                      onTap: () {
-                        setState(() => reductionIsPercentage = !reductionIsPercentage);
-                      },
-                      label: 'rabat -%',
-                    ),
-                    CustomCheckbox(
-                      selected: reductionIsFixed,
-                      onTap: () {
-                        setState(() => reductionIsFixed = !reductionIsFixed);
-                      },
-                      label: 'rabat -zł',
-                    ),
-
-                    const Divider(color: AppColors.textPrimary),
-
-                    const Text(
-                      'Status kuponu',
-                      style: TextStyle(fontSize: 20, color: AppColors.textPrimary),
-                    ),
-                    CustomCheckbox(
-                      selected: showUsed,
-                      onTap: () {
-                        setState(() => showUsed = !showUsed);
-                      },
-                      label: 'wykorzystany',
-                    ),
-                    CustomCheckbox(
-                      selected: showUnused,
-                      onTap: () {
-                        setState(() => showUnused = !showUnused);
-                      },
-                      label: 'niewykorzystany',
-                    ),
-
-                    const Divider(color: AppColors.textPrimary),
-
-                    const Text(
-                      'Sklep',
-                      style: TextStyle(fontSize: 20, color: AppColors.textPrimary),
-                    ),
-
-                    DropdownButton<String>(
-                      value: selectedShopId,
-                      isExpanded: true,
-                      hint: const Text("Wybierz sklep"),
-                      items: shops.map((shop) {
-                        return DropdownMenuItem<String>(
-                          value: shop.id,
-                          child: Text(shop.name),
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          selectedShopId = value;
-                        });
-                      },
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        CustomTextButton(
-                          label: "Wyczyść",
-                          icon: const Icon(Icons.delete_outline),
-                          onTap: () {
-                            Navigator.of(context).pop();
-                            context
-                                .read<OwnedCouponListBloc>()
-                                .add(ClearOwnedCouponFilters());
-                          },
-                        ),
-                        CustomTextButton.primary(
-                          label: "Zastosuj",
-                          icon: const Icon(Icons.check),
-                          onTap: () {
-                            Navigator.of(context).pop();
-                            context.read<OwnedCouponListBloc>().add(
-                                  ApplyOwnedCouponFilters(
-                                    reductionIsPercentage: reductionIsPercentage,
-                                    reductionIsFixed: reductionIsFixed,
-                                    showUsed: showUsed,
-                                    showUnused: showUnused,
-                                    shopId: selectedShopId,
-                                  ),
-                                );
-                          },
-                        ),
-                      ],
-                    )
                   ],
                 ),
-              )
-            ],
+                const SizedBox(height: 16),
+
+                Container(
+                  decoration: ShapeDecoration(
+                    color: AppColors.surface,
+                    shape: RoundedRectangleBorder(
+                      side: const BorderSide(width: 2),
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                    shadows: const [
+                      BoxShadow(
+                        color: AppColors.textPrimary,
+                        blurRadius: 0,
+                        offset: Offset(4, 4),
+                        spreadRadius: 0,
+                      ),
+                    ],
+                  ),
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    spacing: 18,
+                    children: [
+                      const Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          'Filtry',
+                          style: TextStyle(
+                            color: AppColors.textPrimary,
+                            fontSize: 24,
+                            fontFamily: 'Itim',
+                          ),
+                        ),
+                      ),
+                      const Divider(color: AppColors.textPrimary, thickness: 2),
+
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          spacing: 8,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Typ kuponu',
+                                  style: TextStyle(
+                                    color: AppColors.textPrimary,
+                                    fontSize: 20,
+                                    fontFamily: 'Itim',
+                                  ),
+                                ),
+                                CustomCheckbox(
+                                  selected: reductionIsPercentage,
+                                  onTap: () => setState(() =>
+                                      reductionIsPercentage = !reductionIsPercentage),
+                                  label: 'rabat -%',
+                                ),
+                                CustomCheckbox(
+                                  selected: reductionIsFixed,
+                                  onTap: () => setState(() =>
+                                      reductionIsFixed = !reductionIsFixed),
+                                  label: 'rabat -zł',
+                                ),
+                              ],
+                            ),
+
+                            const Divider(color: AppColors.textPrimary),
+
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Status kuponu',
+                                  style: TextStyle(
+                                    color: AppColors.textPrimary,
+                                    fontSize: 20,
+                                    fontFamily: 'Itim',
+                                  ),
+                                ),
+                                CustomCheckbox(
+                                  selected: showUsed,
+                                  onTap: () => setState(() => showUsed = !showUsed),
+                                  label: 'wykorzystany',
+                                ),
+                                CustomCheckbox(
+                                  selected: showUnused,
+                                  onTap: () => setState(() => showUnused = !showUnused),
+                                  label: 'niewykorzystany',
+                                ),
+                              ],
+                            ),
+
+                            const Divider(color: AppColors.textPrimary),
+
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Sklep',
+                                  style: TextStyle(
+                                    color: AppColors.textPrimary,
+                                    fontSize: 20,
+                                    fontFamily: 'Itim',
+                                  ),
+                                ),
+                                DropdownButton<String>(
+                                  value: selectedShopId,
+                                  isExpanded: true,
+                                  hint: const Text("Wybierz sklep"),
+                                  items: shops
+                                      .map(
+                                        (shop) => DropdownMenuItem<String>(
+                                          value: shop.id,
+                                          child: Text(shop.name),
+                                        ),
+                                      )
+                                      .toList(),
+                                  onChanged: (value) =>
+                                      setState(() => selectedShopId = value),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            CustomTextButton(
+                              label: 'Wyczyść',
+                              icon: const Icon(Icons.delete_outline),
+                              onTap: () {
+                                Navigator.of(context).pop();
+                                context
+                                    .read<OwnedCouponListBloc>()
+                                    .add(ClearOwnedCouponFilters());
+                              },
+                            ),
+                            CustomTextButton.primary(
+                              label: 'Zastosuj',
+                              icon: const Icon(Icons.check),
+                              onTap: () {
+                                Navigator.of(context).pop();
+                                context.read<OwnedCouponListBloc>().add(
+                                      ApplyOwnedCouponFilters(
+                                        reductionIsPercentage: reductionIsPercentage,
+                                        reductionIsFixed: reductionIsFixed,
+                                        showUsed: showUsed,
+                                        showUnused: showUnused,
+                                        shopId: selectedShopId,
+                                      ),
+                                    );
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              ],
+            ),
           ),
         ),
       ),
@@ -492,8 +518,8 @@ class _OwnedCouponSortDialogState extends State<_OwnedCouponSortDialog> {
                   ],
                 ),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   spacing: 18,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
                       'Sortowanie',
@@ -505,78 +531,121 @@ class _OwnedCouponSortDialogState extends State<_OwnedCouponSortDialog> {
                     ),
                     const Divider(color: AppColors.textPrimary, thickness: 2),
 
-                    const Text(
-                      'Data zakupu',
-                      style: TextStyle(fontSize: 20, color: AppColors.textPrimary),
-                    ),
-                    CustomRadioButton(
-                      label: "od najnowszych",
-                      selected: ordering == OwnedCouponsOrdering.purchaseDateDesc,
-                      onTap: () => setState(
-                          () => ordering = OwnedCouponsOrdering.purchaseDateDesc),
-                    ),
-                    CustomRadioButton(
-                      label: "od najstarszych",
-                      selected: ordering == OwnedCouponsOrdering.purchaseDateAsc,
-                      onTap: () => setState(
-                          () => ordering = OwnedCouponsOrdering.purchaseDateAsc),
-                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        spacing: 8,
+                        children: [
 
-                    const Divider(color: AppColors.textPrimary),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Data zakupu',
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontFamily: 'Itim',
+                                  color: AppColors.textPrimary,
+                                ),
+                              ),
+                              CustomRadioButton(
+                                label: "od najnowszych",
+                                selected: ordering ==
+                                    OwnedCouponsOrdering.purchaseDateDesc,
+                                onTap: () => setState(() =>
+                                    ordering =
+                                        OwnedCouponsOrdering.purchaseDateDesc),
+                              ),
+                              CustomRadioButton(
+                                label: "od najstarszych",
+                                selected: ordering ==
+                                    OwnedCouponsOrdering.purchaseDateAsc,
+                                onTap: () => setState(() =>
+                                    ordering =
+                                        OwnedCouponsOrdering.purchaseDateAsc),
+                              ),
+                            ],
+                          ),
 
-                    const Text(
-                      'Data ważności',
-                      style: TextStyle(fontSize: 20, color: AppColors.textPrimary),
-                    ),
-                    CustomRadioButton(
-                      label: "od najbliższej",
-                      selected: ordering == OwnedCouponsOrdering.expiryDateAsc,
-                      onTap: () => setState(
-                          () => ordering = OwnedCouponsOrdering.expiryDateAsc),
-                    ),
-                    CustomRadioButton(
-                      label: "od najdalszej",
-                      selected: ordering == OwnedCouponsOrdering.expiryDateDesc,
-                      onTap: () => setState(
-                          () => ordering = OwnedCouponsOrdering.expiryDateDesc),
-                    ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Data ważności',
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontFamily: 'Itim',
+                                  color: AppColors.textPrimary,
+                                ),
+                              ),
+                              CustomRadioButton(
+                                label: "od najbliższej",
+                                selected:
+                                    ordering == OwnedCouponsOrdering.expiryDateAsc,
+                                onTap: () => setState(() =>
+                                    ordering =
+                                        OwnedCouponsOrdering.expiryDateAsc),
+                              ),
+                              CustomRadioButton(
+                                label: "od najdalszej",
+                                selected:
+                                    ordering == OwnedCouponsOrdering.expiryDateDesc,
+                                onTap: () => setState(() =>
+                                    ordering =
+                                        OwnedCouponsOrdering.expiryDateDesc),
+                              ),
+                            ],
+                          ),
 
-                    const Divider(color: AppColors.textPrimary),
-
-                    const Text(
-                      'Cena',
-                      style: TextStyle(fontSize: 20, color: AppColors.textPrimary),
-                    ),
-                    CustomRadioButton(
-                      label: "od najniższej",
-                      selected: ordering == OwnedCouponsOrdering.priceAsc,
-                      onTap: () =>
-                          setState(() => ordering = OwnedCouponsOrdering.priceAsc),
-                    ),
-                    CustomRadioButton(
-                      label: "od najwyższej",
-                      selected: ordering == OwnedCouponsOrdering.priceDesc,
-                      onTap: () =>
-                          setState(() => ordering = OwnedCouponsOrdering.priceDesc),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Cena',
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontFamily: 'Itim',
+                                  color: AppColors.textPrimary,
+                                ),
+                              ),
+                              CustomRadioButton(
+                                label: "od najniższej",
+                                selected:
+                                    ordering == OwnedCouponsOrdering.priceAsc,
+                                onTap: () => setState(() =>
+                                    ordering = OwnedCouponsOrdering.priceAsc),
+                              ),
+                              CustomRadioButton(
+                                label: "od najwyższej",
+                                selected:
+                                    ordering == OwnedCouponsOrdering.priceDesc,
+                                onTap: () => setState(() =>
+                                    ordering = OwnedCouponsOrdering.priceDesc),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
 
                     const SizedBox(height: 16),
 
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         CustomTextButton.primary(
                           label: "Zastosuj",
                           icon: const Icon(Icons.check),
                           onTap: () {
                             Navigator.of(context).pop();
-                            context
-                                .read<OwnedCouponListBloc>()
-                                .add(ApplyOwnedCouponOrdering(ordering));
+                            context.read<OwnedCouponListBloc>().add(
+                                  ApplyOwnedCouponOrdering(ordering),
+                                );
                           },
                         ),
                       ],
-                    )
+                    ),
                   ],
                 ),
               )
