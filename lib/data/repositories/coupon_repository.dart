@@ -234,6 +234,7 @@ class CouponRepository {
           sellerReputation: sellerDoc['reputation'],
           code: '',
           isUsed: false, // TODO: implement usage tracking
+          purchaseDate: (codeDataDoc['boughtAt'] as Timestamp?)?.toDate(),
         ),
       );
     }
@@ -344,6 +345,7 @@ class CouponRepository {
       sellerJoinDate: (sellerDoc['joinDate'] as Timestamp).toDate(),
       code: privateDataDoc['code'],
       isUsed: false, // TODO: implement usage tracking
+      purchaseDate: (privateDataDoc['boughtAt'] as Timestamp?)?.toDate()
     );
   }
 
