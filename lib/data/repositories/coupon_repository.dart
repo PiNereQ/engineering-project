@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:proj_inz/bloc/coupon_list/coupon_list_bloc.dart';
 import 'package:proj_inz/data/models/coupon_model.dart';
 import 'package:proj_inz/data/models/coupon_offer_model.dart';
+import 'package:proj_inz/data/models/listed_coupon_model.dart';
 import 'package:proj_inz/data/models/owned_coupon_model.dart';
 import 'package:proj_inz/data/api/api_client.dart';
 
@@ -20,6 +21,16 @@ class PaginatedOwnedCouponsResult {
   PaginatedOwnedCouponsResult({required this.coupons, this.lastDocument});
 }
 
+class PaginatedListedCouponsResult {
+  final List<ListedCoupon> coupons;
+  final DocumentSnapshot? lastDocument;
+
+  PaginatedListedCouponsResult({
+    required this.coupons,
+    required this.lastDocument,
+  });
+}
+
 class CouponRepository {
   final _firebaseAuth = FirebaseAuth.instance;
   final _firestore = FirebaseFirestore.instance;
@@ -27,6 +38,113 @@ class CouponRepository {
   
   final _shopCache = <String, DocumentSnapshot>{};
   final _sellerCache = <String, DocumentSnapshot>{};
+  
+Future<List<ListedCoupon>> getMyListedCoupons({int offset = 0}) async {
+  final user = _firebaseAuth.currentUser;
+  if (user == null) {
+    throw FirebaseAuthException(
+      code: 'not-authenticated',
+      message: 'User is not authenticated.',
+    );
+  }
+
+  final query = await _firestore
+      .collection('couponOffers')
+      .where('sellerId', isEqualTo: user.uid)
+      .orderBy('createdAt', descending: true)
+      .get();
+
+  final docs = query.docs;
+
+  // Apply offset manually (Firestore does not support offset efficiently)
+  final sliced = docs.skip(offset).take(20).toList();
+
+  final coupons = <ListedCoupon>[];
+
+  for (final doc in sliced) {
+    final shopId = doc['shopId'];
+    final shopDoc = await _firestore.collection('shops').doc(shopId).get();
+
+    coupons.add(
+      ListedCoupon(
+        id: doc.id,
+        reduction: doc['reduction'].toDouble(),
+        reductionIsPercentage: doc['reductionIsPercentage'],
+        price: doc['pricePLN'].toDouble(),
+        hasLimits: doc['hasLimits'],
+        worksOnline: doc['worksOnline'],
+        worksInStore: doc['worksInStore'],
+        expiryDate: (doc['expiryDate'] as Timestamp).toDate(),
+        description: doc['description'],
+        shopId: shopDoc.id,
+        shopName: shopDoc['name'],
+        shopNameColor: Color(shopDoc['nameColor']),
+        shopBgColor: Color(shopDoc['bgColor']),
+        isSold: doc['isSold'],
+        listingDate: (doc['createdAt'] as Timestamp).toDate(),
+      ),
+    );
+  }
+
+  return coupons;
+}
+
+  Future<PaginatedListedCouponsResult> fetchListedCouponsPaginated(
+    int limit,
+    DocumentSnapshot? startAfter,
+  ) async {
+    final user = _firebaseAuth.currentUser;
+    if (user == null) {
+      throw FirebaseAuthException(
+        code: 'not-authenticated',
+        message: 'User is not authenticated.',
+      );
+    }
+
+    var query = _firestore
+        .collection('couponOffers')
+        .where('sellerId', isEqualTo: user.uid)
+        .orderBy('createdAt', descending: true)
+        .limit(limit);
+
+    if (startAfter != null) {
+      query = query.startAfterDocument(startAfter);
+    }
+
+    final snapshot = await query.get();
+
+    final coupons = <ListedCoupon>[];
+
+    for (final doc in snapshot.docs) {
+      final shopId = doc['shopId'];
+      final shopDoc = await _firestore.collection('shops').doc(shopId).get();
+
+      coupons.add(
+        ListedCoupon(
+          id: doc.id,
+          reduction: doc['reduction'].toDouble(),
+          reductionIsPercentage: doc['reductionIsPercentage'],
+          price: doc['pricePLN'].toDouble(),
+          hasLimits: doc['hasLimits'],
+          worksOnline: doc['worksOnline'],
+          worksInStore: doc['worksInStore'],
+          expiryDate: (doc['expiryDate'] as Timestamp).toDate(),
+          description: doc['description'],
+          shopId: shopDoc.id,
+          shopName: shopDoc['name'],
+          shopNameColor: Color(shopDoc['nameColor']),
+          shopBgColor: Color(shopDoc['bgColor']),
+          isSold: doc['isSold'],
+          listingDate: (doc['createdAt'] as Timestamp).toDate(),
+        ),
+      );
+    }
+
+    return PaginatedListedCouponsResult(
+      coupons: coupons,
+      lastDocument: snapshot.docs.isNotEmpty ? snapshot.docs.last : null,
+    );
+  }
 
   Future<PaginatedCouponsResult> fetchCouponsPaginated(
     {required int limit,
