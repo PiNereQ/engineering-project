@@ -5,7 +5,6 @@ import 'package:proj_inz/bloc/chat/unread/chat_unread_bloc.dart';
 import 'package:proj_inz/bloc/chat/unread/chat_unread_event.dart';
 import 'package:proj_inz/core/theme.dart';
 import 'package:proj_inz/data/models/conversation_model.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:proj_inz/presentation/screens/report_screen.dart';
 import 'package:proj_inz/presentation/widgets/chat_report_popup.dart';
 import 'package:proj_inz/presentation/widgets/coupon_preview_popup.dart';

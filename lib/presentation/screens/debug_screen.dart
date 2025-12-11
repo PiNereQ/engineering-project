@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:proj_inz/data/models/coupon_model.dart';
 import 'package:proj_inz/presentation/widgets/coupon_card.dart';
@@ -52,14 +51,5 @@ class _DebugScreenState extends State<DebugScreen> {
       )
     );
     
-  }
-}
-
-void _checkUser() {
-  final user = FirebaseAuth.instance.currentUser;
-  if (user != null) {
-    debugPrint('Logged in user ID: ${user.uid}');
-  } else {
-    debugPrint('No user is currently logged in.');
   }
 }

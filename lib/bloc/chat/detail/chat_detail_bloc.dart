@@ -50,6 +50,7 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
       await chatRepository.sendMessage(
         conversationId: event.conversationId,
         text: event.text,
+        senderId: event.senderId,
       );
 
       final updatedMessages =

@@ -1,31 +1,28 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:proj_inz/data/models/shop_model.dart';
+import 'package:proj_inz/data/api/api_client.dart';
 
 class ShopRepository {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-
+  final ApiClient _api;
   final _shopCache = <String, Shop>{};
 
+  ShopRepository({ApiClient? api}) : _api = api ?? ApiClient(baseUrl: 'http://49.13.155.21:8000');
+
+  /// Fetch shop by ID from API (GET /shops/{id})
   Future<Shop> fetchShopById(String shopId) async {
     if (_shopCache.containsKey(shopId)) {
       return _shopCache[shopId]!;
     }
 
     try {
-      final doc = await _firestore.collection('shops').doc(shopId).get();
-
-      if (!doc.exists) {
-        throw Exception("Shop with ID $shopId not found");
-      }
-
-      final data = doc.data()!;
+      final data = await _api.getJsonById('/shops', shopId);
+      
       final shop = Shop(
-        id: doc.id,
+        id: data['id'].toString(),
         name: data['name'] as String,
-        bgColor: data['bgColor'] as int,
-        nameColor: data['nameColor'] as int,
-        categoryIds: List<String>.from(data['categoryIds'] ?? []),
+        bgColor: _parseColor(data['bg_color']),
+        nameColor: _parseColor(data['name_color']),
+        categoryIds: [], // Categories are in separate relation, can be parsed from data['categories']
       );
 
       _shopCache[shopId] = shop;
@@ -36,18 +33,19 @@ class ShopRepository {
     }
   }
 
+  /// Fetch all shops from API (GET /shops)
   Future<List<Shop>> fetchAllShops() async {
     try {
-      final querySnapshot = await _firestore.collection('shops').get();
+      final response = await _api.getJson('/shops');
+      final List<dynamic> shopsData = response is List ? response : [];
 
-      final shops = querySnapshot.docs.map((doc) {
-        final data = doc.data();
+      final shops = shopsData.map((data) {
         return Shop(
-          id: doc.id,
+          id: data['id'].toString(),
           name: data['name'] as String,
-          bgColor: data['bgColor'] as int,
-          nameColor: data['nameColor'] as int,
-          categoryIds: List<String>.from(data['categoryIds'] ?? []),
+          bgColor: _parseColor(data['bg_color']),
+          nameColor: _parseColor(data['name_color']),
+          categoryIds: [],
         );
       }).toList();
 
@@ -62,40 +60,38 @@ class ShopRepository {
     }
   }
 
-  // szukanie sklepow po nazwie (prefixowe dopasowanie po nameLowercase)
+  /// Search shops by name (client-side filtering for now)
   Future<List<Shop>> searchShopsByName(String query) async {
     if (query.isEmpty) {
       return [];
     }
 
-    final lowercaseQuery = query.toLowerCase();
-
     try {
-      final querySnapshot = await _firestore
-          .collection('shops')
-          .where('nameLowercase', isGreaterThanOrEqualTo: lowercaseQuery)
-          .where('nameLowercase', isLessThan: '${lowercaseQuery}z')
-          .get();
-
-      final shops = querySnapshot.docs.map((doc) {
-        final data = doc.data();
-        return Shop(
-          id: doc.id,
-          name: data['name'] as String,
-          bgColor: data['bgColor'] as int,
-          nameColor: data['nameColor'] as int,
-          categoryIds: List<String>.from(data['categoryIds'] ?? []),
-        );
-      }).toList();
-
-      for (final shop in shops) {
-        _shopCache[shop.id] = shop;
-      }
-
-      return shops;
+      final allShops = await fetchAllShops();
+      final lowercaseQuery = query.toLowerCase();
+      
+      return allShops.where((shop) => 
+        shop.name.toLowerCase().contains(lowercaseQuery)
+      ).toList();
     } catch (e) {
       if (kDebugMode) debugPrint('Error searching shops: $e');
       rethrow;
+    }
+  }
+
+  /// Parse color from hex string to int
+  int _parseColor(String? hexColor) {
+    if (hexColor == null || hexColor.isEmpty) return 0xFF000000;
+    
+    try {
+      String hex = hexColor.replaceAll('#', '');
+      if (hex.length == 6) {
+        hex = 'FF$hex'; // Add alpha if not present
+      }
+      return int.parse(hex, radix: 16);
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error parsing color $hexColor: $e');
+      return 0xFF000000;
     }
   }
 

@@ -1,5 +1,4 @@
 import 'package:bloc/bloc.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:proj_inz/data/models/owned_coupon_model.dart';
@@ -13,9 +12,10 @@ class OwnedCouponListBloc extends Bloc<OwnedCouponListEvent, OwnedCouponListStat
   final int limit = 50;
   
   final List<OwnedCoupon> _allCoupons = [];
-  DocumentSnapshot? _lastDocument;
+  int? _lastOffset;
   bool _hasMore = true;
   bool _isFetching = false;
+  String? _userId;
 
   OwnedCouponListBloc(this.couponRepository) : super(OwnedCouponListInitial()) {
     on<FetchCoupons>(_onFetchCoupons);
@@ -26,8 +26,9 @@ class OwnedCouponListBloc extends Bloc<OwnedCouponListEvent, OwnedCouponListStat
     Future<void> _onFetchCoupons(FetchCoupons event, Emitter<OwnedCouponListState> emit) async {
     emit(OwnedCouponListLoadInProgress());
     _allCoupons.clear();
-    _lastDocument = null;
+    _lastOffset = null;
     _hasMore = true;
+    _userId = event.userId;
     add(FetchMoreCoupons());
   }
 
@@ -40,19 +41,27 @@ class OwnedCouponListBloc extends Bloc<OwnedCouponListEvent, OwnedCouponListStat
       debugPrint("No more coupons to load.");
       return;
     }
+    if (_userId == null) {
+      debugPrint("No user ID provided");
+      emit(OwnedCouponListLoadFailure(message: 'User ID required'));
+      return;
+    }
 
     _isFetching = true;
     emit(OwnedCouponListLoadInProgress());
 
     try {
-      final result = await couponRepository.fetchOwnedCouponsPaginated(limit, _lastDocument);
+      final result = await couponRepository.fetchOwnedCouponsPaginated(
+        limit,
+        _lastOffset ?? 0,
+        _userId!,
+      );
       final ownedCoupons = result.coupons;
-      final lastDoc = result.lastDocument;
       debugPrint('Fetched ${ownedCoupons.length} coupons: $ownedCoupons');
 
       _hasMore = ownedCoupons.length == limit;
       _allCoupons.addAll(ownedCoupons);
-      _lastDocument = lastDoc;
+      _lastOffset = result.lastOffset;
 
       
       emit(OwnedCouponListLoadSuccess(coupons: _allCoupons, hasMore: _hasMore));
@@ -71,8 +80,10 @@ class OwnedCouponListBloc extends Bloc<OwnedCouponListEvent, OwnedCouponListStat
   Future<void> _onRefreshCoupons(RefreshCoupons event, Emitter<OwnedCouponListState> emit) async {
     emit(OwnedCouponListLoadInProgress());
     _allCoupons.clear();
-    _lastDocument = null;
+    _lastOffset = null;
     _hasMore = true;
-    add(FetchCoupons());
+    if (_userId != null) {
+      add(FetchCoupons(userId: _userId!));
+    }
   }
 }

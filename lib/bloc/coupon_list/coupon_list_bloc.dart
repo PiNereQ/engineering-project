@@ -1,5 +1,4 @@
 import 'package:bloc/bloc.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 
@@ -21,7 +20,7 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
   final int _limit = 50;
   
   final List<Coupon> _allCoupons = [];
-  DocumentSnapshot? _lastDocument;
+  int? _lastOffset;
   bool _hasMore = true;
   bool _isFetching = false;
 
@@ -34,9 +33,6 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
 
   // sorting
   Ordering _ordering = Ordering.creationDateDesc;
-
-  // shop filtering
-  String? _selectedShopId;
 
   CouponListBloc(this.couponRepository) : super(CouponListInitial()) {
     on<FetchCoupons>(_onFetchCoupons);
@@ -54,9 +50,8 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
   Future<void> _onFetchCoupons(FetchCoupons event, Emitter<CouponListState> emit) async {
     emit(CouponListLoadInProgress());
     _allCoupons.clear();
-    _lastDocument = null;
+    _lastOffset = null;
     _hasMore = true;
-    _selectedShopId = event.shopId;
     add(FetchMoreCoupons());
   }
 
@@ -80,12 +75,11 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
       
       // Convert API data to Coupon objects
       final coupons = apiData.map((json) => Coupon.fromJson(json)).toList();
-      final lastDoc = null; // API doesn't use pagination tokens
       debugPrint('Converted to ${coupons.length} Coupon objects');
 
       _hasMore = coupons.length == _limit;
       _allCoupons.addAll(coupons);
-      _lastDocument = lastDoc;
+      _lastOffset = coupons.isNotEmpty ? _allCoupons.length : null;
 
       var successState = CouponListLoadSuccess(coupons: _allCoupons, hasMore: _hasMore);
       _previousListState = successState;
@@ -108,7 +102,7 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
 
   Future<void> _onRefreshCoupons(RefreshCoupons event, Emitter<CouponListState> emit) async {
     _allCoupons.clear();
-    _lastDocument = null;
+    _lastOffset = null;
     _hasMore = true;
     add(FetchCoupons());
   }

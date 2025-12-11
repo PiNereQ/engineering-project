@@ -1,18 +1,54 @@
+import 'package:flutter/foundation.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:proj_inz/data/api/api_client.dart';
 
 class MapRepository {
+  final ApiClient _api;
+
+  MapRepository({ApiClient? api}) : _api = api ?? ApiClient(baseUrl: 'http://49.13.155.21:8000');
+
+  /// Fetch all locations from API (GET /shops and extract locations)
   Future<List<Location>> fetchLocations() async {
-    // TODO: Replace with fetching from API
-    await Future.delayed(Duration(seconds: 1));
-    return [
-      Location(shopLocationId: '0', latitude: 52.406374, longitude: 16.925168, shopId: '3', shopName: 'Media Expert'),
-      Location(shopLocationId: '1', latitude: 52.406554, longitude: 16.925334, shopId: '1', shopName: 'MediaMarkt'),
-      Location(shopLocationId: '2', latitude: 52.409000, longitude: 16.925361, shopId: '3', shopName: 'Media Expert'),
-      Location(shopLocationId: '3', latitude: 52.406668, longitude: 16.928808, shopId: '1', shopName: 'MediaMarkt'),
-    ];
+    try {
+      final response = await _api.getJson('/shops');
+      final List<dynamic> shopsData = response is List ? response : [];
+      
+      final locations = <Location>[];
+      
+      for (var shopData in shopsData) {
+        final shopId = shopData['id'].toString();
+        final shopName = shopData['name'] as String;
+        
+        // Fetch detailed shop info to get locations
+        try {
+          final shopDetail = await _api.getJsonById('/shops', shopId);
+          final shopLocations = shopDetail['locations'] as List?;
+          
+          if (shopLocations != null) {
+            for (var loc in shopLocations) {
+              locations.add(Location(
+                shopLocationId: loc['id'].toString(),
+                latitude: (loc['latitude'] as num).toDouble(),
+                longitude: (loc['longitude'] as num).toDouble(),
+                shopId: shopId,
+                shopName: shopName,
+              ));
+            }
+          }
+        } catch (e) {
+          if (kDebugMode) debugPrint('Error fetching locations for shop $shopId: $e');
+        }
+      }
+      
+      return locations;
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error fetching locations: $e');
+      rethrow;
+    }
   }
 
+  /// Fetch locations within specific bounds
   Future<List<Location>> fetchLocationsInBounds(LatLngBounds bounds) async {
     final allLocations = await fetchLocations();
     return allLocations.where((location) {

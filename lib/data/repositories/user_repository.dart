@@ -1,15 +1,12 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:proj_inz/data/api/api_client.dart';
-
-final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
 class UserRepository {
   final ApiClient _api;
 
   UserRepository({ApiClient? api}) : _api = api ?? ApiClient(baseUrl: 'http://49.13.155.21:8000');
 
+  /// Create user profile via API (POST /users)
   Future<void> createUserProfile({
     required String uid,
     required String email,
@@ -43,60 +40,70 @@ class UserRepository {
     }
   }
 
+  /// Check if username is already in use (GET /users and search)
   Future<bool> isUsernameInUse(String? username) async {
+    if (username == null || username.isEmpty) return false;
+    
     try {
-      final query = await _firestore
-          .collection('userProfileData')
-          .where('username', isEqualTo: username)
-          .get();
-      
-      return query.docs.isNotEmpty;
+      final response = await _api.getJson('/users');
+      if (response is List) {
+        return response.any((user) => user['username'] == username);
+      }
+      return false;
     } catch (e) {
+      if (kDebugMode) debugPrint('Error checking username: $e');
       return false;
     }
   }
 
+  /// Get user profile by ID (GET /users/{id})
   Future<Map<String, dynamic>?> getUserProfile(String uid) async {
-    DocumentSnapshot doc = await _firestore.collection('userProfileData').doc(uid).get();
-    if (doc.exists) {
-      return doc.data() as Map<String, dynamic>;
+    try {
+      final data = await _api.getJsonById('/users', uid);
+      return data as Map<String, dynamic>;
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error getting user profile: $e');
+      return null;
     }
+  }
+
+  /// Update user profile (PUT /users/{id})
+  /// Note: This endpoint may need to be implemented on the backend
+  Future<void> updateUserProfile(String uid, Map<String, dynamic> data) async {
+    try {
+      await _api.putJson('/users/', uid, data);
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error updating user profile: $e');
+      rethrow;
+    }
+  }
+
+  /// Get current user ID from secure storage
+  /// Note: This should use the auth token to determine current user
+  Future<String?> getCurrentUserId() async {
+    // TODO: Implement token-based authentication
+    // For now, this is a placeholder
+    if (kDebugMode) debugPrint('getCurrentUserId needs authentication implementation');
     return null;
   }
 
-  Future<void> updateUserProfile(String uid, Map<String, dynamic> data) async {
-    await _firestore.collection('userProfileData').doc(uid).update(data);
-  }
-
-  Future<User?> getCurrentUser() async {
-    return FirebaseAuth.instance.currentUser;
-  }
-
   /// Ensures the current user exists in the API database
-  /// Useful for users created before API integration
-  Future<void> ensureUserExistsInApi() async {
-    final user = await getCurrentUser();
-    if (user == null) return;
-
+  Future<void> ensureUserExistsInApi(String uid, String email, String username) async {
     try {
       // Try to get user from API
-      await _api.getJsonById('/users', user.uid);
+      await _api.getJsonById('/users', uid);
       if (kDebugMode) {
-        debugPrint('User ${user.uid} already exists in API');
+        debugPrint('User $uid already exists in API');
       }
     } catch (e) {
       // User doesn't exist in API, create them
       if (kDebugMode) {
-        debugPrint('User ${user.uid} not found in API, creating...');
+        debugPrint('User $uid not found in API, creating...');
       }
       
-      // Get username from Firestore
-      final profile = await getUserProfile(user.uid);
-      final username = profile?['username'] ?? 'User';
-      
       await createUserProfile(
-        uid: user.uid,
-        email: user.email ?? '',
+        uid: uid,
+        email: email,
         username: username,
       );
     }

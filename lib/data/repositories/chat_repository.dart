@@ -1,48 +1,33 @@
 import 'dart:async';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:proj_inz/data/models/message_model.dart';
 import 'package:proj_inz/data/models/conversation_model.dart';
 import 'package:collection/collection.dart';
-import 'package:proj_inz/data/repositories/user_repository.dart';
+import 'package:proj_inz/data/api/api_client.dart';
 
-// TODO: Replace mock data with real API
+// TODO: Backend API endpoints needed:
+// - GET /conversations (list user's conversations)
+// - POST /conversations (create new conversation)
+// - GET /conversations/{id}/messages (get messages for conversation)
+// - POST /conversations/{id}/messages (send message)
+// - PATCH /conversations/{id}/read (mark as read)
 
 class ChatRepository {
-  final _firebaseAuth = FirebaseAuth.instance;
-
-  final _userRepository = UserRepository();
+  final ApiClient _api;
 
   final List<Conversation> _mockConversations = [];
   final Map<String, List<Message>> _mockMessages = {};
 
-  ChatRepository() {
-    _initializeMockData();
-  }
-
-  void _initializeMockData() {
-
-  }
+  ChatRepository({ApiClient? api}) : _api = api ?? ApiClient(baseUrl: 'http://49.13.155.21:8000');
 
   // Get conversations for the current user
-  Future<List<Conversation>> getConversations({required bool asBuyer}) async {
+  // TODO: Replace with API call to GET /conversations?asBuyer={true|false}
+  Future<List<Conversation>> getConversations({required bool asBuyer, required String userId}) async {
     await Future.delayed(const Duration(milliseconds: 300));
-
-    final user = _firebaseAuth.currentUser;
-    if (user == null) {
-      throw FirebaseAuthException(
-        code: 'not-authenticated',
-        message: 'User not logged in',
-      );
-    }
-
-    final userId = user.uid;
 
     final filtered = asBuyer
         ? _mockConversations.where((c) => c.buyerId == userId)
         : _mockConversations.where((c) => c.sellerId == userId);
 
-    // Obliczamy dynamiczne pole isReadByCurrentUser
     return filtered
         .map((c) => c.copyWith(
               isReadByCurrentUser: asBuyer ? c.isReadByBuyer : c.isReadBySeller,
@@ -65,10 +50,13 @@ class ChatRepository {
   }
 
   // Create a conversation if it does not exist
+  // TODO: Replace with API call to POST /conversations
   Future<Conversation> createConversationIfNotExists({
     required String couponId,
     required String buyerId,
     required String sellerId,
+    required String buyerUsername,
+    required String sellerUsername,
   }) async {
     final existing = _mockConversations.firstWhereOrNull(
       (c) => c.couponId == couponId && c.buyerId == buyerId && c.sellerId == sellerId,
@@ -78,44 +66,8 @@ class ChatRepository {
       return existing;
     }
 
-    // Load usernames
-    final buyerProfile = await _userRepository.getUserProfile(buyerId);
-    final sellerProfile = await _userRepository.getUserProfile(sellerId);
-
-    final buyerUsername = buyerProfile?['username'] ?? 'Konto';
-    final sellerUsername = sellerProfile?['username'] ?? 'Użytkownik';
-
-    // Load coupon title
-    final couponDoc =
-        await FirebaseFirestore.instance.collection('couponOffers').doc(couponId).get();
-
-    final data = couponDoc.data() ?? {};
-    final reduction = data['reduction'] as num? ?? 0;
-    final reductionIsPercentage = data['reductionIsPercentage'] as bool? ?? true;
-
-    // TODO backend
-    final shopId = data['shopId'] as String?;
-
-    String shopName = "Sklep";
-
-    if (shopId != null) {
-      final shopDoc = await FirebaseFirestore.instance
-          .collection('shops')
-          .doc(shopId)
-          .get();
-
-      final shopData = shopDoc.data();
-      if (shopData != null && shopData['name'] != null) {
-        shopName = shopData['name'];
-      }
-    }
-
-    final reductionText = formatNumber(reduction);
-
-    final String couponTitle = reductionIsPercentage
-        ? "-$reductionText% • $shopName"
-        : "-$reductionText zł • $shopName";
-
+    // TODO: Get coupon details from API
+    final couponTitle = "Coupon";
 
     final newConv = Conversation(
       id: 'conv-${DateTime.now().millisecondsSinceEpoch}',
@@ -138,19 +90,17 @@ class ChatRepository {
   }
 
   // Get messages
+  // TODO: Replace with API call to GET /conversations/{id}/messages
   Future<List<Message>> getMessages(String conversationId) async {
     await Future.delayed(const Duration(milliseconds: 200));
     return _mockMessages[conversationId] ?? [];
   }
 
-  // Mark conversation as read BY CURRENT USER
-  void markConversationAsRead(String conversationId) {
+  // Mark conversation as read
+  // TODO: Replace with API call to PATCH /conversations/{id}/read
+  void markConversationAsRead(String conversationId, String userId) {
     final index = _mockConversations.indexWhere((c) => c.id == conversationId);
     if (index == -1) return;
-
-    final userId = _firebaseAuth.currentUser?.uid;
-
-    if (userId == null) return;
 
     final c = _mockConversations[index];
 
@@ -168,17 +118,12 @@ class ChatRepository {
   }
 
   // Send new message
+  // TODO: Replace with API call to POST /conversations/{id}/messages
   Future<void> sendMessage({
     required String conversationId,
     required String text,
+    required String senderId,
   }) async {
-    final user = _firebaseAuth.currentUser;
-    if (user == null) {
-      throw FirebaseAuthException(code: 'not-authenticated', message: 'User not logged in');
-    }
-
-    final senderId = user.uid;
-
     final newMessage = Message(
       id: 'msg-${DateTime.now().millisecondsSinceEpoch}',
       conversationId: conversationId,
@@ -200,8 +145,8 @@ class ChatRepository {
       final updated = conv.copyWith(
         lastMessage: text,
         lastMessageTime: DateTime.now(),
-        isReadByBuyer: senderIsBuyer ? true : false,  // buyer sees read if he sent it
-        isReadBySeller: senderIsBuyer ? false : true, // seller sees read if he sent it
+        isReadByBuyer: senderIsBuyer ? true : false,
+        isReadBySeller: senderIsBuyer ? false : true,
       );
 
       _mockConversations[index] = updated;
@@ -210,10 +155,7 @@ class ChatRepository {
     await Future.delayed(const Duration(milliseconds: 150));
   }
   
-  bool hasUnreadMessages() {
-    final currentUserId = _firebaseAuth.currentUser?.uid;
-    if (currentUserId == null) return false;
-
+  bool hasUnreadMessages(String currentUserId) {
     for (final c in _mockConversations) {
       if (c.buyerId == currentUserId && c.isReadByBuyer == false) {
         return true;

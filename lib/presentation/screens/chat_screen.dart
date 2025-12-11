@@ -9,7 +9,6 @@ import 'package:proj_inz/core/theme.dart';
 import 'package:proj_inz/data/models/conversation_model.dart';
 import 'package:proj_inz/presentation/widgets/conversation_tile.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_text_button.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 import 'chat_detail_screen.dart';
 

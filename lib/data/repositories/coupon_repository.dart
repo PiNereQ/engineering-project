@@ -1,8 +1,5 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:proj_inz/bloc/coupon_list/coupon_list_bloc.dart';
 import 'package:proj_inz/data/models/coupon_model.dart';
 import 'package:proj_inz/data/models/coupon_offer_model.dart';
 import 'package:proj_inz/data/models/owned_coupon_model.dart';
@@ -10,23 +7,23 @@ import 'package:proj_inz/data/api/api_client.dart';
 
 class PaginatedCouponsResult {
   final List<Coupon> ownedCoupons;
-  final DocumentSnapshot? lastDocument;
-  PaginatedCouponsResult({required this.ownedCoupons, this.lastDocument});
+  final int? lastOffset;
+  PaginatedCouponsResult({required this.ownedCoupons, this.lastOffset});
 }
 
 class PaginatedOwnedCouponsResult {
   final List<OwnedCoupon> coupons;
-  final DocumentSnapshot? lastDocument;
-  PaginatedOwnedCouponsResult({required this.coupons, this.lastDocument});
+  final int? lastOffset;
+  PaginatedOwnedCouponsResult({required this.coupons, this.lastOffset});
 }
 
 class CouponRepository {
-  final _firebaseAuth = FirebaseAuth.instance;
-  final _firestore = FirebaseFirestore.instance;
-  final ApiClient _api = ApiClient(baseUrl: 'http://49.13.155.21:8000');
+  final ApiClient _api;
   
-  final _shopCache = <String, DocumentSnapshot>{};
-  final _sellerCache = <String, DocumentSnapshot>{};
+  final _shopCache = <String, Map<String, dynamic>>{};
+  final _userCache = <String, Map<String, dynamic>>{};
+
+  CouponRepository({ApiClient? api}) : _api = api ?? ApiClient(baseUrl: 'http://49.13.155.21:8000');
 
   // ============ API-BASED METHODS ============
 
@@ -69,388 +66,239 @@ class CouponRepository {
     }
   }
 
-  // ============ FIREBASE-BASED METHODS (LEGACY) ============
-
-  Future<PaginatedCouponsResult> fetchCouponsPaginated(
-    {required int limit,
-    required DocumentSnapshot? startAfter,
-    bool? reductionIsPercentage,
-    bool? reductionIsFixed,
-    double? minPrice,
-    double? maxPrice,
-    num? minReputation,
-    required Ordering ordering,
-    String? shopId}
-  ) async {
-
-    final user = _firebaseAuth.currentUser;
-    if (user == null) {
-      throw FirebaseAuthException(
-        code: 'not-authenticated',
-        message: 'User is not authenticated.',
-      );
-    }
-
-    var query = _firestore
-      .collection('couponOffers')
-      .where('isSold', isEqualTo: false);
-      
-    if (shopId != null) {
-      query = query.where('shopId', isEqualTo: shopId);
-    }
-    else if (reductionIsPercentage == true && reductionIsFixed == false) {
-      // 'rabat %' is chosen, but not 'rabat zł'
-      query = query.where('reductionIsPercentage', isEqualTo: true);
-    } else if (reductionIsFixed == true && reductionIsPercentage == false) {
-      // 'rabat zł' is chosen, but not 'rabat %'
-      query = query.where('reductionIsPercentage', isEqualTo: false);
-    } else if (reductionIsFixed == false && reductionIsPercentage == false) {
-      // none are chosen -> no coupons
-      query = query.where('reductionIsPercentage', isEqualTo: true);
-      query = query.where('reductionIsPercentage', isEqualTo: false);
-    }
-
-    if (minPrice != null) {
-      query = query.where('pricePLN', isGreaterThanOrEqualTo: minPrice);
-    }
-    if (maxPrice != null) {
-      query = query.where('pricePLN', isLessThanOrEqualTo: maxPrice);
-    }
-
-    // TODO: filtering for reputation using _minReputation - might require denormalisation on Firestore
-
-    switch (ordering) {
-      case Ordering.creationDateAsc:
-        query = query.orderBy('createdAt').limit(limit);
-        break;
-      case Ordering.creationDateDesc:
-        query = query.orderBy('createdAt', descending: true).limit(limit);
-        break;
-      case Ordering.expiryDateAsc:
-        query = query.orderBy('expiryDate').limit(limit);
-        break;
-      case Ordering.expiryDateDesc:
-        query = query.orderBy('expiryDate', descending: true).limit(limit);
-        break;
-      case Ordering.priceAsc:
-        query = query.orderBy('pricePLN').limit(limit);
-        break;
-      case Ordering.priceDesc:
-        query = query.orderBy('pricePLN', descending: true).limit(limit);
-        break;
-      // TODO: sorting by reputation - might require denormalisation on Firestore
-      default:
-        query = query.orderBy('createdAt', descending: true).limit(limit);
-    }
-
-    if (startAfter != null) {
-      query = query.startAfterDocument(startAfter);
-    }
-
+  /// Create new coupon offer via API (POST /coupons)
+  Future<void> postCouponOffer(CouponOffer coupon) async {
     try {
-      final querySnapshot = await query.get();
-    
-
-      final coupons = <Coupon>[];
-      for (final doc in querySnapshot.docs) {
-        final shopId = doc['shopId'].toString();
-        final sellerId = doc['sellerId'].toString();
-
-        // Shop data caching
-        DocumentSnapshot shopDoc;
-        if (_shopCache.containsKey(shopId)) {
-          shopDoc = _shopCache[shopId]!;
-        } else {
-          shopDoc = await _firestore.collection('shops').doc(shopId).get();
-          _shopCache[shopId] = shopDoc;
-        }
-
-        // Seller data caching
-        DocumentSnapshot sellerDoc;
-        if (_sellerCache.containsKey(sellerId)) {
-          sellerDoc = _sellerCache[sellerId]!;
-        } else {
-          sellerDoc = await _firestore.collection('userProfileData').doc(sellerId).get();
-          _sellerCache[sellerId] = sellerDoc;
-        }
-
-        try {
-          coupons.add(Coupon(
-            id: doc.id,
-            reduction: doc['reduction'].toDouble(),
-            reductionIsPercentage: doc['reductionIsPercentage'],
-            price: doc['pricePLN'].toDouble(),
-            hasLimits: doc['hasLimits'],
-            worksOnline: doc['worksOnline'],
-            worksInStore: doc['worksInStore'],
-            expiryDate: (doc['expiryDate'] as Timestamp).toDate(),
-            shopId: shopDoc.id,
-            shopName: shopDoc['name'],
-            shopNameColor: Color(shopDoc['nameColor']),
-            shopBgColor: Color(shopDoc['bgColor']),
-            sellerId: sellerDoc.id,
-            sellerReputation: sellerDoc['reputation'],
-            isSold: doc['isSold'],
-          ));
-        } catch (e) {
-          if (kDebugMode) debugPrint('Error while getting coupon with id ${doc.id}: $e');
-        }
-      }
-
-      return PaginatedCouponsResult(
-        ownedCoupons: coupons,
-        lastDocument: querySnapshot.docs.isNotEmpty ? querySnapshot.docs.last : null
-      );
-
+      await _api.postJson('/coupons', coupon.toJson());
     } catch (e) {
+      if (kDebugMode) debugPrint('Error posting coupon: $e');
       rethrow;
     }
   }
 
+  /// Fetch coupons with pagination and filters
+  Future<PaginatedCouponsResult> fetchCouponsPaginated({
+    required int limit,
+    int offset = 0,
+    String? shopId,
+  }) async {
+    try {
+      final couponsData = await fetchAllCouponsFromApi();
+      
+      // Filter by shop if specified
+      var filtered = shopId != null 
+          ? couponsData.where((c) => c['shop_id'].toString() == shopId).toList()
+          : couponsData;
+      
+      // Apply pagination
+      final start = offset;
+      final end = (start + limit).clamp(0, filtered.length);
+      final paginated = filtered.sublist(start, end);
+      
+      // Convert to Coupon objects
+      final coupons = await Future.wait(
+        paginated.map((data) => _mapToCoupon(data))
+      );
+      
+      return PaginatedCouponsResult(
+        ownedCoupons: coupons.whereType<Coupon>().toList(),
+        lastOffset: end < filtered.length ? end : null,
+      );
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error in fetchCouponsPaginated: $e');
+      rethrow;
+    }
+  }
+
+  /// Fetch user's owned coupons
   Future<PaginatedOwnedCouponsResult> fetchOwnedCouponsPaginated(
     int limit,
-    DocumentSnapshot? startAfter
+    int offset,
+    String userId,
   ) async {
-
-    final user = _firebaseAuth.currentUser;
-    if (user == null) {
-      throw FirebaseAuthException(
-        code: 'not-authenticated',
-        message: 'User is not authenticated.',
+    try {
+      final couponsData = await fetchAllCouponsFromApi();
+      
+      // Filter by owner
+      final owned = couponsData.where((c) => c['owner_id'] == userId).toList();
+      
+      // Apply pagination
+      final start = offset;
+      final end = (start + limit).clamp(0, owned.length);
+      final paginated = owned.sublist(start, end);
+      
+      // Convert to OwnedCoupon objects
+      final coupons = await Future.wait(
+        paginated.map((data) => _mapToOwnedCoupon(data))
       );
-    }
-
-    var ownershipQuery = _firestore
-      .collection('couponCodeData')
-      .where('owner', isEqualTo: user.uid)
-      .limit(limit);
-
-    if (startAfter != null) {
-      ownershipQuery = ownershipQuery.startAfterDocument(startAfter);
-    }
-    
-    final ownershipQuerySnapshot = await ownershipQuery.get();
-
-    final coupons = <OwnedCoupon>[];
-    for (final codeDataDoc in ownershipQuerySnapshot.docs) {
-      final couponDoc = await _firestore
-        .collection('couponOffers')
-        .doc(codeDataDoc.id)
-        .get();
-
-      final shopId = couponDoc['shopId'].toString();
-      final sellerId = couponDoc['sellerId'].toString();
-
-      // Shop data caching
-      DocumentSnapshot shopDoc;
-      if (_shopCache.containsKey(shopId)) {
-        shopDoc = _shopCache[shopId]!;
-      } else {
-        shopDoc = await _firestore.collection('shops').doc(shopId).get();
-        _shopCache[shopId] = shopDoc;
-      }
-
-      // Seller data caching
-      DocumentSnapshot sellerDoc;
-      if (_sellerCache.containsKey(sellerId)) {
-        sellerDoc = _sellerCache[sellerId]!;
-      } else {
-        sellerDoc = await _firestore.collection('userProfileData').doc(sellerId).get();
-        _sellerCache[sellerId] = sellerDoc;
-      }
-
-      coupons.add(
-        OwnedCoupon(
-          id: codeDataDoc.id,
-          reduction: couponDoc['reduction'],
-          reductionIsPercentage: couponDoc['reductionIsPercentage'],
-          price: couponDoc['pricePLN'],
-          hasLimits: couponDoc['hasLimits'],
-          worksOnline: couponDoc['worksOnline'],
-          worksInStore: couponDoc['worksInStore'],
-          expiryDate: (couponDoc['expiryDate'] as Timestamp).toDate(),
-          shopId: shopDoc.id,
-          shopName: shopDoc['name'],
-          shopNameColor: Color(shopDoc['nameColor']),
-          shopBgColor: Color(shopDoc['bgColor']),
-          sellerId: sellerDoc.id,
-          sellerReputation: sellerDoc['reputation'],
-          code: '',
-          isUsed: false, // TODO: implement usage tracking
-        ),
+      
+      return PaginatedOwnedCouponsResult(
+        coupons: coupons.whereType<OwnedCoupon>().toList(),
+        lastOffset: end < owned.length ? end : null,
       );
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error in fetchOwnedCouponsPaginated: $e');
+      rethrow;
     }
-
-    return PaginatedOwnedCouponsResult(
-      coupons: coupons,
-      lastDocument: ownershipQuerySnapshot.docs.isNotEmpty ? ownershipQuerySnapshot.docs.last : null
-    );
   }
 
+  /// Fetch coupon details by ID
   Future<Coupon> fetchCouponDetailsById(String id) async {
-    final doc = await _firestore
-      .collection('couponOffers')
-      .doc(id)
-      .get();
-
-    final shopId = doc['shopId'].toString();
-    final sellerId = doc['sellerId'].toString();
-
-    // Shop data caching
-    DocumentSnapshot shopDoc;
-    if (_shopCache.containsKey(shopId)) {
-      shopDoc = _shopCache[shopId]!;
-    } else {
-      shopDoc = await _firestore.collection('shops').doc(shopId).get();
-      _shopCache[shopId] = shopDoc;
+    try {
+      final data = await fetchCouponByIdFromApi(id);
+      final coupon = await _mapToCoupon(data);
+      if (coupon == null) {
+        throw Exception('Could not map coupon data');
+      }
+      return coupon;
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error in fetchCouponDetailsById: $e');
+      rethrow;
     }
-
-    // Seller data caching
-    DocumentSnapshot sellerDoc;
-    if (_sellerCache.containsKey(sellerId)) {
-      sellerDoc = _sellerCache[sellerId]!;
-    } else {
-      sellerDoc = await _firestore.collection('userProfileData').doc(sellerId).get();
-      _sellerCache[sellerId] = sellerDoc;
-    }
-
-    return Coupon(
-      id: doc.id,
-      reduction: doc['reduction'].toDouble(),
-      reductionIsPercentage: doc['reductionIsPercentage'],
-      price: doc['pricePLN'].toDouble(),
-      hasLimits: doc['hasLimits'],
-      worksOnline: doc['worksOnline'],
-      worksInStore: doc['worksInStore'],
-      expiryDate: (doc['expiryDate'] as Timestamp).toDate(),
-      description: doc['description'],
-      shopId: shopDoc.id,
-      shopName: shopDoc['name'],
-      shopNameColor: Color(shopDoc['nameColor']),
-      shopBgColor: Color(shopDoc['bgColor']),
-      sellerId: sellerDoc.id,
-      sellerReputation: sellerDoc['reputation'],
-      sellerUsername: sellerDoc['username'],
-      sellerJoinDate: (sellerDoc['joinDate'] as Timestamp).toDate(),
-      isSold: doc['isSold'],
-    );
   }
 
+  /// Fetch owned coupon details by ID
   Future<OwnedCoupon> fetchOwnedCouponDetailsById(String id) async {
-    final publicDataDoc = await _firestore
-      .collection('couponOffers')
-      .doc(id)
-      .get();
-    
-    final shopId = publicDataDoc['shopId'].toString();
-    final sellerId = publicDataDoc['sellerId'].toString();
-
-    // Shop data caching
-    DocumentSnapshot shopDoc;
-    if (_shopCache.containsKey(shopId)) {
-      shopDoc = _shopCache[shopId]!;
-    } else {
-      shopDoc = await _firestore.collection('shops').doc(shopId).get();
-      _shopCache[shopId] = shopDoc;
+    try {
+      final data = await fetchCouponByIdFromApi(id);
+      final ownedCoupon = await _mapToOwnedCoupon(data);
+      if (ownedCoupon == null) {
+        throw Exception('Could not map owned coupon data');
+      }
+      return ownedCoupon;
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error in fetchOwnedCouponDetailsById: $e');
+      rethrow;
     }
-
-    DocumentSnapshot sellerDoc;
-    if (_sellerCache.containsKey(sellerId)) {
-      sellerDoc = _sellerCache[sellerId]!;
-    } else {
-      sellerDoc = await _firestore.collection('userProfileData').doc(sellerId).get();
-      _sellerCache[sellerId] = sellerDoc;
-    }
-
-    final privateDataDoc = await _firestore
-      .collection('couponCodeData')
-      .doc(id)
-      .get();
-
-    return OwnedCoupon(
-      id: publicDataDoc.id,
-      reduction: publicDataDoc['reduction'],
-      reductionIsPercentage: publicDataDoc['reductionIsPercentage'],
-      price: publicDataDoc['pricePLN'],
-      hasLimits: publicDataDoc['hasLimits'],
-      worksOnline: publicDataDoc['worksOnline'],
-      worksInStore: publicDataDoc['worksInStore'],
-      expiryDate: (publicDataDoc['expiryDate'] as Timestamp).toDate(),
-      description: publicDataDoc['description'],
-      shopId: shopDoc.id,
-      shopName: shopDoc['name'],
-      shopNameColor: Color(shopDoc['nameColor']),
-      shopBgColor: Color(shopDoc['bgColor']),
-      sellerId: sellerDoc.id,
-      sellerReputation: sellerDoc['reputation'],
-      sellerUsername: sellerDoc['username'],
-      sellerJoinDate: (sellerDoc['joinDate'] as Timestamp).toDate(),
-      code: privateDataDoc['code'],
-      isUsed: false, // TODO: implement usage tracking
-    );
   }
 
-  /// Create new coupon offer via API (POST /coupons)
-  Future<void> postCouponOffer(CouponOffer coupon) async {
-    await _api.postJson('/coupons', coupon.toJson());
-  }
-
+  /// Fetch three coupons for a specific shop
   Future<List<Coupon>> fetchThreeCouponsForShop(String shopId) async {
-    // Query up to three unsold coupons for a given shop, ordered by creation date desc
-    final querySnapshot = await _firestore
-        .collection('couponOffers')
-        .where('isSold', isEqualTo: false)
-        .where('shopId', isEqualTo: shopId)
-        .orderBy('createdAt', descending: true)
-        .limit(3)
-        .get();
-
-    final coupons = <Coupon>[];
-
-    for (final doc in querySnapshot.docs) {
-      final sellerId = doc['sellerId'].toString();
-
-      // Shop data caching (we already know shopId, but keep consistent with the rest of the repo)
-      DocumentSnapshot shopDoc;
-      if (_shopCache.containsKey(shopId)) {
-        shopDoc = _shopCache[shopId]!;
-      } else {
-        shopDoc = await _firestore.collection('shops').doc(shopId).get();
-        _shopCache[shopId] = shopDoc;
-      }
-
-      // Seller data caching
-      DocumentSnapshot sellerDoc;
-      if (_sellerCache.containsKey(sellerId)) {
-        sellerDoc = _sellerCache[sellerId]!;
-      } else {
-        sellerDoc = await _firestore.collection('userProfileData').doc(sellerId).get();
-        _sellerCache[sellerId] = sellerDoc;
-      }
-
-      try {
-        coupons.add(Coupon(
-          id: doc.id,
-          reduction: doc['reduction'].toDouble(),
-          reductionIsPercentage: doc['reductionIsPercentage'],
-          price: doc['pricePLN'].toDouble(),
-          hasLimits: doc['hasLimits'],
-          worksOnline: doc['worksOnline'],
-          worksInStore: doc['worksInStore'],
-          expiryDate: (doc['expiryDate'] as Timestamp).toDate(),
-          shopId: shopDoc.id,
-          shopName: shopDoc['name'],
-          shopNameColor: Color(shopDoc['nameColor']),
-          shopBgColor: Color(shopDoc['bgColor']),
-          sellerId: sellerDoc.id,
-          sellerReputation: sellerDoc['reputation'],
-          isSold: doc['isSold'],
-        ));
-      } catch (e) {
-        if (kDebugMode) debugPrint('Error while getting coupon with id ${doc.id}: $e');
-      }
+    try {
+      final result = await fetchCouponsPaginated(limit: 3, shopId: shopId);
+      return result.ownedCoupons;
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error in fetchThreeCouponsForShop: $e');
+      rethrow;
     }
+  }
 
-    return coupons;
+  // ============ HELPER METHODS ============
+
+  /// Map API data to Coupon model
+  Future<Coupon?> _mapToCoupon(Map<String, dynamic> data) async {
+    try {
+      final shopId = data['shop_id'].toString();
+      final ownerId = data['owner_id']?.toString();
+      
+      final shopData = await _getShopData(shopId);
+      Map<String, dynamic>? ownerData;
+      if (ownerId != null) {
+        ownerData = await _getUserData(ownerId);
+      }
+      
+      return Coupon(
+        id: data['id'].toString(),
+        reduction: (data['discount'] as num).toDouble(),
+        reductionIsPercentage: data['is_discount_percentage'] == true || data['is_discount_percentage'] == 1,
+        price: (data['price'] as num).toDouble(),
+        hasLimits: data['has_limits'] == true || data['has_limits'] == 1,
+        worksOnline: data['works_online'] == true || data['works_online'] == 1,
+        worksInStore: data['works_in_store'] == true || data['works_in_store'] == 1,
+        expiryDate: data['expiry_date'] != null ? DateTime.parse(data['expiry_date']) : DateTime.now().add(Duration(days: 30)),
+        description: data['description'],
+        shopId: shopId,
+        shopName: shopData['name'] ?? 'Unknown Shop',
+        shopNameColor: _parseColor(shopData['name_color']),
+        shopBgColor: _parseColor(shopData['bg_color']),
+        sellerId: ownerId ?? '',
+        sellerReputation: ownerData?['reputation'] ?? 0,
+        sellerUsername: ownerData?['username'],
+        isSold: false, // TODO: implement from listings/transactions
+      );
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error mapping coupon: $e');
+      return null;
+    }
+  }
+
+  /// Map API data to OwnedCoupon model
+  Future<OwnedCoupon?> _mapToOwnedCoupon(Map<String, dynamic> data) async {
+    try {
+      final coupon = await _mapToCoupon(data);
+      if (coupon == null) return null;
+      
+      return OwnedCoupon(
+        id: coupon.id,
+        reduction: coupon.reduction,
+        reductionIsPercentage: coupon.reductionIsPercentage,
+        price: coupon.price,
+        hasLimits: coupon.hasLimits,
+        worksOnline: coupon.worksOnline,
+        worksInStore: coupon.worksInStore,
+        expiryDate: coupon.expiryDate,
+        description: coupon.description,
+        shopId: coupon.shopId,
+        shopName: coupon.shopName,
+        shopNameColor: coupon.shopNameColor,
+        shopBgColor: coupon.shopBgColor,
+        sellerId: coupon.sellerId,
+        sellerReputation: coupon.sellerReputation,
+        sellerUsername: coupon.sellerUsername,
+        code: data['code'] ?? '',
+        isUsed: false,
+      );
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error mapping owned coupon: $e');
+      return null;
+    }
+  }
+
+  /// Get shop data with caching
+  Future<Map<String, dynamic>> _getShopData(String shopId) async {
+    if (_shopCache.containsKey(shopId)) {
+      return _shopCache[shopId]!;
+    }
+    
+    try {
+      final data = await _api.getJsonById('/shops', shopId);
+      _shopCache[shopId] = data as Map<String, dynamic>;
+      return _shopCache[shopId]!;
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error fetching shop $shopId: $e');
+      return {'name': 'Unknown Shop', 'name_color': '#000000', 'bg_color': '#FFFFFF'};
+    }
+  }
+
+  /// Get user data with caching
+  Future<Map<String, dynamic>> _getUserData(String userId) async {
+    if (_userCache.containsKey(userId)) {
+      return _userCache[userId]!;
+    }
+    
+    try {
+      final data = await _api.getJsonById('/users', userId);
+      _userCache[userId] = data as Map<String, dynamic>;
+      return _userCache[userId]!;
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error fetching user $userId: $e');
+      return {'username': 'Unknown User', 'reputation': 0};
+    }
+  }
+
+  /// Parse color from hex string
+  Color _parseColor(String? hexColor) {
+    if (hexColor == null || hexColor.isEmpty) return Colors.black;
+    
+    try {
+      String hex = hexColor.replaceAll('#', '');
+      if (hex.length == 6) {
+        hex = 'FF$hex';
+      }
+      return Color(int.parse(hex, radix: 16));
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error parsing color $hexColor: $e');
+      return Colors.black;
+    }
   }
 }

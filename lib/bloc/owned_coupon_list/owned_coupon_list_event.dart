@@ -7,7 +7,14 @@ sealed class OwnedCouponListEvent extends Equatable {
   List<Object> get props => [];
 }
 
-class FetchCoupons extends OwnedCouponListEvent {}
+class FetchCoupons extends OwnedCouponListEvent {
+  final String userId;
+  
+  const FetchCoupons({required this.userId});
+  
+  @override
+  List<Object> get props => [userId];
+}
 
 class FetchMoreCoupons extends OwnedCouponListEvent {}
 

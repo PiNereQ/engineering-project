@@ -1,46 +1,77 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart' hide Category;
 import 'package:proj_inz/data/models/category_model.dart';
 import 'package:proj_inz/data/models/shop_model.dart';
+import 'package:proj_inz/data/api/api_client.dart';
 
 class CategoryRepository {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final ApiClient _api;
 
-  // szukanie kategorii po nazwie (prefixowe dopasowanie po name)
+  CategoryRepository({ApiClient? api}) : _api = api ?? ApiClient(baseUrl: 'http://49.13.155.21:8000');
+
+  /// Search categories by name (GET /categories and filter client-side)
   Future<List<Category>> searchCategoriesByName(String query) async {
     if (query.isEmpty) return [];
 
-    final lowercaseQuery = query.toLowerCase();
-
-    final snapshot = await _firestore
-        .collection('categories')
-        .where('name', isGreaterThanOrEqualTo: lowercaseQuery)
-        .where('name', isLessThan: '${lowercaseQuery}z')
-        .get();
-
-    return snapshot.docs.map((doc) {
-      return Category(
-        id: doc.id,
-        name: doc['name'],
-      );
-    }).toList();
+    try {
+      final response = await _api.getJson('/categories');
+      final List<dynamic> categoriesData = response is List ? response : [];
+      
+      final lowercaseQuery = query.toLowerCase();
+      
+      return categoriesData
+          .where((data) => (data['name'] as String).toLowerCase().contains(lowercaseQuery))
+          .map((data) => Category(
+                id: data['id'].toString(),
+                name: data['name'] as String,
+              ))
+          .toList();
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error searching categories: $e');
+      rethrow;
+    }
   }
 
-  // pobieranie sklepow przypisanych do danej kategorii
+  /// Fetch shops by category (GET /shops and filter by category)
   Future<List<Shop>> fetchShopsByCategory(Category category) async {
-    final querySnapshot = await _firestore
-        .collection('shops')
-        .where('categoryIds', arrayContains: category.id)
-        .get();
+    try {
+      final response = await _api.getJson('/shops');
+      final List<dynamic> shopsData = response is List ? response : [];
+      
+      // Filter shops that belong to this category
+      // Note: This assumes categories field in response contains category info
+      return shopsData
+          .where((data) {
+            // Check if shop has this category
+            final categories = data['categories'] as String?;
+            return categories != null && categories.contains(category.name);
+          })
+          .map((data) => Shop(
+                id: data['id'].toString(),
+                name: data['name'] as String,
+                bgColor: _parseColor(data['bg_color']),
+                nameColor: _parseColor(data['name_color']),
+                categoryIds: [category.id],
+              ))
+          .toList();
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error fetching shops for category ${category.name}: $e');
+      rethrow;
+    }
+  }
 
-    return querySnapshot.docs.map((doc) {
-      final data = doc.data();
-      return Shop(
-        id: doc.id,
-        name: data['name'],
-        bgColor: data['bgColor'],
-        nameColor: data['nameColor'],
-        categoryIds: List<String>.from(data['categoryIds'] ?? []),
-      );
-    }).toList();
+  /// Parse color from hex string to int
+  int _parseColor(String? hexColor) {
+    if (hexColor == null || hexColor.isEmpty) return 0xFF000000;
+    
+    try {
+      String hex = hexColor.replaceAll('#', '');
+      if (hex.length == 6) {
+        hex = 'FF$hex';
+      }
+      return int.parse(hex, radix: 16);
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error parsing color $hexColor: $e');
+      return 0xFF000000;
+    }
   }
 }

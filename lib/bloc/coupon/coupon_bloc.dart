@@ -26,11 +26,12 @@ class OwnedCouponBloc extends Bloc<CouponEvent, CouponState> {
       emit(const CouponLoadInProgress());
 
       try {
+        // TODO: Implement buyCoupon API endpoint
+        // await couponRepository.buyCoupon(
+        //   couponId: event.couponId,
+        //   buyerId: event.userId,
+        // );
         final coupon = await couponRepository.fetchCouponDetailsById(couponId);
-        await couponRepository.buyCoupon(
-          couponId: event.couponId,
-          buyerId: event.userId,
-        );
         emit(CouponLoadSuccess(coupon: coupon));
       } catch (e) {
         emit(CouponLoadFailure(message: e.toString()));
