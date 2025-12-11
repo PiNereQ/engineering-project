@@ -28,6 +28,49 @@ class CouponRepository {
   final _shopCache = <String, DocumentSnapshot>{};
   final _sellerCache = <String, DocumentSnapshot>{};
 
+  // ============ API-BASED METHODS ============
+
+  /// Fetch all coupons from API (GET /coupons)
+  Future<List<Map<String, dynamic>>> fetchAllCouponsFromApi() async {
+    try {
+      final response = await _api.getJson('/coupons');
+      if (response is List) {
+        return response.cast<Map<String, dynamic>>();
+      }
+      return [];
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error fetching coupons from API: $e');
+      rethrow;
+    }
+  }
+
+  /// Fetch unsold listings from API (GET /listings)
+  Future<List<Map<String, dynamic>>> fetchListingsFromApi() async {
+    try {
+      final response = await _api.getJson('/listings');
+      if (response is List) {
+        return response.cast<Map<String, dynamic>>();
+      }
+      return [];
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error fetching listings from API: $e');
+      rethrow;
+    }
+  }
+
+  /// Fetch single coupon by ID from API (GET /coupons/{id})
+  Future<Map<String, dynamic>> fetchCouponByIdFromApi(String id) async {
+    try {
+      final response = await _api.getJsonById('/coupons', id);
+      return response as Map<String, dynamic>;
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error fetching coupon $id from API: $e');
+      rethrow;
+    }
+  }
+
+  // ============ FIREBASE-BASED METHODS (LEGACY) ============
+
   Future<PaginatedCouponsResult> fetchCouponsPaginated(
     {required int limit,
     required DocumentSnapshot? startAfter,
@@ -345,45 +388,9 @@ class CouponRepository {
     );
   }
 
-  // Future<void> postCouponOffer(CouponOffer coupon) async { 
-  //   final docRef = await _firestore.collection('couponOffers').add({
-  //     'reduction': coupon.reduction,
-  //     'reductionIsPercentage': coupon.reductionIsPercentage,
-  //     'pricePLN': coupon.price,
-  //     'hasLimits': coupon.hasLimits,
-  //     'worksOnline': coupon.worksOnline,
-  //     'worksInStore': coupon.worksInStore,
-  //     'expiryDate': coupon.expiryDate,
-  //     'description': coupon.description,
-  //     'shopId': coupon.shopId,
-  //     'sellerId': _firebaseAuth.currentUser?.uid,
-  //     'isSold': false,
-  //     'createdAt': FieldValue.serverTimestamp(),
-  //   });
-  //   await _firestore.collection('couponCodeData').doc(docRef.id).set({
-  //     'code': coupon.code,      
-  //     'owner': null,
-  //     'boughtAt': null,
-  //   });
-  // }
-
-   Future<void> postCouponOffer(CouponOffer coupon) async {
+  /// Create new coupon offer via API (POST /coupons)
+  Future<void> postCouponOffer(CouponOffer coupon) async {
     await _api.postJson('/coupons', coupon.toJson());
-  }
-
-
-   Future<void> buyCoupon({
-    required String couponId,
-    required String buyerId,
-  }) async {
-    await _firestore.collection('couponOffers').doc(couponId).update({
-      'isSold': true,
-    });
-
-    await _firestore.collection('couponCodeData').doc(couponId).update({
-      'owner': buyerId,
-      'boughtAt': FieldValue.serverTimestamp(),
-    });
   }
 
   Future<List<Coupon>> fetchThreeCouponsForShop(String shopId) async {

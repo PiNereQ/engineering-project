@@ -74,20 +74,14 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
     emit(CouponListLoadInProgress());
 
     try {
-      final result = await couponRepository.fetchCouponsPaginated(
-        limit: _limit,
-        startAfter: _lastDocument,
-        reductionIsFixed: _reductionIsFixed,
-        reductionIsPercentage: _reductionIsPercentage,
-        minPrice: _minPrice,
-        maxPrice: _maxPrice,
-        minReputation: _minReputation,
-        ordering: _ordering,
-        shopId: _selectedShopId,
-      );
-      final coupons = result.coupons;
-      final lastDoc = result.lastDocument;
-      debugPrint('Fetched ${coupons.length} coupons: $coupons');
+      // Fetch listings from API instead of Firebase
+      final apiData = await couponRepository.fetchListingsFromApi();
+      debugPrint('Fetched ${apiData.length} listings from API');
+      
+      // Convert API data to Coupon objects
+      final coupons = apiData.map((json) => Coupon.fromJson(json)).toList();
+      final lastDoc = null; // API doesn't use pagination tokens
+      debugPrint('Converted to ${coupons.length} Coupon objects');
 
       _hasMore = coupons.length == _limit;
       _allCoupons.addAll(coupons);

@@ -50,6 +50,65 @@ class Coupon extends Equatable {
     required this.isSold,
   });
 
+  /// Create Coupon from API JSON response
+  factory Coupon.fromJson(Map<String, dynamic> json) {
+    return Coupon(
+      id: json['id']?.toString() ?? '',
+      reduction: _parseDouble(json['discount']),
+      reductionIsPercentage: _parseBool(json['is_discount_percentage']),
+      price: _parseDouble(json['price']),
+      hasLimits: _parseBool(json['has_limits']),
+      worksOnline: _parseBool(json['works_online']),
+      worksInStore: _parseBool(json['works_in_store']),
+      expiryDate: json['expiry_date'] != null 
+        ? DateTime.parse(json['expiry_date']) 
+        : DateTime.now(),
+      description: json['description'],
+      shopId: json['shop_id']?.toString() ?? '',
+      shopName: json['shop_name'] ?? 'Shop ${json['shop_id']}', // Fallback if not joined
+      shopNameColor: json['shop_name_color'] != null 
+        ? Color(int.parse(json['shop_name_color'].toString())) 
+        : const Color(0xFF000000),
+      shopBgColor: json['shop_bg_color'] != null 
+        ? Color(int.parse(json['shop_bg_color'].toString())) 
+        : const Color(0xFFFFFFFF),
+      sellerId: json['owner_id']?.toString() ?? '',
+      sellerUsername: json['owner_username'], // Will be null if not joined
+      sellerReputation: _parseInt(json['owner_reputation']),
+      sellerJoinDate: json['owner_join_date'] != null
+        ? DateTime.parse(json['owner_join_date'])
+        : null,
+      isSold: !_parseBool(json['is_active']), // is_active:1 means NOT sold
+    );
+  }
+
+  /// Helper to parse double from various types (String, int, double)
+  static double _parseDouble(dynamic value) {
+    if (value == null) return 0.0;
+    if (value is double) return value;
+    if (value is int) return value.toDouble();
+    if (value is String) return double.tryParse(value) ?? 0.0;
+    return 0.0;
+  }
+
+  /// Helper to parse int from various types (String, int, double)
+  static int _parseInt(dynamic value) {
+    if (value == null) return 0;
+    if (value is int) return value;
+    if (value is double) return value.toInt();
+    if (value is String) return int.tryParse(value) ?? 0;
+    return 0;
+  }
+
+  /// Helper to parse bool from various types (bool, int, String)
+  static bool _parseBool(dynamic value) {
+    if (value == null) return false;
+    if (value is bool) return value;
+    if (value is int) return value != 0;
+    if (value is String) return value.toLowerCase() == 'true' || value == '1';
+    return false;
+  }
+
   @override
   List<Object?> get props => [
     id,
