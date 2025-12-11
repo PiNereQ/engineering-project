@@ -29,7 +29,7 @@ class BoughtCouponDetailsScreen extends StatelessWidget {
       create: (context) => OwnedCouponBloc(context.read<CouponRepository>(), couponId)
         ..add(FetchCouponDetails()),
       child: Scaffold(
-        backgroundColor: AppColors.surface,
+        backgroundColor: AppColors.background,
         body: SafeArea(
           child: Column(
             children: [
@@ -52,10 +52,6 @@ class BoughtCouponDetailsScreen extends StatelessWidget {
                                 onTap: () {
                                   Navigator.of(context).pop();
                                 },
-                              ),
-                              CustomIconButton(
-                                icon: SvgPicture.asset('assets/icons/share.svg'),
-                                onTap: () {},
                               ),
                             ],
                           ),

@@ -54,18 +54,22 @@ class _BoughtCouponListScreenState extends State<BoughtCouponListScreen> {
           }
 
           return Scaffold(
+            backgroundColor: AppColors.background,
             body: SafeArea(
               child: RefreshIndicator(
                 onRefresh: () async {
                   context.read<OwnedCouponListBloc>().add(RefreshCoupons());
                 },
-                child: CustomScrollView(
-                  controller: _scrollController,
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  slivers: [
-                    const _Toolbar(),
-                    _listContent(state),
-                  ],
+                child: Container(
+                color: AppColors.background,
+                  child: CustomScrollView(
+                    controller: _scrollController,
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    slivers: [
+                      const _Toolbar(),
+                      _listContent(state),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -392,21 +396,51 @@ class _OwnedCouponFilterDialogState extends State<_OwnedCouponFilterDialog> {
                                     fontFamily: 'Itim',
                                   ),
                                 ),
-                                DropdownButton<String>(
-                                  value: selectedShopId,
-                                  isExpanded: true,
-                                  hint: const Text("Wybierz sklep"),
-                                  items: shops
-                                      .map(
-                                        (shop) => DropdownMenuItem<String>(
-                                          value: shop.id,
-                                          child: Text(shop.name),
-                                        ),
-                                      )
-                                      .toList(),
-                                  onChanged: (value) =>
-                                      setState(() => selectedShopId = value),
-                                ),
+                                Container(
+                                  decoration: ShapeDecoration(
+                                    color: AppColors.surface,
+                                    shape: RoundedRectangleBorder(
+                                      side: const BorderSide(width: 2, color: AppColors.textPrimary),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
+                                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                                  child: DropdownButton<String>(
+                                    value: selectedShopId,
+                                    isExpanded: true,
+                                    underline: const SizedBox(),
+                                    dropdownColor: AppColors.surface,
+                                    style: const TextStyle(
+                                      fontFamily: "Itim",
+                                      fontSize: 18,
+                                      color: AppColors.textPrimary,
+                                    ),
+                                    hint: const Text(
+                                      "Wybierz sklep",
+                                      style: TextStyle(
+                                        fontFamily: "Itim",
+                                        fontSize: 18,
+                                        color: AppColors.textSecondary,
+                                      ),
+                                    ),
+                                    items: shops
+                                        .map(
+                                          (shop) => DropdownMenuItem<String>(
+                                            value: shop.id,
+                                            child: Text(
+                                              shop.name,
+                                              style: const TextStyle(
+                                                fontFamily: "Itim",
+                                                fontSize: 18,
+                                                color: AppColors.textPrimary,
+                                              ),
+                                            ),
+                                          ),
+                                        )
+                                        .toList(),
+                                    onChanged: (value) => setState(() => selectedShopId = value),
+                                  ),
+                                )
                               ],
                             ),
                           ],
