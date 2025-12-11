@@ -50,6 +50,20 @@ class AuthSignOutFailure extends AuthState {
   List<Object?> get props => [errorMessage];
 }
 
+// Password reset
+
+class AuthPasswordResetInProgress extends AuthState {}
+
+class AuthPasswordResetSuccess extends AuthState {}
+
+class AuthPasswordResetFailure extends AuthState {
+  final String errorMessage;
+  AuthPasswordResetFailure({required this.errorMessage});
+
+  @override
+  List<Object?> get props => [errorMessage];
+}
+
 // class UnAuthenticated extends AuthState {
 //   final String errorMessage;
 //   UnAuthenticated({required this.errorMessage});
