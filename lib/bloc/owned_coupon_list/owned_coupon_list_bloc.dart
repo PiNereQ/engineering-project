@@ -2,7 +2,7 @@ import 'package:bloc/bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
-import 'package:proj_inz/data/models/coupon_model.dart';
+import 'package:proj_inz/data/models/owned_coupon_model.dart';
 import 'package:proj_inz/data/repositories/coupon_repository.dart';
 
 part 'owned_coupon_list_event.dart';
@@ -12,7 +12,7 @@ class OwnedCouponListBloc extends Bloc<OwnedCouponListEvent, OwnedCouponListStat
   final CouponRepository couponRepository;
   final int limit = 50;
   
-  final List<Coupon> _allCoupons = [];
+  final List<OwnedCoupon> _allCoupons = [];
   DocumentSnapshot? _lastDocument;
   bool _hasMore = true;
   bool _isFetching = false;
@@ -46,12 +46,12 @@ class OwnedCouponListBloc extends Bloc<OwnedCouponListEvent, OwnedCouponListStat
 
     try {
       final result = await couponRepository.fetchOwnedCouponsPaginated(limit, _lastDocument);
-      final coupons = result.coupons;
+      final ownedCoupons = result.coupons;
       final lastDoc = result.lastDocument;
-      debugPrint('Fetched ${coupons.length} coupons: $coupons');
+      debugPrint('Fetched ${ownedCoupons.length} coupons: $ownedCoupons');
 
-      _hasMore = coupons.length == limit;
-      _allCoupons.addAll(coupons);
+      _hasMore = ownedCoupons.length == limit;
+      _allCoupons.addAll(ownedCoupons);
       _lastDocument = lastDoc;
 
       

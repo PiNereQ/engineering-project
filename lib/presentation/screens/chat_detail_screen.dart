@@ -8,6 +8,7 @@ import 'package:proj_inz/data/models/conversation_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:proj_inz/presentation/screens/report_screen.dart';
 import 'package:proj_inz/presentation/widgets/chat_report_popup.dart';
+import 'package:proj_inz/presentation/widgets/coupon_preview_popup.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_icon_button.dart';
 import '../widgets/chat_bubble.dart';
 
@@ -69,6 +70,9 @@ class ChatHeader extends StatelessWidget {
                     ),
                     Text(
                       couponTitle,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      softWrap: false,
                       style: const TextStyle(
                         fontFamily: 'Itim',
                         color: AppColors.textPrimary,
@@ -83,8 +87,8 @@ class ChatHeader extends StatelessWidget {
               const SizedBox(width: 12),
 
               CustomIconButton(
-                icon: const Icon(Icons.report,
-                    size: 24, color: AppColors.alertText),
+                icon: const Icon(Icons.more_vert,
+                    size: 24, color: AppColors.textPrimary),
                 onTap: onReport,
               ),
             ],
@@ -353,9 +357,14 @@ class ChatInputBar extends StatelessWidget {
               ),
               child: TextField(
                 controller: controller,
+                style: const TextStyle(
+                  fontFamily: 'Itim',
+                  fontSize: 16,
+                  color: AppColors.textPrimary,
+                ),
                 decoration: const InputDecoration(
                   hintText: 'treść wiadomości...',
-                  hintStyle: const TextStyle(
+                  hintStyle: TextStyle(
                     fontFamily: 'Itim',
                     fontSize: 16,
                     color: AppColors.textSecondary,
@@ -432,7 +441,7 @@ Widget build(BuildContext context) {
           buyerId: buyerId,
           sellerId: sellerId,
           couponId: couponId,
-          relatedCoupon: loadedCoupon, // ← GOTOWO PRZEKAZANY KUPON
+          relatedCoupon: loadedCoupon,
         ),
       );
     },
@@ -448,7 +457,7 @@ class ChatDetailView extends StatefulWidget {
   final String buyerId;
   final String sellerId;
   final String couponId;
-  final Coupon? relatedCoupon; // ← NOWE POLE
+  final Coupon? relatedCoupon;
 
   const ChatDetailView({
     super.key,
@@ -468,6 +477,27 @@ class _ChatDetailViewState extends State<ChatDetailView> {
   Coupon? _coupon;
   late final TextEditingController _controller;
   bool _showPopup = false;
+
+  String buildCouponTitle(Coupon c) {
+    final reduction = c.reduction;
+
+    final reductionText = formatNumber(reduction);
+
+    final shopName = c.shopName;
+
+    return c.reductionIsPercentage
+        ? "-$reductionText% • $shopName"
+        : "-$reductionText zł • $shopName";
+  }
+
+  String buildJoinDate(Coupon? c) {
+    if (c == null || c.sellerJoinDate == null) return "—";
+
+    final d = c.sellerJoinDate!;
+    return "${d.day.toString().padLeft(2,'0')}"
+           ".${d.month.toString().padLeft(2,'0')}"
+           ".${d.year}";
+  }
 
   @override
   void initState() {
@@ -505,14 +535,26 @@ class _ChatDetailViewState extends State<ChatDetailView> {
           appBar: PreferredSize(
             preferredSize: const Size.fromHeight(180),
             child: ChatHeader(
-              couponTitle: _conversation?.couponTitle ?? "Kupon",
-              username: _getOtherUsername(),
-              reputation: 50,
-              joinDate: "01.06.2025",
+              couponTitle: _conversation != null
+                  ? _conversation!.couponTitle
+                  : (widget.relatedCoupon != null
+                      ? buildCouponTitle(widget.relatedCoupon!)
+                      : "Kupon"),
+
+              username: _conversation != null
+                  ? _getOtherUsername()
+                  : widget.relatedCoupon?.sellerUsername ?? "Sprzedający",
+
+              reputation: _conversation != null
+                  ? 50 // TODO backend
+                  : widget.relatedCoupon?.sellerReputation ?? 0,
+
+              joinDate: _conversation != null
+                  ? "01.06.2025" // TODO backend
+                  : buildJoinDate(widget.relatedCoupon),
+
               onBack: () => Navigator.pop(context),
-              onReport: () {
-                setState(() => _showPopup = true);
-              },
+              onReport: () => setState(() => _showPopup = true),
             ),
           ),
 
@@ -588,6 +630,20 @@ class _ChatDetailViewState extends State<ChatDetailView> {
             child: Container(
               color: Colors.black.withOpacity(0.25),
               child: ChatReportPopup(
+                onShowCoupon: () {
+                  if (_coupon == null) return;
+
+                  setState(() => _showPopup = false);
+
+                  showDialog(
+                    context: context,
+                    barrierDismissible: true,
+                    builder: (_) => CouponPreviewPopup(
+                      coupon: _coupon!,
+                      onClose: () => Navigator.of(context).pop(),
+                    ),
+                  );
+                },            
                 onReport: () {
                   final currentUser = FirebaseAuth.instance.currentUser!.uid;
 
@@ -602,9 +658,17 @@ class _ChatDetailViewState extends State<ChatDetailView> {
                     MaterialPageRoute(
                       builder: (_) => ReportScreen(
                         reportedUserId: otherUserId,
-                        reportedUsername: _getOtherUsername(),
-                        reportedUserReputation: 50,                // TODO backend
-                        reportedUserJoinDate: DateTime(2025, 6, 1),// TODO backend
+                        reportedUsername: _conversation != null
+                            ? _getOtherUsername()
+                            : widget.relatedCoupon?.sellerUsername ?? "Użytkownik",
+
+                        reportedUserReputation: _conversation != null
+                            ? 50 // TODO backend
+                            : widget.relatedCoupon?.sellerReputation ?? 0,
+
+                        reportedUserJoinDate: _conversation != null
+                            ? DateTime(2025, 6, 1) // TODO backend
+                            : widget.relatedCoupon?.sellerJoinDate ?? DateTime.now(),
                         reportedCoupon: 
                             _coupon != null && FirebaseAuth.instance.currentUser!.uid != _coupon!.sellerId
                                 ? _coupon
@@ -680,4 +744,11 @@ class _ChatDetailViewState extends State<ChatDetailView> {
     final m = time.minute.toString().padLeft(2, '0');
     return "$h:$m";
   }
+}
+
+String formatNumber(num value) {
+  if (value % 1 == 0) {
+    return value.toInt().toString();
+  }
+  return value.toString().replaceAll('.', ',');
 }

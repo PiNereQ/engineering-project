@@ -9,9 +9,9 @@ import 'package:proj_inz/data/models/owned_coupon_model.dart';
 import 'package:proj_inz/data/api/api_client.dart';
 
 class PaginatedCouponsResult {
-  final List<Coupon> coupons;
+  final List<Coupon> ownedCoupons;
   final DocumentSnapshot? lastDocument;
-  PaginatedCouponsResult({required this.coupons, this.lastDocument});
+  PaginatedCouponsResult({required this.ownedCoupons, this.lastDocument});
 }
 
 class PaginatedOwnedCouponsResult {
@@ -198,7 +198,7 @@ class CouponRepository {
       }
 
       return PaginatedCouponsResult(
-        coupons: coupons,
+        ownedCoupons: coupons,
         lastDocument: querySnapshot.docs.isNotEmpty ? querySnapshot.docs.last : null
       );
 
@@ -207,7 +207,7 @@ class CouponRepository {
     }
   }
 
-  Future<PaginatedCouponsResult> fetchOwnedCouponsPaginated(
+  Future<PaginatedOwnedCouponsResult> fetchOwnedCouponsPaginated(
     int limit,
     DocumentSnapshot? startAfter
   ) async {
@@ -231,7 +231,7 @@ class CouponRepository {
     
     final ownershipQuerySnapshot = await ownershipQuery.get();
 
-    final coupons = <Coupon>[];
+    final coupons = <OwnedCoupon>[];
     for (final codeDataDoc in ownershipQuerySnapshot.docs) {
       final couponDoc = await _firestore
         .collection('couponOffers')
@@ -260,7 +260,7 @@ class CouponRepository {
       }
 
       coupons.add(
-        Coupon(
+        OwnedCoupon(
           id: codeDataDoc.id,
           reduction: couponDoc['reduction'],
           reductionIsPercentage: couponDoc['reductionIsPercentage'],
@@ -275,12 +275,13 @@ class CouponRepository {
           shopBgColor: Color(shopDoc['bgColor']),
           sellerId: sellerDoc.id,
           sellerReputation: sellerDoc['reputation'],
-          isSold: true
+          code: '',
+          isUsed: false, // TODO: implement usage tracking
         ),
       );
     }
 
-    return PaginatedCouponsResult(
+    return PaginatedOwnedCouponsResult(
       coupons: coupons,
       lastDocument: ownershipQuerySnapshot.docs.isNotEmpty ? ownershipQuerySnapshot.docs.last : null
     );
@@ -385,6 +386,7 @@ class CouponRepository {
       sellerUsername: sellerDoc['username'],
       sellerJoinDate: (sellerDoc['joinDate'] as Timestamp).toDate(),
       code: privateDataDoc['code'],
+      isUsed: false, // TODO: implement usage tracking
     );
   }
 

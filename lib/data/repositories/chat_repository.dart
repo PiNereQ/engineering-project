@@ -21,59 +21,7 @@ class ChatRepository {
   }
 
   void _initializeMockData() {
-    final currentUserId = _firebaseAuth.currentUser?.uid ?? 'unknown';
 
-    final conv1 = Conversation(
-      id: 'conv-1',
-      couponId: 'coupon-abc',
-      couponTitle: 'Kupon 20% Empik',
-      buyerId: currentUserId,
-      sellerId: 'seller-1',
-      buyerUsername: 'Ty',
-      sellerUsername: 'Sprzedawca1',
-      lastMessage: 'Hej, ten kupon jest nadal dostępny?',
-      lastMessageTime: DateTime.now().subtract(const Duration(minutes: 5)),
-      isReadByBuyer: true,
-      isReadBySeller: true,
-    );
-
-    final conv2 = Conversation(
-      id: 'conv-2',
-      couponId: 'coupon-xyz',
-      couponTitle: 'Kupon 5% Zooplus',
-      buyerId: 'buyer-22',
-      sellerId: currentUserId,
-      buyerUsername: 'Kupujacy22',
-      sellerUsername: 'Ty',
-      lastMessage: 'Masz jeszcze inne kupony?',
-      lastMessageTime: DateTime.now().subtract(const Duration(hours: 1)),
-      isReadByBuyer: false,
-      isReadBySeller: true,
-    );
-
-    _mockConversations.addAll([conv1, conv2]);
-
-    _mockMessages['conv-1'] = [
-      Message(
-        id: 'msg-1',
-        conversationId: 'conv-1',
-        senderId: currentUserId,
-        text: 'Hej, ten kupon jest nadal dostępny?',
-        timestamp: DateTime.now().subtract(const Duration(minutes: 5)),
-        isRead: true,
-      ),
-    ];
-
-    _mockMessages['conv-2'] = [
-      Message(
-        id: 'msg-2',
-        conversationId: 'conv-2',
-        senderId: 'buyer-22',
-        text: 'Masz jeszcze inne kupony?',
-        timestamp: DateTime.now().subtract(const Duration(hours: 1)),
-        isRead: false,
-      ),
-    ];
   }
 
   // Get conversations for the current user
@@ -145,13 +93,29 @@ class ChatRepository {
     final reduction = data['reduction'] as num? ?? 0;
     final reductionIsPercentage = data['reductionIsPercentage'] as bool? ?? true;
 
-    final String reductionText = reductionIsPercentage
-        ? reduction.toString().replaceAll('.', ',')
-        : reduction.toStringAsFixed(2).replaceAll('.', ',');
+    // TODO backend
+    final shopId = data['shopId'] as String?;
+
+    String shopName = "Sklep";
+
+    if (shopId != null) {
+      final shopDoc = await FirebaseFirestore.instance
+          .collection('shops')
+          .doc(shopId)
+          .get();
+
+      final shopData = shopDoc.data();
+      if (shopData != null && shopData['name'] != null) {
+        shopName = shopData['name'];
+      }
+    }
+
+    final reductionText = formatNumber(reduction);
 
     final String couponTitle = reductionIsPercentage
-        ? "Kupon -$reductionText%"
-        : "Kupon na $reductionText zł";
+        ? "-$reductionText% • $shopName"
+        : "-$reductionText zł • $shopName";
+
 
     final newConv = Conversation(
       id: 'conv-${DateTime.now().millisecondsSinceEpoch}',
@@ -260,4 +224,11 @@ class ChatRepository {
     }
     return false;
   }
+}
+
+String formatNumber(num value) {
+  if (value % 1 == 0) {
+    return value.toInt().toString();
+  }
+  return value.toString().replaceAll('.', ',');
 }

@@ -23,8 +23,9 @@ String? signUpPasswordValidator(String? value) {
   if (value == null || value.isEmpty) {
     return "Podaj hasło.";
   }
+  
   if (value.length < 8) {
-    return "Hasło musi mieć conajmniej 8 znaków";
+    return "Hasło musi mieć conajmniej 12 znaków";
   }
 
   if (value.length > 4096) {

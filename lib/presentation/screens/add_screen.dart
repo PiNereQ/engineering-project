@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:proj_inz/bloc/coupon_add/coupon_add_bloc.dart';
 import 'package:proj_inz/core/theme.dart';
+import 'package:proj_inz/core/utils/text_formatters.dart';
 import 'package:proj_inz/data/models/coupon_offer_model.dart';
 import 'package:proj_inz/data/repositories/coupon_repository.dart';
 import 'package:proj_inz/data/repositories/user_repository.dart';
@@ -47,6 +49,7 @@ class _AddScreenState extends State<AddScreen> {
   bool _inPhysicalStores = false;
   bool _inOnlineStore = false;
   bool _hasRestrictions = false; // null = brak wyboru, true = tak, false = nie
+  bool _isMultipleUse = false;
 
   bool _userMadeInput = false;
   bool _showMissingValuesTip = false;
@@ -246,7 +249,7 @@ class _AddScreenState extends State<AddScreen> {
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
-                                        // 1. Tytul
+                                        // Tytul
                                         const SizedBox(
                                           width: 332,
                                           child: Text(
@@ -261,7 +264,7 @@ class _AddScreenState extends State<AddScreen> {
                                         ),
                                         const SizedBox(height: 18),
 
-                                        // 2. Wybierz sklep (search dropdown) TODO: Lista sklepow z bazy
+                                        // Wybierz sklep (search dropdown) TODO: Lista sklepow z bazy
                                         BlocBuilder<ShopBloc, ShopState>(
                                           builder: (context, state) {
                                             if (state is ShopLoading) {
@@ -301,7 +304,7 @@ class _AddScreenState extends State<AddScreen> {
                                           },
                                         ),
                                         const SizedBox(height: 18),
-                                        // 3. Cena i Data waznosci
+                                        // Cena i Data waznosci
                                         Wrap(
                                           spacing: 16,
                                           runSpacing: 16,
@@ -314,6 +317,10 @@ class _AddScreenState extends State<AddScreen> {
                                               controller: _priceController,
                                               keyboardType:
                                                   TextInputType.number,
+                                              inputFormatters: [
+                                                PriceFormatter()
+                                              ],
+                                              suffix: Text('zł'),
                                               validator: (val) {
                                                 if (val == null || val.isEmpty) {
                                                   return 'Wymagane';
@@ -321,6 +328,11 @@ class _AddScreenState extends State<AddScreen> {
                                                 if (double.tryParse(val) ==
                                                     null) {
                                                   return 'Niepoprawna liczba';
+                                                }
+                                                // Check for at most 2 decimal places (grosze)
+                                                final parts = val.replaceAll(',', '.').split('.');
+                                                if (parts.length > 1 && parts[1].length > 2) {
+                                                  return 'Cena może mieć maksymalnie 2 miejsca po przecinku';
                                                 }
                                                 if (double.tryParse(val)! <= 0) {
                                                   return 'Wpisz więcej niż 0';
@@ -395,7 +407,7 @@ class _AddScreenState extends State<AddScreen> {
                                         ),
                                         const SizedBox(height: 18),
 
-                                        // 4. Kod kuponu
+                                        // Kod kuponu
                                         LabeledTextField(
                                           label: 'Kod kuponu',
                                           placeholder: 'Wpisz kod kuponu',
@@ -416,7 +428,7 @@ class _AddScreenState extends State<AddScreen> {
                                         ),
                                         const SizedBox(height: 18),
 
-                                        // 5. Info i przycisk "Dodaj zdjecie"
+                                        // Info i przycisk "Dodaj zdjecie"
                                         Center(
                                           child: CustomTextButton.primary(
                                             height: 52,
@@ -458,7 +470,7 @@ class _AddScreenState extends State<AddScreen> {
                                         ),
                                         const SizedBox(height: 18),
 
-                                        // 6. Typ kuponu (radiobuttony) - stan zmienia textfield, TODO: bloc event
+                                        // Typ kuponu (radiobuttony) - stan zmienia textfield, TODO: bloc event
                                         const Text(
                                           'Typ kuponu',
                                           style: TextStyle(
@@ -487,6 +499,7 @@ class _AddScreenState extends State<AddScreen> {
                                                         CouponType.percent,
                                                     onTap: () {
                                                       setState(() {
+                                                        _reductionController.text = '';
                                                         _selectedType =
                                                             CouponType.percent;
                                                         _userMadeInput = true;
@@ -501,6 +514,7 @@ class _AddScreenState extends State<AddScreen> {
                                                         CouponType.fixed,
                                                     onTap: () {
                                                       setState(() {
+                                                        _reductionController.text = '';
                                                         _selectedType =
                                                             CouponType.fixed;
                                                         _userMadeInput = true;
@@ -518,7 +532,6 @@ class _AddScreenState extends State<AddScreen> {
                                                           CouponType.percent
                                                       ? LabeledTextField(
                                                         label: 'Procent rabatu',
-                                                        placeholder: '%',
                                                         width:
                                                             LabeledTextFieldWidth
                                                                 .full,
@@ -526,6 +539,10 @@ class _AddScreenState extends State<AddScreen> {
                                                             TextAlign.right,
                                                         controller:
                                                             _reductionController,
+                                                        inputFormatters: [
+                                                          PercentFormatter()
+                                                        ],
+                                                        suffix: Text('%'),
                                                         keyboardType:
                                                             TextInputType
                                                                 .number,
@@ -563,7 +580,6 @@ class _AddScreenState extends State<AddScreen> {
                                                       )
                                                       : LabeledTextField(
                                                         label: 'Kwota rabatu',
-                                                        placeholder: 'zł',
                                                         width:
                                                             LabeledTextFieldWidth
                                                                 .full,
@@ -571,6 +587,10 @@ class _AddScreenState extends State<AddScreen> {
                                                             TextAlign.right,
                                                         controller:
                                                             _reductionController,
+                                                        inputFormatters: [
+                                                          PriceFormatter()
+                                                        ],
+                                                        suffix: Text('zł'),
                                                         keyboardType:
                                                             TextInputType
                                                                 .number,
@@ -603,8 +623,74 @@ class _AddScreenState extends State<AddScreen> {
                                             ),
                                           ],
                                         ),
-
-                                        // 7. Do wykorzystania w... (checkboxy)
+                                        // Czy wielokrotnego uzytku
+                                        const SizedBox(height: 24),
+                                        const Text(
+                                          'Czy kupon jest wielokrotnegu użytku?',
+                                          style: TextStyle(
+                                            color: AppColors.textPrimary,
+                                            fontSize: 18,
+                                            fontFamily: 'Itim',
+                                            fontWeight: FontWeight.w400,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 12),
+                                        Row(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          spacing: 20,
+                                          children: [
+                                            CustomRadioButton(
+                                              label: 'tak',
+                                              selected:
+                                                  _isMultipleUse == true,
+                                              onTap: () {
+                                                setState(() {
+                                                  _isMultipleUse = true;
+                                                  _userMadeInput = true;
+                                                });
+                                              },
+                                            ),
+                                            const SizedBox(height: 4),
+                                            CustomRadioButton(
+                                              label: 'nie',
+                                              selected:
+                                                  _isMultipleUse == false,
+                                              onTap: () {
+                                                setState(() {
+                                                  _isMultipleUse = false;
+                                                  _userMadeInput = true;
+                                                });
+                                              },
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 12),
+                                        Row(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.center,
+                                          children: [
+                                            Icon(
+                                              Icons.priority_high_rounded,
+                                              size: 24,
+                                              color: AppColors.textSecondary,
+                                            ),
+                                            const SizedBox(width: 12),
+                                            const Expanded(
+                                              child: Text(
+                                                'Zaznacz "tak" tylko jeśli jestes pewna/pewien, że kupon może być użyty wielokrotnie. Spowoduje to, że będzie mógł być też kupiony wielokrotnie przez róznych użytkowników.',
+                                                style: TextStyle(
+                                                  color:
+                                                      AppColors.textSecondary,
+                                                  fontSize: 14,
+                                                  fontFamily: 'Itim',
+                                                  fontWeight: FontWeight.w400,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        // Do wykorzystania w... (checkboxy)
                                         const SizedBox(height: 24),
                                         const Text(
                                           'Do wykorzystania w:',
@@ -867,6 +953,7 @@ class _AddScreenState extends State<AddScreen> {
                                                 shopId: int.tryParse(_selectedShop?.id ?? '0') ?? 0,
                                                 ownerId: user.uid,
                                                 isActive: true,
+                                                isMultipleUse: _isMultipleUse,
                                               );
 
                                               final confirmed = await showDialog<

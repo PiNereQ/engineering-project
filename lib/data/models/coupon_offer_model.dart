@@ -1,8 +1,6 @@
 import 'package:equatable/equatable.dart';
 
 class CouponOffer extends Equatable {
-  
-  
   final double price;
   final double discount;
   final bool isDiscountPercentage;
@@ -13,6 +11,7 @@ class CouponOffer extends Equatable {
   final bool worksOnline;
   final int shopId;
   final String ownerId;
+  final bool isMultipleUse;
 
   final String? expiryDate; // "YYYY-MM-DD"
   final String? description;
@@ -28,14 +27,12 @@ class CouponOffer extends Equatable {
     required this.isActive,
     required this.ownerId,
     required this.shopId,
-
-    this.expiryDate,  
+    required this.isMultipleUse,
+    this.expiryDate,
     this.description,
   });
 
   // Convert to JSON for API requests
-  // Matches the SQL INSERT: description, price, discount, is_discount_percentage, 
-  // expiry_date, code, is_active, has_limits, works_in_store, works_online, shop_id, owner_id
   Map<String, dynamic> toJson() {
     return {
       'description': description,
@@ -50,22 +47,24 @@ class CouponOffer extends Equatable {
       'works_online': worksOnline,
       'shop_id': shopId,
       'owner_id': ownerId,
+      'is_multiple_use': isMultipleUse,
     };
   }
 
   @override
   List<Object?> get props => [
-    discount,
-    isDiscountPercentage,
-    price,
-    code,
-    shopId,
-    ownerId,
-    hasLimits,
-    worksOnline,
-    worksInStore,
-    isActive,
-    expiryDate,
-    description,
-  ];
+        discount,
+        isDiscountPercentage,
+        price,
+        code,
+        shopId,
+        ownerId,
+        hasLimits,
+        worksOnline,
+        worksInStore,
+        isActive,
+        isMultipleUse,
+        expiryDate,
+        description,
+      ];
 }

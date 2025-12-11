@@ -29,3 +29,12 @@ class SignInRequested extends AuthEvent {
 }
 
 class SignOutRequested extends AuthEvent {}
+
+class PasswordResetRequested extends AuthEvent {
+  final String email;
+
+  PasswordResetRequested({required this.email});
+
+  @override
+  List<Object?> get props => [email];
+}
