@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:proj_inz/bloc/auth/auth_bloc.dart';
 import 'package:proj_inz/core/utils/validators.dart';
 import 'package:proj_inz/presentation/screens/main_screen.dart';
+import 'package:proj_inz/presentation/screens/forgot_password_screen.dart';
 import 'package:proj_inz/presentation/screens/sign_up_screen.dart';
 import 'package:proj_inz/presentation/widgets/custom_snack_bar.dart';
 import 'package:proj_inz/presentation/widgets/dashed_separator.dart';
@@ -35,23 +36,25 @@ class _SignInScreenState extends State<SignInScreen> {
           }
         },
         builder: (context, state) {
-          return SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 72, 16, 24),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                spacing: 36,
-                children: [
-                    Image.asset(
-                    'assets/logo/coupidyn.png',
-                    width: 200,
-                    height: 200,
-                    fit: BoxFit.contain,
-                    ),
-                  _LoginCard(isLoading: state is AuthSignInInProgress),
-                ],
+          return SafeArea(
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  spacing: 16,
+                  children: [
+                      Image.asset(
+                      'assets/logo/coupidyn.png',
+                      width: 200,
+                      height: 200,
+                      fit: BoxFit.contain,
+                      ),
+                    _LoginCard(isLoading: state is AuthSignInInProgress),
+                  ],
+                ),
               ),
             ),
           );
@@ -153,6 +156,33 @@ class _LoginCardState extends State<_LoginCard> {
                           }
                           return null;
                         },
+                      ),
+                    ],
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    spacing: 10,
+                    children: [
+                      const Text(
+                        'Masz problem z zalogowaniem?',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: AppColors.textPrimary,
+                          fontSize: 14,
+                          fontFamily: 'Itim',
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                      CustomTextButton.small(
+                        label: "Zresetuj hasło",
+                        onTap: widget.isLoading
+                          ? () {}
+                          : () => Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      const ForgotPasswordScreen(),
+                                ),
+                              ),
                       ),
                     ],
                   ),

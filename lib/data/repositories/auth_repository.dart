@@ -84,4 +84,25 @@ class AuthRepository {
       throw'Błąd wylogowania: $e';
     }
   }
+
+  Future<void> sendPasswordResetEmail(String email) async {
+    try {
+      await _firebaseAuth.sendPasswordResetEmail(email: email);
+    } on FirebaseAuthException catch (e) {
+      switch (e.code) {
+        case 'invalid-email':
+          throw 'Podany adres e-mail jest nieprawidłowy.';
+        case 'user-not-found':
+          throw 'Użytkownik z podanym adresem e-mail nie istnieje.';
+        case 'too-many-requests':
+          throw 'Zbyt wiele prób resetowania hasła, spróbuj ponownie za chwilę.';
+        case 'network-request-failed':
+          throw 'Nie udało się połączyć z siecią, spróbuj ponownie za chwilę lub sprawdź ustawienia połączenia.';
+        default:
+          throw 'Błąd resetowania hasła: ${e.message}';
+      }
+    } catch (e) {
+      throw 'Błąd resetowania hasła: $e';
+    }
+  }
 }

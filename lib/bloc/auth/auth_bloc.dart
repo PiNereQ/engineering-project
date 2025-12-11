@@ -16,6 +16,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<SignUpRequested>(_onSignUpRequested);
     on<SignInRequested>(_onSignInRequested);
     on<SignOutRequested>(_onSignOutRequested);
+    on<PasswordResetRequested>(_onPasswordResetRequested);
   }
 
   void _onSignUpRequested(SignUpRequested event, Emitter<AuthState> emit) async {
@@ -52,6 +53,16 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(AuthUnauthenticated());
     } catch (e) {
       emit(AuthSignOutFailure(errorMessage: e.toString()));
+    }
+  }
+
+  void _onPasswordResetRequested(PasswordResetRequested event, Emitter<AuthState> emit) async {
+    emit(AuthPasswordResetInProgress());
+    try {
+      await authRepository.sendPasswordResetEmail(event.email);
+      emit(AuthPasswordResetSuccess());
+    } catch (e) {
+      emit(AuthPasswordResetFailure(errorMessage: e.toString()));
     }
   }
 }
