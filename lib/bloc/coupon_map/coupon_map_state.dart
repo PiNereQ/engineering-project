@@ -11,7 +11,7 @@ enum CouponMapStatus {
 
 class CouponMapState extends Equatable {
   final CouponMapStatus status;
-  final List<Location> locations;
+  final List<ShopLocation> locations;
   final List<Coupon> selectedShopLocationCoupons;
   final String? errorMessage;
   final bool showSearchButton;
@@ -30,7 +30,7 @@ class CouponMapState extends Equatable {
 
   CouponMapState copyWith({
     CouponMapStatus? status,
-    List<Location>? locations,
+    List<ShopLocation>? locations,
     List<Coupon>? selectedShopLocationCoupons,
     String? errorMessage,
     bool? showSearchButton,
