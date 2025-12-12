@@ -1,13 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:proj_inz/data/models/coupon_model.dart';
-import 'package:proj_inz/presentation/widgets/coupon_card.dart';
-import 'package:proj_inz/presentation/widgets/dashed_separator.dart';
 import 'package:proj_inz/presentation/widgets/help/help_button.dart';
-import 'package:proj_inz/presentation/widgets/help/help_popup.dart';
-import 'package:proj_inz/presentation/widgets/input/buttons/custom_follow_button.dart';
-import 'package:proj_inz/presentation/widgets/input/buttons/custom_icon_button.dart';
-import 'package:proj_inz/presentation/widgets/input/buttons/custom_text_button.dart';
-import 'package:proj_inz/presentation/widgets/input/buttons/ticket_button.dart';
 
 
 class DebugScreen extends StatefulWidget {

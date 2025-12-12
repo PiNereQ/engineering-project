@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:proj_inz/bloc/coupon_add/coupon_add_bloc.dart';
 import 'package:proj_inz/core/theme.dart';
 import 'package:proj_inz/core/utils/text_formatters.dart';
@@ -900,9 +901,8 @@ class _AddScreenState extends State<AddScreen> {
                                                 return;
                                               }
                                               // Get current user ID
-                                              final userRepo = context.read<UserRepository>();
-                                              final user = await userRepo.getCurrentUser();
-                                              if (user == null) {
+                                              final firebaseUser = FirebaseAuth.instance.currentUser;
+                                              if (firebaseUser == null) {
                                                 setState(() {
                                                   _showMissingValuesTip = true;
                                                 });
@@ -910,8 +910,13 @@ class _AddScreenState extends State<AddScreen> {
                                               }
 
                                               // Ensure user exists in API database
+                                              final userRepo = context.read<UserRepository>();
                                               try {
-                                                await userRepo.ensureUserExistsInApi();
+                                                await userRepo.ensureUserExistsInApi(
+                                                  firebaseUser.uid,
+                                                  firebaseUser.email ?? '',
+                                                  firebaseUser.displayName ?? 'User',
+                                                );
                                               } catch (e) {
                                                 if (mounted) {
                                                   showCustomSnackBar(context, 'Błąd synchronizacji użytkownika: $e');
@@ -951,7 +956,7 @@ class _AddScreenState extends State<AddScreen> {
                                                 worksInStore: _inPhysicalStores,
                                                 expiryDate: expiryDateStr,
                                                 shopId: int.tryParse(_selectedShop?.id ?? '0') ?? 0,
-                                                ownerId: user.uid,
+                                                ownerId: firebaseUser.uid,
                                                 isActive: true,
                                                 isMultipleUse: _isMultipleUse,
                                               );

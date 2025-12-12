@@ -1,16 +1,29 @@
-import 'package:proj_inz/data/api/api_client.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:proj_inz/data/repositories/user_repository.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class AuthRepository {
-  late final ApiClient _apiClient;
+  final _firebaseAuth = FirebaseAuth.instance;
   final _userRepository = UserRepository();
   final storage = FlutterSecureStorage();
 
-  AuthRepository() {
-    final baseUrl = dotenv.env['API_BASE_URL'] ?? 'http://49.13.155.21:8000';
-    _apiClient = ApiClient(baseUrl: baseUrl);
+  AuthRepository();
+
+  /// Get current user ID from Firebase Auth
+  String? getCurrentUserId() {
+    return _firebaseAuth.currentUser?.uid;
+  }
+
+  /// Get Firebase Auth ID token (JWT)
+  Future<String?> getIdToken() async {
+    final user = _firebaseAuth.currentUser;
+    if (user == null) return null;
+    return await user.getIdToken();
+  }
+
+  /// Get current Firebase user
+  User? getCurrentUser() {
+    return _firebaseAuth.currentUser;
   }
 
   Future<void> singUp({required String email, required String username, required String password, required String confirmPassword}) async {
@@ -18,63 +31,105 @@ class AuthRepository {
       throw 'Podane hasła nie są takie same.';
     }
     
+    // Check if username is already taken in API
+    if (await _userRepository.isUsernameInUse(username)) {
+      throw "Nazwa użytkownika jest zajęta";
+    }
+    
     try {
-      final response = await _apiClient.postJson('/auth/signup', {
-        'email': email,
-        'username': username,
-        'password': password,
-      });
-      
-      // Optionally create user profile if needed
-      // await _userRepository.createUserProfile(...)
-    } catch (e) {
-      // Parse API errors and throw user-friendly messages
-      if (e.toString().contains('409')) {
-        throw 'Podany adres e-mail lub nazwa użytkownika jest już używany.';
-      } else if (e.toString().contains('400')) {
-        throw 'Nieprawidłowe dane rejestracji.';
-      } else if (e.toString().contains('network')) {
-        throw 'Nie udało się połączyć z siecią, spróbuj ponownie za chwilę lub sprawdź ustawienia połączenia.';
+      // Create user in Firebase Auth
+      final userCredential = await _firebaseAuth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      final user = userCredential.user;
+
+      if (user != null) {
+        // Create user profile in your API
+        await _userRepository.createUserProfile(
+          uid: user.uid,
+          email: user.email ?? '',
+          username: username,
+        );
+        
+        // Store Firebase token
+        final token = await user.getIdToken();
+        if (token != null) {
+          await storage.write(key: 'auth_token', value: token);
+        }
       }
+    } on FirebaseAuthException catch(e) {
+      switch (e.code) {
+        case 'weak-password':
+          throw 'Podane hasło jest zbyt słabe.';
+        case 'email-already-in-use':
+          throw 'Podany adres e-mail jest już używany.';
+        case 'invalid-email':
+          throw 'Podany adres e-mail jest nieprawidłowy.';
+        case 'too-many-requests':
+          throw 'Zbyt wiele prób rejestracji, spróbuj ponownie za chwilę.';
+        case 'network-request-failed':
+          throw 'Nie udało się połączyć z siecią, spróbuj ponownie za chwilę lub sprawdź ustawienia połączenia.';
+        default:
+          throw 'Błąd rejestracji: ${e.message}';
+      }
+    } catch (e) {
       throw 'Błąd rejestracji: $e';
     }
   }
 
   Future<String> signIn(String email, String password) async {
     try {
-      final response = await _apiClient.postJson('/auth/login', {
-        'email': email,
-        'password': password,
-      });
+      // Sign in with Firebase Auth
+      final userCredential = await _firebaseAuth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
       
-      // Extract token from response
-      if (response is Map && response.containsKey('token')) {
-        final token = response['token'] as String;
-        // Save token to secure storage
-        await storage.write(key: 'auth_token', value: token);
-        return token;
+      final user = userCredential.user;
+      if (user == null) {
+        throw 'Nie udało się zalogować.';
       }
-      throw 'Brak tokenu w odpowiedzi serwera';
+      
+      // Get Firebase ID token
+      final token = await user.getIdToken();
+      if (token == null) {
+        throw 'Nie udało się uzyskać tokenu.';
+      }
+      
+      // Save token to secure storage
+      await storage.write(key: 'auth_token', value: token);
+      
+      return token;
+    } on FirebaseAuthException catch(e) {
+      switch (e.code) {
+        case 'invalid-email':
+          throw 'Podany adres e-mail jest nieprawidłowy.';
+        case 'too-many-requests':
+          throw 'Zbyt wiele prób logowania, spróbuj ponownie za chwilę.';
+        case 'network-request-failed':
+          throw 'Nie udało się połączyć z siecią, spróbuj ponownie za chwilę lub sprawdź ustawienia połączenia.';
+        case 'invalid-credential':
+        case 'INVALID_LOGIN_CREDENTIALS':
+        case 'user-not-found':
+        case 'wrong-password':
+          throw 'Podane dane logowania są nieprawidłowe.';
+        default:
+          throw 'Błąd logowania: ${e.message}';
+      }
     } catch (e) {
-      // Parse API errors and throw user-friendly messages
-      if (e.toString().contains('401') || e.toString().contains('403')) {
-        throw 'Podane dane logowania są nieprawidłowe.';
-      } else if (e.toString().contains('429')) {
-        throw 'Zbyt wiele prób logowania, spróbuj ponownie za chwilę.';
-      } else if (e.toString().contains('network')) {
-        throw 'Nie udało się połączyć z siecią, spróbuj ponownie za chwilę lub sprawdź ustawienia połączenia.';
-      }
       throw 'Błąd logowania: $e';
     }
   }
 
   Future<void> signOut() async {
     try {
+      // Sign out from Firebase
+      await _firebaseAuth.signOut();
+      
       // Delete token from secure storage
       await storage.delete(key: 'auth_token');
-      
-      // Optionally call API to invalidate token on server
-      // await _apiClient.postJson('/auth/logout', {});
     } catch (e) {
       throw 'Błąd wylogowania: $e';
     }
@@ -82,18 +137,21 @@ class AuthRepository {
 
   Future<void> sendPasswordResetEmail(String email) async {
     try {
-      await _apiClient.postJson('/auth/reset-password', {
-        'email': email,
-      });
-    } catch (e) {
-      // Parse API errors and throw user-friendly messages
-      if (e.toString().contains('404')) {
-        throw 'Użytkownik z podanym adresem e-mail nie istnieje.';
-      } else if (e.toString().contains('429')) {
-        throw 'Zbyt wiele prób resetowania hasła, spróbuj ponownie za chwilę.';
-      } else if (e.toString().contains('network')) {
-        throw 'Nie udało się połączyć z siecią, spróbuj ponownie za chwilę lub sprawdź ustawienia połączenia.';
+      await _firebaseAuth.sendPasswordResetEmail(email: email);
+    } on FirebaseAuthException catch (e) {
+      switch (e.code) {
+        case 'invalid-email':
+          throw 'Podany adres e-mail jest nieprawidłowy.';
+        case 'user-not-found':
+          throw 'Użytkownik z podanym adresem e-mail nie istnieje.';
+        case 'too-many-requests':
+          throw 'Zbyt wiele prób resetowania hasła, spróbuj ponownie za chwilę.';
+        case 'network-request-failed':
+          throw 'Nie udało się połączyć z siecią, spróbuj ponownie za chwilę lub sprawdź ustawienia połączenia.';
+        default:
+          throw 'Błąd resetowania hasła: ${e.message}';
       }
+    } catch (e) {
       throw 'Błąd resetowania hasła: $e';
     }
   }

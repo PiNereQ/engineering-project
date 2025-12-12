@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:proj_inz/bloc/coupon_list/coupon_list_bloc.dart';
 import 'package:proj_inz/bloc/navbar/navbar_bloc.dart';
 import 'package:proj_inz/bloc/navbar/navbar_state.dart';
@@ -31,8 +32,9 @@ class _MainScreenState extends State<MainScreen> {
 
     // late initialization to ensure context is available, load conversations, check unread messages
     Future.microtask(() {
-      context.read<ChatListBloc>().add(LoadBuyingConversations());
-      context.read<ChatUnreadBloc>().add(CheckUnreadStatus());
+      final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
+      context.read<ChatListBloc>().add(LoadBuyingConversations(userId: userId));
+      context.read<ChatUnreadBloc>().add(CheckUnreadStatus(userId: userId));
     });
   }
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:proj_inz/bloc/navbar/navbar_bloc.dart';
 import 'package:proj_inz/bloc/navbar/navbar_event.dart';
 import 'package:proj_inz/bloc/navbar/navbar_state.dart';
@@ -77,7 +78,8 @@ class Navbar extends StatelessWidget {
                       hasBadge: hasUnread,
                       onTap: () {
                         context.read<NavbarBloc>().add(NavbarItemSelected(3));
-                        context.read<ChatUnreadBloc>().add(CheckUnreadStatus());
+                        final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
+                        context.read<ChatUnreadBloc>().add(CheckUnreadStatus(userId: userId));
                       },
                     ),
                     NavbarItem(

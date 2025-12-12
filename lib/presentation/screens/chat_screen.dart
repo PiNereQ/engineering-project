@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:proj_inz/bloc/chat/list/chat_list_bloc.dart';
 import 'package:proj_inz/bloc/chat/list/chat_list_event.dart';
 import 'package:proj_inz/bloc/chat/list/chat_list_state.dart';
@@ -26,7 +27,8 @@ class _ChatScreenState extends State<ChatScreen> {
   void initState() {
     super.initState();
     // automatically load buying conversations
-    context.read<ChatListBloc>().add(LoadBuyingConversations());
+    final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
+    context.read<ChatListBloc>().add(LoadBuyingConversations(userId: userId));
   }
 
   @override
@@ -51,9 +53,10 @@ class _ChatScreenState extends State<ChatScreen> {
                             onTap: () {
                               if (!isBuying) {
                                 setState(() => isBuying = true);
+                                final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
                                 context
                                     .read<ChatListBloc>()
-                                    .add(LoadBuyingConversations());
+                                    .add(LoadBuyingConversations(userId: userId));
                               }
                             },
                           )
@@ -63,9 +66,10 @@ class _ChatScreenState extends State<ChatScreen> {
                             onTap: () {
                               if (!isBuying) {
                                 setState(() => isBuying = true);
+                                final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
                                 context
                                     .read<ChatListBloc>()
-                                    .add(LoadBuyingConversations());
+                                    .add(LoadBuyingConversations(userId: userId));
                               }
                             },
                           ),
@@ -79,9 +83,10 @@ class _ChatScreenState extends State<ChatScreen> {
                             onTap: () {
                               if (isBuying) {
                                 setState(() => isBuying = false);
+                                final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
                                 context
                                     .read<ChatListBloc>()
-                                    .add(LoadSellingConversations());
+                                    .add(LoadSellingConversations(userId: userId));
                               }
                             },
                           )
@@ -91,9 +96,10 @@ class _ChatScreenState extends State<ChatScreen> {
                             onTap: () {
                               if (isBuying) {
                                 setState(() => isBuying = false);
+                                final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
                                 context
                                     .read<ChatListBloc>()
-                                    .add(LoadSellingConversations());
+                                    .add(LoadSellingConversations(userId: userId));
                               }
                             },
                           ),
@@ -117,7 +123,8 @@ class _ChatScreenState extends State<ChatScreen> {
                   }
 
                   if (state is ChatListLoaded) {
-                    context.read<ChatUnreadBloc>().add(CheckUnreadStatus());
+                    final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
+                    context.read<ChatUnreadBloc>().add(CheckUnreadStatus(userId: userId));
                     if (state.conversations.isEmpty) {
                       return const Center(
                         child: Text(
@@ -156,14 +163,15 @@ class _ChatScreenState extends State<ChatScreen> {
                             )
                                 // reload after returning for updated last message
                                 .then((_) {
+                              final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
                               if (isBuying) {
                                 context
                                     .read<ChatListBloc>()
-                                    .add(LoadBuyingConversations());
+                                    .add(LoadBuyingConversations(userId: userId));
                               } else {
                                 context
                                     .read<ChatListBloc>()
-                                    .add(LoadSellingConversations());
+                                    .add(LoadSellingConversations(userId: userId));
                               }
                             });
                           },

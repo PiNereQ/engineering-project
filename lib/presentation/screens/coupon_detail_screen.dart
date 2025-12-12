@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:proj_inz/bloc/coupon/coupon_bloc.dart';
 import 'package:proj_inz/bloc/coupon_list/coupon_list_bloc.dart';
 import 'package:proj_inz/bloc/payment/payment_bloc.dart';
@@ -10,7 +11,6 @@ import 'package:proj_inz/core/utils/utils.dart';
 import 'package:proj_inz/data/models/coupon_model.dart';
 import 'package:proj_inz/data/repositories/chat_repository.dart';
 import 'package:proj_inz/data/repositories/coupon_repository.dart';
-import 'package:proj_inz/data/repositories/user_repository.dart';
 import 'package:proj_inz/presentation/screens/bought_coupon_detail_screen.dart';
 import 'package:proj_inz/presentation/screens/chat_detail_screen.dart';
 import 'package:proj_inz/presentation/widgets/custom_snack_bar.dart';
@@ -268,10 +268,10 @@ class _CouponDetails extends StatelessWidget {
         } else if (state is PaymentSuccess) {
           Navigator.of(context, rootNavigator: true).pop();
           showCustomSnackBar(context, 'Płatność zakończona sukcesem!');
-          final user = await context.read<UserRepository>().getCurrentUser();
-          if (context.mounted && user != null) {
+          final userId = FirebaseAuth.instance.currentUser?.uid;
+          if (context.mounted && userId != null) {
             context.read<OwnedCouponBloc>().add(
-              BuyCouponRequested(couponId: coupon.id, userId: user.uid),
+              BuyCouponRequested(couponId: coupon.id, userId: userId),
             );
             
             Navigator.of(context).pushReplacement(
@@ -596,9 +596,8 @@ class _SellerDetails extends StatelessWidget {
                       child: CustomTextButton.primary(
                         label: "Zapytaj o ten kupon",
                           onTap: () async {
-                            final currentUser = await context.read<UserRepository>().getCurrentUser();
-                            if (currentUser == null) return;
-                            final buyerId = currentUser.uid;
+                            final buyerId = FirebaseAuth.instance.currentUser?.uid;
+                            if (buyerId == null) return;
                             final sellerId = this.sellerId;
 
                             final couponId =

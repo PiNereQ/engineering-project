@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:proj_inz/bloc/chat/unread/chat_unread_bloc.dart';
 import 'package:proj_inz/bloc/chat/unread/chat_unread_event.dart';
 import 'package:proj_inz/core/theme.dart';
@@ -507,9 +508,10 @@ class _ChatDetailViewState extends State<ChatDetailView> {
 
     if (_conversation != null) {
       final repo = context.read<ChatRepository>();
-      repo.markConversationAsRead(_conversation!.id);
+      final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
+      repo.markConversationAsRead(_conversation!.id, userId);
 
-      context.read<ChatUnreadBloc>().add(CheckUnreadStatus());
+      context.read<ChatUnreadBloc>().add(CheckUnreadStatus(userId: userId));
 
       context.read<ChatDetailBloc>().add(
         LoadMessages(_conversation!.id),
@@ -697,12 +699,15 @@ class _ChatDetailViewState extends State<ChatDetailView> {
     if (text.isEmpty) return;
 
     final repo = context.read<ChatRepository>();
+    final currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
 
     if (_conversation == null) {
       final conv = await repo.createConversationIfNotExists(
         couponId: widget.couponId,
         buyerId: widget.buyerId,
         sellerId: widget.sellerId,
+        buyerUsername: widget.buyerId == currentUserId ? 'Me' : _getOtherUsername(),
+        sellerUsername: widget.sellerId == 'TODO - BUYERID' ? 'Me' : _getOtherUsername(),
       );
 
       setState(() {
@@ -715,6 +720,7 @@ class _ChatDetailViewState extends State<ChatDetailView> {
     await repo.sendMessage(
       conversationId: convId,
       text: text,
+      senderId: currentUserId,
     );
 
     context.read<ChatDetailBloc>().add(
@@ -723,7 +729,7 @@ class _ChatDetailViewState extends State<ChatDetailView> {
 
     _controller.clear();
 
-    context.read<ChatUnreadBloc>().add(CheckUnreadStatus());
+    context.read<ChatUnreadBloc>().add(CheckUnreadStatus(userId: currentUserId));
   }
 
 
