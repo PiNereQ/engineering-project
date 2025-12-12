@@ -183,3 +183,6 @@ android/build.gradle
 android/settings.gradle
 android/gradle/wrapper/gradle-wrapper.properties
 android/gradle/wrapper/gradle-wrapper.properties
+android/build.gradle
+android/settings.gradle
+android/gradle/wrapper/gradle-wrapper.properties
