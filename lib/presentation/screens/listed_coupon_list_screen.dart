@@ -151,72 +151,88 @@ class _Toolbar extends StatelessWidget {
       backgroundColor: Colors.transparent,
       surfaceTintColor: Colors.transparent,
       elevation: 0,
-      flexibleSpace: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 24, 16, 16),
-        child: Container(
-          decoration: ShapeDecoration(
-            color: AppColors.surface,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(24),
-              side: const BorderSide(width: 2),
-            ),
-            shadows: const [
-              BoxShadow(
-                color: AppColors.textPrimary,
-                blurRadius: 0,
-                offset: Offset(4, 4),
-              ),
-            ],
+      flexibleSpace: Stack(
+        children: [
+          Positioned(
+            left: 0,
+            right: 0,
+            top: 0,
+            height: 60,
+            child: Container(color: AppColors.background),
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              CustomIconButton(
-                icon: SvgPicture.asset('assets/icons/back.svg'),
-                onTap: () => Navigator.of(context).pop(),
-              ),
-
-              Row(
-                spacing: 12,
-                children: [
-                  CustomTextButton.small(
-                    label: "Filtruj",
-                    icon: const Icon(Icons.filter_alt),
-                    onTap: () => showDialog(
-                      context: context,
-                      barrierColor: AppColors.popupOverlay,
-                      builder: (_) => BlocProvider.value(
-                        value: context.read<ListedCouponListBloc>(),
-                        child: const _ListedFilterDialog(),
-                      ),
-                    ).then((_) {
-                      if (context.mounted) {
-                        context.read<ListedCouponListBloc>().add(FetchListedCoupons());
-                      }
-                    }),
-                  ),
-                  CustomTextButton.small(
-                    label: "Sortuj",
-                    icon: const Icon(Icons.sort),
-                    onTap: () => showDialog(
-                      context: context,
-                      barrierColor: AppColors.popupOverlay,
-                      builder: (_) => BlocProvider.value(
-                        value: context.read<ListedCouponListBloc>(),
-                        child: const _ListedSortDialog(),
-                      ),
-                    ).then((_) {
-                      if (context.mounted) {
-                        context.read<ListedCouponListBloc>().add(FetchListedCoupons());
-                      }
-                    }),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 24, 16, 16),
+            child: Container(
+              width: double.infinity,
+              decoration: ShapeDecoration(
+                color: AppColors.surface,
+                shape: RoundedRectangleBorder(
+                  side: const BorderSide(width: 2),
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                shadows: const [
+                  BoxShadow(
+                    color: AppColors.textPrimary,
+                    blurRadius: 0,
+                    offset: Offset(4, 4),
+                    spreadRadius: 0,
                   ),
                 ],
-              )
-            ],
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                spacing: 12,
+                children: [
+                  CustomIconButton(
+                    icon: SvgPicture.asset('assets/icons/back.svg'),
+                    onTap: () => Navigator.of(context).pop(),
+                  ),
+
+                  Row(
+                    spacing: 12,
+                    children: [
+                      CustomTextButton.small(
+                        label: 'Filtruj',
+                        icon: const Icon(Icons.filter_alt),
+                        onTap: () => showDialog(
+                          context: context,
+                          barrierColor: AppColors.popupOverlay,
+                          builder: (_) => BlocProvider.value(
+                            value: context.read<ListedCouponListBloc>(),
+                            child: const _ListedFilterDialog(),
+                          ),
+                        ).then((_) {
+                          if (context.mounted) {
+                            context.read<ListedCouponListBloc>()
+                                .add(FetchListedCoupons());
+                          }
+                        }),
+                      ),
+                      CustomTextButton.small(
+                        label: 'Sortuj',
+                        icon: const Icon(Icons.sort),
+                        onTap: () => showDialog(
+                          context: context,
+                          barrierColor: AppColors.popupOverlay,
+                          builder: (_) => BlocProvider.value(
+                            value: context.read<ListedCouponListBloc>(),
+                            child: const _ListedSortDialog(),
+                          ),
+                        ).then((_) {
+                          if (context.mounted) {
+                            context.read<ListedCouponListBloc>()
+                                .add(FetchListedCoupons());
+                          }
+                        }),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
           ),
-        ),
+        ],
       ),
       toolbarHeight: 126,
     );
@@ -273,136 +289,208 @@ class _ListedFilterDialogState extends State<_ListedFilterDialog> {
                     CustomIconButton(
                       icon: SvgPicture.asset('assets/icons/back.svg'),
                       onTap: () => Navigator.of(context).pop(),
-                    )
+                    ),
                   ],
                 ),
                 const SizedBox(height: 16),
 
-                _filterBox(context, shops),
+                Container(
+                  decoration: ShapeDecoration(
+                    color: AppColors.surface,
+                    shape: RoundedRectangleBorder(
+                      side: const BorderSide(width: 2),
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                    shadows: const [
+                      BoxShadow(
+                        color: AppColors.textPrimary,
+                        blurRadius: 0,
+                        offset: Offset(4, 4),
+                        spreadRadius: 0,
+                      ),
+                    ],
+                  ),
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    spacing: 18,
+                    children: [
+                      const Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          'Filtry',
+                          style: TextStyle(
+                            color: AppColors.textPrimary,
+                            fontSize: 24,
+                            fontFamily: 'Itim',
+                          ),
+                        ),
+                      ),
+                      const Divider(color: AppColors.textPrimary, thickness: 2),
+
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          spacing: 8,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Typ kuponu',
+                                  style: TextStyle(
+                                    color: AppColors.textPrimary,
+                                    fontSize: 20,
+                                    fontFamily: 'Itim',
+                                  ),
+                                ),
+                                CustomCheckbox(
+                                  selected: reductionIsPercentage,
+                                  onTap: () => setState(() =>
+                                      reductionIsPercentage = !reductionIsPercentage),
+                                  label: 'rabat -%',
+                                ),
+                                CustomCheckbox(
+                                  selected: reductionIsFixed,
+                                  onTap: () => setState(() =>
+                                      reductionIsFixed = !reductionIsFixed),
+                                  label: 'rabat -zł',
+                                ),
+                              ],
+                            ),
+
+                            const Divider(color: AppColors.textPrimary),
+
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Status kuponu',
+                                  style: TextStyle(
+                                    color: AppColors.textPrimary,
+                                    fontSize: 20,
+                                    fontFamily: 'Itim',
+                                  ),
+                                ),
+                                CustomCheckbox(
+                                  selected: showActive,
+                                  onTap: () => setState(() => showActive = !showActive),
+                                  label: 'aktywny',
+                                ),
+                                CustomCheckbox(
+                                  selected: showSold,
+                                  onTap: () => setState(() => showSold = !showSold),
+                                  label: 'sprzedany',
+                                ),
+                              ],
+                            ),
+
+                            const Divider(color: AppColors.textPrimary),
+
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Sklep',
+                                  style: TextStyle(
+                                    color: AppColors.textPrimary,
+                                    fontSize: 20,
+                                    fontFamily: 'Itim',
+                                  ),
+                                ),
+                                Container(
+                                  decoration: ShapeDecoration(
+                                    color: AppColors.surface,
+                                    shape: RoundedRectangleBorder(
+                                      side: const BorderSide(width: 2, color: AppColors.textPrimary),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
+                                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                                  child: DropdownButton<String>(
+                                    value: selectedShopId,
+                                    isExpanded: true,
+                                    underline: const SizedBox(),
+                                    dropdownColor: AppColors.surface,
+                                    style: const TextStyle(
+                                      fontFamily: "Itim",
+                                      fontSize: 18,
+                                      color: AppColors.textPrimary,
+                                    ),
+                                    hint: const Text(
+                                      "Wybierz sklep",
+                                      style: TextStyle(
+                                        fontFamily: "Itim",
+                                        fontSize: 18,
+                                        color: AppColors.textSecondary,
+                                      ),
+                                    ),
+                                    items: shops
+                                        .map(
+                                          (shop) => DropdownMenuItem<String>(
+                                            value: shop.id,
+                                            child: Text(
+                                              shop.name,
+                                              style: const TextStyle(
+                                                fontFamily: "Itim",
+                                                fontSize: 18,
+                                                color: AppColors.textPrimary,
+                                              ),
+                                            ),
+                                          ),
+                                        )
+                                        .toList(),
+                                    onChanged: (value) => setState(() => selectedShopId = value),
+                                  ),
+                                )
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            CustomTextButton(
+                              label: 'Wyczyść',
+                              icon: const Icon(Icons.delete_outline),
+                              onTap: () {
+                                Navigator.of(context).pop();
+                                context
+                                    .read<ListedCouponListBloc>()
+                                    .add(ClearListedCouponFilters());
+                              },
+                            ),
+                            CustomTextButton.primary(
+                              label: 'Zastosuj',
+                              icon: const Icon(Icons.check),
+                              onTap: () {
+                                Navigator.of(context).pop();
+                                context.read<ListedCouponListBloc>().add(
+                                      ApplyListedCouponFilters(
+                                        reductionIsPercentage: reductionIsPercentage,
+                                        reductionIsFixed: reductionIsFixed,
+                                        showActive: showActive,
+                                        showSold: showSold,
+                                        shopId: selectedShopId,
+                                      ),
+                                    );
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                )
               ],
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _filterBox(BuildContext context, List<Map<String, String>> shops) {
-    return Container(
-      decoration: ShapeDecoration(
-        color: AppColors.surface,
-        shape: RoundedRectangleBorder(
-          side: const BorderSide(width: 2),
-          borderRadius: BorderRadius.circular(24),
-        ),
-        shadows: const [
-          BoxShadow(
-            color: AppColors.textPrimary,
-            offset: Offset(4, 4),
-          )
-        ],
-      ),
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        spacing: 18,
-        children: [
-          const Text("Filtry",
-              style: TextStyle(fontSize: 24, fontFamily: "Itim")),
-          const Divider(thickness: 2),
-
-          const Text("Typ kuponu",
-              style: TextStyle(fontSize: 20, fontFamily: "Itim")),
-          CustomCheckbox(
-            label: "rabat -%",
-            selected: reductionIsPercentage,
-            onTap: () => setState(() => reductionIsPercentage = !reductionIsPercentage),
-          ),
-          CustomCheckbox(
-            label: "rabat -zł",
-            selected: reductionIsFixed,
-            onTap: () => setState(() => reductionIsFixed = !reductionIsFixed),
-          ),
-
-          const Divider(),
-
-          const Text("Status kuponu",
-              style: TextStyle(fontSize: 20, fontFamily: "Itim")),
-          CustomCheckbox(
-            label: "aktywny",
-            selected: showActive,
-            onTap: () => setState(() => showActive = !showActive),
-          ),
-          CustomCheckbox(
-            label: "sprzedany",
-            selected: showSold,
-            onTap: () => setState(() => showSold = !showSold),
-          ),
-
-          const Divider(),
-
-          const Text("Sklep",
-              style: TextStyle(fontSize: 20, fontFamily: "Itim")),
-          Container(
-            decoration: ShapeDecoration(
-              color: AppColors.surface,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-                side: const BorderSide(width: 2),
-              ),
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: DropdownButton<String>(
-              isExpanded: true,
-              underline: const SizedBox(),
-              value: selectedShopId,
-              items: shops.map((shop) {
-                return DropdownMenuItem(
-                  value: shop["id"],
-                  child: Text(
-                    shop["name"]!,
-                    style: const TextStyle(fontFamily: "Itim"),
-                  ),
-                );
-              }).toList(),
-              onChanged: (v) => setState(() => selectedShopId = v),
-            ),
-          ),
-
-          const SizedBox(height: 12),
-
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              CustomTextButton(
-                label: "Wyczyść",
-                icon: const Icon(Icons.delete_outline),
-                onTap: () {
-                  Navigator.pop(context);
-                  context
-                      .read<ListedCouponListBloc>()
-                      .add(ClearListedCouponFilters());
-                },
-              ),
-              CustomTextButton.primary(
-                label: "Zastosuj",
-                icon: const Icon(Icons.check),
-                onTap: () {
-                  Navigator.pop(context);
-                  context.read<ListedCouponListBloc>().add(
-                        ApplyListedCouponFilters(
-                          reductionIsPercentage: reductionIsPercentage,
-                          reductionIsFixed: reductionIsFixed,
-                          showActive: showActive,
-                          showSold: showSold,
-                          shopId: selectedShopId,
-                        ),
-                      );
-                },
-              ),
-            ],
-          )
-        ],
       ),
     );
   }
@@ -428,8 +516,8 @@ class _ListedSortDialogState extends State<_ListedSortDialog> {
   @override
   Widget build(BuildContext context) {
     return BlocListener<ListedCouponListBloc, ListedCouponListState>(
-      listenWhen: (_, s) => s is ListedCouponOrderingRead,
-      listener: (_, state) {
+      listenWhen: (_, state) => state is ListedCouponOrderingRead,
+      listener: (context, state) {
         if (state is ListedCouponOrderingRead) {
           setState(() => ordering = state.ordering);
         }
@@ -445,114 +533,163 @@ class _ListedSortDialogState extends State<_ListedSortDialog> {
                   CustomIconButton(
                     icon: SvgPicture.asset('assets/icons/back.svg'),
                     onTap: () => Navigator.of(context).pop(),
-                  )
+                  ),
                 ],
               ),
               const SizedBox(height: 16),
 
-              _sortBox(context),
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: ShapeDecoration(
+                  color: AppColors.surface,
+                  shape: RoundedRectangleBorder(
+                    side: const BorderSide(width: 2),
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                  shadows: const [
+                    BoxShadow(
+                      color: AppColors.textPrimary,
+                      blurRadius: 0,
+                      offset: Offset(4, 4),
+                      spreadRadius: 0,
+                    ),
+                  ],
+                ),
+                child: Column(
+                  spacing: 18,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Sortowanie',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontFamily: 'Itim',
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    const Divider(color: AppColors.textPrimary, thickness: 2),
+
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        spacing: 8,
+                        children: [
+
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Data wystawienia',
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontFamily: 'Itim',
+                                  color: AppColors.textPrimary,
+                                ),
+                              ),
+                              CustomRadioButton(
+                                label: "od najnowszych",
+                                selected: ordering ==
+                                    ListedCouponsOrdering.listingDateDesc,
+                                onTap: () => setState(() =>
+                                    ordering =
+                                        ListedCouponsOrdering.listingDateDesc),
+                              ),
+                              CustomRadioButton(
+                                label: "od najstarszych",
+                                selected: ordering ==
+                                    ListedCouponsOrdering.listingDateAsc,
+                                onTap: () => setState(() =>
+                                    ordering =
+                                        ListedCouponsOrdering.listingDateAsc),
+                              ),
+                            ],
+                          ),
+
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Data ważności',
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontFamily: 'Itim',
+                                  color: AppColors.textPrimary,
+                                ),
+                              ),
+                              CustomRadioButton(
+                                label: "od najbliższej",
+                                selected:
+                                    ordering == ListedCouponsOrdering.expiryDateAsc,
+                                onTap: () => setState(() =>
+                                    ordering =
+                                        ListedCouponsOrdering.expiryDateAsc),
+                              ),
+                              CustomRadioButton(
+                                label: "od najdalszej",
+                                selected:
+                                    ordering == ListedCouponsOrdering.expiryDateDesc,
+                                onTap: () => setState(() =>
+                                    ordering =
+                                        ListedCouponsOrdering.expiryDateDesc),
+                              ),
+                            ],
+                          ),
+
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Cena',
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontFamily: 'Itim',
+                                  color: AppColors.textPrimary,
+                                ),
+                              ),
+                              CustomRadioButton(
+                                label: "od najniższej",
+                                selected:
+                                    ordering == ListedCouponsOrdering.priceAsc,
+                                onTap: () => setState(() =>
+                                    ordering = ListedCouponsOrdering.priceAsc),
+                              ),
+                              CustomRadioButton(
+                                label: "od najwyższej",
+                                selected:
+                                    ordering == ListedCouponsOrdering.priceDesc,
+                                onTap: () => setState(() =>
+                                    ordering = ListedCouponsOrdering.priceDesc),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        CustomTextButton.primary(
+                          label: "Zastosuj",
+                          icon: const Icon(Icons.check),
+                          onTap: () {
+                            Navigator.of(context).pop();
+                            context.read<ListedCouponListBloc>().add(
+                                  ApplyListedCouponOrdering(ordering),
+                                );
+                          },
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              )
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _sortBox(BuildContext context) {
-    return Container(
-      decoration: ShapeDecoration(
-        color: AppColors.surface,
-        shape: RoundedRectangleBorder(
-          side: const BorderSide(width: 2),
-          borderRadius: BorderRadius.circular(24),
-        ),
-        shadows: const [
-          BoxShadow(
-            color: AppColors.textPrimary,
-            offset: Offset(4, 4),
-          )
-        ],
-      ),
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        spacing: 18,
-        children: [
-          const Text(
-            "Sortowanie",
-            style: TextStyle(fontSize: 24, fontFamily: "Itim"),
-          ),
-          const Divider(thickness: 2),
-
-          const Text(
-            "Data wystawienia",
-            style: TextStyle(fontSize: 20, fontFamily: "Itim"),
-          ),
-          CustomRadioButton(
-            label: "od najnowszych",
-            selected: ordering == ListedCouponsOrdering.listingDateDesc,
-            onTap: () =>
-                setState(() => ordering = ListedCouponsOrdering.listingDateDesc),
-          ),
-          CustomRadioButton(
-            label: "od najstarszych",
-            selected: ordering == ListedCouponsOrdering.listingDateAsc,
-            onTap: () =>
-                setState(() => ordering = ListedCouponsOrdering.listingDateAsc),
-          ),
-
-          const Text(
-            "Data ważności",
-            style: TextStyle(fontSize: 20, fontFamily: "Itim"),
-          ),
-          CustomRadioButton(
-            label: "od najbliższej",
-            selected: ordering == ListedCouponsOrdering.expiryDateAsc,
-            onTap: () =>
-                setState(() => ordering = ListedCouponsOrdering.expiryDateAsc),
-          ),
-          CustomRadioButton(
-            label: "od najdalszej",
-            selected: ordering == ListedCouponsOrdering.expiryDateDesc,
-            onTap: () =>
-                setState(() => ordering = ListedCouponsOrdering.expiryDateDesc),
-          ),
-
-          const Text(
-            "Cena",
-            style: TextStyle(fontSize: 20, fontFamily: "Itim"),
-          ),
-          CustomRadioButton(
-            label: "od najniższej",
-            selected: ordering == ListedCouponsOrdering.priceAsc,
-            onTap: () =>
-                setState(() => ordering = ListedCouponsOrdering.priceAsc),
-          ),
-          CustomRadioButton(
-            label: "od najwyższej",
-            selected: ordering == ListedCouponsOrdering.priceDesc,
-            onTap: () =>
-                setState(() => ordering = ListedCouponsOrdering.priceDesc),
-          ),
-
-          const SizedBox(height: 12),
-
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              CustomTextButton.primary(
-                label: "Zastosuj",
-                icon: const Icon(Icons.check),
-                onTap: () {
-                  Navigator.pop(context);
-                  context
-                      .read<ListedCouponListBloc>()
-                      .add(ApplyListedCouponOrdering(ordering));
-                },
-              ),
-            ],
-          )
-        ],
       ),
     );
   }

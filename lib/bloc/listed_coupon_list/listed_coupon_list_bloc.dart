@@ -22,20 +22,17 @@ class ListedCouponListBloc extends Bloc<ListedCouponListEvent, ListedCouponListS
   int _limit = 20;
   bool _hasMore = true;
 
-  List<Map<String, String>> get uniqueShops {
-    final map = <String, String>{};
+List<({String id, String name})> get uniqueShops {
+  final map = <String, String>{};
 
-    for (final c in _allCoupons) {
-      map[c.shopId] = c.shopName;
-    }
-
-    return map.entries
-        .map((e) => {
-              "id": e.key,
-              "name": e.value,
-            })
-        .toList();
+  for (final c in _allCoupons) {
+    map[c.shopId] = c.shopName;
   }
+
+  return map.entries
+      .map((e) => (id: e.key, name: e.value))
+      .toList();
+}
 
   ListedCouponListBloc(this.couponRepository) : super(ListedCouponListInitial()) {
     on<FetchListedCoupons>(_onFetch);
