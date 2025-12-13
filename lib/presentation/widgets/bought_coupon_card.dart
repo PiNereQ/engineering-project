@@ -100,7 +100,7 @@ class OwnedCouponCardHorizontal extends StatelessWidget {
     );
 
     final expiryDateText = TextSpan(
-      text: '${expiryDate.day}.${expiryDate.month}.${expiryDate.year} r.',
+      text: '${expiryDate.day}.${expiryDate.month}.${expiryDate.year}r.',
       style: TextStyle(
         color: isUsed ? AppColors.textSecondary : AppColors.textPrimary,
         fontSize: 12,
