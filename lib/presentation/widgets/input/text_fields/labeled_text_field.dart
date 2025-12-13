@@ -172,6 +172,7 @@ class _LabeledTextFieldState extends State<LabeledTextField> {
                         onChanged: widget.onChanged,
                       ),
                     ),
+                    if (widget.isPassword)
                     GestureDetector(
                       child: Icon(
                         _isObscured ? Icons.visibility : Icons.visibility_off,
