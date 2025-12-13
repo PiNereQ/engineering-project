@@ -8,6 +8,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_animations/flutter_map_animations.dart';
 import 'package:flutter_map_cache/flutter_map_cache.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:proj_inz/data/models/shop_location_model.dart';
 import 'package:proj_inz/presentation/widgets/coupon_card.dart';
 
 import 'package:url_launcher/url_launcher.dart';
@@ -630,16 +631,16 @@ class _MapScreenViewState extends State<_MapScreenView>
         final bool enableClustering = zoomLevelInt < clusteringMaxZoom;
 
         final clusteredLocations = enableClustering
-            ? clusterItems<Location>(
+            ? clusterItems<ShopLocation>(
                 state.locations,
                 zoom: zoomLevelInt,
                 cellSizePx: 60,
-                toLatLng: (loc) => LatLng(loc.latitude, loc.longitude),
+                toLatLng: (loc) => loc.latLng,
               )
             : state.locations
                 .map(
-                  (loc) => GridCluster<Location>(
-                    center: LatLng(loc.latitude, loc.longitude),
+                  (loc) => GridCluster<ShopLocation>(
+                    center: loc.latLng,
                     items: [loc],
                   ),
                 )
@@ -711,7 +712,7 @@ class _MapScreenViewState extends State<_MapScreenView>
               Marker(
                 height: 53,
                 width: 253,
-                point: LatLng(location.latitude, location.longitude),
+                point: location.latLng,
                 child: Transform.translate(
                   offset: const Offset(108, -19),
                   child: Row(
@@ -722,10 +723,7 @@ class _MapScreenViewState extends State<_MapScreenView>
                       GestureDetector(
                         onTap: () {
                           _mapController!.animateTo(
-                            dest: LatLng(
-                              location.latitude,
-                              location.longitude,
-                            ),
+                            dest: location.latLng,
                             zoom:
                                 _mapController!.mapController.camera.zoom,
                           );
@@ -814,7 +812,7 @@ class _MapScreenViewState extends State<_MapScreenView>
           return Marker(
             height: 53,
             width: 253,
-            point: LatLng(location.latitude, location.longitude),
+            point: location.latLng,
             child: Transform.translate(
               offset: const Offset(108, -19),
               child: Row(
