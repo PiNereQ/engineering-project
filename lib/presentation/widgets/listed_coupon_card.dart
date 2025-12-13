@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:proj_inz/core/theme.dart';
 import 'package:proj_inz/core/utils/utils.dart';
 import 'package:proj_inz/data/models/listed_coupon_model.dart';
+import 'package:proj_inz/presentation/screens/listed_coupon_detail_screen.dart';
 import 'package:proj_inz/presentation/widgets/dashed_separator.dart';
 
 class ListedCouponCardHorizontal extends StatelessWidget {
@@ -14,6 +15,7 @@ class ListedCouponCardHorizontal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final String couponId = coupon.id;
     final reduction = coupon.reduction;
     final reductionIsPercentage = coupon.reductionIsPercentage;
     final price = coupon.price;
@@ -123,13 +125,13 @@ class ListedCouponCardHorizontal extends StatelessWidget {
               Expanded(
                 child: GestureDetector(
                   onTap: () {
-                    //Navigator.push(
-                      //context,
-                      //MaterialPageRoute(
-                        //builder:
-                            //(context) => ListedCouponDetailsScreen(couponId: couponId)
-                      //),
-                    //);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (context) => ListedCouponDetailsScreen(couponId: couponId)
+                      ),
+                    );
                   },
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
