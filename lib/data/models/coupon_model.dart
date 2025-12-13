@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 class Coupon extends Equatable {
   final String id;
+  final String? listingId; // ID of the listing (if this coupon is listed for sale)
   final double reduction;
   final bool reductionIsPercentage;
   final double price;
@@ -27,6 +28,7 @@ class Coupon extends Equatable {
 
   const Coupon({
     required this.id,
+    this.listingId,
     required this.reduction,
     required this.reductionIsPercentage,
     required this.price,
@@ -112,6 +114,7 @@ class Coupon extends Equatable {
   @override
   List<Object?> get props => [
     id,
+    listingId,
     reduction,
     reductionIsPercentage,
     price,
@@ -131,6 +134,7 @@ class Coupon extends Equatable {
 
   Coupon copyWith({
     String? id,
+    String? listingId,
     double? reduction,
     bool? reductionIsPercentage,
     double? price,
@@ -151,6 +155,7 @@ class Coupon extends Equatable {
   }) {
     return Coupon(
       id: id ?? this.id,
+      listingId: listingId ?? this.listingId,
       reduction: reduction ?? this.reduction,
       reductionIsPercentage: reductionIsPercentage ?? this.reductionIsPercentage,
       price: price ?? this.price,

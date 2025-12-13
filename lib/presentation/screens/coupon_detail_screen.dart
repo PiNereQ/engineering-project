@@ -21,8 +21,8 @@ import 'package:proj_inz/presentation/widgets/input/buttons/custom_icon_button.d
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_text_button.dart';
 
 class CouponDetailsScreen extends StatelessWidget {
-  final String couponId;
-  const CouponDetailsScreen({super.key, required this.couponId});
+  final Coupon coupon;
+  const CouponDetailsScreen({super.key, required this.coupon});
 
   @override
   Widget build(BuildContext context) {
@@ -31,8 +31,7 @@ class CouponDetailsScreen extends StatelessWidget {
         BlocProvider(
           create:
               (context) =>
-                  OwnedCouponBloc(context.read<CouponRepository>(), couponId)
-                    ..add(FetchCouponDetails()),
+                  OwnedCouponBloc.withCoupon(coupon),
         ),
         BlocProvider(create: (_) => PaymentBloc()),
         BlocProvider(
@@ -479,10 +478,18 @@ class _CouponDetails extends StatelessWidget {
                     CustomTextButton.primary(
                       label: 'Kup teraz',
                       onTap: () async {
+                        if (kDebugMode) {
+                          debugPrint('Buy button pressed for coupon: id=${coupon.id}, listingId=${coupon.listingId}');
+                        }
+                        if (coupon.listingId == null) {
+                          showCustomSnackBar(context, 'Błąd: Brak ID ogłoszenia');
+                          return;
+                        }
                         context.read<PaymentBloc>().add(
                           StartPayment(
                             amount: (coupon.price * 100).toInt(),
-                            ),
+                            listingId: coupon.listingId!,
+                          ),
                         );
                       },
                     ),
@@ -602,7 +609,7 @@ class _SellerDetails extends StatelessWidget {
 
                             final couponId =
                                 (context.findAncestorWidgetOfExactType<CouponDetailsScreen>()!)
-                                    .couponId;
+                                    .coupon.id;
 
                             final chatRepo = context.read<ChatRepository>();
 

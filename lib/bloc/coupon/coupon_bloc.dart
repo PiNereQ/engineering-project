@@ -11,6 +11,10 @@ class OwnedCouponBloc extends Bloc<CouponEvent, CouponState> {
   final String couponId;
 
   OwnedCouponBloc(this.couponRepository, this.couponId) : super(CouponInitial()) {
+    on<_PreloadCoupon>((event, emit) {
+      emit(CouponLoadSuccess(coupon: event.coupon));
+    });
+
     on<FetchCouponDetails>((event, emit) async {
       emit(const CouponLoadInProgress());
 
@@ -38,4 +42,24 @@ class OwnedCouponBloc extends Bloc<CouponEvent, CouponState> {
       }
     });
   }
+
+  /// Factory constructor that creates a bloc with preloaded coupon data
+  /// Use this when you already have the coupon object and don't need to fetch it
+  factory OwnedCouponBloc.withCoupon(Coupon coupon) {
+    final bloc = OwnedCouponBloc(
+      CouponRepository(), 
+      coupon.id,
+    );
+    // Immediately emit the coupon data
+    bloc.add(_PreloadCoupon(coupon));
+    return bloc;
+  }
+}
+
+class _PreloadCoupon extends CouponEvent {
+  final Coupon coupon;
+  const _PreloadCoupon(this.coupon);
+  
+  @override
+  List<Object> get props => [coupon];
 }

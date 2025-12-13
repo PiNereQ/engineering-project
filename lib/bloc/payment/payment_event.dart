@@ -9,9 +9,10 @@ abstract class PaymentEvent extends Equatable {
 
 class StartPayment extends PaymentEvent {
   final int amount;
+  final String listingId;
 
-  const StartPayment({required this.amount});
+  const StartPayment({required this.amount, required this.listingId});
 
   @override
-  List<Object?> get props => [amount];
+  List<Object?> get props => [amount, listingId];
 }

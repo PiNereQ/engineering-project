@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 
 import 'package:proj_inz/core/utils/utils.dart';
 import 'package:proj_inz/data/models/coupon_model.dart';
@@ -156,6 +157,9 @@ class CouponCardHorizontal extends StatelessWidget {
           Expanded(
             child: GestureDetector(
               onTap: () {
+                if (kDebugMode) {
+                  print('Tapping coupon: id=${coupon.id}, listingId=${coupon.listingId}');
+                }
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -163,7 +167,7 @@ class CouponCardHorizontal extends StatelessWidget {
                         (context) =>
                             isBought
                                 ? BoughtCouponDetailsScreen(couponId: couponId)
-                                : CouponDetailsScreen(couponId: couponId),
+                                : CouponDetailsScreen(coupon: coupon),
                   ),
                 );
               },
@@ -371,7 +375,7 @@ class CouponCardVertical extends StatelessWidget {
                 (context) =>
                     isBought
                         ? BoughtCouponDetailsScreen(couponId: couponId)
-                        : CouponDetailsScreen(couponId: couponId),
+                        : CouponDetailsScreen(coupon: coupon),
           ),
         );
       },

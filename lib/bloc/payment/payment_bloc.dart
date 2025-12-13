@@ -16,7 +16,10 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
         final response = await http.post(
           Uri.parse('http://49.13.155.21:8000/payments/create-payment-intent'),
           headers: {'Content-Type': 'application/json'},
-          body: jsonEncode({'amount': event.amount}), // smallest currency unit, e.g., 1999 = 19.99 PLN
+          body: jsonEncode({
+            'amount': event.amount, // smallest currency unit, e.g., 1999 = 19.99 PLN
+            'listingId': event.listingId,
+          }),
         );
 
         if (response.statusCode != 200) {
