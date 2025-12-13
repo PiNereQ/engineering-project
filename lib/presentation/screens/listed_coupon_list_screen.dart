@@ -190,7 +190,11 @@ class _Toolbar extends StatelessWidget {
                         value: context.read<ListedCouponListBloc>(),
                         child: const _ListedFilterDialog(),
                       ),
-                    ),
+                    ).then((_) {
+                      if (context.mounted) {
+                        context.read<ListedCouponListBloc>().add(FetchListedCoupons());
+                      }
+                    }),
                   ),
                   CustomTextButton.small(
                     label: "Sortuj",
@@ -202,7 +206,11 @@ class _Toolbar extends StatelessWidget {
                         value: context.read<ListedCouponListBloc>(),
                         child: const _ListedSortDialog(),
                       ),
-                    ),
+                    ).then((_) {
+                      if (context.mounted) {
+                        context.read<ListedCouponListBloc>().add(FetchListedCoupons());
+                      }
+                    }),
                   ),
                 ],
               )
