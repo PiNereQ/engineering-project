@@ -1,33 +1,31 @@
 import 'package:flutter/material.dart';
-
-import 'package:proj_inz/core/utils/utils.dart';
-import 'package:proj_inz/data/models/owned_coupon_model.dart';
-import 'package:proj_inz/presentation/screens/bought_coupon_detail_screen.dart';
-import 'package:proj_inz/presentation/widgets/dashed_separator.dart';
 import 'package:proj_inz/core/theme.dart';
+import 'package:proj_inz/core/utils/utils.dart';
+import 'package:proj_inz/data/models/listed_coupon_model.dart';
+import 'package:proj_inz/presentation/screens/listed_coupon_detail_screen.dart';
+import 'package:proj_inz/presentation/widgets/dashed_separator.dart';
 
-class OwnedCouponCardHorizontal extends StatelessWidget {
-  final OwnedCoupon coupon;
+class ListedCouponCardHorizontal extends StatelessWidget {
+  final ListedCoupon coupon;
 
-  const OwnedCouponCardHorizontal({
-    super.key, 
+  const ListedCouponCardHorizontal({
+    super.key,
     required this.coupon,
   });
 
   @override
   Widget build(BuildContext context) {
     final String couponId = coupon.id;
-    final num reduction = coupon.reduction;
-    final bool reductionIsPercentage = coupon.reductionIsPercentage;
-    final num price = coupon.price;
-    final String shopName = coupon.shopName;
-    final Color shopNameColor = coupon.shopNameColor;
-    final Color shopBgColor = coupon.shopBgColor;
-    final bool hasLimits = coupon.hasLimits;
-    final bool worksOnline = coupon.worksOnline;
-    final bool worksInStore = coupon.worksInStore;
-    final DateTime expiryDate = coupon.expiryDate;
-    final bool isUsed = coupon.isUsed;
+    final reduction = coupon.reduction;
+    final reductionIsPercentage = coupon.reductionIsPercentage;
+    final price = coupon.price;
+    final shopName = coupon.shopName;
+    final shopNameColor = coupon.shopNameColor;
+    final shopBgColor = coupon.shopBgColor;
+    final hasLimits = coupon.hasLimits;
+    final expiryDate = coupon.expiryDate;
+    final listingDate = coupon.listingDate;
+    final isSold = coupon.isSold;
 
     final reductionText =
         isInteger(reduction)
@@ -37,12 +35,11 @@ class OwnedCouponCardHorizontal extends StatelessWidget {
             : reduction.toStringAsFixed(2).replaceAll('.', ',');
 
     final titleText = TextSpan(
-      text:
-          reductionIsPercentage
-              ? 'Kupon -$reductionText%\n'
-              : 'Kupon na $reductionText zł\n',
+      text: reductionIsPercentage
+          ? "Kupon -$reductionText%\n"
+          : "Kupon na $reductionText zł\n",
       style: TextStyle(
-        color: isUsed ? AppColors.textSecondary : AppColors.textPrimary,
+        color: isSold ? AppColors.textSecondary : AppColors.textPrimary,
         fontSize: 20,
         fontFamily: 'Itim',
         fontWeight: FontWeight.w400,
@@ -53,7 +50,7 @@ class OwnedCouponCardHorizontal extends StatelessWidget {
     final limitsText = TextSpan(
       text: hasLimits ? 'z ograniczeniami' : 'na wszystko',
       style: TextStyle(
-        color: isUsed ? AppColors.textSecondary : AppColors.textPrimary,
+        color: isSold ? AppColors.textSecondary : AppColors.textPrimary,
         fontSize: 14,
         fontFamily: 'Itim',
         fontWeight: FontWeight.w400,
@@ -74,7 +71,7 @@ class OwnedCouponCardHorizontal extends StatelessWidget {
         TextSpan(
           text: "$price zł",
           style: TextStyle(
-            color: isUsed ? AppColors.textSecondary : AppColors.textPrimary,
+            color: isSold ? AppColors.textSecondary : AppColors.textPrimary,
             fontSize: 24,
             fontFamily: 'Itim',
             fontWeight: FontWeight.w400,
@@ -83,29 +80,24 @@ class OwnedCouponCardHorizontal extends StatelessWidget {
       ],
     );
 
-    final locationText = TextSpan(
+    final expiryDateText = TextSpan(
       text:
-          'Do wykorzystania ${worksInStore && worksOnline
-              ? 'stacjonarnie i online'
-              : worksOnline
-              ? 'w sklepach internetowych'
-              : 'w sklepach stacjonarnych'}',
+          "ważny do ${expiryDate.day}.${expiryDate.month}.${expiryDate.year}r.",
       style: TextStyle(
-        color: isUsed ? AppColors.textSecondary : AppColors.textPrimary,
+        color: isSold ? AppColors.textSecondary : AppColors.textPrimary,
         fontSize: 12,
         fontFamily: 'Itim',
-        fontWeight: FontWeight.w400,
         height: 1.0,
       ),
     );
 
-    final expiryDateText = TextSpan(
-      text: '${expiryDate.day}.${expiryDate.month}.${expiryDate.year}r.',
+    final listingDateText = TextSpan(
+      text:
+          "wystawiono ${listingDate.day}.${listingDate.month}.${listingDate.year}r.",
       style: TextStyle(
-        color: isUsed ? AppColors.textSecondary : AppColors.textPrimary,
+        color: AppColors.textSecondary,
         fontSize: 12,
         fontFamily: 'Itim',
-        fontWeight: FontWeight.w400,
         height: 1.0,
       ),
     );
@@ -137,7 +129,7 @@ class OwnedCouponCardHorizontal extends StatelessWidget {
                       context,
                       MaterialPageRoute(
                         builder:
-                            (context) => BoughtCouponDetailsScreen(couponId: couponId)
+                            (context) => ListedCouponDetailsScreen(couponId: couponId)
                       ),
                     );
                   },
@@ -154,7 +146,7 @@ class OwnedCouponCardHorizontal extends StatelessWidget {
                           alignment: Alignment.center,
                           padding: const EdgeInsets.symmetric(horizontal: 8),
                           decoration: ShapeDecoration(
-                              color: isUsed ? AppColors.primaryButtonPressed : shopBgColor,
+                              color: isSold ? AppColors.primaryButtonPressed : shopBgColor,
                             shape: RoundedRectangleBorder(
                               side: const BorderSide(width: 2),
                               borderRadius: BorderRadius.circular(8),
@@ -163,7 +155,7 @@ class OwnedCouponCardHorizontal extends StatelessWidget {
                           child: Text(
                             shopName,
                             style: TextStyle(
-                              color: isUsed ? AppColors.textSecondary : shopNameColor,
+                              color: isSold ? AppColors.textSecondary : shopNameColor,
                               fontSize: 15,
                               fontFamily: 'Roboto',
                               fontWeight: FontWeight.w700,
@@ -188,7 +180,7 @@ class OwnedCouponCardHorizontal extends StatelessWidget {
                                 const SizedBox(height: 2.0),
                                 Text.rich(priceText),
                                 const SizedBox(height: 2.0),
-                                Text.rich(locationText),
+                                Text.rich(listingDateText),
                                 Text.rich(expiryDateText),
                               ],
                             ),
@@ -202,12 +194,12 @@ class OwnedCouponCardHorizontal extends StatelessWidget {
               DashedSeparator.vertical(length: 146),
               Padding(
                 padding: const EdgeInsets.fromLTRB(4, 10, 16, 10),
-                child: Center(child: Icon(isUsed ? Icons.done_all_rounded : Icons.check_rounded, size: 36)),
+                child: Center(child: Icon(isSold ? Icons.done_all_rounded : Icons.store_rounded, size: 36)),
               ),
             ],
           ),
         ),
-        if (isUsed)
+        if (isSold)
         Positioned(
           bottom: 16,
           right: 128,
@@ -219,7 +211,7 @@ class OwnedCouponCardHorizontal extends StatelessWidget {
             ),
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             child: Text(
-              'Wykorzystany',
+              'Sprzedany',
               style: TextStyle(
                 color: AppColors.notificationDot,
                 fontSize: 16,

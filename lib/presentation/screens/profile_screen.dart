@@ -6,6 +6,7 @@ import 'package:proj_inz/bloc/auth/auth_bloc.dart';
 import 'package:proj_inz/core/theme.dart';
 import 'package:proj_inz/presentation/screens/bought_coupon_list_screen.dart';
 import 'package:proj_inz/presentation/screens/debug_screen.dart';
+import 'package:proj_inz/presentation/screens/listed_coupon_list_screen.dart';
 import 'package:proj_inz/presentation/screens/sign_in_screen.dart';
 import 'package:proj_inz/presentation/widgets/custom_snack_bar.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_text_button.dart';
@@ -132,7 +133,15 @@ class ProfileScreen extends StatelessWidget {
                           Expanded(
                             child: CustomTextButton(
                               label: 'Wystawione',
-                              onTap: () {},
+                              onTap: () {
+                                Navigator.push(
+                                   context,
+                                   MaterialPageRoute(
+                                     builder: (context) =>
+                                         const ListedCouponListScreen(),
+                                   ),
+                                 );
+                              },
                             ),
                           ),
                         ],
