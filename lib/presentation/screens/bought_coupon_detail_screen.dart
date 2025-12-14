@@ -16,6 +16,7 @@ import 'package:proj_inz/presentation/widgets/dashed_separator.dart';
 import 'package:proj_inz/presentation/widgets/error_card.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_icon_button.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_text_button.dart';
+import 'package:proj_inz/presentation/widgets/reputation_bar.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 class BoughtCouponDetailsScreen extends StatelessWidget {
@@ -642,15 +643,11 @@ class _SellerDetails extends StatelessWidget {
                         height: 0.75,
                       ),
                     ),
-                    Text(
-                      sellerReputation.toString(),
-                      style: const TextStyle(
-                        color: AppColors.textPrimary,
-                        fontSize: 16,
-                        fontFamily: 'Itim',
-                        fontWeight: FontWeight.w400,
-                        height: 0.75,
-                      ),
+                    ReputationBar(
+                      value: sellerReputation.toInt(),
+                      maxWidth: 120,
+                      height: 8,
+                      showValue: true,
                     ),
                     Text(
                       'Na Coupidynie od ${sellerJoinDate.day}.${sellerJoinDate.month}.${sellerJoinDate.year} r.',
