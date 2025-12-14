@@ -10,6 +10,7 @@ import 'package:proj_inz/presentation/screens/report_screen.dart';
 import 'package:proj_inz/presentation/widgets/chat_report_popup.dart';
 import 'package:proj_inz/presentation/widgets/coupon_preview_popup.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_icon_button.dart';
+import 'package:proj_inz/presentation/widgets/reputation_bar.dart';
 import '../widgets/chat_bubble.dart';
 
 import 'package:proj_inz/bloc/chat/detail/chat_detail_bloc.dart';
@@ -134,36 +135,12 @@ class ChatHeader extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
 
-                  Row(
-                    children: [
-                      Container(
-                        width: 120,
-                        height: 8,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(6),
-                          color: Colors.grey.shade300,
-                        ),
-                        child: FractionallySizedBox(
-                          alignment: Alignment.centerLeft,
-                          widthFactor: (reputation / 100).clamp(0.0, 1.0),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(6),
-                              color: Colors.green,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        reputation.toString(),
-                        style: const TextStyle(
-                          fontFamily: 'Itim',
-                          fontSize: 14,
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                    ],
+                  // reputation
+                  ReputationBar(
+                    value: reputation,
+                    maxWidth: 120,
+                    height: 8,
+                    showValue: true,
                   ),
 
                   const SizedBox(height: 4),
@@ -219,7 +196,7 @@ class ChatUserInfo extends StatelessWidget {
                   color: AppColors.textPrimary,
                   offset: Offset(3, 3),
                   blurRadius: 0,
-                )
+                ),
               ],
             ),
             child: const Icon(Icons.person, size: 30),
@@ -238,8 +215,17 @@ class ChatUserInfo extends StatelessWidget {
                   color: AppColors.textPrimary,
                 ),
               ),
-
               const SizedBox(height: 4),
+
+              // reputation
+              SizedBox(
+                width: 120,
+                child: ReputationBar(
+                  value: reputation,
+                  maxWidth: 120,
+                  height: 8,
+                ),
+              ),
 
               Row(
                 children: [

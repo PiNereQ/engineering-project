@@ -5,12 +5,14 @@ class ReputationBar extends StatelessWidget {
   final int value; // 0-100
   final double maxWidth;
   final double height;
+  final bool showValue;
 
   const ReputationBar({
     super.key,
     required this.value,
     this.maxWidth = double.infinity,
     this.height = 18,
+    this.showValue = false,
   });
 
   Color _getBarColor(int value) {
@@ -37,12 +39,12 @@ class ReputationBar extends StatelessWidget {
 
         final barWidth = availableWidth * factor;
 
-        return SizedBox(
+        final barWidget = SizedBox(
           width: barWidth + 4,
           height: height + 4,
           child: Stack(
             children: [
-
+              // shadow
               Positioned(
                 top: 4,
                 left: 0,
@@ -56,6 +58,7 @@ class ReputationBar extends StatelessWidget {
                 ),
               ),
 
+              // bar
               Container(
                 width: barWidth,
                 height: height,
@@ -67,6 +70,27 @@ class ReputationBar extends StatelessWidget {
               ),
             ],
           ),
+        );
+
+        if (!showValue) {
+          return barWidget;
+        }
+
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            barWidget,
+            const SizedBox(width: 6),
+            Text(
+              clamped.toString(),
+              style: const TextStyle(
+                fontFamily: 'Itim',
+                fontSize: 14,
+                color: AppColors.textPrimary,
+              ),
+            ),
+          ],
         );
       },
     );
