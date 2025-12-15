@@ -446,6 +446,7 @@ class CouponRepository {
         sellerUsername: coupon.sellerUsername,
         code: data['code'] ?? '',
         isUsed: false,
+        purchaseDate: null, // TODO: implement
       );
     } catch (e) {
       if (kDebugMode) debugPrint('Error mapping owned coupon: $e');

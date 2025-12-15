@@ -5,7 +5,7 @@ import 'package:proj_inz/core/theme.dart';
 
 enum LabeledTextFieldWidth { full, half }
 
-class LabeledTextField extends StatelessWidget {
+class LabeledTextField extends StatefulWidget {
   final String label;
   final String? placeholder;
   final double iconRotationRadians;
@@ -41,14 +41,28 @@ class LabeledTextField extends StatelessWidget {
   });
 
   @override
+  State<LabeledTextField> createState() => _LabeledTextFieldState();
+}
+
+class _LabeledTextFieldState extends State<LabeledTextField> {
+
+  late bool _isObscured;
+
+  @override
+  void initState() {
+    super.initState();
+    _isObscured = widget.isPassword;
+  }
+
+  @override
   Widget build(BuildContext context) {
     final labelRow = Row(
       mainAxisSize: MainAxisSize.min,
-      mainAxisAlignment: iconOnLeft ? MainAxisAlignment.start : MainAxisAlignment.end,
-      children: iconOnLeft
+      mainAxisAlignment: widget.iconOnLeft ? MainAxisAlignment.start : MainAxisAlignment.end,
+      children: widget.iconOnLeft
           ? [
               Transform.rotate(
-                angle: iconRotationRadians,
+                angle: widget.iconRotationRadians,
                 child: SvgPicture.asset(
                   'assets/icons/switch-access-shortcut-rounded.svg',
                   width: 18,
@@ -57,7 +71,7 @@ class LabeledTextField extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Text(
-                label,
+                widget.label,
                 style: const TextStyle(
                   color: AppColors.textSecondary,
                   fontSize: 14,
@@ -68,7 +82,7 @@ class LabeledTextField extends StatelessWidget {
             ]
           : [
               Text(
-                label,
+                widget.label,
                 style: const TextStyle(
                   color: AppColors.textSecondary,
                   fontSize: 14,
@@ -79,7 +93,7 @@ class LabeledTextField extends StatelessWidget {
               const SizedBox(width: 8),
               Transform(
                 alignment: Alignment.center,
-                transform: Matrix4.rotationZ(iconRotationRadians)..scale(-1.0, 1.0),
+                transform: Matrix4.rotationZ(widget.iconRotationRadians)..scale(-1.0, 1.0),
                 child: SvgPicture.asset(
                   'assets/icons/switch-access-shortcut-rounded.svg',
                   width: 18,
@@ -91,7 +105,7 @@ class LabeledTextField extends StatelessWidget {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final double calculatedWidth = width == LabeledTextFieldWidth.full
+        final double calculatedWidth = widget.width == LabeledTextFieldWidth.full
             ? constraints.maxWidth
             : (constraints.maxWidth - 16) / 2;
 
@@ -102,7 +116,7 @@ class LabeledTextField extends StatelessWidget {
             children: [
               Padding(
                 padding: EdgeInsets.only(
-                  left: iconOnLeft ? 4 : 24,
+                  left: widget.iconOnLeft ? 4 : 24,
                   bottom: 4,
                 ),
                 child: labelRow,
@@ -125,33 +139,52 @@ class LabeledTextField extends StatelessWidget {
                     )
                   ],
                 ),
-                child: TextFormField(
-                  inputFormatters: inputFormatters,
-                  maxLines: maxLines,
-                  decoration: InputDecoration(
-                    isCollapsed: true,
-                    border: InputBorder.none,
-                    hintText: placeholder,
-                    suffix: suffix,
-                    errorStyle: const TextStyle(
-                      color: AppColors.alertText,
-                      fontSize: 12,
-                      fontFamily: 'Itim',
+                child: Row(
+                  mainAxisSize: MainAxisSize.max,
+                  children: [
+                    Expanded(
+                      child: TextFormField(
+                        inputFormatters: widget.inputFormatters,
+                        maxLines: widget.maxLines,
+                        decoration: InputDecoration(
+                          isCollapsed: true,
+                          border: InputBorder.none,
+                          hintText: widget.placeholder,
+                          suffix: widget.suffix,
+                          errorStyle: const TextStyle(
+                            color: AppColors.alertText,
+                            fontSize: 12,
+                            fontFamily: 'Itim',
+                          ),
+                        ),
+                        style: const TextStyle(
+                          color: AppColors.textPrimary,
+                          fontSize: 18,
+                          fontFamily: 'Itim',
+                          fontWeight: FontWeight.w400,
+                        ),
+                        textAlign: widget.textAlign,
+                        obscureText: widget.isPassword && _isObscured,
+                        obscuringCharacter: '♡',
+                        controller: widget.controller,
+                        keyboardType: widget.keyboardType,
+                        validator: widget.validator,
+                        onChanged: widget.onChanged,
+                      ),
                     ),
-                  ),
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: 18,
-                    fontFamily: 'Itim',
-                    fontWeight: FontWeight.w400,
-                  ),
-                  textAlign: textAlign,
-                  obscureText: isPassword,
-                  obscuringCharacter: '♡',
-                  controller: controller,
-                  keyboardType: keyboardType,
-                  validator: validator,
-                  onChanged: onChanged,
+                    if (widget.isPassword)
+                    GestureDetector(
+                      child: Icon(
+                        _isObscured ? Icons.visibility : Icons.visibility_off,
+                        color: AppColors.textPrimary,
+                      ),
+                      onTap: () {
+                        setState(() {
+                          _isObscured = !_isObscured;
+                        });
+                      },
+                    ),
+                  ],
                 ),
               ),
             ],

@@ -1,7 +1,12 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:icon_decoration/icon_decoration.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:proj_inz/bloc/coupon_add/coupon_add_bloc.dart';
 import 'package:proj_inz/core/theme.dart';
 import 'package:proj_inz/core/utils/text_formatters.dart';
@@ -15,6 +20,7 @@ import 'package:proj_inz/presentation/widgets/custom_snack_bar.dart';
 import 'package:proj_inz/presentation/widgets/dashed_separator.dart';
 import 'package:proj_inz/presentation/widgets/help/help_button.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_icon_button.dart';
+import 'package:proj_inz/presentation/screens/coupon_image_scan_screen.dart';
 import '../widgets/input/text_fields/labeled_text_field.dart';
 import '../widgets/input/search_dropdown_field.dart';
 import '../widgets/input/buttons/checkbox.dart';
@@ -51,9 +57,73 @@ class _AddScreenState extends State<AddScreen> {
   bool _hasRestrictions = false; // null = brak wyboru, true = tak, false = nie
   bool _isMultipleUse = false;
 
+  final ImagePicker _imagePicker = ImagePicker();
+  XFile? _couponImage;
+
   bool _userMadeInput = false;
   bool _showMissingValuesTip = false;
   bool _showUsageLocationTip = false;
+
+  Future<void> _pickImage(ImageSource source) async {
+    try {
+      final XFile? image = await _imagePicker.pickImage(source: source);
+      if (image != null) {
+        setState(() {
+          _couponImage = image;
+          _userMadeInput = true;
+        });
+      }
+    } on PlatformException catch (e) {
+      debugPrint('Image pick failed: $e');
+    }
+  }
+
+  void _showImageSourceActionSheet() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      
+      builder: (context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(height: 16),
+              Align(
+                alignment: Alignment.center,
+                child: CustomTextButton(
+                  width: 300,
+                  icon: const Icon(Icons.photo_camera),
+                  label: 'Zrób zdjęcie',
+                  onTap: () async {
+                    Navigator.of(context).pop();
+                    await _pickImage(ImageSource.camera);
+                  },
+                ),
+              ),
+              SizedBox(height: 8),
+              Align(
+                alignment: Alignment.center,
+                child: CustomTextButton(
+                  width: 300,
+                  icon: const Icon(Icons.photo_library),
+                  label: 'Wybierz z galerii',
+                  onTap: () async {
+                    Navigator.of(context).pop();
+                    await _pickImage(ImageSource.gallery);
+                  },
+                ),
+              ),
+              SizedBox(height: 16),
+            ],
+          ),
+        );
+      },
+    );
+  }
 
   @override
   void dispose() {
@@ -429,19 +499,6 @@ class _AddScreenState extends State<AddScreen> {
                                         const SizedBox(height: 18),
 
                                         // Info i przycisk "Dodaj zdjecie"
-                                        Center(
-                                          child: CustomTextButton.primary(
-                                            height: 52,
-                                            width: 160,
-                                            label: 'Dodaj zdjęcie',
-                                            onTap: () {
-                                              debugPrint(
-                                                'Kliknięto: Dodaj zdjęcie',
-                                              );
-                                            },
-                                          ),
-                                        ),
-                                        const SizedBox(height: 8),
                                         Row(
                                           crossAxisAlignment:
                                               CrossAxisAlignment.center,
@@ -454,7 +511,7 @@ class _AddScreenState extends State<AddScreen> {
                                             const SizedBox(width: 12),
                                             const Expanded(
                                               child: Text(
-                                                'Jeśli Twój kupon nie posiada kodu w formie tekstu (ale ma kod kreskowy, QR itp.), możesz go zeskanować dodając zdjęcie.',
+                                                'Możesz dodać zdjęcie aby zeskanować z niego kod kuponu (w formie tekstu, kodu paskowego lub kodu QR).',
                                                 style: TextStyle(
                                                   color:
                                                       AppColors.textSecondary,
@@ -468,6 +525,115 @@ class _AddScreenState extends State<AddScreen> {
                                             ),
                                           ],
                                         ),
+                                        const SizedBox(height: 8),
+                                        Row(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          mainAxisSize: MainAxisSize.max,
+                                          spacing: 16,
+                                          children: [
+                                            CustomTextButton.primary(
+                                              height: 52,
+                                              width: 160,
+                                              label: _couponImage == null ? 'Dodaj zdjęcie' : 'Zmień zdjęcie',
+                                              onTap: _showImageSourceActionSheet,
+                                            ),
+                                            if (_couponImage != null)
+                                            CustomTextButton(
+                                                height: 52,
+                                                width: 160,
+                                                label: 'Usuń zdjęcie',
+                                                onTap: () => setState(() {
+                                                  _couponImage = null;
+                                                }),
+                                            ),
+                                            
+                                          ],
+                                        ),
+                                        const SizedBox(height: 8),
+                                        if (_couponImage != null)
+                                          Center(
+                                            child: GestureDetector(
+                                              child: Container(
+                                                decoration: BoxDecoration(
+                                                  border: Border.all(
+                                                    color: AppColors.textPrimary,
+                                                    width: 2,
+                                                  ),
+                                                  borderRadius: BorderRadius.circular(12),
+                                                  boxShadow: [
+                                                    BoxShadow(
+                                                      color: AppColors.textPrimary,
+                                                      offset: const Offset(4, 4),
+                                                      blurRadius: 0,
+                                                      spreadRadius: 0,
+                                                    ),
+                                                  ],
+                                                ),
+                                                child: ClipRRect(
+                                                  borderRadius:
+                                                      BorderRadius.circular(12),
+                                                  child: Stack(
+                                                    alignment: Alignment.bottomRight,
+                                                    children: [
+                                                      Image.file(
+                                                        File(_couponImage!.path),
+                                                        height: 120,
+                                                        width: 120,
+                                                        fit: BoxFit.cover,
+                                                      ),
+                                                      Padding(
+                                                        padding: const EdgeInsets.all(4.0),
+                                                        child: DecoratedIcon(
+                                                          decoration: IconDecoration(
+                                                            border: IconBorder(
+                                                              color: Colors.black,
+                                                              width: 3,
+                                                            ),
+                                                          ),
+                                                          icon: Icon(
+                                                            Icons.qr_code_scanner,
+                                                            color: Colors.white,
+                                                            size: 24,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ),
+                                              onTap: () async {
+                                                if (_couponImage == null) {
+                                                  return;
+                                                }
+
+                                                final scannedValue =
+                                                    await Navigator.of(
+                                                      context,
+                                                    ).push<String>(
+                                                      MaterialPageRoute(
+                                                        builder:
+                                                            (context) =>
+                                                                CouponImageScanScreen(
+                                                                  imagePath:
+                                                                      _couponImage!
+                                                                          .path,
+                                                                ),
+                                                      ),
+                                                    );
+
+                                                if (scannedValue != null &&
+                                                    scannedValue
+                                                        .trim()
+                                                        .isNotEmpty) {
+                                                  setState(() {
+                                                    _codeController.text =
+                                                        scannedValue.trim();
+                                                    _userMadeInput = true;
+                                                  });
+                                                }
+                                              },
+                                            ),
+                                          ),
                                         const SizedBox(height: 18),
 
                                         // Typ kuponu (radiobuttony) - stan zmienia textfield, TODO: bloc event
@@ -678,7 +844,7 @@ class _AddScreenState extends State<AddScreen> {
                                             const SizedBox(width: 12),
                                             const Expanded(
                                               child: Text(
-                                                'Zaznacz "tak" tylko jeśli jestes pewna/pewien, że kupon może być użyty wielokrotnie. Spowoduje to, że będzie mógł być też kupiony wielokrotnie przez róznych użytkowników.',
+                                                'Zaznacz "tak" tylko jeśli jesteś pewna/pewien, że kupon może być użyty wielokrotnie. Spowoduje to, że będzie mógł być też kupiony wielokrotnie przez róznych użytkowników.',
                                                 style: TextStyle(
                                                   color:
                                                       AppColors.textSecondary,

@@ -31,3 +31,31 @@ class OwnedCouponListLoadFailure extends OwnedCouponListState {
 }
 
 final class OwnedCouponListLoadEmpty extends OwnedCouponListState {}
+
+class OwnedCouponFilterRead extends OwnedCouponListState {
+  final bool? reductionIsPercentage;
+  final bool? reductionIsFixed;
+  final double? minPrice;
+  final double? maxPrice;
+  final bool? showUsed;
+  final bool? showUnused;
+  final String? shopId;
+
+  const OwnedCouponFilterRead({
+    this.reductionIsPercentage,
+    this.reductionIsFixed,
+    this.minPrice,
+    this.maxPrice,
+    this.showUsed,
+    this.showUnused,
+    this.shopId,
+  });
+}
+
+class OwnedCouponOrderingRead extends OwnedCouponListState {
+  final OwnedCouponsOrdering ordering;
+  const OwnedCouponOrderingRead(this.ordering);
+
+  @override
+  List<Object> get props => [ordering];
+}
