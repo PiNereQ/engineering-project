@@ -8,6 +8,7 @@ import 'package:proj_inz/data/repositories/user_repository.dart';
 import 'package:proj_inz/presentation/screens/bought_coupon_list_screen.dart';
 import 'package:proj_inz/presentation/screens/debug_screen.dart';
 import 'package:proj_inz/presentation/screens/listed_coupon_list_screen.dart';
+import 'package:proj_inz/presentation/screens/settings_screen.dart';
 import 'package:proj_inz/presentation/screens/sign_in_screen.dart';
 import 'package:proj_inz/presentation/widgets/custom_snack_bar.dart';
 import 'package:proj_inz/presentation/widgets/dashed_separator.dart';
@@ -228,7 +229,14 @@ Widget build(BuildContext context) {
                     Expanded(
                       child: CustomTextButton(
                         label: 'Ustawienia',
-                        onTap: () {},
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const SettingsScreen(),
+                            ),
+                          );
+                        },
                       ),
                     ),
                     Expanded(
