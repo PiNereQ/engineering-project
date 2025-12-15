@@ -1,3 +1,4 @@
+
 import 'package:equatable/equatable.dart';
 import 'package:proj_inz/data/models/listed_coupon_model.dart';
 import 'listed_coupon_list_event.dart';

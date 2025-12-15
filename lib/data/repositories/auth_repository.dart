@@ -1,20 +1,43 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:proj_inz/data/repositories/user_repository.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class AuthRepository {
   final _firebaseAuth = FirebaseAuth.instance;
   final _userRepository = UserRepository();
+  final storage = FlutterSecureStorage();
+
+  AuthRepository();
+
+  /// Get current user ID from Firebase Auth
+  String? getCurrentUserId() {
+    return _firebaseAuth.currentUser?.uid;
+  }
+
+  /// Get Firebase Auth ID token (JWT)
+  Future<String?> getIdToken() async {
+    final user = _firebaseAuth.currentUser;
+    if (user == null) return null;
+    return await user.getIdToken();
+  }
+
+  /// Get current Firebase user
+  User? getCurrentUser() {
+    return _firebaseAuth.currentUser;
+  }
 
   Future<void> singUp({required String email, required String username, required String password, required String confirmPassword}) async {
     if (password != confirmPassword) {
       throw 'Podane hasła nie są takie same.';
     }
     
+    // Check if username is already taken in API
     if (await _userRepository.isUsernameInUse(username)) {
       throw "Nazwa użytkownika jest zajęta";
     }
     
     try {
+      // Create user in Firebase Auth
       final userCredential = await _firebaseAuth.createUserWithEmailAndPassword(
         email: email,
         password: password,
@@ -23,11 +46,18 @@ class AuthRepository {
       final user = userCredential.user;
 
       if (user != null) {
+        // Create user profile in your API
         await _userRepository.createUserProfile(
           uid: user.uid,
           email: user.email ?? '',
           username: username,
         );
+        
+        // Store Firebase token
+        final token = await user.getIdToken();
+        if (token != null) {
+          await storage.write(key: 'auth_token', value: token);
+        }
       }
     } on FirebaseAuthException catch(e) {
       switch (e.code) {
@@ -49,12 +79,29 @@ class AuthRepository {
     }
   }
 
-  Future<void> signIn(String email, String password) async {
+  Future<String> signIn(String email, String password) async {
     try {
-      await _firebaseAuth.signInWithEmailAndPassword(
+      // Sign in with Firebase Auth
+      final userCredential = await _firebaseAuth.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
+      
+      final user = userCredential.user;
+      if (user == null) {
+        throw 'Nie udało się zalogować.';
+      }
+      
+      // Get Firebase ID token
+      final token = await user.getIdToken();
+      if (token == null) {
+        throw 'Nie udało się uzyskać tokenu.';
+      }
+      
+      // Save token to secure storage
+      await storage.write(key: 'auth_token', value: token);
+      
+      return token;
     } on FirebaseAuthException catch(e) {
       switch (e.code) {
         case 'invalid-email':
@@ -78,10 +125,13 @@ class AuthRepository {
 
   Future<void> signOut() async {
     try {
+      // Sign out from Firebase
       await _firebaseAuth.signOut();
-      //print('Signed out successfully (repository)');
+      
+      // Delete token from secure storage
+      await storage.delete(key: 'auth_token');
     } catch (e) {
-      throw'Błąd wylogowania: $e';
+      throw 'Błąd wylogowania: $e';
     }
   }
 

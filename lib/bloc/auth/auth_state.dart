@@ -7,6 +7,15 @@ abstract class AuthState extends Equatable {
 
 class AuthUnauthenticated extends AuthState {}
 
+class AuthAuthenticated extends AuthState {
+  final String token;
+  
+  AuthAuthenticated({required this.token});
+  
+  @override
+  List<Object?> get props => [token];
+}
+
 // Sign-in
 
 class AuthSignInInProgress extends AuthState {}

@@ -1,5 +1,4 @@
 import 'package:bloc/bloc.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 
@@ -21,7 +20,7 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
   final int _limit = 50;
   
   final List<Coupon> _allCoupons = [];
-  DocumentSnapshot? _lastDocument;
+  int? _lastOffset;
   bool _hasMore = true;
   bool _isFetching = false;
 
@@ -34,9 +33,6 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
 
   // sorting
   Ordering _ordering = Ordering.creationDateDesc;
-
-  // shop filtering
-  String? _selectedShopId;
 
   CouponListBloc(this.couponRepository) : super(CouponListInitial()) {
     on<FetchCoupons>(_onFetchCoupons);
@@ -54,9 +50,8 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
   Future<void> _onFetchCoupons(FetchCoupons event, Emitter<CouponListState> emit) async {
     emit(CouponListLoadInProgress());
     _allCoupons.clear();
-    _lastDocument = null;
+    _lastOffset = null;
     _hasMore = true;
-    _selectedShopId = event.shopId;
     add(FetchMoreCoupons());
   }
 
@@ -74,24 +69,17 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
     emit(CouponListLoadInProgress());
 
     try {
+      // Fetch listings using the repository's paginated method which properly maps listing data
       final result = await couponRepository.fetchCouponsPaginated(
         limit: _limit,
-        startAfter: _lastDocument,
-        reductionIsFixed: _reductionIsFixed,
-        reductionIsPercentage: _reductionIsPercentage,
-        minPrice: _minPrice,
-        maxPrice: _maxPrice,
-        minReputation: _minReputation,
-        ordering: _ordering,
-        shopId: _selectedShopId,
+        offset: _lastOffset ?? 0,
+        shopId: null, // No shop filter for main list
       );
-      final coupons = result.ownedCoupons;
-      final lastDoc = result.lastDocument;
-      debugPrint('Fetched ${coupons.length} coupons: $coupons');
+      debugPrint('Fetched ${result.ownedCoupons.length} coupons with proper mapping');
 
-      _hasMore = coupons.length == _limit;
-      _allCoupons.addAll(coupons);
-      _lastDocument = lastDoc;
+      _hasMore = result.lastOffset != null;
+      _allCoupons.addAll(result.ownedCoupons);
+      _lastOffset = result.lastOffset;
 
       var successState = CouponListLoadSuccess(coupons: _allCoupons, hasMore: _hasMore);
       _previousListState = successState;
@@ -114,7 +102,7 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
 
   Future<void> _onRefreshCoupons(RefreshCoupons event, Emitter<CouponListState> emit) async {
     _allCoupons.clear();
-    _lastDocument = null;
+    _lastOffset = null;
     _hasMore = true;
     add(FetchCoupons());
   }

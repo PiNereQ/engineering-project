@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:proj_inz/bloc/owned_coupon_list/owned_coupon_list_bloc.dart';
 import 'package:proj_inz/core/theme.dart';
 import 'package:proj_inz/data/models/owned_coupon_model.dart';
@@ -43,9 +44,10 @@ class _BoughtCouponListScreenState extends State<BoughtCouponListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
     return BlocProvider(
       create: (context) => OwnedCouponListBloc(context.read<CouponRepository>())
-        ..add(FetchCoupons()),
+        ..add(FetchCoupons(userId: userId)),
       child: BlocBuilder<OwnedCouponListBloc, OwnedCouponListState>(
         builder: (context, state) {
           if (!_scrollListenerAdded) {
@@ -202,7 +204,7 @@ class _Toolbar extends StatelessWidget {
                         ).then((_) {
                           if (context.mounted) {
                             context.read<OwnedCouponListBloc>()
-                                .add(FetchCoupons());
+                                .add(FetchCoupons(userId: FirebaseAuth.instance.currentUser?.uid ?? ''));
                           }
                         }),
                       ),
@@ -219,7 +221,7 @@ class _Toolbar extends StatelessWidget {
                         ).then((_) {
                           if (context.mounted) {
                             context.read<OwnedCouponListBloc>()
-                                .add(FetchCoupons());
+                                .add(FetchCoupons(userId: FirebaseAuth.instance.currentUser?.uid ?? ''));
                           }
                         }),
                       ),

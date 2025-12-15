@@ -1,5 +1,4 @@
 import 'package:bloc/bloc.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:proj_inz/data/models/owned_coupon_model.dart';
@@ -42,9 +41,10 @@ class OwnedCouponListBloc extends Bloc<OwnedCouponListEvent, OwnedCouponListStat
   final int limit = 50;
   
   final List<OwnedCoupon> _allCoupons = [];
-  DocumentSnapshot? _lastDocument;
+  int? _lastOffset;
   bool _hasMore = true;
   bool _isFetching = false;
+  String? _userId;
 
   List<OwnedCoupon> get allCoupons => List.unmodifiable(_allCoupons);
 
@@ -80,8 +80,9 @@ class OwnedCouponListBloc extends Bloc<OwnedCouponListEvent, OwnedCouponListStat
     Future<void> _onFetchCoupons(FetchCoupons event, Emitter<OwnedCouponListState> emit) async {
     emit(OwnedCouponListLoadInProgress());
     _allCoupons.clear();
-    _lastDocument = null;
+    _lastOffset = null;
     _hasMore = true;
+    _userId = event.userId;
     add(FetchMoreCoupons());
   }
 
@@ -94,20 +95,30 @@ class OwnedCouponListBloc extends Bloc<OwnedCouponListEvent, OwnedCouponListStat
       debugPrint("No more coupons to load.");
       return;
     }
+    if (_userId == null) {
+      debugPrint("No user ID provided");
+      emit(OwnedCouponListLoadFailure(message: 'User ID required'));
+      return;
+    }
 
     _isFetching = true;
     emit(OwnedCouponListLoadInProgress());
 
     try {
-      final result = await couponRepository.fetchOwnedCouponsPaginated(limit, _lastDocument);
-      final ownedCoupons = result.coupons;
-      final lastDoc = result.lastDocument;
-      debugPrint('Fetched ${ownedCoupons.length} coupons: $ownedCoupons');
+      // final result = await couponRepository.fetchOwnedCouponsPaginated(
+      //   limit,
+      //   _lastOffset ?? 0,
+      //   _userId!,
+      // );
+      // final ownedCoupons = result.coupons;
+      // debugPrint('Fetched ${ownedCoupons.length} coupons: $ownedCoupons');
 
-      _hasMore = ownedCoupons.length == limit;
-      _allCoupons.addAll(ownedCoupons);
-      _lastDocument = lastDoc;
+      // _hasMore = ownedCoupons.length == limit;
+      // _allCoupons.addAll(ownedCoupons);
+      // _lastOffset = result.lastOffset;
 
+      
+      // emit(OwnedCouponListLoadSuccess(coupons: _allCoupons, hasMore: _hasMore));
       // apply filters
       var filtered = _allCoupons.where((c) {
         if (_reductionIsPercentage && !_reductionIsFixed) {
@@ -155,9 +166,9 @@ class OwnedCouponListBloc extends Bloc<OwnedCouponListEvent, OwnedCouponListStat
       }
 
 
-      if (_allCoupons.isEmpty) {
-        emit(OwnedCouponListLoadEmpty());
-      }
+      // if (_allCoupons.isEmpty) {
+      //   emit(OwnedCouponListLoadEmpty());
+      // }
     } catch (e) {
       if (kDebugMode) debugPrint(e.toString());
       emit(OwnedCouponListLoadFailure(message: e.toString()));
@@ -169,9 +180,11 @@ class OwnedCouponListBloc extends Bloc<OwnedCouponListEvent, OwnedCouponListStat
   Future<void> _onRefreshCoupons(RefreshCoupons event, Emitter<OwnedCouponListState> emit) async {
     emit(OwnedCouponListLoadInProgress());
     _allCoupons.clear();
-    _lastDocument = null;
+    _lastOffset = null;
     _hasMore = true;
-    add(FetchCoupons());
+    if (_userId != null) {
+      add(FetchCoupons(userId: _userId!));
+    }
   }
 
   // filter handlers
@@ -192,7 +205,9 @@ class OwnedCouponListBloc extends Bloc<OwnedCouponListEvent, OwnedCouponListStat
     _showUnused = event.showUnused;
     _shopId = event.shopId;
 
-    add(FetchCoupons());
+    if (_userId != null) {
+      add(FetchCoupons(userId: _userId!));
+    }
   }
 
   void _onClearFilters(ClearOwnedCouponFilters event, Emitter emit) {
@@ -202,7 +217,9 @@ class OwnedCouponListBloc extends Bloc<OwnedCouponListEvent, OwnedCouponListStat
     _showUnused = true;
     _shopId = null;
 
-    add(FetchCoupons());
+    if (_userId != null) {
+      add(FetchCoupons(userId: _userId!));
+    }
   }
 
   // sorting handlers
@@ -212,7 +229,9 @@ class OwnedCouponListBloc extends Bloc<OwnedCouponListEvent, OwnedCouponListStat
 
   void _onApplyOrdering(ApplyOwnedCouponOrdering event, Emitter emit) {
     _ordering = event.ordering;
-    add(FetchCoupons());
+    if (_userId != null) {
+      add(FetchCoupons(userId: _userId!));
+    }
   }
 
 }

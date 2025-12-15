@@ -39,8 +39,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   void _onSignInRequested(SignInRequested event, Emitter<AuthState> emit) async {
     emit(AuthSignInInProgress());
     try {
-      await authRepository.signIn(event.email, event.password);
-      emit(AuthSignInSuccess());
+      final token = await authRepository.signIn(event.email, event.password);
+      emit(AuthAuthenticated(token: token));
     } catch (e) {
       emit(AuthSignInFailure(errorMessage: e.toString()));
     }

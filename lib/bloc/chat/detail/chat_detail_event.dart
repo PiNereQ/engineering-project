@@ -26,12 +26,14 @@ class RefreshMessages extends ChatDetailEvent {
 class SendMessage extends ChatDetailEvent {
   final String conversationId;
   final String text;
+  final String senderId;
 
   const SendMessage({
     required this.conversationId,
     required this.text,
+    required this.senderId,
   });
 
   @override
-  List<Object?> get props => [conversationId, text];
+  List<Object?> get props => [conversationId, text, senderId];
 }

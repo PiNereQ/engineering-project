@@ -17,7 +17,10 @@ class ChatListBloc extends Bloc<ChatListEvent, ChatListState> {
     emit(ChatListLoading());
 
     try {
-      final data = await chatRepository.getConversations(asBuyer: true);
+      final data = await chatRepository.getConversations(
+        asBuyer: true,
+        userId: event.userId,
+      );
       emit(ChatListLoaded(data));
     } catch (e) {
       emit(ChatListError(e.toString()));
@@ -29,7 +32,10 @@ class ChatListBloc extends Bloc<ChatListEvent, ChatListState> {
     emit(ChatListLoading());
 
     try {
-      final data = await chatRepository.getConversations(asBuyer: false);
+      final data = await chatRepository.getConversations(
+        asBuyer: false,
+        userId: event.userId,
+      );
       emit(ChatListLoaded(data));
     } catch (e) {
       emit(ChatListError(e.toString()));

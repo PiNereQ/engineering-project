@@ -1,38 +1,36 @@
+import 'package:flutter/foundation.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:proj_inz/data/api/api_client.dart';
+import 'package:proj_inz/data/models/shop_location_model.dart';
 
 class MapRepository {
-  Future<List<Location>> fetchLocations() async {
-    // TODO: Replace with fetching from API
-    await Future.delayed(Duration(seconds: 1));
-    return [
-      Location(shopLocationId: '0', latitude: 52.406374, longitude: 16.925168, shopId: '3', shopName: 'Media Expert'),
-      Location(shopLocationId: '1', latitude: 52.406554, longitude: 16.925334, shopId: '1', shopName: 'MediaMarkt'),
-      Location(shopLocationId: '2', latitude: 52.409000, longitude: 16.925361, shopId: '3', shopName: 'Media Expert'),
-      Location(shopLocationId: '3', latitude: 52.406668, longitude: 16.928808, shopId: '1', shopName: 'MediaMarkt'),
-    ];
+  final ApiClient _api;
+
+  MapRepository({ApiClient? api}) : _api = api ?? ApiClient(baseUrl: 'http://49.13.155.21:8000');
+
+  /// Fetch locations within specific bounds from API (GET /shops/locations?latS=&lngW=&latN=&lngE=)
+  Future<List<ShopLocation>> fetchLocationsInBounds(LatLngBounds bounds) async {
+    try {
+      final response = await _api.getJson('/shops/locations?south=${bounds.south}&west=${bounds.west}&north=${bounds.north}&east=${bounds.east}');
+      final List<dynamic> locationsData = response is List ? response : [];
+      final locations = <ShopLocation>[];
+      for (var loc in locationsData) {
+        print(loc);
+        locations.add(ShopLocation(
+          shopLocationId: loc['id'].toString(),
+          latLng: LatLng(
+            double.parse(loc['latitude'].toString()),
+            double.parse(loc['longitude'].toString()),
+          ),
+          shopId: loc['shop_id'].toString(),
+          shopName: loc['shop_name']?.toString(),
+        ));
+      }
+      return locations;
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error fetching locations in bounds: $e');
+      rethrow;
+    }
   }
-
-  Future<List<Location>> fetchLocationsInBounds(LatLngBounds bounds) async {
-    final allLocations = await fetchLocations();
-    return allLocations.where((location) {
-      return bounds.contains(LatLng(location.latitude, location.longitude));
-    }).toList();
-  }
-}
-
-class Location {
-  final String shopLocationId;
-  final double latitude;
-  final double longitude;
-  final String shopId;
-  final String? shopName;
-
-  Location({
-    required this.shopLocationId,
-    required this.latitude,
-    required this.longitude,
-    required this.shopId,
-    this.shopName,
-  });
 }

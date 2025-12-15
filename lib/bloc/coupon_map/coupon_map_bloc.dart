@@ -1,5 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:proj_inz/data/models/shop_location_model.dart';
 import 'package:proj_inz/data/repositories/map_repository.dart';
 import 'package:proj_inz/data/repositories/coupon_repository.dart';
 import 'package:proj_inz/data/models/coupon_model.dart';
@@ -79,7 +80,7 @@ class CouponMapBloc extends Bloc<CouponMapEvent, CouponMapState> {
     ));
 
     try {
-      final coupons = await couponRepository.fetchThreeCouponsForShop(event.shopId);
+      final coupons = await couponRepository.fetchThreeCouponsForShop(event.shopId.toString());
       emit(state.copyWith(
         status: CouponMapStatus.success,
         selectedShopLocationCoupons: coupons,

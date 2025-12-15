@@ -664,10 +664,9 @@ class _SellerDetails extends StatelessWidget {
                       child: CustomTextButton.primary(
                         label: "Zapytaj o ten kupon",
                         onTap: () async {
-                          final currentUser = await context.read<UserRepository>().getCurrentUser();
-                          if (currentUser == null) return;
+                          final buyerId = await context.read<UserRepository>().getCurrentUserId();
+                          if (buyerId == null) return;
 
-                          final buyerId = currentUser.uid;
                           final sellerId = this.sellerId;
                           final couponId = this.couponId;
 
