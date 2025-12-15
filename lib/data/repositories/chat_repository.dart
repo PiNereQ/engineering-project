@@ -53,18 +53,29 @@ class ChatRepository {
     }
   }
 
-  // check if a conversation already exists
-  Conversation? findExistingConversation({
+  // Check if conversation exists in API (GET /conversations/exists)
+  Future<Conversation?> findExistingConversation({
     required String couponId,
     required String buyerId,
     required String sellerId,
-  }) {
-    return _mockConversations.firstWhereOrNull(
-      (c) =>
-          c.couponId == couponId &&
-          c.buyerId == buyerId &&
-          c.sellerId == sellerId,
-    );
+  }) async {
+    try {
+      final response = await _api.getJson(
+        '/chat/conversations/exists',
+        queryParameters: {
+          'couponId': couponId,
+          'buyerId': buyerId,
+          'sellerId': sellerId,
+        },
+      );
+      if (response == null) {
+        return null;
+      }
+      return Conversation.fromJson(response as Map<String, dynamic>);
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error fetching conversation from API: $e');
+      rethrow;
+    }
   }
 
   // Create a conversation if it does not exist
