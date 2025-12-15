@@ -109,8 +109,7 @@ class ChatRepository {
     return newConv;
   }
 
-  // Get messages
-  // TODO: Replace with API call to GET /conversations/{id}/messages
+  // Fetch messages in a conversation from API (GET /conversations/{id}/messages)
   Future<List<Message>> getMessages(String conversationId) async {
     final response = await _api.getJson('/chat/conversations/$conversationId/messages');
 
@@ -140,43 +139,24 @@ class ChatRepository {
     }
   }
 
-  // Send new message
-  // TODO: Replace with API call to POST /conversations/{id}/messages
+  // Send new message in a conversation to API (POST /conversations/{id}/messages)
   Future<void> sendMessage({
     required String conversationId,
     required String text,
     required String senderId,
   }) async {
-    final newMessage = Message(
-      id: 'msg-${DateTime.now().millisecondsSinceEpoch}',
-      conversationId: conversationId,
-      senderId: senderId,
-      senderUsername: '',
-      text: text,
-      timestamp: DateTime.now(),
-      isRead: false,
-    );
-
-    _mockMessages.putIfAbsent(conversationId, () => []);
-    _mockMessages[conversationId]!.add(newMessage);
-
-    final index = _mockConversations.indexWhere((c) => c.id == conversationId);
-    if (index != -1) {
-      final conv = _mockConversations[index];
-
-      final bool senderIsBuyer = conv.buyerId == senderId;
-
-      final updated = conv.copyWith(
-        lastMessage: text,
-        lastMessageTime: DateTime.now(),
-        isReadByBuyer: senderIsBuyer ? true : false,
-        isReadBySeller: senderIsBuyer ? false : true,
-      );
-
-      _mockConversations[index] = updated;
+    final newMessage = {
+      "sender_id": senderId,
+      "content": text
+    };
+    try {
+      await _api.postJson('/chat/conversations/$conversationId/messages', body: newMessage);
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('Error sending message to API: $e');
+      }
+      rethrow;
     }
-
-    await Future.delayed(const Duration(milliseconds: 150));
   }
   
   bool hasUnreadMessages(String currentUserId) {
