@@ -287,6 +287,7 @@ class ChatMessagesContainer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      width: double.infinity,
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: ShapeDecoration(
         color: AppColors.surface,
@@ -557,6 +558,20 @@ class _ChatDetailViewState extends State<ChatDetailView> {
                           child: Text(
                             "Zapytaj o ten kupon, wysyłając pierwszą wiadomość!",
                             style: TextStyle(fontFamily: 'Itim', fontSize: 16),
+                            textAlign: TextAlign.center,
+                          ),
+                        );
+                      }
+
+                      if (state is ChatDetailError) {
+                        return Center(
+                          child: Text(
+                            "Błąd ładowania wiadomości: ${state.message}",
+                            style: const TextStyle(
+                              fontFamily: 'Itim',
+                              fontSize: 16,
+                              color: AppColors.textSecondary,
+                            ),
                             textAlign: TextAlign.center,
                           ),
                         );

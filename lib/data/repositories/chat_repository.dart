@@ -112,8 +112,11 @@ class ChatRepository {
   // Get messages
   // TODO: Replace with API call to GET /conversations/{id}/messages
   Future<List<Message>> getMessages(String conversationId) async {
-    await Future.delayed(const Duration(milliseconds: 200));
-    return _mockMessages[conversationId] ?? [];
+    final response = await _api.getJson('/chat/conversations/$conversationId/messages');
+
+    return (response as List).map((data) {
+      return Message.fromJson(data as Map<String, dynamic>);
+    }).toList();
   }
 
   // Mark conversation as read
@@ -148,6 +151,7 @@ class ChatRepository {
       id: 'msg-${DateTime.now().millisecondsSinceEpoch}',
       conversationId: conversationId,
       senderId: senderId,
+      senderUsername: '',
       text: text,
       timestamp: DateTime.now(),
       isRead: false,

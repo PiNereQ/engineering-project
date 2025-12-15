@@ -62,9 +62,9 @@ class Conversation extends Equatable {
       sellerId: json['seller_id'] as String,
       buyerUsername: json['buyer_username'] as String,
       sellerUsername: json['seller_username'] as String,
-      lastMessage: (json['last_message'] ?? '') as String,
-      lastMessageTime: (json['last_message_timestamp'] != null && (json['last_message_timestamp'] as String).isNotEmpty)
-        ? DateTime.parse(json['last_message_timestamp'] as String)
+      lastMessage: (json['latest_message'] ?? '') as String,
+      lastMessageTime: (json['latest_message_timestamp'] != null && (json['latest_message_timestamp'] as String).isNotEmpty)
+        ? DateTime.parse(json['latest_message_timestamp'] as String)
         : DateTime.fromMillisecondsSinceEpoch(0),
       isReadByBuyer: json['is_read_by_buyer'] == 1 ? true : false,
       isReadBySeller: json['is_read_by_seller'] == 1 ? true : false,
@@ -77,16 +77,16 @@ class Conversation extends Equatable {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'couponId': couponId,
-      'buyerId': buyerId,
-      'sellerId': sellerId,
-      'buyerUsername': buyerUsername,
-      'sellerUsername': sellerUsername,
-      'lastMessage': lastMessage,
-      'lastMessageTime': lastMessageTime.toIso8601String(),
+      'coupon_id': couponId,
+      'buyer_id': buyerId,
+      'seller_id': sellerId,
+      'buyer_username': buyerUsername,
+      'seller_username': sellerUsername,
+      'latest_message': lastMessage,
+      'latest_message_time': lastMessageTime.toIso8601String(),
 
-      'isReadByBuyer': isReadByBuyer,
-      'isReadBySeller': isReadBySeller,
+      'is_read_by_buyer': isReadByBuyer,
+      'is_read_by_seller': isReadBySeller,
 
       // dont save isReadByCurrentUser because it's view-only
     };
