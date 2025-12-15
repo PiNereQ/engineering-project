@@ -15,7 +15,7 @@ class ShopRepository {
     }
 
     try {
-      final data = await _api.getJsonById('/shops', shopId);
+      final data = await _api.getJson('/shops/$shopId');
       
       final shop = Shop(
         id: data['id'].toString(),

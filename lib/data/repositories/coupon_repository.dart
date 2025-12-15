@@ -114,7 +114,7 @@ class CouponRepository {
   /// Fetch single coupon by ID from API (GET /coupons/{id})
   Future<Map<String, dynamic>> fetchCouponByIdFromApi(String id) async {
     try {
-      final response = await _api.getJsonById('/coupons', id);
+      final response = await _api.getJson('/coupons/$id');
       return response as Map<String, dynamic>;
     } catch (e) {
       if (kDebugMode) debugPrint('Error fetching coupon $id from API: $e');
@@ -125,7 +125,7 @@ class CouponRepository {
   /// Create new coupon offer via API (POST /coupons)
   Future<void> postCouponOffer(CouponOffer coupon) async {
     try {
-      await _api.postJson('/coupons', coupon.toJson());
+      await _api.postJson('/coupons', body: coupon.toJson());
     } catch (e) {
       if (kDebugMode) debugPrint('Error posting coupon: $e');
       rethrow;
@@ -479,7 +479,7 @@ class CouponRepository {
     }
     
     try {
-      final data = await _api.getJsonById('/shops', shopId);
+      final data = await _api.getJson('/shops/$shopId');
       _shopCache[shopId] = data as Map<String, dynamic>;
       return _shopCache[shopId]!;
     } catch (e) {
@@ -495,7 +495,7 @@ class CouponRepository {
     }
     
     try {
-      final data = await _api.getJsonById('/users', userId);
+      final data = await _api.getJson('/users/$userId');
       _userCache[userId] = data as Map<String, dynamic>;
       return _userCache[userId]!;
     } catch (e) {

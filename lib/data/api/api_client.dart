@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 class ApiClient {
@@ -7,52 +8,84 @@ class ApiClient {
 
   ApiClient({required this.baseUrl, http.Client? client}) : _client = client ?? http.Client();
 
-  Uri _uri(String path) {
+  /// Constructs a [Uri] for the given [path] and optional [queryParameters].
+  /// Ensures the path starts with '/'.
+  /// Merges any existing query parameters in the path with those provided.
+  Uri _uri(String path, {Map<String, String>? queryParameters}) {
     // Ensure path starts with '/'
     final p = path.startsWith('/') ? path : '/$path';
-    return Uri.parse('$baseUrl$p');
+    final uri = Uri.parse('$baseUrl$p');
+    if (queryParameters != null) {
+      return uri.replace(queryParameters: {...uri.queryParameters, ...queryParameters});
+    }
+    return uri;
   }
 
-  Future<dynamic> getJson(String path) async {
-    final resp = await _client.get(_uri(path));
+  /// Sends a GET request to the given [path] with optional [queryParameters].
+  /// Returns the decoded JSON response on success.
+  /// Throws an [Exception] if the request fails.
+  Future<dynamic> getJson(String path, {Map<String, String>? queryParameters}) async {
+    final uri = _uri(path, queryParameters: queryParameters);
+    
+    final resp = await _client.get(uri);
+
     if (resp.statusCode >= 200 && resp.statusCode < 300) {
       return jsonDecode(resp.body);
     }
     throw Exception('GET $path failed: ${resp.statusCode} ${resp.reasonPhrase}');
   }
 
-  Future<dynamic> getJsonById(String path, String id) async {
-    final resp = await _client.get(_uri('$path/$id'));
-    if (resp.statusCode >= 200 && resp.statusCode < 300) {
-      return jsonDecode(resp.body);
-    }
-    throw Exception('GET $path/$id failed: ${resp.statusCode} ${resp.reasonPhrase}');
-  }
+  /// Sends a POST request to the given [path] with optional [queryParameters] and JSON [body].
+  /// Returns the decoded JSON response on success.
+  /// Throws an [Exception] if the request fails.
+  Future<dynamic> postJson(String path, {Map<String, String>? queryParameters, Map<String, dynamic>? body}) async {
+    final uri = _uri(path, queryParameters: queryParameters);
 
-  Future<dynamic> postJson(String path, Map<String, dynamic> body) async {
-    print('POST $path with body: ${jsonEncode(body)}');
+    debugPrint('POST $path with body: ${jsonEncode(body)}');
     final resp = await _client.post(
-      _uri(path),
+      uri,
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode(body),
     );
     if (resp.statusCode >= 200 && resp.statusCode < 300) {
       return jsonDecode(resp.body);
     }
-    print('POST $path failed: ${resp.statusCode} ${resp.reasonPhrase}');
-    print('Response body: ${resp.body}');
+    debugPrint('POST $path failed: ${resp.statusCode} ${resp.reasonPhrase}');
+    debugPrint('Response body: ${resp.body}');
     throw Exception('POST $path failed: ${resp.statusCode} ${resp.reasonPhrase}\nResponse: ${resp.body}');
   }
 
-  Future<dynamic> putJson(String path, String id, Map<String, dynamic> body) async {
+  /// Sends a PUT request to the given [path] with optional [queryParameters] and JSON [body].
+  /// Returns the decoded JSON response on success.
+  /// Throws an [Exception] if the request fails.
+  Future<dynamic> putJson(String path, {Map<String, String>? queryParameters, Map<String, dynamic>? body}) async {
+    final uri = _uri(path, queryParameters: queryParameters);
+
     final resp = await _client.put(
-      _uri('$path/$id'),
+      uri,
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode(body),
     );
     if (resp.statusCode >= 200 && resp.statusCode < 300) {
       return jsonDecode(resp.body);
     }
-    throw Exception('PUT $path/$id failed: ${resp.statusCode} ${resp.reasonPhrase}');
+    throw Exception('PUT $path failed: ${resp.statusCode} ${resp.reasonPhrase}');
+  }
+
+  /// Sends a PATCH request to the given [path] with optional [queryParameters] and JSON [body].
+  /// Returns the decoded JSON response on success.
+  /// Throws an [Exception] if the request fails.
+  Future<dynamic> patchJson(String path, {Map<String, String>? queryParameters, Map<String, dynamic>? body}) async {
+    final uri = _uri(path, queryParameters: queryParameters);
+
+    final resp = await _client.patch(
+      uri,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(body),
+    );
+    if (resp.statusCode >= 200 && resp.statusCode < 300) {
+      return jsonDecode(resp.body);
+    }
+    throw Exception('PUT $path failed: ${resp.statusCode} ${resp.reasonPhrase}');
   }
 }
