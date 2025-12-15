@@ -1,11 +1,11 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:proj_inz/data/models/message_model.dart';
 import 'package:proj_inz/data/models/conversation_model.dart';
 import 'package:collection/collection.dart';
 import 'package:proj_inz/data/api/api_client.dart';
 
 // TODO: Backend API endpoints needed:
-// - GET /conversations (list user's conversations)
 // - POST /conversations (create new conversation)
 // - GET /conversations/{id}/messages (get messages for conversation)
 // - POST /conversations/{id}/messages (send message)
@@ -19,20 +19,38 @@ class ChatRepository {
 
   ChatRepository({ApiClient? api}) : _api = api ?? ApiClient(baseUrl: 'http://49.13.155.21:8000');
 
-  // Get conversations for the current user
-  // TODO: Replace with API call to GET /conversations?asBuyer={true|false}
+  // Fetch conversations for the current user from API (GET /conversations?role={buyer|seller}&user={userId})
   Future<List<Conversation>> getConversations({required bool asBuyer, required String userId}) async {
-    await Future.delayed(const Duration(milliseconds: 300));
+    try {
+      final response = await _api.getJson(
+        '/chat/conversations',
+        queryParameters: {
+          'role': asBuyer ? 'buyer' : 'seller',
+          'user': userId,
+        });
 
-    final filtered = asBuyer
-        ? _mockConversations.where((c) => c.buyerId == userId)
-        : _mockConversations.where((c) => c.sellerId == userId);
+      final List<dynamic> conversationsData = response is List ? response : [];
+      final conversations = conversationsData.map((data) {
+        Conversation conversation = Conversation.fromJson(
+          data as Map<String, dynamic>,
+        );
+        if (asBuyer) {
+          conversation = conversation.copyWith(
+            isReadByCurrentUser: conversation.isReadByBuyer,
+          );
+        } else {
+          conversation = conversation.copyWith(
+            isReadByCurrentUser: conversation.isReadBySeller,
+          );
+        }
+        return conversation;
+      }).toList();
 
-    return filtered
-        .map((c) => c.copyWith(
-              isReadByCurrentUser: asBuyer ? c.isReadByBuyer : c.isReadBySeller,
-            ))
-        .toList();
+      return conversations;
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error fetching coupons from API: $e');
+      rethrow;
+    }
   }
 
   // check if a conversation already exists
@@ -72,7 +90,6 @@ class ChatRepository {
     final newConv = Conversation(
       id: 'conv-${DateTime.now().millisecondsSinceEpoch}',
       couponId: couponId,
-      couponTitle: couponTitle,
       buyerId: buyerId,
       sellerId: sellerId,
       buyerUsername: buyerUsername,
@@ -81,6 +98,9 @@ class ChatRepository {
       lastMessageTime: DateTime.now(),
       isReadByBuyer: true,
       isReadBySeller: true,
+      couponDiscount: 0,
+      couponDiscountIsPercentage: true,
+      couponShopName: '',
     );
 
     _mockConversations.add(newConv);

@@ -177,7 +177,7 @@ class _ChatScreenState extends State<ChatScreen> {
                           },
                           child: ConversationTile(
                             username: _getUsername(c),
-                            title: c.couponTitle,
+                            title: 'Kupon na ${c.couponDiscount}${c.couponDiscountIsPercentage == 'true' ? '%' : 'zł'} do ${c.couponShopName}',
                             message: c.lastMessage,
                             isRead: c.isReadByCurrentUser,
                           ),

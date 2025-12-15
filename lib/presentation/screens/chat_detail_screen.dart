@@ -523,7 +523,7 @@ class _ChatDetailViewState extends State<ChatDetailView> {
             preferredSize: const Size.fromHeight(180),
             child: ChatHeader(
               couponTitle: _conversation != null
-                  ? _conversation!.couponTitle
+                  ? 'Kupon na ${_conversation?.couponDiscount}${_conversation?.couponDiscountIsPercentage == 'true' ? '%' : 'zł'} do ${_conversation?.couponShopName}'
                   : (widget.relatedCoupon != null
                       ? buildCouponTitle(widget.relatedCoupon!)
                       : "Kupon"),
