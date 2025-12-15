@@ -1,13 +1,34 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:proj_inz/core/theme.dart';
 import 'package:proj_inz/presentation/widgets/dashed_separator.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_icon_button.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_text_button.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/radio_button.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:proj_inz/data/repositories/user_repository.dart';
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
+
+  @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  late Future<Map<String, dynamic>?> _profileFuture;
+
+  @override
+  void initState() {
+    super.initState();
+
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    _profileFuture =
+        context.read<UserRepository>().getUserProfile(user.uid);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,37 +52,70 @@ class SettingsScreen extends StatelessWidget {
 
               const SizedBox(height: 16),
 
-              // konto
               const _SectionTitle(
                 text: 'Konto',
                 icon: Icons.person_outline,
               ),
-              _SectionCard(
-                child: Column(
-                  spacing: 12,
-                  children: [
-                    const _KeyValueRow(label: 'Nazwa użytkownika', value: 'username'),
-                    const _KeyValueRow(label: 'Adres e-mail', value: 'email@email.com'),
-                    const _KeyValueRow(label: 'Data dołączenia', value: '01.06.2025'),
 
-                    const _KeyValueRow(
-                      label: 'Numer telefonu',
-                      value: 'Niepotwierdzony',
-                      trailing: _InlineAction(text: 'Potwierdź'),
-                    ),
+              FutureBuilder<Map<String, dynamic>?>(
+                future: _profileFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
 
-                    const SizedBox(height: 10),
-                    DashedSeparator(),
+                  if (!snapshot.hasData) {
+                    return const Text(
+                      'Nie udało się załadować danych użytkownika',
+                      style: TextStyle(
+                        fontFamily: 'Itim',
+                        color: AppColors.alertText,
+                      ),
+                    );
+                  }
 
-                    const Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  final user = snapshot.data!;
+
+                  return _SectionCard(
+                    child: Column(
+                      spacing: 12,
                       children: [
-                        _StatItem(label: 'Kupionych kuponów', value: '0'),
-                        _StatItem(label: 'Sprzedanych kuponów', value: '0'),
+                        _KeyValueRow(
+                          label: 'Nazwa użytkownika',
+                          value: user['username'] ?? '—',
+                        ),
+                        _KeyValueRow(
+                          label: 'Adres e-mail',
+                          value: user['email'] ?? '—',
+                        ),
+                        _KeyValueRow(
+                          label: 'Data dołączenia',
+                          value: user['joinDate'] != null
+                              ? user['joinDate'].toString().substring(0, 10)
+                              : '—',
+                        ),
+                        const _KeyValueRow(
+                          label: 'Numer telefonu',
+                          value: 'Niepotwierdzony',
+                          trailing: _InlineAction(text: 'Potwierdź'),
+                        ),
+
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          child: DashedSeparator(),
+                        ),
+
+                        const Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            _StatItem(label: 'Kupionych kuponów', value: '0'),
+                            _StatItem(label: 'Sprzedanych kuponów', value: '0'),
+                          ],
+                        ),
                       ],
                     ),
-                  ],
-                ),
+                  );
+                },
               ),
 
               const SizedBox(height: 32),
@@ -314,38 +368,6 @@ class _SwitchRow extends StatelessWidget {
       ),
       value: false,
       onChanged: (_) {},
-    );
-  }
-}
-
-class _RadioGroup extends StatelessWidget {
-  final String title;
-  final List<String> options;
-
-  const _RadioGroup({required this.title, required this.options});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: const TextStyle(
-            fontFamily: 'Itim',
-            fontSize: 18,
-            color: AppColors.textPrimary,
-          ),
-        ),
-        ...options.map(
-          (o) => RadioListTile<String>(
-            title: Text(o, style: const TextStyle(fontFamily: 'Itim')),
-            value: o,
-            groupValue: options.first,
-            onChanged: (_) {},
-          ),
-        ),
-      ],
     );
   }
 }
