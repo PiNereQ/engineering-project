@@ -465,14 +465,10 @@ class _ChatDetailViewState extends State<ChatDetailView> {
   late final TextEditingController _controller;
   bool _showPopup = false;
 
-  String buildCouponTitle(Coupon c) {
-    final reduction = c.reduction;
-
+  String buildCouponTitle(num reduction, bool reductionIsPercentage, String shopName) {
     final reductionText = formatNumber(reduction);
 
-    final shopName = c.shopName;
-
-    return c.reductionIsPercentage
+    return reductionIsPercentage
         ? "-$reductionText% • $shopName"
         : "-$reductionText zł • $shopName";
   }
@@ -524,9 +520,9 @@ class _ChatDetailViewState extends State<ChatDetailView> {
             preferredSize: const Size.fromHeight(180),
             child: ChatHeader(
               couponTitle: _conversation != null
-                  ? 'Kupon na ${_conversation?.couponDiscount}${_conversation?.couponDiscountIsPercentage == 'true' ? '%' : 'zł'} do ${_conversation?.couponShopName}'
+                  ? buildCouponTitle(_conversation!.couponDiscount, _conversation!.couponDiscountIsPercentage, _conversation!.couponShopName)
                   : (widget.relatedCoupon != null
-                      ? buildCouponTitle(widget.relatedCoupon!)
+                      ? buildCouponTitle(widget.relatedCoupon!.reduction, widget.relatedCoupon!.reductionIsPercentage, widget.relatedCoupon!.shopName)
                       : "Kupon"),
 
               username: _conversation != null
