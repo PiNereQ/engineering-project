@@ -404,8 +404,8 @@ class _AddScreenState extends State<AddScreen> {
                                                 if (parts.length > 1 && parts[1].length > 2) {
                                                   return 'Cena może mieć maksymalnie 2 miejsca po przecinku';
                                                 }
-                                                if (double.tryParse(val)! <= 0) {
-                                                  return 'Wpisz więcej niż 0';
+                                                if (double.tryParse(val)! <= 2) {
+                                                  return 'Wpisz więcej niż 2';
                                                 }
                                                 return null;
                                               },
