@@ -36,15 +36,15 @@ class ProfileScreen extends StatefulWidget {
     }
 
     Future<void> _loadUserProfile() async {
-      final user = await _userRepository.getCurrentUser();
-      if (user == null) {
+      final userId = await _userRepository.getCurrentUserId();
+      if (userId == null) {
         setState(() {
           isLoadingProfile = false;
         });
         return;
       }
 
-      final profile = await _userRepository.getUserProfile(user.uid);
+      final profile = await _userRepository.getUserProfile(userId);
 
       setState(() {
         reputation = profile?['reputation'] ?? 0;
