@@ -28,6 +28,8 @@ class CouponRepository {
 
   // ============ API-BASED METHODS ============
 
+  // COUPON LIST METHODS ===========================
+
   /// Fetch all coupons from API (GET /coupons)
   Future<List<Map<String, dynamic>>> fetchAllCouponsFromApi() async {
     try {
@@ -38,96 +40,6 @@ class CouponRepository {
       return [];
     } catch (e) {
       if (kDebugMode) debugPrint('Error fetching coupons from API: $e');
-      rethrow;
-    }
-  }
-
-  /// Fetch unsold listings from API (GET /listings)
-  /// Fetch all active listings with merged coupon data from API (GET /listings/all/active)
-  Future<List<Map<String, dynamic>>> fetchListingsFromApi() async {
-    try {
-      final response = await _api.getJson('/listings/all/active');
-      if (response is List) {
-        return response.cast<Map<String, dynamic>>();
-      }
-      return [];
-    } catch (e) {
-      if (kDebugMode) debugPrint('Error fetching listings from API: $e');
-      rethrow;
-    }
-  }
-
-  Future<List<ListedCoupon>> getMyListedCoupons({int offset = 0}) async {
-  throw(UnimplementedError()); // TODO: implement call to api
-  }
-
-  Future<ListedCoupon> fetchListedCouponDetailsById(String id) async {
-    throw(UnimplementedError()); // TODO: implement call to api
-  }
-
-  Future<String> fetchListedCouponCode(String couponId) async {
-    throw(UnimplementedError()); // TODO: implement call to api
-  }
-
-  // /// Fetch user's owned coupons (bought coupons) from API (GET /owned-coupons?owner_id={userId})
-  // Future<List<Map<String, dynamic>>> fetchOwnedCouponsFromApi(String userId) async {
-  //   try {
-  //     final response = await _api.getJson('/owned-coupons?owner_id=$userId');
-  //     if (response is List) {
-  //       return response.cast<Map<String, dynamic>>();
-  //     }
-  //     return [];
-  //   } catch (e) {
-  //     if (kDebugMode) debugPrint('Error fetching owned coupons from API: $e');
-  //     rethrow;
-  //   }
-  // }
-
-  // /// Fetch user's active listings (coupons for sale) from API (GET /listings?seller_id={userId}&is_active=1)
-  // Future<List<Map<String, dynamic>>> fetchUserListingsFromApi(String userId) async {
-  //   try {
-  //     final response = await _api.getJson('/listings?seller_id=$userId&is_active=1');
-  //     if (response is List) {
-  //       return response.cast<Map<String, dynamic>>();
-  //     }
-  //     return [];
-  //   } catch (e) {
-  //     if (kDebugMode) debugPrint('Error fetching user listings from API: $e');
-  //     rethrow;
-  //   }
-  // }
-
-  // /// Fetch user's sold coupons (completed transactions) from API (GET /transactions?seller_id={userId})
-  // Future<List<Map<String, dynamic>>> fetchSoldCouponsFromApi(String userId) async {
-  //   try {
-  //     final response = await _api.getJson('/transactions?seller_id=$userId');
-  //     if (response is List) {
-  //       return response.cast<Map<String, dynamic>>();
-  //     }
-  //     return [];
-  //   } catch (e) {
-  //     if (kDebugMode) debugPrint('Error fetching sold coupons from API: $e');
-  //     rethrow;
-  //   }
-  // }
-
-  /// Fetch single coupon by ID from API (GET /coupons/{id})
-  Future<Map<String, dynamic>> fetchCouponByIdFromApi(String id) async {
-    try {
-      final response = await _api.getJson('/coupons/$id');
-      return response as Map<String, dynamic>;
-    } catch (e) {
-      if (kDebugMode) debugPrint('Error fetching coupon $id from API: $e');
-      rethrow;
-    }
-  }
-
-  /// Create new coupon offer via API (POST /coupons)
-  Future<void> postCouponOffer(CouponOffer coupon) async {
-    try {
-      await _api.postJson('/coupons', body: coupon.toJson());
-    } catch (e) {
-      if (kDebugMode) debugPrint('Error posting coupon: $e');
       rethrow;
     }
   }
@@ -166,31 +78,130 @@ class CouponRepository {
     }
   }
 
-  // /// Fetch user's owned coupons (bought coupons) with pagination
-  // Future<PaginatedOwnedCouponsResult> fetchOwnedCouponsPaginated(
-  //   int limit,
-  //   int offset,
-  //   String userId,
-  // ) async {
+  /// Fetch single coupon by ID from API (GET /coupons/{id})
+  Future<Map<String, dynamic>> fetchCouponByIdFromApi(String id) async {
+    try {
+      final response = await _api.getJson('/coupons/$id');
+      return response as Map<String, dynamic>;
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error fetching coupon $id from API: $e');
+      rethrow;
+    }
+  }
+
+  /// Fetch coupon details by ID
+  Future<Coupon> fetchCouponDetailsById(String id) async {
+    try {
+      final data = await fetchCouponByIdFromApi(id);
+      final coupon = await _mapToCoupon(data);
+      if (coupon == null) {
+        throw Exception('Could not map coupon data');
+      }
+      return coupon;
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error in fetchCouponDetailsById: $e');
+      rethrow;
+    }
+  }
+  
+  // OWNED COUPON LIST METHODS =====================
+
+  /// Fetch user's owned coupons (bought coupons) from API (GET /owned-coupons?owner_id={userId})
+  Future<List<Map<String, dynamic>>> fetchOwnedCouponsFromApi(String userId) async {
+    try {
+      final response = await _api.getJson('/coupons/owned?owner_id=$userId');
+      if (response is List) {
+        return response.cast<Map<String, dynamic>>();
+      }
+      return [];
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error fetching owned coupons from API: $e');
+      rethrow;
+    }
+  }
+
+  /// Fetch user's owned coupons (bought coupons) with pagination
+  Future<PaginatedOwnedCouponsResult> fetchOwnedCouponsPaginated(
+    int limit,
+    int offset,
+    String userId,
+  ) async {
+    try {
+      final ownedCouponsData = await fetchOwnedCouponsFromApi(userId);
+      
+      // Apply pagination
+      final start = offset;
+      final end = (start + limit).clamp(0, ownedCouponsData.length);
+      final paginated = ownedCouponsData.sublist(start, end);
+      
+      // Convert to OwnedCoupon objects
+      final coupons = await Future.wait(
+        paginated.map((data) => _mapToOwnedCoupon(data))
+      );
+      
+      return PaginatedOwnedCouponsResult(
+        coupons: coupons.whereType<OwnedCoupon>().toList(),
+        lastOffset: end < ownedCouponsData.length ? end : null,
+      );
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error in fetchOwnedCouponsPaginated: $e');
+      rethrow;
+    }
+  }
+
+  /// Fetch owned coupon details by ID
+  Future<OwnedCoupon> fetchOwnedCouponDetailsById(String id) async {
+    try {
+      final data = await fetchCouponByIdFromApi(id);
+      final ownedCoupon = await _mapToOwnedCoupon(data);
+      if (ownedCoupon == null) {
+        throw Exception('Could not map owned coupon data');
+      }
+      return ownedCoupon;
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error in fetchOwnedCouponDetailsById: $e');
+      rethrow;
+    }
+  }
+
+  // LISTED COUPON LIST METHODS ====================
+
+  /// Fetch all active listings with merged coupon data from API (GET /listings/all/active)
+  Future<List<Map<String, dynamic>>> fetchListingsFromApi() async {
+    try {
+      final response = await _api.getJson('/listings/all/active');
+      if (response is List) {
+        return response.cast<Map<String, dynamic>>();
+      }
+      return [];
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error fetching listings from API: $e');
+      rethrow;
+    }
+  }
+
+  Future<List<ListedCoupon>> getMyListedCoupons({int offset = 0}) async {
+  throw(UnimplementedError()); // TODO: implement call to api
+  }
+
+  Future<ListedCoupon> fetchListedCouponDetailsById(String id) async {
+    throw(UnimplementedError()); // TODO: implement call to api
+  }
+
+  Future<String> fetchListedCouponCode(String couponId) async {
+    throw(UnimplementedError()); // TODO: implement call to api
+  }
+
+  // /// Fetch user's active listings (coupons for sale) from API (GET /listings?seller_id={userId}&is_active=1)
+  // Future<List<Map<String, dynamic>>> fetchUserListingsFromApi(String userId) async {
   //   try {
-  //     final ownedCouponsData = await fetchOwnedCouponsFromApi(userId);
-      
-  //     // Apply pagination
-  //     final start = offset;
-  //     final end = (start + limit).clamp(0, ownedCouponsData.length);
-  //     final paginated = ownedCouponsData.sublist(start, end);
-      
-  //     // Convert to OwnedCoupon objects
-  //     final coupons = await Future.wait(
-  //       paginated.map((data) => _mapToOwnedCoupon(data))
-  //     );
-      
-  //     return PaginatedOwnedCouponsResult(
-  //       coupons: coupons.whereType<OwnedCoupon>().toList(),
-  //       lastOffset: end < ownedCouponsData.length ? end : null,
-  //     );
+  //     final response = await _api.getJson('/listings?seller_id=$userId&is_active=1');
+  //     if (response is List) {
+  //       return response.cast<Map<String, dynamic>>();
+  //     }
+  //     return [];
   //   } catch (e) {
-  //     if (kDebugMode) debugPrint('Error in fetchOwnedCouponsPaginated: $e');
+  //     if (kDebugMode) debugPrint('Error fetching user listings from API: $e');
   //     rethrow;
   //   }
   // }
@@ -237,6 +248,22 @@ class CouponRepository {
   //   }
   // }
 
+  // SOLD COUPON LIST METHODS ======================
+
+  // /// Fetch user's sold coupons (completed transactions) from API (GET /transactions?seller_id={userId})
+  // Future<List<Map<String, dynamic>>> fetchSoldCouponsFromApi(String userId) async {
+  //   try {
+  //     final response = await _api.getJson('/transactions?seller_id=$userId');
+  //     if (response is List) {
+  //       return response.cast<Map<String, dynamic>>();
+  //     }
+  //     return [];
+  //   } catch (e) {
+  //     if (kDebugMode) debugPrint('Error fetching sold coupons from API: $e');
+  //     rethrow;
+  //   }
+  // }
+
   // /// Fetch user's sold coupons (completed transactions) with pagination
   // Future<PaginatedCouponsResult> fetchSoldCouponsPaginated({
   //   required int limit,
@@ -278,40 +305,22 @@ class CouponRepository {
   //     rethrow;
   //   }
   // }
+  
+  // GENERAL METHODS ===============================
 
-  /// Fetch coupon details by ID
-  Future<Coupon> fetchCouponDetailsById(String id) async {
+  /// Create new coupon offer via API (POST /coupons)
+  Future<void> postCouponOffer(CouponOffer coupon) async {
     try {
-      final data = await fetchCouponByIdFromApi(id);
-      final coupon = await _mapToCoupon(data);
-      if (coupon == null) {
-        throw Exception('Could not map coupon data');
-      }
-      return coupon;
+      await _api.postJson('/coupons', body: coupon.toJson());
     } catch (e) {
-      if (kDebugMode) debugPrint('Error in fetchCouponDetailsById: $e');
+      if (kDebugMode) debugPrint('Error posting coupon: $e');
       rethrow;
     }
   }
-
+  
   /// Fetch owned coupon details by ID
   Future<void> deactivateListedCoupon(String couponId) async {
     throw(UnimplementedError()); // TODO: implement call to api
-  }
-
-  /// Fetch owned coupon details by ID
-  Future<OwnedCoupon> fetchOwnedCouponDetailsById(String id) async {
-    try {
-      final data = await fetchCouponByIdFromApi(id);
-      final ownedCoupon = await _mapToOwnedCoupon(data);
-      if (ownedCoupon == null) {
-        throw Exception('Could not map owned coupon data');
-      }
-      return ownedCoupon;
-    } catch (e) {
-      if (kDebugMode) debugPrint('Error in fetchOwnedCouponDetailsById: $e');
-      rethrow;
-    }
   }
 
   /// Fetch three coupons for a specific shop
