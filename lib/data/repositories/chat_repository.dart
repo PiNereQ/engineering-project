@@ -2,24 +2,23 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:proj_inz/data/models/message_model.dart';
 import 'package:proj_inz/data/models/conversation_model.dart';
-import 'package:collection/collection.dart';
 import 'package:proj_inz/data/api/api_client.dart';
 
-// TODO: Backend API endpoints needed:
-// - POST /conversations (create new conversation)
-// - GET /conversations/{id}/messages (get messages for conversation)
-// - POST /conversations/{id}/messages (send message)
-// - PATCH /conversations/{id}/read (mark as read)
-
+/// Repository for managing chat conversations and messages.
+/// Handles API communication for chat-related features such as fetching conversations,
+/// creating new conversations, retrieving messages, sending messages, and marking conversations as read.
 class ChatRepository {
   final ApiClient _api;
-
-  final List<Conversation> _mockConversations = [];
-  final Map<String, List<Message>> _mockMessages = {};
-
   ChatRepository({ApiClient? api}) : _api = api ?? ApiClient(baseUrl: 'http://49.13.155.21:8000');
 
-  // Fetch conversations for the current user from API (GET /conversations?role={buyer|seller}&user={userId})
+  /// Fetches all chat conversations for the current user.
+  /// (GET /chat/conversations?role={buyer|seller}&user={userId})
+  ///
+  /// [asBuyer] - If true, fetches conversations where the user is the buyer; otherwise as seller.
+  /// [userId] - The ID of the current user.
+  ///
+  /// Returns a list of [Conversation] objects.
+  /// Throws on API/network errors.
   Future<List<Conversation>> getConversations({required bool asBuyer, required String userId}) async {
     try {
       final response = await _api.getJson(
@@ -53,7 +52,15 @@ class ChatRepository {
     }
   }
 
-  // Check if conversation exists in API (GET /conversations/exists)
+  /// Checks if a conversation already exists between a buyer and seller for a given coupon.
+  /// (GET /chat/conversations/exists)
+  ///
+  /// [couponId] - The coupon's ID.
+  /// [buyerId] - The buyer's user ID.
+  /// [sellerId] - The seller's user ID.
+  ///
+  /// Returns the [Conversation] if it exists, or null otherwise.
+  /// Throws on API/network errors.
   Future<Conversation?> findExistingConversation({
     required String couponId,
     required String buyerId,
@@ -78,79 +85,93 @@ class ChatRepository {
     }
   }
 
-  // Create a conversation if it does not exist
-  // TODO: Replace with API call to POST /conversations
+  /// Creates a new conversation in the API if it does not already exist.
+  /// (POST /chat/conversations)
+  ///
+  /// [couponId] - The coupon's ID.
+  /// [buyerId] - The buyer's user ID.
+  /// [sellerId] - The seller's user ID.
+  ///
+  /// Returns the created or existing [Conversation].
+  /// Throws on API/network errors.
   Future<Conversation> createConversationIfNotExists({
     required String couponId,
     required String buyerId,
     required String sellerId,
-    required String buyerUsername,
-    required String sellerUsername,
   }) async {
-    final existing = _mockConversations.firstWhereOrNull(
-      (c) => c.couponId == couponId && c.buyerId == buyerId && c.sellerId == sellerId,
-    );
-
+    final existing = await findExistingConversation(couponId: couponId, buyerId: buyerId, sellerId: sellerId);
     if (existing != null) {
       return existing;
     }
 
-    // TODO: Get coupon details from API
-    final couponTitle = "Coupon";
+    final newConversation = {
+      'coupon_id': couponId,
+      'buyer_id': buyerId,
+      'seller_id': sellerId,
+    };
 
-    final newConv = Conversation(
-      id: 'conv-${DateTime.now().millisecondsSinceEpoch}',
-      couponId: couponId,
-      buyerId: buyerId,
-      sellerId: sellerId,
-      buyerUsername: buyerUsername,
-      sellerUsername: sellerUsername,
-      lastMessage: "",
-      lastMessageTime: DateTime.now(),
-      isReadByBuyer: true,
-      isReadBySeller: true,
-      couponDiscount: 0,
-      couponDiscountIsPercentage: true,
-      couponShopName: '',
-    );
-
-    _mockConversations.add(newConv);
-    _mockMessages[newConv.id] = [];
-
-    return newConv;
-  }
-
-  // Fetch messages in a conversation from API (GET /conversations/{id}/messages)
-  Future<List<Message>> getMessages(String conversationId) async {
-    final response = await _api.getJson('/chat/conversations/$conversationId/messages');
-
-    return (response as List).map((data) {
-      return Message.fromJson(data as Map<String, dynamic>);
-    }).toList();
-  }
-
-  // Mark conversation as read
-  // TODO: Replace with API call to PATCH /conversations/{id}/read
-  void markConversationAsRead(String conversationId, String userId) {
-    final index = _mockConversations.indexWhere((c) => c.id == conversationId);
-    if (index == -1) return;
-
-    final c = _mockConversations[index];
-
-    final updated = (userId == c.buyerId)
-        ? c.copyWith(isReadByBuyer: true)
-        : c.copyWith(isReadBySeller: true);
-
-    _mockConversations[index] = updated;
-
-    final messages = _mockMessages[conversationId];
-    if (messages != null && messages.isNotEmpty) {
-      final last = messages.last;
-      messages[messages.length - 1] = last.copyWith(isRead: true);
+    try {
+      final response = await _api.postJson('/chat/conversations', body: newConversation);
+      return Conversation.fromJson(response as Map<String, dynamic>);
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error creating conversation via API: $e');
+      rethrow;
     }
   }
 
-  // Send new message in a conversation to API (POST /conversations/{id}/messages)
+  /// Fetches all messages for a given conversation from the API.
+  /// (GET /chat/conversations/{id}/messages)
+  ///
+  /// [conversationId] - The ID of the conversation.
+  ///
+  /// Returns a list of [Message] objects.
+  /// Throws on API/network errors.
+  Future<List<Message>> getMessages(String conversationId) async {
+    try {
+      final response = await _api.getJson('/chat/conversations/$conversationId/messages');
+
+      return (response as List).map((data) {
+        return Message.fromJson(data as Map<String, dynamic>);
+    }).toList();
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('Error fetching messages from API: $e');
+      }
+      rethrow;
+    }
+  }
+
+  /// Marks a conversation as read for a specific user in the API.
+  /// (PATCH /chat/conversations/{id}/read)
+  ///
+  /// [conversationId] - The ID of the conversation to mark as read.
+  /// [userId] - The ID of the user who has read the conversation.
+  ///
+  /// Throws on API/network errors.
+  void markConversationAsRead(String conversationId, String userId) {
+    try {
+      _api.patchJson(
+        '/chat/conversations/$conversationId/read',
+        body: {
+          'user_id': userId,
+        },
+      );
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('Error marking conversation as read in API: $e');
+      }
+      rethrow;
+    }
+  }
+
+  /// Sends a new message in a conversation to the API.
+  /// (POST /chat/conversations/{id}/messages)
+  ///
+  /// [conversationId] - The ID of the conversation.
+  /// [text] - The message content.
+  /// [senderId] - The ID of the user sending the message.
+  ///
+  /// Throws on API/network errors.
   Future<void> sendMessage({
     required String conversationId,
     required String text,
@@ -170,22 +191,22 @@ class ChatRepository {
     }
   }
   
-  bool hasUnreadMessages(String currentUserId) {
-    for (final c in _mockConversations) {
-      if (c.buyerId == currentUserId && c.isReadByBuyer == false) {
-        return true;
+  /// Checks if there are any unread messages for the current user.
+  /// (GET /chat/unread-summary)
+  ///
+  /// [currentUserId] - The ID of the current user.
+  ///
+  /// Returns true if there are unread messages, false otherwise.
+  /// Throws on API/network errors.
+  Future<bool> hasUnreadMessages(String currentUserId) async {
+    try {
+      final response = await _api.getJson('/chat/unread-summary');
+      return (response as Map<String, dynamic>)['has_unread'] == 1 ? true : false;
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('Error fetching unread messages summary from API: $e');
       }
-      if (c.sellerId == currentUserId && c.isReadBySeller == false) {
-        return true;
-      }
+      rethrow;
     }
-    return false;
   }
-}
-
-String formatNumber(num value) {
-  if (value % 1 == 0) {
-    return value.toInt().toString();
-  }
-  return value.toString().replaceAll('.', ',');
 }

@@ -706,9 +706,7 @@ class _ChatDetailViewState extends State<ChatDetailView> {
       final conv = await repo.createConversationIfNotExists(
         couponId: widget.couponId,
         buyerId: widget.buyerId,
-        sellerId: widget.sellerId,
-        buyerUsername: widget.buyerId == currentUserId ? 'Me' : _getOtherUsername(),
-        sellerUsername: widget.sellerId == 'TODO - BUYERID' ? 'Me' : _getOtherUsername(),
+        sellerId: widget.sellerId
       );
 
       setState(() {
