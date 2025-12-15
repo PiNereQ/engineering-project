@@ -287,6 +287,7 @@ class ChatMessagesContainer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      width: double.infinity,
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: ShapeDecoration(
         color: AppColors.surface,
@@ -523,7 +524,7 @@ class _ChatDetailViewState extends State<ChatDetailView> {
             preferredSize: const Size.fromHeight(180),
             child: ChatHeader(
               couponTitle: _conversation != null
-                  ? _conversation!.couponTitle
+                  ? 'Kupon na ${_conversation?.couponDiscount}${_conversation?.couponDiscountIsPercentage == 'true' ? '%' : 'zł'} do ${_conversation?.couponShopName}'
                   : (widget.relatedCoupon != null
                       ? buildCouponTitle(widget.relatedCoupon!)
                       : "Kupon"),
@@ -557,6 +558,20 @@ class _ChatDetailViewState extends State<ChatDetailView> {
                           child: Text(
                             "Zapytaj o ten kupon, wysyłając pierwszą wiadomość!",
                             style: TextStyle(fontFamily: 'Itim', fontSize: 16),
+                            textAlign: TextAlign.center,
+                          ),
+                        );
+                      }
+
+                      if (state is ChatDetailError) {
+                        return Center(
+                          child: Text(
+                            "Błąd ładowania wiadomości: ${state.message}",
+                            style: const TextStyle(
+                              fontFamily: 'Itim',
+                              fontSize: 16,
+                              color: AppColors.textSecondary,
+                            ),
                             textAlign: TextAlign.center,
                           ),
                         );
@@ -691,9 +706,7 @@ class _ChatDetailViewState extends State<ChatDetailView> {
       final conv = await repo.createConversationIfNotExists(
         couponId: widget.couponId,
         buyerId: widget.buyerId,
-        sellerId: widget.sellerId,
-        buyerUsername: widget.buyerId == currentUserId ? 'Me' : _getOtherUsername(),
-        sellerUsername: widget.sellerId == 'TODO - BUYERID' ? 'Me' : _getOtherUsername(),
+        sellerId: widget.sellerId
       );
 
       setState(() {

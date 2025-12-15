@@ -13,7 +13,7 @@ class ChatUnreadBloc extends Bloc<ChatUnreadEvent, ChatUnreadState> {
 
   Future<void> _onCheckUnread(
       CheckUnreadStatus event, Emitter<ChatUnreadState> emit) async {
-    final hasUnread = chatRepository.hasUnreadMessages(event.userId);
+    final hasUnread = await chatRepository.hasUnreadMessages(event.userId);
     emit(ChatUnreadState(hasUnread));
   }
 }

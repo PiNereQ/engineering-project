@@ -4,6 +4,7 @@ class Message extends Equatable {
   final String id;
   final String conversationId;
   final String senderId;
+  final String senderUsername;
   final String text;
   final DateTime timestamp;
   final bool isRead;
@@ -12,6 +13,7 @@ class Message extends Equatable {
     required this.id,
     required this.conversationId,
     required this.senderId,
+    required this.senderUsername, 
     required this.text,
     required this.timestamp,
     required this.isRead,
@@ -29,12 +31,13 @@ class Message extends Equatable {
 
   factory Message.fromJson(Map<String, dynamic> json) {
     return Message(
-      id: json['id'] as String,
-      conversationId: json['conversationId'] as String,
-      senderId: json['senderId'] as String,
-      text: json['text'] as String,
-      timestamp: DateTime.parse(json['timestamp'] as String),
-      isRead: json['isRead'] as bool,
+      id: json['id'].toString(),
+      conversationId: json['conversation_id'].toString(),
+      senderId: json['sender_id'] as String,
+      senderUsername: json['sender_username'] as String,
+      text: json['content'] as String,
+      timestamp: DateTime.parse(json['sent_at'] as String),
+      isRead: json['is_read'] == 1 ? true : false, 
     );
   }
 
@@ -53,6 +56,7 @@ class Message extends Equatable {
     String? id,
     String? conversationId,
     String? senderId,
+    String? senderUsername,
     String? text,
     DateTime? timestamp,
     bool? isRead,
@@ -61,6 +65,7 @@ class Message extends Equatable {
       id: id ?? this.id,
       conversationId: conversationId ?? this.conversationId,
       senderId: senderId ?? this.senderId,
+      senderUsername: senderUsername ?? this.senderUsername,
       text: text ?? this.text,
       timestamp: timestamp ?? this.timestamp,
       isRead: isRead ?? this.isRead,
