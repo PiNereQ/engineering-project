@@ -170,10 +170,11 @@ class _CouponDetails extends StatelessWidget {
 
     final locationText = Text(
       worksInStore && worksOnline
-        ? 'stacjonarnie i online'
-        : worksOnline
-        ? 'w sklepach internetowych'
-        : 'w sklepach stacjonarnych',
+          ? 'stacjonarnie i online'
+          : worksOnline
+              ? 'w sklepach internetowych'
+              : 'w sklepach stacjonarnych',
+      textAlign: TextAlign.right,
       style: const TextStyle(
         color: AppColors.textSecondary,
         fontSize: 18,
@@ -287,23 +288,24 @@ class _CouponDetails extends StatelessWidget {
                       SizedBox(
                         width: double.infinity,
                         child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            const Text(
-                              'Gdzie działa:',
-                              style: TextStyle(
-                                color: AppColors.textPrimary,
-                                fontSize: 18,
-                                fontFamily: 'Itim',
-                                fontWeight: FontWeight.w400,
-                                height: 0.83,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Gdzie działa:',
+                                style: TextStyle(
+                                  color: AppColors.textPrimary,
+                                  fontSize: 18,
+                                  fontFamily: 'Itim',
+                                  fontWeight: FontWeight.w400,
+                                  height: 0.83,
+                                ),
                               ),
-                            ),
-                            locationText
-                          ],
-                        ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: locationText,
+                              ),
+                            ],
+                          ),
                       ),
                       const Divider(
                         height: 8,
