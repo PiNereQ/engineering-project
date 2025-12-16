@@ -167,30 +167,30 @@ GestureDetector(
               builder: (context) => const ForgotPasswordScreen(),
             ),
           ),
-  child: RichText(
-    textAlign: TextAlign.center,
-    text: const TextSpan(
-      style: TextStyle(
-        color: AppColors.textPrimary,
-        fontSize: 14,
-        fontFamily: 'Itim',
-        fontWeight: FontWeight.w400,
-      ),
-      children: [
-        TextSpan(
-          text: 'Masz problem z zalogowaniem? ',
-        ),
-        TextSpan(
-          text: 'Zresetuj hasło',
-          style: TextStyle(
-            decoration: TextDecoration.underline,
-            fontWeight: FontWeight.w500,
+          child: RichText(
+            textAlign: TextAlign.center,
+            text: const TextSpan(
+              style: TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: 14,
+                fontFamily: 'Itim',
+                fontWeight: FontWeight.w400,
+              ),
+              children: [
+                TextSpan(
+                  text: 'Masz problem z zalogowaniem? ',
+                ),
+                TextSpan(
+                  text: 'Zresetuj hasło',
+                  style: TextStyle(
+                    decoration: TextDecoration.underline,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
-      ],
-    ),
-  ),
-),
                   if (_errorMessage != null)
                     Text(
                       _errorMessage!,
