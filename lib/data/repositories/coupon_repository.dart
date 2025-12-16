@@ -326,9 +326,14 @@ class CouponRepository {
     }
   }
   
-  /// Fetch owned coupon details by ID
-  Future<void> deactivateListedCoupon(String couponId) async {
-    throw(UnimplementedError()); // TODO: implement call to api
+  /// Deactivate listed coupon via API (DELETE /coupons/{listingId})
+  Future<void> deactivateListedCoupon(String listingId) async {
+    try {
+      await _api.deleteJson('/coupons/$listingId');
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error in deactivateListedCoupon: $e');
+      rethrow;
+    }
   }
 
   /// Fetch three coupons for a specific shop
@@ -458,6 +463,7 @@ class CouponRepository {
       final shopData = await _getShopData(shopId);
       return ListedCoupon(
         id: data['id'].toString(),
+        listingId: data['listing_id'].toString(),
         reduction: _parseNum(data['discount']),
         reductionIsPercentage: data['is_discount_percentage'] == true || data['is_discount_percentage'] == 1,
         price: _parseNum(data['price']),

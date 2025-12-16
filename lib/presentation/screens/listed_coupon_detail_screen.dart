@@ -464,7 +464,7 @@ class _CouponDetails extends StatelessWidget {
               try {
                 await context
                     .read<CouponRepository>()
-                    .deactivateListedCoupon(coupon.id);
+                    .deactivateListedCoupon(coupon.listingId);
 
                 if (context.mounted) {
                   showCustomSnackBar(

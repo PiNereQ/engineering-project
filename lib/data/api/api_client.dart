@@ -88,4 +88,17 @@ class ApiClient {
     }
     throw Exception('PUT $path failed: ${resp.statusCode} ${resp.reasonPhrase}');
   }
+
+  /// Sends a DELETE request to the given [path] with optional [queryParameters].
+  /// Returns the decoded JSON response on success.
+  /// Throws an [Exception] if the request fails.
+  Future<dynamic> deleteJson(String path, {Map<String, String>? queryParameters}) async {
+    final uri = _uri(path, queryParameters: queryParameters);
+    final resp = await _client.delete(uri);
+    if (resp.statusCode >= 200 && resp.statusCode < 300) {
+      return jsonDecode(resp.body);
+    }
+    throw Exception('DELETE $path failed: ${resp.statusCode} ${resp.reasonPhrase}');
+
+  }
 }
