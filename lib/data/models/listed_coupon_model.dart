@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 class ListedCoupon extends Equatable {
   final String id;
+  final String listingId;
   final double reduction;
   final bool reductionIsPercentage;
   final double price;
@@ -25,6 +26,7 @@ class ListedCoupon extends Equatable {
 
   const ListedCoupon({
     required this.id,
+    required this.listingId,
     required this.reduction,
     required this.reductionIsPercentage,
     required this.price,
@@ -45,6 +47,7 @@ class ListedCoupon extends Equatable {
   @override
   List<Object?> get props => [
     id,
+    listingId,
     reduction,
     reductionIsPercentage,
     price,
