@@ -19,6 +19,12 @@ class PaginatedOwnedCouponsResult {
   PaginatedOwnedCouponsResult({required this.coupons, this.lastOffset});
 }
 
+class PaginatedListedCouponsResult {
+  final List<ListedCoupon> coupons;
+  final int? lastOffset;
+  PaginatedListedCouponsResult({required this.coupons, this.lastOffset});
+}
+
 class CouponRepository {
   final ApiClient _api;
   
@@ -43,6 +49,20 @@ class CouponRepository {
       return [];
     } catch (e) {
       if (kDebugMode) debugPrint('Error fetching coupons from API: $e');
+      rethrow;
+    }
+  }
+
+  /// Fetch all active listings with merged coupon data from API (GET /listings/all/active)
+  Future<List<Map<String, dynamic>>> fetchListingsFromApi() async {
+    try {
+      final response = await _api.getJson('/listings/all/active');
+      if (response is List) {
+        return response.cast<Map<String, dynamic>>();
+      }
+      return [];
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error fetching listings from API: $e');
       rethrow;
     }
   }
@@ -112,7 +132,10 @@ class CouponRepository {
   /// Fetch user's owned coupons (bought coupons) from API (GET /owned-coupons?owner_id={userId})
   Future<List<Map<String, dynamic>>> fetchOwnedCouponsFromApi(String userId) async {
     try {
-      final response = await _api.getJson('/coupons/owned?owner_id=$userId');
+      final response = await _api.getJson(
+        '/coupons/owned',
+        queryParameters: {'owner_id': userId},
+      );
       if (response is List) {
         return response.cast<Map<String, dynamic>>();
       }
@@ -129,6 +152,8 @@ class CouponRepository {
     int offset,
     String userId,
   ) async {
+    // TODO: move pagination to backend
+    // TODO: move filtering and sorting to backend
     try {
       final ownedCouponsData = await fetchOwnedCouponsFromApi(userId);
       
@@ -169,88 +194,67 @@ class CouponRepository {
   }
 
   // LISTED COUPON LIST METHODS ====================
-
-  /// Fetch all active listings with merged coupon data from API (GET /listings/all/active)
-  Future<List<Map<String, dynamic>>> fetchListingsFromApi() async {
+  
+  /// Fetch user's listed coupons (GET /coupons/listed?seller_id={userId})
+  Future<List<Map<String, dynamic>>> fetchListedCouponsFromApi(String userId) async {
     try {
-      final response = await _api.getJson('/listings/all/active');
+      final response = await _api.getJson(
+        '/coupons/listed',
+        queryParameters: {'seller_id': userId},
+      );
       if (response is List) {
         return response.cast<Map<String, dynamic>>();
       }
       return [];
     } catch (e) {
-      if (kDebugMode) debugPrint('Error fetching listings from API: $e');
+      if (kDebugMode) debugPrint('Error fetching listed coupons from API: $e');
       rethrow;
     }
   }
 
-  Future<List<ListedCoupon>> getMyListedCoupons({int offset = 0}) async {
-  throw(UnimplementedError()); // TODO: implement call to api
+  /// Fetch listed coupons with pagination (GET /coupons/listed)
+  Future<PaginatedListedCouponsResult> fetchListedCouponsPaginated(
+    int limit,
+    int offset,
+    String userId,
+  ) async {
+    // TODO: move pagination to backend
+    // TODO: move filtering and sorting to backend
+    try {
+      final listedCouponsData = await fetchListedCouponsFromApi(userId);
+      final start = offset;
+      final end = (start + limit).clamp(0, listedCouponsData.length);
+      final paginated = listedCouponsData.sublist(start, end);
+      final coupons = await Future.wait(
+        paginated.map((data) => _mapToListedCoupon(data)),
+      );
+      return PaginatedListedCouponsResult(
+        coupons: coupons.whereType<ListedCoupon>().toList(),
+        lastOffset: end < listedCouponsData.length ? end : null,
+      );
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error in fetchListedCouponsPaginated: $e');
+      rethrow;
+    }
   }
 
-  Future<ListedCoupon> fetchListedCouponDetailsById(String id) async {
-    throw(UnimplementedError()); // TODO: implement call to api
+  /// Fetch listed coupon details by ID (GET /coupons/listed/:id)
+  Future<ListedCoupon> fetchListedCouponDetailsById(String id, String userId) async {
+    try {
+      final data = await _api.getJson(
+        '/coupons/listed/$id',
+        queryParameters: {'seller_id': userId},
+      );
+      final coupon = await _mapToListedCoupon(data);
+      if (coupon == null) {
+        throw Exception('Could not map listed coupon data');
+      }
+      return coupon;
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error in fetchListedCouponDetailsById: $e');
+      rethrow;
+    }
   }
-
-  Future<String> fetchListedCouponCode(String couponId) async {
-    throw(UnimplementedError()); // TODO: implement call to api
-  }
-
-  // /// Fetch user's active listings (coupons for sale) from API (GET /listings?seller_id={userId}&is_active=1)
-  // Future<List<Map<String, dynamic>>> fetchUserListingsFromApi(String userId) async {
-  //   try {
-  //     final response = await _api.getJson('/listings?seller_id=$userId&is_active=1');
-  //     if (response is List) {
-  //       return response.cast<Map<String, dynamic>>();
-  //     }
-  //     return [];
-  //   } catch (e) {
-  //     if (kDebugMode) debugPrint('Error fetching user listings from API: $e');
-  //     rethrow;
-  //   }
-  // }
-
-  /// Fetch user's active listings (coupons for sale) with pagination
-  // Future<PaginatedCouponsResult> fetchUserListingsPaginated({
-  //   required int limit,
-  //   required int offset,
-  //   required String userId,
-  // }) async {
-  //   try {
-  //     final listingsData = await fetchUserListingsFromApi(userId);
-      
-  //     // Merge with coupon data
-  //     List<Map<String, dynamic>> merged = [];
-  //     for (var listing in listingsData) {
-  //       final couponData = await fetchCouponByIdFromApi(listing['coupon_id'].toString());
-  //       merged.add({
-  //         ...couponData,
-  //         'listing_id': listing['id'].toString(),
-  //         'listing_price': listing['price'],
-  //         'seller_id': listing['seller_id'],
-  //         'is_multiple_use': listing['is_multiple_use'],
-  //       });
-  //     }
-      
-  //     // Apply pagination
-  //     final start = offset;
-  //     final end = (start + limit).clamp(0, merged.length);
-  //     final paginated = merged.sublist(start, end);
-      
-  //     // Convert to Coupon objects
-  //     final coupons = await Future.wait(
-  //       paginated.map((data) => _mapToCouponFromListing(data))
-  //     );
-      
-  //     return PaginatedCouponsResult(
-  //       ownedCoupons: coupons.whereType<Coupon>().toList(),
-  //       lastOffset: end < merged.length ? end : null,
-  //     );
-  //   } catch (e) {
-  //     if (kDebugMode) debugPrint('Error in fetchUserListingsPaginated: $e');
-  //     rethrow;
-  //   }
-  // }
 
   // SOLD COUPON LIST METHODS ======================
 
@@ -415,44 +419,6 @@ class CouponRepository {
       return null;
     }
   }
-
-  /// Map transaction data (with merged coupon data) to Coupon model
-  Future<Coupon?> _mapToCouponFromTransaction(Map<String, dynamic> data) async {
-    try {
-      final shopId = data['shop_id'].toString();
-      final sellerId = data['seller_id']?.toString();
-      
-      final shopData = await _getShopData(shopId);
-      Map<String, dynamic>? sellerData;
-      if (sellerId != null) {
-        sellerData = await _getUserData(sellerId);
-      }
-      
-      return Coupon(
-        id: data['id'].toString(), // Coupon ID
-        listingId: null, // Transaction, not a listing anymore
-        reduction: _parseNum(data['discount']),
-        reductionIsPercentage: data['is_discount_percentage'] == true || data['is_discount_percentage'] == 1,
-        price: _parseNum(data['transaction_price'] ?? data['price']), // Use transaction price
-        hasLimits: data['has_limits'] == true || data['has_limits'] == 1,
-        worksOnline: data['works_online'] == true || data['works_online'] == 1,
-        worksInStore: data['works_in_store'] == true || data['works_in_store'] == 1,
-        expiryDate: data['expiry_date'] != null ? DateTime.parse(data['expiry_date']) : DateTime.now().add(Duration(days: 30)),
-        description: data['description'],
-        shopId: shopId,
-        shopName: shopData['name'] ?? 'Unknown Shop',
-        shopNameColor: _parseColor(shopData['name_color']),
-        shopBgColor: _parseColor(shopData['bg_color']),
-        sellerId: sellerId ?? '',
-        sellerReputation: sellerData?['reputation'] ?? 0,
-        sellerUsername: sellerData?['username'],
-        isSold: true, // Sold coupons are marked as sold
-      );
-    } catch (e) {
-      if (kDebugMode) debugPrint('Error mapping transaction to coupon: $e');
-      return null;
-    }
-  } 
   
   /// Map API data to OwnedCoupon model
   Future<OwnedCoupon?> _mapToOwnedCoupon(Map<String, dynamic> data) async {
@@ -481,6 +447,35 @@ class CouponRepository {
       );
     } catch (e) {
       if (kDebugMode) debugPrint('Error mapping owned coupon: $e');
+      return null;
+    }
+  }
+
+  /// Map API data to ListedCoupon model
+  Future<ListedCoupon?> _mapToListedCoupon(Map<String, dynamic> data) async {
+    try {
+      final shopId = data['shop_id'].toString();
+      final shopData = await _getShopData(shopId);
+      return ListedCoupon(
+        id: data['id'].toString(),
+        reduction: _parseNum(data['discount']),
+        reductionIsPercentage: data['is_discount_percentage'] == true || data['is_discount_percentage'] == 1,
+        price: _parseNum(data['price']),
+        hasLimits: data['has_limits'] == true || data['has_limits'] == 1,
+        worksOnline: data['works_online'] == true || data['works_online'] == 1,
+        worksInStore: data['works_in_store'] == true || data['works_in_store'] == 1,
+        expiryDate: data['expiry_date'] != null ? DateTime.parse(data['expiry_date']) : DateTime.now().add(Duration(days: 30)),
+        description: data['description'],
+        shopId: shopId,
+        shopName: shopData['name'] ?? 'Unknown Shop',
+        shopNameColor: _parseColor(shopData['name_color']),
+        shopBgColor: _parseColor(shopData['bg_color']),
+        isSold: data['is_sold'] == true || data['is_sold'] == 1,
+        listingDate: data['listing_date'] != null ? DateTime.parse(data['listing_date']) : DateTime.fromMillisecondsSinceEpoch(0),
+        code: data['code'] ?? '',
+      );
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error mapping listed coupon: $e');
       return null;
     }
   }

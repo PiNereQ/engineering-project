@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 
+
 class ListedCoupon extends Equatable {
   final String id;
   final double reduction;
@@ -20,6 +21,7 @@ class ListedCoupon extends Equatable {
 
   final bool isSold;
   final DateTime listingDate;
+  final String code;
 
   const ListedCoupon({
     required this.id,
@@ -37,6 +39,7 @@ class ListedCoupon extends Equatable {
     required this.shopBgColor,
     required this.isSold,
     required this.listingDate,
+    required this.code,
   });
 
   @override
@@ -56,5 +59,6 @@ class ListedCoupon extends Equatable {
     shopBgColor,
     isSold,
     listingDate,
+    code,
   ];
 }

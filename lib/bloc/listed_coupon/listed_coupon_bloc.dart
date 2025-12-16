@@ -15,7 +15,7 @@ class ListedCouponBloc extends Bloc<ListedCouponEvent, ListedCouponState> {
       emit(const ListedCouponLoadInProgress());
 
       try {
-        final coupon = await couponRepository.fetchListedCouponDetailsById(couponId);
+        final coupon = await couponRepository.fetchListedCouponDetailsById(couponId, event.userId);
         emit(ListedCouponLoadSuccess(coupon: coupon));
       } catch (e) {
         emit(ListedCouponLoadFailure(message: e.toString()));
