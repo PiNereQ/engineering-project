@@ -524,36 +524,32 @@ class _CouponDetails extends StatelessWidget {
                       showCustomSnackBar(context, 'Skopiowano kod do schowka');
                     }
                   },
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.center,
+                  child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
-                    spacing: 8,
                     children: [
-                      Text(
-                        code,
-                        style: const TextStyle(
-                          color: AppColors.textPrimary,
-                          fontSize: 20,
-                          fontFamily: 'Roboto Mono',
-                          fontWeight: FontWeight.w600,
+                      ConstrainedBox(
+                        constraints: const BoxConstraints(
+                          maxWidth: 260,
+                        ),
+                        child: SelectableText(
+                          code,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: AppColors.textPrimary,
+                            fontSize: 20,
+                            fontFamily: 'Roboto Mono',
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
+                      const SizedBox(height: 8),
                       const Icon(
                         Icons.copy_rounded,
-                        size: 32,
-                      )
+                        size: 28,
+                        color: AppColors.textSecondary,
+                      ),
                     ],
                   ),
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    CustomTextButton(
-                      label: 'Wróć',
-                      onTap: () => Navigator.of(context).pop(),
-                    ),
-                  ],
                 ),
               ],
             ),
