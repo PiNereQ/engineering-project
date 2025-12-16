@@ -6,7 +6,13 @@ abstract class ListedCouponListEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-class FetchListedCoupons extends ListedCouponListEvent {}
+class FetchListedCoupons extends ListedCouponListEvent {
+  final String userId;
+  FetchListedCoupons({required this.userId});
+
+  @override
+  List<Object?> get props => [userId];
+}
 
 class FetchMoreListedCoupons extends ListedCouponListEvent {}
 

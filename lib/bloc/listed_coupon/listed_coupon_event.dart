@@ -7,4 +7,10 @@ sealed class ListedCouponEvent extends Equatable {
   List<Object> get props => [];
 }
 
-class FetchCouponDetails extends ListedCouponEvent {}
+class FetchCouponDetails extends ListedCouponEvent {
+  final String userId;
+  const FetchCouponDetails({required this.userId});
+
+  @override
+  List<Object> get props => [userId];
+}

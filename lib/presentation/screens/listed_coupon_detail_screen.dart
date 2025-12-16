@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:proj_inz/bloc/listed_coupon/listed_coupon_bloc.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:proj_inz/core/theme.dart';
 import 'package:proj_inz/core/utils/utils.dart';
 import 'package:proj_inz/data/models/listed_coupon_model.dart';
@@ -22,9 +23,10 @@ class ListedCouponDetailsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
     return BlocProvider(
       create: (context) => ListedCouponBloc(context.read<CouponRepository>(), couponId)
-        ..add(FetchCouponDetails()),
+        ..add(FetchCouponDetails(userId: userId)),
       child: Scaffold(
         backgroundColor: AppColors.background,
         body: SafeArea(
@@ -399,23 +401,8 @@ class _CouponDetails extends StatelessWidget {
                       children: [
                         CustomTextButton(
                           label: 'Wyświetl kod kuponu',
-                          onTap: () async {
-                            try {
-                              final code = await context
-                                  .read<CouponRepository>()
-                                  .fetchListedCouponCode(coupon.id);
-
-                              if (context.mounted) {
-                                _showCodeDialog(context, code);
-                              }
-                            } catch (e) {
-                              if (context.mounted) {
-                                showCustomSnackBar(
-                                  context,
-                                  'Nie udało się pobrać kodu kuponu',
-                                );
-                              }
-                            }
+                          onTap: () {
+                            _showCodeDialog(context, coupon.code);
                           },
                         ),
 

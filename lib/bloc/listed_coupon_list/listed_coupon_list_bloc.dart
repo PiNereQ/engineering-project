@@ -3,9 +3,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'listed_coupon_list_event.dart';
 import 'listed_coupon_list_state.dart';
 import 'package:proj_inz/data/models/listed_coupon_model.dart';
+import 'package:flutter/foundation.dart';
 import 'package:proj_inz/data/repositories/coupon_repository.dart';
 
 class ListedCouponListBloc extends Bloc<ListedCouponListEvent, ListedCouponListState> {
+  int? _lastOffset;
+  bool _isFetching = false;
+  String? _userId;
   final CouponRepository couponRepository;
 
   List<ListedCoupon> _allCoupons = [];
@@ -48,42 +52,62 @@ List<({String id, String name})> get uniqueShops {
     on<ReadListedCouponOrdering>(_onReadOrdering);
   }
 
+
   Future<void> _onFetch(FetchListedCoupons event, Emitter emit) async {
     emit(ListedCouponListLoadInProgress());
-
-    try {
-      final result = await couponRepository.getMyListedCoupons();
-      _allCoupons = result;
-      _hasMore = result.length >= _limit;
-
-      _applyAll();
-
-      if (_filtered.isEmpty) {
-        emit(ListedCouponListLoadEmpty());
-      } else {
-        emit(ListedCouponListLoadSuccess(coupons: _filtered, hasMore: _hasMore));
-      }
-    } catch (e) {
-      emit(ListedCouponListLoadFailure(e.toString()));
-    }
+    _allCoupons.clear();
+    _lastOffset = null;
+    _hasMore = true;
+    _userId = event.userId;
+    add(FetchMoreListedCoupons());
   }
 
   Future<void> _onMore(FetchMoreListedCoupons event, Emitter emit) async {
-    if (!_hasMore) return;
+    if (_isFetching) {
+      if (kDebugMode) print("Still loading");
+      return;
+    }
+    if (!_hasMore) {
+      if (kDebugMode) print("No more coupons to load.");
+      return;
+    }
+    if (_userId == null) {
+      if (kDebugMode) print("No user ID provided");
+      emit(ListedCouponListLoadFailure("User ID required"));
+      return;
+    }
+
+    _isFetching = true;
+    emit(ListedCouponListLoadInProgress());
 
     try {
-      final more = await couponRepository.getMyListedCoupons(offset: _filtered.length);
-      _allCoupons.addAll(more);
-      _hasMore = more.length >= _limit;
+      final result = await couponRepository.fetchListedCouponsPaginated(
+        _limit,
+        _lastOffset ?? 0,
+        _userId!,
+      );
+      final listedCoupons = result.coupons;
+      if (kDebugMode) print('Fetched \\${listedCoupons.length} listed coupons: \\${listedCoupons}');
+
+      _hasMore = listedCoupons.length == _limit;
+      _allCoupons.addAll(listedCoupons);
+      _lastOffset = result.lastOffset;
 
       _applyAll();
-
       emit(ListedCouponListLoadSuccess(coupons: _filtered, hasMore: _hasMore));
-    } catch (e) {}
+    } catch (e) {
+      emit(ListedCouponListLoadFailure(e.toString()));
+    } finally {
+      _isFetching = false;
+    }
   }
 
   Future<void> _onRefresh(RefreshListedCoupons event, Emitter emit) async {
-    add(FetchListedCoupons());
+    if (_userId != null) {
+      add(FetchListedCoupons(userId: _userId!));
+    } else {
+      emit(ListedCouponListLoadFailure("User ID required"));
+    }
   }
 
   void _onApplyFilters(ApplyListedCouponFilters event, Emitter emit) {
