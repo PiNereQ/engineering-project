@@ -5,6 +5,7 @@ import 'package:proj_inz/data/models/coupon_offer_model.dart';
 import 'package:proj_inz/data/models/listed_coupon_model.dart';
 import 'package:proj_inz/data/models/owned_coupon_model.dart';
 import 'package:proj_inz/data/api/api_client.dart';
+import 'package:proj_inz/data/repositories/user_repository.dart';
 
 class PaginatedCouponsResult {
   final List<Coupon> ownedCoupons;
@@ -23,6 +24,8 @@ class CouponRepository {
   
   final _shopCache = <String, Map<String, dynamic>>{};
   final _userCache = <String, Map<String, dynamic>>{};
+
+  UserRepository userRepository = UserRepository();
 
   CouponRepository({ApiClient? api}) : _api = api ?? ApiClient(baseUrl: 'http://49.13.155.21:8000');
 
@@ -152,10 +155,11 @@ class CouponRepository {
   /// Fetch owned coupon details by ID
   Future<OwnedCoupon> fetchOwnedCouponDetailsById(String id) async {
     try {
-      final data = await fetchCouponByIdFromApi(id);
+      final userId = await userRepository.getCurrentUserId();
+      final data = await _api.getJson('/coupons/owned/$id', queryParameters: {"owner_id": userId});
       final ownedCoupon = await _mapToOwnedCoupon(data);
       if (ownedCoupon == null) {
-        throw Exception('Could not map owned coupon data');
+        throw Exception('Could not map coupon data');
       }
       return ownedCoupon;
     } catch (e) {
@@ -340,12 +344,12 @@ class CouponRepository {
   Future<Coupon?> _mapToCoupon(Map<String, dynamic> data) async {
     try {
       final shopId = data['shop_id'].toString();
-      final ownerId = data['owner_id']?.toString();
+      final sellerId = data['seller_id']?.toString();
       
       final shopData = await _getShopData(shopId);
       Map<String, dynamic>? ownerData;
-      if (ownerId != null) {
-        ownerData = await _getUserData(ownerId);
+      if (sellerId != null) {
+        ownerData = await _getUserData(sellerId);
       }
       
       return Coupon(
@@ -363,7 +367,7 @@ class CouponRepository {
         shopName: shopData['name'] ?? 'Unknown Shop',
         shopNameColor: _parseColor(shopData['name_color']),
         shopBgColor: _parseColor(shopData['bg_color']),
-        sellerId: ownerId ?? '',
+        sellerId: sellerId ?? '',
         sellerReputation: ownerData?['reputation'] ?? 0,
         sellerUsername: ownerData?['username'],
         isSold: false, // TODO: implement from listings/transactions
@@ -448,32 +452,32 @@ class CouponRepository {
       if (kDebugMode) debugPrint('Error mapping transaction to coupon: $e');
       return null;
     }
-  }  /// Map API data to OwnedCoupon model
+  } 
+  
+  /// Map API data to OwnedCoupon model
   Future<OwnedCoupon?> _mapToOwnedCoupon(Map<String, dynamic> data) async {
     try {
-      final coupon = await _mapToCoupon(data);
-      if (coupon == null) return null;
-      
       return OwnedCoupon(
-        id: coupon.id,
-        reduction: coupon.reduction,
-        reductionIsPercentage: coupon.reductionIsPercentage,
-        price: coupon.price,
-        hasLimits: coupon.hasLimits,
-        worksOnline: coupon.worksOnline,
-        worksInStore: coupon.worksInStore,
-        expiryDate: coupon.expiryDate,
-        description: coupon.description,
-        shopId: coupon.shopId,
-        shopName: coupon.shopName,
-        shopNameColor: coupon.shopNameColor,
-        shopBgColor: coupon.shopBgColor,
-        sellerId: coupon.sellerId,
-        sellerReputation: coupon.sellerReputation,
-        sellerUsername: coupon.sellerUsername,
+        id: data['id'].toString(),
+        reduction: _parseNum(data['discount']),
+        reductionIsPercentage: data['is_discount_percentage'] == true || data['is_discount_percentage'] == 1,
+        price: _parseNum(data['price']),
+        hasLimits: data['has_limits'] == true || data['has_limits'] == 1,
+        worksOnline: data['works_online'] == true || data['works_online'] == 1,
+        worksInStore: data['works_in_store'] == true || data['works_in_store'] == 1,
+        expiryDate: data['expiry_date'] != null ? DateTime.parse(data['expiry_date']) : DateTime.now().add(Duration(days: 30)),
+        description: data['description'],
+        shopId: data['shop_id'].toString(),
+        shopName: data['shop_name'] ?? 'Unknown Shop',
+        shopNameColor: _parseColor(data['shop_name_color']),
+        shopBgColor: _parseColor(data['shop_bg_color']),
+        sellerId: data['seller_id'].toString(),
+        sellerReputation: data['seller_reputation'] ?? 0,
+        sellerUsername: data['seller_username'],
+        sellerJoinDate: data['seller_join_date'] != null ? DateTime.parse(data['seller_join_date']) : DateTime.fromMillisecondsSinceEpoch(0),
         code: data['code'] ?? '',
         isUsed: false,
-        purchaseDate: null, // TODO: implement
+        purchaseDate: data['purchase_date'] != null ? DateTime.parse(data['purchase_date']) : DateTime.fromMillisecondsSinceEpoch(0),
       );
     } catch (e) {
       if (kDebugMode) debugPrint('Error mapping owned coupon: $e');

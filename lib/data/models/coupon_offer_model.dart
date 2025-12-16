@@ -46,7 +46,7 @@ class CouponOffer extends Equatable {
       'works_in_store': worksInStore,
       'works_online': worksOnline,
       'shop_id': shopId,
-      'owner_id': ownerId,
+      'seller_id': ownerId,
       'is_multiple_use': isMultipleUse,
     };
   }
