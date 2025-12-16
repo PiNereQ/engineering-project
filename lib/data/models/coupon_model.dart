@@ -74,11 +74,11 @@ class Coupon extends Equatable {
       shopBgColor: json['shop_bg_color'] != null 
         ? Color(int.parse(json['shop_bg_color'].toString())) 
         : const Color(0xFFFFFFFF),
-      sellerId: json['owner_id']?.toString() ?? '',
-      sellerUsername: json['owner_username'], // Will be null if not joined
-      sellerReputation: _parseInt(json['owner_reputation']),
-      sellerJoinDate: json['owner_join_date'] != null
-        ? DateTime.parse(json['owner_join_date'])
+      sellerId: json['seller_id']?.toString() ?? '',
+      sellerUsername: json['seller_username'], // Will be null if not joined
+      sellerReputation: _parseInt(json['seller_reputation']),
+      sellerJoinDate: json['seller_join_date'] != null
+        ? DateTime.parse(json['seller_join_date'])
         : null,
       isSold: !_parseBool(json['is_active']), // is_active:1 means NOT sold
     );

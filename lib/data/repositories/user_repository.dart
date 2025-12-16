@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:proj_inz/data/api/api_client.dart';
 
@@ -78,13 +79,26 @@ class UserRepository {
     }
   }
 
-  /// Get current user ID from secure storage
-  /// Note: This should use the auth token to determine current user
-  Future<String?> getCurrentUserId() async {
-    // TODO: Implement token-based authentication
-    // For now, this is a placeholder
-    if (kDebugMode) debugPrint('getCurrentUserId needs authentication implementation');
-    return null;
+  /// Get current user ID from FirebaseAuth
+  Future<String> getCurrentUserId() async {
+    final userId = FirebaseAuth.instance.currentUser?.uid;
+    if (userId == null) {
+      throw Exception('No user is currently signed in.');
+    }
+    return userId;
+  }
+
+  /// Get current user token from FirebaseAuth
+  Future<String> getCurrentUserToken() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      throw Exception('No user is currently signed in.');
+    }
+    final token = await user.getIdToken();
+    if (token == null) {
+      throw Exception('Failed to retrieve user token.');
+    }
+    return token;
   }
 
   /// Ensures the current user exists in the API database
