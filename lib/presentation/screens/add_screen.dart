@@ -511,7 +511,7 @@ class _AddScreenState extends State<AddScreen> {
                                             const SizedBox(width: 12),
                                             const Expanded(
                                               child: Text(
-                                                'Możesz dodać zdjęcie aby zeskanować z niego kod kuponu (w formie tekstu, kodu paskowego lub kodu QR).',
+                                                'Możesz dodać zdjęcie, aby zeskanować z niego kod kuponu (w formie tekstu, kodu kreskowego lub kodu QR).',
                                                 style: TextStyle(
                                                   color:
                                                       AppColors.textSecondary,
@@ -807,7 +807,7 @@ class _AddScreenState extends State<AddScreen> {
                                         // Czy wielokrotnego uzytku
                                         const SizedBox(height: 24),
                                         const Text(
-                                          'Czy kupon jest wielokrotnegu użytku?',
+                                          'Czy kupon jest wielokrotnego użytku?',
                                           style: TextStyle(
                                             color: AppColors.textPrimary,
                                             fontSize: 18,
@@ -859,7 +859,7 @@ class _AddScreenState extends State<AddScreen> {
                                             const SizedBox(width: 12),
                                             const Expanded(
                                               child: Text(
-                                                'Zaznacz "tak" tylko jeśli jesteś pewna/pewien, że kupon może być użyty wielokrotnie. Spowoduje to, że będzie mógł być też kupiony wielokrotnie przez róznych użytkowników.',
+                                                'Zaznacz "tak" tylko wtedy, gdy masz pewność, że kupon może być użyty wielokrotnie. Spowoduje to, że będzie mógł być kupiony wielokrotnie przez różnych użytkowników.',
                                                 style: TextStyle(
                                                   color:
                                                       AppColors.textSecondary,
@@ -1263,14 +1263,15 @@ class _HelpBody extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8.0),
       child: Text(
-        '''1. Wybierz sklep, w którym chcesz dodać kupon.\n
-2. Wpisz cenę, za którą chcesz wystawić kupon na sprzedaż.\n
-3. Jeżeli kupon ma datę wygaśnięcia - wpisz ją. Niektóre kupony są bezterminowe - jeżeli Twój kupon taki jest, zaznacz\n
-4. Wpisz kod kuponu dokładnie tak, jak jest on podany w sklepie (uwzględniając wielkość liter).\n
-5. Wybierz typ kuponu - czy jest to rabat procentowy czy na stałą kwotę, a następnie wpisz wartość rabatu.\n
-6. Zaznacz, gdzie można wykorzystać kupon - w sklepach stacjonarnych, w sklepie internetowym lub w obu miejscach.\n
-7. Określ, czy kupon ma jakieś ograniczenia (np. wyłączone produkty lub kategorie). Jeśli tak, opisz je w polu "Opis".\n
-8. Po uzupełnieniu wszystkich wymaganych pól, kliknij przycisk "Dodaj", aby dodać kupon do systemu.''',
+        '''1. Upewnij się, że kupon, który chcesz dodać nie jest przypisany do Twojego emaila/konta w danym sklepie i inny użytkownik może z niego skorzystać.\n
+2. Wybierz sklep, w którym chcesz dodać kupon.\n
+3. Wpisz cenę, za którą chcesz wystawić kupon na sprzedaż.\n
+4. Jeżeli kupon ma datę wygaśnięcia - wpisz ją. Niektóre kupony są bezterminowe - jeżeli Twój kupon taki jest, zaznacz "Kupon nie ma daty ważności".\n
+5. Wpisz kod kuponu dokładnie tak, jak jest on podany na Twoim kuponie (uwzględniając wielkość liter). Możesz zeskanować kod, dodając jego zdjęcie. Zweryfikuj poprawność dodanego kodu.\n
+6. Wybierz typ kuponu - czy jest to rabat procentowy czy na stałą kwotę, a następnie wpisz wartość rabatu.\n
+7. Zaznacz, gdzie można wykorzystać kupon - w sklepach stacjonarnych, w sklepie internetowym lub w obu miejscach.\n
+8. Określ, czy kupon ma jakieś ograniczenia (np. wyłączone produkty lub kategorie). Jeśli tak, wymień je w polu "Opis".\n
+9. Po uzupełnieniu wszystkich wymaganych pól, kliknij przycisk "Dodaj", aby dodać kupon do systemu.''',
         style: TextStyle(fontFamily: 'Itim', fontSize: 18),
         textAlign: TextAlign.justify,
       ),
