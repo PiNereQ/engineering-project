@@ -7,12 +7,16 @@ import 'package:proj_inz/bloc/owned_coupon/owned_coupon_bloc.dart';
 import 'package:proj_inz/core/theme.dart';
 import 'package:proj_inz/core/utils/utils.dart';
 import 'package:proj_inz/data/models/owned_coupon_model.dart';
+import 'package:proj_inz/data/repositories/chat_repository.dart';
 import 'package:proj_inz/data/repositories/coupon_repository.dart';
+import 'package:proj_inz/data/repositories/user_repository.dart';
+import 'package:proj_inz/presentation/screens/chat_detail_screen.dart';
 import 'package:proj_inz/presentation/widgets/custom_snack_bar.dart';
 import 'package:proj_inz/presentation/widgets/dashed_separator.dart';
 import 'package:proj_inz/presentation/widgets/error_card.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_icon_button.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_text_button.dart';
+import 'package:proj_inz/presentation/widgets/reputation_bar.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 class BoughtCouponDetailsScreen extends StatelessWidget {
@@ -26,7 +30,7 @@ class BoughtCouponDetailsScreen extends StatelessWidget {
       create: (context) => OwnedCouponBloc(context.read<CouponRepository>(), couponId)
         ..add(FetchCouponDetails()),
       child: Scaffold(
-        backgroundColor: AppColors.surface,
+        backgroundColor: AppColors.background,
         body: SafeArea(
           child: Column(
             children: [
@@ -49,10 +53,6 @@ class BoughtCouponDetailsScreen extends StatelessWidget {
                                 onTap: () {
                                   Navigator.of(context).pop();
                                 },
-                              ),
-                              CustomIconButton(
-                                icon: SvgPicture.asset('assets/icons/share.svg'),
-                                onTap: () {},
                               ),
                             ],
                           ),
@@ -113,6 +113,7 @@ class BoughtCouponDetailsScreen extends StatelessWidget {
                                     sellerUsername: state.coupon.sellerUsername.toString(),
                                     sellerReputation: state.coupon.sellerReputation,
                                     sellerJoinDate: state.coupon.sellerJoinDate ?? DateTime(1970, 1, 1),
+                                    couponId: state.coupon.id,
                                   ),
                                 ],
                               );
@@ -571,12 +572,14 @@ class _SellerDetails extends StatelessWidget {
     required this.sellerUsername,
     required this.sellerReputation,
     required this.sellerJoinDate,
+    required this.couponId,
   });
 
   final String sellerId;
   final String sellerUsername;
   final num sellerReputation;
   final DateTime sellerJoinDate;
+  final String couponId;
 
   @override
   Widget build(BuildContext context) {
@@ -640,15 +643,11 @@ class _SellerDetails extends StatelessWidget {
                         height: 0.75,
                       ),
                     ),
-                    Text(
-                      sellerReputation.toString(),
-                      style: const TextStyle(
-                        color: AppColors.textPrimary,
-                        fontSize: 16,
-                        fontFamily: 'Itim',
-                        fontWeight: FontWeight.w400,
-                        height: 0.75,
-                      ),
+                    ReputationBar(
+                      value: sellerReputation.toInt(),
+                      maxWidth: 120,
+                      height: 8,
+                      showValue: true,
                     ),
                     Text(
                       'Na Coupidynie od ${sellerJoinDate.day}.${sellerJoinDate.month}.${sellerJoinDate.year} r.',
@@ -658,6 +657,53 @@ class _SellerDetails extends StatelessWidget {
                         fontFamily: 'Itim',
                         fontWeight: FontWeight.w400,
                         height: 0.75,
+                      ),
+                    ),
+                    SizedBox(height: 16),
+                    Center(
+                      child: CustomTextButton.primary(
+                        label: "Zapytaj o ten kupon",
+                        onTap: () async {
+                          final buyerId = await context.read<UserRepository>().getCurrentUserId();
+                          if (buyerId == null) return;
+
+                          final sellerId = this.sellerId;
+                          final couponId = this.couponId;
+
+                          final chatRepo = context.read<ChatRepository>();
+
+                          // check for existing conversation
+                          final existing = chatRepo.findExistingConversation(
+                            couponId: couponId,
+                            buyerId: buyerId,
+                            sellerId: sellerId,
+                          );
+
+                          if (!context.mounted) return;
+
+                          if (existing != null) {
+                            // open existing conversation
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => ChatDetailScreen.fromConversation(existing),
+                              ),
+                            );
+                          } else {
+                            // create new conversation
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => ChatDetailScreen(
+                                  initialConversation: null,
+                                  buyerId: buyerId,
+                                  sellerId: sellerId,
+                                  couponId: couponId,
+                                ),
+                              ),
+                            );
+                          }
+                        },
                       ),
                     ),
                   ],

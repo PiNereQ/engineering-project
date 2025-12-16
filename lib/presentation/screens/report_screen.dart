@@ -5,6 +5,7 @@ import 'package:proj_inz/data/models/coupon_model.dart';
 import 'package:proj_inz/presentation/widgets/coupon_card.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_icon_button.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_text_button.dart';
+import 'package:proj_inz/presentation/widgets/reputation_bar.dart';
 
 class ReportScreen extends StatefulWidget {
   final String reportedUserId;
@@ -277,7 +278,12 @@ class _UserTile extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 4),
-                    _buildReputationBar(reputation),
+                    ReputationBar(
+                      value: reputation,
+                      maxWidth: 120,
+                      height: 8,
+                      showValue: true,
+                    ),
                     const SizedBox(height: 4),
                     Text(
                       "Na Coupidynie od ${joinDate.day}.${joinDate.month}.${joinDate.year}",
@@ -294,33 +300,6 @@ class _UserTile extends StatelessWidget {
           )
         ],
       ),
-    );
-  }
-
-  Widget _buildReputationBar(int value) {
-    return Row(
-      children: [
-        Container(
-          width: 120,
-          height: 8,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(6),
-            color: Colors.grey.shade300,
-          ),
-          child: FractionallySizedBox(
-            alignment: Alignment.centerLeft,
-            widthFactor: (value / 100).clamp(0.0, 1.0),
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(6),
-                color: Colors.green,
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(width: 8),
-        Text("$value"),
-      ],
     );
   }
 }

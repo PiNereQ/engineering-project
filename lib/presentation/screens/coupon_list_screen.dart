@@ -846,7 +846,7 @@ class _CouponSortDialogState extends State<_CouponSortDialog> {
                                   )
                                 ),
                                 CustomRadioButton(
-                                  label: 'od najbliszej',
+                                  label: 'od najbliższej',
                                   selected: (ordering == Ordering.expiryDateAsc),
                                   onTap: () => setState(() {ordering = Ordering.expiryDateAsc;}),
                                 ),

@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:proj_inz/data/models/coupon_model.dart';
 import 'package:proj_inz/data/models/coupon_offer_model.dart';
+import 'package:proj_inz/data/models/listed_coupon_model.dart';
 import 'package:proj_inz/data/models/owned_coupon_model.dart';
 import 'package:proj_inz/data/api/api_client.dart';
 
@@ -282,6 +283,11 @@ class CouponRepository {
   }
 
   /// Fetch owned coupon details by ID
+  Future<void> deactivateListedCoupon(String couponId) async {
+    throw(UnimplementedError()); // TODO: implement call to api
+  }
+
+  /// Fetch owned coupon details by ID
   Future<OwnedCoupon> fetchOwnedCouponDetailsById(String id) async {
     try {
       final data = await fetchCouponByIdFromApi(id);
@@ -446,6 +452,7 @@ class CouponRepository {
         sellerUsername: coupon.sellerUsername,
         code: data['code'] ?? '',
         isUsed: false,
+        purchaseDate: null, // TODO: implement
       );
     } catch (e) {
       if (kDebugMode) debugPrint('Error mapping owned coupon: $e');
