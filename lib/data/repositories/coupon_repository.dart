@@ -56,19 +56,19 @@ class CouponRepository {
     }
   }
 
-  // /// Fetch user's owned coupons (bought coupons) from API (GET /owned-coupons?owner_id={userId})
-  // Future<List<Map<String, dynamic>>> fetchOwnedCouponsFromApi(String userId) async {
-  //   try {
-  //     final response = await _api.getJson('/owned-coupons?owner_id=$userId');
-  //     if (response is List) {
-  //       return response.cast<Map<String, dynamic>>();
-  //     }
-  //     return [];
-  //   } catch (e) {
-  //     if (kDebugMode) debugPrint('Error fetching owned coupons from API: $e');
-  //     rethrow;
-  //   }
-  // }
+  /// Fetch user's owned coupons (bought coupons) from API (GET /owned-coupons?owner_id={userId})
+  Future<List<Map<String, dynamic>>> fetchOwnedCouponsFromApi(String userId) async {
+    try {
+      final response = await _api.getJson('/owned-coupons?owner_id=$userId');
+      if (response is List) {
+        return response.cast<Map<String, dynamic>>();
+      }
+      return [];
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error fetching owned coupons from API: $e');
+      rethrow;
+    }
+  }
 
   // /// Fetch user's active listings (coupons for sale) from API (GET /listings?seller_id={userId}&is_active=1)
   // Future<List<Map<String, dynamic>>> fetchUserListingsFromApi(String userId) async {
