@@ -526,28 +526,43 @@ class _AddScreenState extends State<AddScreen> {
                                           ],
                                         ),
                                         const SizedBox(height: 8),
-                                        Row(
-                                          mainAxisAlignment: MainAxisAlignment.center,
-                                          mainAxisSize: MainAxisSize.max,
-                                          spacing: 16,
-                                          children: [
-                                            CustomTextButton.primary(
-                                              height: 52,
-                                              width: 160,
-                                              label: _couponImage == null ? 'Dodaj zdjęcie' : 'Zmień zdjęcie',
-                                              onTap: _showImageSourceActionSheet,
-                                            ),
-                                            if (_couponImage != null)
-                                            CustomTextButton(
-                                                height: 52,
-                                                width: 160,
-                                                label: 'Usuń zdjęcie',
-                                                onTap: () => setState(() {
-                                                  _couponImage = null;
-                                                }),
-                                            ),
-                                            
-                                          ],
+                                        LayoutBuilder(
+                                          builder: (context, c) {
+                                            final w = c.maxWidth;
+
+                                            final twoButtons = _couponImage != null;
+
+                                            final outerExtra = twoButtons ? 8.0 : 4.0;
+
+                                            final spacing = 10.0;
+
+                                            final buttonWidth = twoButtons
+                                                ? (w - spacing - outerExtra) / 2
+                                                : 160.0;
+
+                                            return Row(
+                                              mainAxisAlignment: MainAxisAlignment.center,
+                                              children: [
+                                                CustomTextButton.primary(
+                                                  height: 52,
+                                                  width: buttonWidth,
+                                                  label: _couponImage == null ? 'Dodaj zdjęcie' : 'Zmień zdjęcie',
+                                                  onTap: _showImageSourceActionSheet,
+                                                ),
+                                                if (twoButtons) ...[
+                                                  SizedBox(width: spacing),
+                                                  CustomTextButton(
+                                                    height: 52,
+                                                    width: buttonWidth,
+                                                    label: 'Usuń zdjęcie',
+                                                    onTap: () => setState(() {
+                                                      _couponImage = null;
+                                                    }),
+                                                  ),
+                                                ],
+                                              ],
+                                            );
+                                          },
                                         ),
                                         const SizedBox(height: 8),
                                         if (_couponImage != null)

@@ -159,33 +159,38 @@ class _LoginCardState extends State<_LoginCard> {
                       ),
                     ],
                   ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    spacing: 10,
-                    children: [
-                      const Text(
-                        'Masz problem z zalogowaniem?',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: AppColors.textPrimary,
-                          fontSize: 14,
-                          fontFamily: 'Itim',
-                          fontWeight: FontWeight.w400,
-                        ),
-                      ),
-                      CustomTextButton.small(
-                        label: "Zresetuj hasło",
-                        onTap: widget.isLoading
-                          ? () {}
-                          : () => Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      const ForgotPasswordScreen(),
-                                ),
-                              ),
-                      ),
-                    ],
+GestureDetector(
+  onTap: widget.isLoading
+      ? null
+      : () => Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => const ForgotPasswordScreen(),
+            ),
+          ),
+          child: RichText(
+            textAlign: TextAlign.center,
+            text: const TextSpan(
+              style: TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: 14,
+                fontFamily: 'Itim',
+                fontWeight: FontWeight.w400,
+              ),
+              children: [
+                TextSpan(
+                  text: 'Masz problem z zalogowaniem? ',
+                ),
+                TextSpan(
+                  text: 'Zresetuj hasło',
+                  style: TextStyle(
+                    decoration: TextDecoration.underline,
+                    fontWeight: FontWeight.w500,
                   ),
+                ),
+              ],
+            ),
+          ),
+        ),
                   if (_errorMessage != null)
                     Text(
                       _errorMessage!,

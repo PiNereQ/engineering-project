@@ -312,64 +312,60 @@ Widget build(BuildContext context) {
                       );
                     },
                   ),
-                Row(
-                  mainAxisSize: MainAxisSize.max,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                      Row(
-                        spacing: 12,
-                        children: [
-                          CustomTextButton.small(
-                            label: 'Filtruj',
-                            onTap:
-                                () => showDialog(
-                                  context: context,
-                                  barrierColor: AppColors.popupOverlay,
-                                  builder:
-                                      (dialogContext) => BlocProvider.value(
-                                        value: context.read<CouponListBloc>(),
-                                        child: const _CouponFilterDialog(),
-                                      ),
-                                ).then((_) {
-                                  if (context.mounted) {
-                                    context.read<CouponListBloc>().add(
-                                      LeaveCouponFilterPopUp(),
-                                    );
-                                  }
-                                }),
-                            icon: const Icon(Icons.filter_alt),
-                          ),
-                          CustomTextButton.small(
-                            label: 'Sortuj',
-                            onTap:
-                                () => showDialog(
-                                  context: context,
-                                  barrierColor: AppColors.popupOverlay,
-                                  builder:
-                                      (dialogContext) => BlocProvider.value(
-                                        value: context.read<CouponListBloc>(),
-                                        child: const _CouponSortDialog(),
-                                      ),
-                                ).then((_) {
-                                  if (context.mounted) {
-                                    context.read<CouponListBloc>().add(
-                                      LeaveCouponSortPopUp(),
-                                    );
-                                  }
-                                }),
-                            icon: const Icon(Icons.sort),
-                          ),
-                        ],
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Expanded(
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            CustomTextButton.small(
+                              label: 'Filtruj',
+                              onTap: () => showDialog(
+                                context: context,
+                                barrierColor: AppColors.popupOverlay,
+                                builder: (dialogContext) => BlocProvider.value(
+                                  value: context.read<CouponListBloc>(),
+                                  child: const _CouponFilterDialog(),
+                                ),
+                              ).then((_) {
+                                if (context.mounted) {
+                                  context.read<CouponListBloc>().add(
+                                    LeaveCouponFilterPopUp(),
+                                  );
+                                }
+                              }),
+                              icon: const Icon(Icons.filter_alt),
+                            ),
+                            const SizedBox(width: 6),
+                            CustomTextButton.small(
+                              label: 'Sortuj',
+                              onTap: () => showDialog(
+                                context: context,
+                                barrierColor: AppColors.popupOverlay,
+                                builder: (dialogContext) => BlocProvider.value(
+                                  value: context.read<CouponListBloc>(),
+                                  child: const _CouponSortDialog(),
+                                ),
+                              ).then((_) {
+                                if (context.mounted) {
+                                  context.read<CouponListBloc>().add(
+                                    LeaveCouponSortPopUp(),
+                                  );
+                                }
+                              }),
+                              icon: const Icon(Icons.sort),
+                            ),
+                          ],
+                        ),
                       ),
                       CustomTextButton.small(
                         label: 'Pokaż mapę',
-                        onTap:
-                            () => Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (context) => const MapScreen(),
-                              ),
-                            ),
+                        onTap: () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => const MapScreen(),
+                          ),
+                        ),
                         icon: const Icon(Icons.map_outlined),
                       ),
                     ],

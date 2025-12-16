@@ -226,10 +226,11 @@ class _CouponDetails extends StatelessWidget {
 
     final locationText = Text(
       worksInStore && worksOnline
-        ? 'stacjonarnie i online'
-        : worksOnline
-        ? 'w sklepach internetowych'
-        : 'w sklepach stacjonarnych',
+          ? 'stacjonarnie i online'
+          : worksOnline
+              ? 'w sklepach internetowych'
+              : 'w sklepach stacjonarnych',
+      textAlign: TextAlign.right,
       style: const TextStyle(
         color: AppColors.textSecondary,
         fontSize: 18,
@@ -343,9 +344,7 @@ class _CouponDetails extends StatelessWidget {
                       SizedBox(
                         width: double.infinity,
                         child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          crossAxisAlignment: CrossAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const Text(
                               'Gdzie działa:',
@@ -357,7 +356,10 @@ class _CouponDetails extends StatelessWidget {
                                 height: 0.83,
                               ),
                             ),
-                            locationText
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: locationText,
+                            ),
                           ],
                         ),
                       ),
@@ -524,36 +526,32 @@ class _CouponDetails extends StatelessWidget {
                       showCustomSnackBar(context, 'Skopiowano kod do schowka');
                     }
                   },
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.center,
+                  child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
-                    spacing: 8,
                     children: [
-                      Text(
-                        code,
-                        style: const TextStyle(
-                          color: AppColors.textPrimary,
-                          fontSize: 20,
-                          fontFamily: 'Roboto Mono',
-                          fontWeight: FontWeight.w600,
+                      ConstrainedBox(
+                        constraints: const BoxConstraints(
+                          maxWidth: 260,
+                        ),
+                        child: SelectableText(
+                          code,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: AppColors.textPrimary,
+                            fontSize: 20,
+                            fontFamily: 'Roboto Mono',
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
+                      const SizedBox(height: 8),
                       const Icon(
                         Icons.copy_rounded,
-                        size: 32,
-                      )
+                        size: 28,
+                        color: AppColors.textSecondary,
+                      ),
                     ],
                   ),
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    CustomTextButton(
-                      label: 'Wróć',
-                      onTap: () => Navigator.of(context).pop(),
-                    ),
-                  ],
                 ),
               ],
             ),

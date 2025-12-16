@@ -262,22 +262,55 @@ class _RegistrationCardState extends State<_RegistrationCard> {
             DashedSeparator(),
             Padding(
               padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                spacing: 12,
+              child: Wrap(
+                alignment: WrapAlignment.center,
+                spacing: 8,
+                runSpacing: 4,
                 children: [
-                  CustomTextButton.small(
+                  _FooterLink(
                     label: "Regulamin aplikacji",
-                    onTap: () {},
+                    onTap: () {
+                      // TODO: open regulamin
+                    },
                   ),
-                  CustomTextButton.small(
+                  const Text("•"),
+                  _FooterLink(
                     label: "Polityka prywatności",
-                    onTap: () {},
+                    onTap: () {
+                      // TODO: open polityka
+                    },
                   ),
                 ],
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _FooterLink extends StatelessWidget {
+  final String label;
+  final VoidCallback onTap;
+
+  const _FooterLink({
+    required this.label,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Text(
+        label,
+        style: const TextStyle(
+          color: AppColors.textPrimary,
+          fontSize: 14,
+          fontFamily: 'Itim',
+          fontWeight: FontWeight.w400,
+          decoration: TextDecoration.underline,
         ),
       ),
     );
