@@ -25,6 +25,8 @@ class Coupon extends Equatable {
   final DateTime? sellerJoinDate; 
 
   final bool isSold;
+  final DateTime? listingDate; // When this coupon was listed for sale
+  final bool isMultipleUse; // Whether this listing can be used multiple times
 
   const Coupon({
     required this.id,
@@ -50,6 +52,8 @@ class Coupon extends Equatable {
     this.sellerJoinDate,
 
     required this.isSold,
+    this.listingDate,
+    required this.isMultipleUse,
   });
 
   /// Create Coupon from API JSON response
@@ -81,6 +85,7 @@ class Coupon extends Equatable {
         ? DateTime.parse(json['owner_join_date'])
         : null,
       isSold: !_parseBool(json['is_active']), // is_active:1 means NOT sold
+      isMultipleUse: _parseBool(json['is_multiple_use']),
     );
   }
 
@@ -130,6 +135,8 @@ class Coupon extends Equatable {
     worksInStore,
     expiryDate,
     isSold,
+    listingDate,
+    isMultipleUse,
   ];
 
   Coupon copyWith({
@@ -152,6 +159,8 @@ class Coupon extends Equatable {
     int? sellerReputation,
     DateTime? sellerJoinDate,
     bool? isSold,
+    DateTime? listingDate,
+    bool? isMultipleUse,
   }) {
     return Coupon(
       id: id ?? this.id,
@@ -173,6 +182,8 @@ class Coupon extends Equatable {
       sellerReputation: sellerReputation ?? this.sellerReputation,
       sellerJoinDate: sellerJoinDate ?? this.sellerJoinDate,
       isSold: isSold ?? this.isSold,
+      listingDate: listingDate ?? this.listingDate,
+      isMultipleUse: isMultipleUse ?? this.isMultipleUse,
     );
   }
 }

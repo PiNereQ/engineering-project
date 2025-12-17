@@ -1,15 +1,16 @@
 
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'listed_coupon_list_event.dart';
 import 'listed_coupon_list_state.dart';
-import 'package:proj_inz/data/models/listed_coupon_model.dart';
+import 'package:proj_inz/data/models/coupon_model.dart';
 import 'package:proj_inz/data/repositories/coupon_repository.dart';
 
 class ListedCouponListBloc extends Bloc<ListedCouponListEvent, ListedCouponListState> {
   final CouponRepository couponRepository;
 
-  List<ListedCoupon> _allCoupons = [];
-  List<ListedCoupon> _filtered = [];
+  List<Coupon> _allCoupons = [];
+  List<Coupon> _filtered = [];
 
   // filters
   bool _reductionIsPercentage = true;
@@ -52,7 +53,15 @@ List<({String id, String name})> get uniqueShops {
     emit(ListedCouponListLoadInProgress());
 
     try {
-      final result = await couponRepository.getMyListedCoupons();
+      final userId = FirebaseAuth.instance.currentUser?.uid;
+      if (userId == null) {
+        throw Exception('User not authenticated');
+      }
+      
+      final result = await couponRepository.getMyListedCoupons(
+        userId: userId,
+        limit: _limit,
+      );
       _allCoupons = result;
       _hasMore = result.length >= _limit;
 
@@ -72,7 +81,16 @@ List<({String id, String name})> get uniqueShops {
     if (!_hasMore) return;
 
     try {
-      final more = await couponRepository.getMyListedCoupons(offset: _filtered.length);
+      final userId = FirebaseAuth.instance.currentUser?.uid;
+      if (userId == null) {
+        throw Exception('User not authenticated');
+      }
+      
+      final more = await couponRepository.getMyListedCoupons(
+        userId: userId,
+        limit: _limit,
+        offset: _filtered.length,
+      );
       _allCoupons.addAll(more);
       _hasMore = more.length >= _limit;
 
@@ -146,10 +164,10 @@ List<({String id, String name})> get uniqueShops {
 
     switch (_ordering) {
       case ListedCouponsOrdering.listingDateDesc:
-        _filtered.sort((a, b) => b.listingDate.compareTo(a.listingDate));
+        _filtered.sort((a, b) => (b.listingDate ?? DateTime.now()).compareTo(a.listingDate ?? DateTime.now()));
         break;
       case ListedCouponsOrdering.listingDateAsc:
-        _filtered.sort((a, b) => a.listingDate.compareTo(b.listingDate));
+        _filtered.sort((a, b) => (a.listingDate ?? DateTime.now()).compareTo(b.listingDate ?? DateTime.now()));
         break;
       case ListedCouponsOrdering.expiryDateAsc:
         _filtered.sort((a, b) => a.expiryDate.compareTo(b.expiryDate));

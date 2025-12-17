@@ -18,6 +18,7 @@ class _DebugScreenState extends State<DebugScreen> {
     isSold: false,
     id: 'debug_coupon',
     reduction: 20,
+    isMultipleUse: true,
     reductionIsPercentage: true,
     price: 100,
     shopName: 'Debug Shop',

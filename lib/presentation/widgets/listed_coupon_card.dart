@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:proj_inz/core/theme.dart';
 import 'package:proj_inz/core/utils/utils.dart';
-import 'package:proj_inz/data/models/listed_coupon_model.dart';
+import 'package:proj_inz/data/models/coupon_model.dart';
 import 'package:proj_inz/presentation/screens/listed_coupon_detail_screen.dart';
 import 'package:proj_inz/presentation/widgets/dashed_separator.dart';
 
 class ListedCouponCardHorizontal extends StatelessWidget {
-  final ListedCoupon coupon;
+  final Coupon coupon;
 
   const ListedCouponCardHorizontal({
     super.key,
@@ -24,7 +24,7 @@ class ListedCouponCardHorizontal extends StatelessWidget {
     final shopBgColor = coupon.shopBgColor;
     final hasLimits = coupon.hasLimits;
     final expiryDate = coupon.expiryDate;
-    final listingDate = coupon.listingDate;
+    final listingDate = coupon.listingDate ?? DateTime.now();
     final isSold = coupon.isSold;
 
     final reductionText =

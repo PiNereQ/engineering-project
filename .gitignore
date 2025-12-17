@@ -186,3 +186,4 @@ android/gradle/wrapper/gradle-wrapper.properties
 android/build.gradle
 android/settings.gradle
 android/gradle/wrapper/gradle-wrapper.properties
+lib\data\api\helpers_from_backend

@@ -1,6 +1,6 @@
 
 import 'package:equatable/equatable.dart';
-import 'package:proj_inz/data/models/listed_coupon_model.dart';
+import 'package:proj_inz/data/models/coupon_model.dart';
 import 'listed_coupon_list_event.dart';
 
 abstract class ListedCouponListState extends Equatable {
@@ -13,7 +13,7 @@ class ListedCouponListInitial extends ListedCouponListState {}
 class ListedCouponListLoadInProgress extends ListedCouponListState {}
 
 class ListedCouponListLoadSuccess extends ListedCouponListState {
-  final List<ListedCoupon> coupons;
+  final List<Coupon> coupons;
   final bool hasMore;
 
   ListedCouponListLoadSuccess({

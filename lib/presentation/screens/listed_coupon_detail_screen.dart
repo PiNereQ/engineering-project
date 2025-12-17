@@ -6,7 +6,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:proj_inz/bloc/listed_coupon/listed_coupon_bloc.dart';
 import 'package:proj_inz/core/theme.dart';
 import 'package:proj_inz/core/utils/utils.dart';
-import 'package:proj_inz/data/models/listed_coupon_model.dart';
+import 'package:proj_inz/data/models/coupon_model.dart';
 import 'package:proj_inz/data/repositories/coupon_repository.dart';
 import 'package:proj_inz/presentation/widgets/custom_snack_bar.dart';
 import 'package:proj_inz/presentation/widgets/dashed_separator.dart';
@@ -97,7 +97,7 @@ class _CouponDetails extends StatelessWidget {
     required this.coupon,
   });
 
-  final ListedCoupon coupon;
+  final Coupon coupon;
 
   @override
   Widget build(BuildContext context) {
@@ -111,7 +111,7 @@ class _CouponDetails extends StatelessWidget {
     final bool worksOnline = coupon.worksOnline;
     final bool worksInStore = coupon.worksInStore;
     final DateTime expiryDate = coupon.expiryDate;
-    final String? description = coupon.description;
+    final String? description = coupon.description;;
 
     final reductionText = isInteger(reduction)
     ? reduction.toString()

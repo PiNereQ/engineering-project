@@ -105,17 +105,17 @@ class OwnedCouponListBloc extends Bloc<OwnedCouponListEvent, OwnedCouponListStat
     emit(OwnedCouponListLoadInProgress());
 
     try {
-      // final result = await couponRepository.fetchOwnedCouponsPaginated(
-      //   limit,
-      //   _lastOffset ?? 0,
-      //   _userId!,
-      // );
-      // final ownedCoupons = result.coupons;
-      // debugPrint('Fetched ${ownedCoupons.length} coupons: $ownedCoupons');
+      final result = await couponRepository.fetchOwnedCouponsPaginated(
+        userId: _userId!,
+        limit: limit,
+        offset: _lastOffset ?? 0,
+      );
+      final ownedCoupons = result.coupons;
+      debugPrint('Fetched ${ownedCoupons.length} coupons');
 
-      // _hasMore = ownedCoupons.length == limit;
-      // _allCoupons.addAll(ownedCoupons);
-      // _lastOffset = result.lastOffset;
+      _hasMore = ownedCoupons.length == limit;
+      _allCoupons.addAll(ownedCoupons);
+      _lastOffset = result.lastOffset;
 
       
       // emit(OwnedCouponListLoadSuccess(coupons: _allCoupons, hasMore: _hasMore));

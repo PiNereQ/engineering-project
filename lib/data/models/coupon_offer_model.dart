@@ -51,6 +51,24 @@ class CouponOffer extends Equatable {
     };
   }
 
+    Map<String, dynamic> toJsonWithSellerId() {
+    return {
+      'description': description,
+      'price': price,
+      'discount': discount,
+      'is_discount_percentage': isDiscountPercentage,
+      'expiry_date': expiryDate,
+      'code': code,
+      'is_active': isActive,
+      'has_limits': hasLimits,
+      'works_in_store': worksInStore,
+      'works_online': worksOnline,
+      'shop_id': shopId,
+      'seller_id': ownerId,
+      'is_multiple_use': isMultipleUse,
+    };
+  }
+
   @override
   List<Object?> get props => [
         discount,
