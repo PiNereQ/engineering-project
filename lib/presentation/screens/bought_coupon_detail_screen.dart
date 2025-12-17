@@ -15,6 +15,7 @@ import 'package:proj_inz/presentation/widgets/custom_snack_bar.dart';
 import 'package:proj_inz/presentation/widgets/dashed_separator.dart';
 import 'package:proj_inz/presentation/widgets/error_card.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_icon_button.dart';
+import 'package:proj_inz/presentation/widgets/input/buttons/custom_switch.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_text_button.dart';
 import 'package:proj_inz/presentation/widgets/reputation_bar.dart';
 import 'package:qr_flutter/qr_flutter.dart';
@@ -461,7 +462,7 @@ class _CouponDetails extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   spacing: 8,
                   children: [
-                    Switch(value: coupon.isUsed, onChanged: (_) {}, ), // TODO: implement change of state
+                    CustomSwitch(value: coupon.isUsed, onChanged: (_) {}, ), // TODO: implement change of state
                     Text(
                       'kupon wykorzystany',
                       style: TextStyle(
