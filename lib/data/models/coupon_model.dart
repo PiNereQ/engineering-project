@@ -86,7 +86,7 @@ class Coupon extends Equatable {
       sellerJoinDate: json['seller_join_date'] != null
         ? DateTime.parse(json['seller_join_date'])
         : null,
-      isSold: parseBool(json['is_active']),
+      isSold: !parseBool(json['is_active']),
       listingDate: json['listing_date'] != null
         ? DateTime.parse(json['listing_date'])
         : DateTime.now(),
@@ -110,7 +110,7 @@ class Coupon extends Equatable {
       shopName: json['shop_name'] ?? 'Shop ${json['shop_id']}',
       shopNameColor: parseColor(json['shop_name_color'].toString()),
       shopBgColor: parseColor(json['shop_bg_color'].toString()),
-      isSold: parseBool(json['is_active']),
+      isSold: !parseBool(json['is_active']),
       listingDate: json['listing_date'] != null
         ? DateTime.parse(json['listing_date'])
         : DateTime.now(),
@@ -142,7 +142,7 @@ class Coupon extends Equatable {
       sellerJoinDate: json['seller_join_date'] != null
         ? DateTime.parse(json['seller_join_date'])
         : null,
-      isSold: parseBool(json['is_active']),
+      isSold: !parseBool(json['is_active']),
       listingDate: json['listing_date'] != null
         ? DateTime.parse(json['listing_date'])
         : DateTime.now(),
