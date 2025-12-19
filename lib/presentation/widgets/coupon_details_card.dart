@@ -25,12 +25,12 @@ class CouponDetailsCard extends StatelessWidget {
     final Color shopNameColor = coupon.shopNameColor;
     final num reduction = coupon.reduction;
     final bool reductionIsPercentage = coupon.reductionIsPercentage;
-    final num price = coupon.price;
+    final int price = coupon.price;
     final bool hasLimits = coupon.hasLimits;
     final bool worksOnline = coupon.worksOnline;
     final bool worksInStore = coupon.worksInStore;
-    final DateTime expiryDate = coupon.expiryDate;
-    final String? description = coupon.description;
+    final DateTime? expiryDate = coupon.expiryDate;
+    final String description = coupon.description;
 
     final reductionText =
         isInteger(reduction)
@@ -65,7 +65,7 @@ class CouponDetailsCard extends StatelessWidget {
           ),
         ),
         TextSpan(
-          text: "$price zł",
+          text: "${formatPrice(price)} zł",
           style: const TextStyle(
             color: AppColors.textPrimary,
             fontSize: 28,
@@ -104,7 +104,9 @@ class CouponDetailsCard extends StatelessWidget {
     );
 
     final expiryDateText = Text(
-      '${expiryDate.day}.${expiryDate.month}.${expiryDate.year} r.',
+      expiryDate == null
+          ? 'brak daty ważności'
+          : formatDate(expiryDate),
       style: const TextStyle(
         color: AppColors.textSecondary,
         fontSize: 18,
@@ -209,7 +211,7 @@ class CouponDetailsCard extends StatelessWidget {
                     ),
 
                     Text(
-                      (description == null || description.isEmpty)
+                      (description.isEmpty)
                           ? "brak"
                           : description,
                       style: const TextStyle(

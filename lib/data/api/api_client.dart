@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
+
 import 'package:http/http.dart' as http;
+import 'package:firebase_auth/firebase_auth.dart';
 
 class ApiClient {
   final String baseUrl;
@@ -24,13 +26,29 @@ class ApiClient {
   /// Sends a GET request to the given [path] with optional [queryParameters].
   /// Returns the decoded JSON response on success.
   /// Throws an [Exception] if the request fails.
-  Future<dynamic> getJson(String path, {Map<String, String>? queryParameters}) async {
+  Future<dynamic> get(String path, {Map<String, String>? queryParameters, bool useAuthToken = false}) async {
     final uri = _uri(path, queryParameters: queryParameters);
-    
-    final resp = await _client.get(uri);
+
+    Map<String, String> headers = {};
+    if (useAuthToken) {
+      final user = FirebaseAuth.instance.currentUser;
+      final token = await user?.getIdToken();
+      if (token != null) {
+        headers['Authorization'] = 'Bearer $token';
+      }
+    }
+    final resp = await _client.get(uri, headers: headers);
 
     if (resp.statusCode >= 200 && resp.statusCode < 300) {
       return jsonDecode(resp.body);
+    }
+    if (resp.statusCode == 400) {
+      try {
+        final body = jsonDecode(resp.body);
+        if (body is Map && body.containsKey('message')) {
+          throw Exception(body['message']);
+        }
+      } catch (_) {}
     }
     throw Exception('GET $path failed: ${resp.statusCode} ${resp.reasonPhrase}');
   }
@@ -38,17 +56,34 @@ class ApiClient {
   /// Sends a POST request to the given [path] with optional [queryParameters] and JSON [body].
   /// Returns the decoded JSON response on success.
   /// Throws an [Exception] if the request fails.
-  Future<dynamic> postJson(String path, {Map<String, String>? queryParameters, Map<String, dynamic>? body}) async {
+  Future<dynamic> post(String path, {Map<String, String>? queryParameters, Map<String, dynamic>? body, bool useAuthToken = false}) async {
     final uri = _uri(path, queryParameters: queryParameters);
 
-    debugPrint('POST $path with body: ${jsonEncode(body)}');
+    Map<String, String> headers = {'Content-Type': 'application/json'};
+    if (useAuthToken) {
+      final user = FirebaseAuth.instance.currentUser;
+      final token = await user?.getIdToken();
+      if (token != null) {
+        headers['Authorization'] = 'Bearer $token';
+      }
+    }
+    
     final resp = await _client.post(
       uri,
-      headers: {'Content-Type': 'application/json'},
+      headers: headers,
       body: jsonEncode(body),
     );
+
     if (resp.statusCode >= 200 && resp.statusCode < 300) {
       return jsonDecode(resp.body);
+    }
+    if (resp.statusCode == 400) {
+      try {
+        final body = jsonDecode(resp.body);
+        if (body is Map && body.containsKey('message')) {
+          throw Exception(body['message']);
+        }
+      } catch (_) {}
     }
     debugPrint('POST $path failed: ${resp.statusCode} ${resp.reasonPhrase}');
     debugPrint('Response body: ${resp.body}');
@@ -58,16 +93,34 @@ class ApiClient {
   /// Sends a PUT request to the given [path] with optional [queryParameters] and JSON [body].
   /// Returns the decoded JSON response on success.
   /// Throws an [Exception] if the request fails.
-  Future<dynamic> putJson(String path, {Map<String, String>? queryParameters, Map<String, dynamic>? body}) async {
+  Future<dynamic> put(String path, {Map<String, String>? queryParameters, Map<String, dynamic>? body, bool useAuthToken = false}) async {
     final uri = _uri(path, queryParameters: queryParameters);
 
+    Map<String, String> headers = {'Content-Type': 'application/json'};
+    
+    if (useAuthToken) {
+      final user = FirebaseAuth.instance.currentUser;
+      final token = await user?.getIdToken();
+      if (token != null) {
+        headers['Authorization'] = 'Bearer $token';
+      }
+    }
+    
     final resp = await _client.put(
       uri,
-      headers: {'Content-Type': 'application/json'},
+      headers: headers,
       body: jsonEncode(body),
     );
     if (resp.statusCode >= 200 && resp.statusCode < 300) {
       return jsonDecode(resp.body);
+    }
+    if (resp.statusCode == 400) {
+      try {
+        final body = jsonDecode(resp.body);
+        if (body is Map && body.containsKey('message')) {
+          throw Exception(body['message']);
+        }
+      } catch (_) {}
     }
     throw Exception('PUT $path failed: ${resp.statusCode} ${resp.reasonPhrase}');
   }
@@ -75,28 +128,67 @@ class ApiClient {
   /// Sends a PATCH request to the given [path] with optional [queryParameters] and JSON [body].
   /// Returns the decoded JSON response on success.
   /// Throws an [Exception] if the request fails.
-  Future<dynamic> patchJson(String path, {Map<String, String>? queryParameters, Map<String, dynamic>? body}) async {
+  Future<dynamic> patch(String path, {Map<String, String>? queryParameters, Map<String, dynamic>? body, bool useAuthToken = false}) async {
     final uri = _uri(path, queryParameters: queryParameters);
 
+    Map<String, String> headers = {'Content-Type': 'application/json'};
+    if (useAuthToken) {
+      final user = FirebaseAuth.instance.currentUser;
+      final token = await user?.getIdToken();
+      if (token != null) {
+        headers['Authorization'] = 'Bearer $token';
+      }
+    }
+    
     final resp = await _client.patch(
       uri,
-      headers: {'Content-Type': 'application/json'},
+      headers: headers,
       body: jsonEncode(body),
     );
+
     if (resp.statusCode >= 200 && resp.statusCode < 300) {
       return jsonDecode(resp.body);
     }
-    throw Exception('PUT $path failed: ${resp.statusCode} ${resp.reasonPhrase}');
+    if (resp.statusCode == 400) {
+      try {
+        final body = jsonDecode(resp.body);
+        if (body is Map && body.containsKey('message')) {
+          throw Exception(body['message']);
+        }
+      } catch (_) {}
+    }
+    throw Exception('PATCH $path failed: ${resp.statusCode} ${resp.reasonPhrase}');
   }
 
   /// Sends a DELETE request to the given [path] with optional [queryParameters].
   /// Returns the decoded JSON response on success.
   /// Throws an [Exception] if the request fails.
-  Future<dynamic> deleteJson(String path, {Map<String, String>? queryParameters}) async {
+  Future<dynamic> delete(String path, {Map<String, String>? queryParameters, bool useAuthToken = false}) async {
     final uri = _uri(path, queryParameters: queryParameters);
-    final resp = await _client.delete(uri);
+    Map<String, String> headers = {};
+    if (useAuthToken) {
+      final user = FirebaseAuth.instance.currentUser;
+      final token = await user?.getIdToken();
+      if (token != null) {
+        headers['Authorization'] = 'Bearer $token';
+      }
+    }
+    
+    final resp = await _client.delete(
+      uri,
+      headers: headers,
+    );
+    
     if (resp.statusCode >= 200 && resp.statusCode < 300) {
       return jsonDecode(resp.body);
+    }
+    if (resp.statusCode == 400) {
+      try {
+        final body = jsonDecode(resp.body);
+        if (body is Map && body.containsKey('message')) {
+          throw Exception(body['message']);
+        }
+      } catch (_) {}
     }
     throw Exception('DELETE $path failed: ${resp.statusCode} ${resp.reasonPhrase}');
 

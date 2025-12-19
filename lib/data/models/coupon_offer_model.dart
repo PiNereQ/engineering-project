@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 
 class CouponOffer extends Equatable {
-  final double price;
+  final int price;
   final double discount;
   final bool isDiscountPercentage;
   final String code;
@@ -14,7 +14,7 @@ class CouponOffer extends Equatable {
   final bool isMultipleUse;
 
   final String? expiryDate; // "YYYY-MM-DD"
-  final String? description;
+  final String description;
 
   const CouponOffer({
     required this.price,
@@ -29,7 +29,7 @@ class CouponOffer extends Equatable {
     required this.shopId,
     required this.isMultipleUse,
     this.expiryDate,
-    this.description,
+    required this.description,
   });
 
   // Convert to JSON for API requests

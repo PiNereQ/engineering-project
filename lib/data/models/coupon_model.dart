@@ -1,150 +1,190 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
+import 'package:proj_inz/core/utils/utils.dart';
 
 class Coupon extends Equatable {
+  // general fields
   final String id;
-  final String? listingId; // ID of the listing (if this coupon is listed for sale)
+
   final double reduction;
   final bool reductionIsPercentage;
-  final double price;
-  
+  final int price; // smallest currency unit (e.g., 6800 = 6800 groszy = 68.00 złotych)
+
   final bool hasLimits;
   final bool worksOnline;
   final bool worksInStore;
-  final DateTime expiryDate;
-  final String? description;
+  final DateTime? expiryDate; // can be null
+  final String description; // empty string if none
 
   final String shopId;
   final String shopName;
   final Color shopNameColor; 
   final Color shopBgColor;
 
-  final String sellerId;
-  final String? sellerUsername;
-  final int sellerReputation;
-  final DateTime? sellerJoinDate; 
-
+  final DateTime listingDate;
   final bool isSold;
-  final DateTime? listingDate; // When this coupon was listed for sale
-  final bool isMultipleUse; // Whether this listing can be used multiple times
+  
+  // specific fields
+  //                                 | Available to me | Listed by me | Bought by me |
+  final String? sellerId;         // |       YES       |      NO      |     YES      |
+  final String? sellerUsername;   // |       YES       |      NO      |     YES      |
+  final int? sellerReputation;    // |       YES       |      NO      |     YES      |
+  final DateTime? sellerJoinDate; // |       YES       |      NO      |     YES      |
+  final bool? isMultipleUse;      // |        NO       |     YES      |      NO      | // Can this coupon be sold multiple times
+  final bool? isUsed;             // |        NO       |      NO      |     YES      | // Has this owned coupon been used by me
+  final DateTime? purchaseDate;   // |        NO       |      NO      |     YES      | // When I bought this coupon
+  final String? code;             // |        NO       |     YES      |     YES      | // Coupon code
+
 
   const Coupon({
     required this.id,
-    this.listingId,
     required this.reduction,
     required this.reductionIsPercentage,
     required this.price,
-
     required this.hasLimits,
     required this.worksOnline,
     required this.worksInStore,
-    required this.expiryDate,
-    this.description,
-
+    this.expiryDate,
+    this.description = '',
     required this.shopId,
     required this.shopName,
     required this.shopNameColor,
     required this.shopBgColor,
-
-    required this.sellerId,
+    this.sellerId,
     this.sellerUsername,
-    required this.sellerReputation,
+    this.sellerReputation,
     this.sellerJoinDate,
-
     required this.isSold,
-    this.listingDate,
-    required this.isMultipleUse,
-  });
+    required this.listingDate,
+    this.isMultipleUse,
+    this.isUsed,
+    this.purchaseDate,
+    this.code,
+  }); 
 
   /// Create Coupon from API JSON response
-  factory Coupon.fromJson(Map<String, dynamic> json) {
+  factory Coupon.availableToMeFromJson(Map<String, dynamic> json) {
     return Coupon(
       id: json['id']?.toString() ?? '',
-      reduction: _parseDouble(json['discount']),
-      reductionIsPercentage: _parseBool(json['is_discount_percentage']),
-      price: _parseDouble(json['price']),
-      hasLimits: _parseBool(json['has_limits']),
-      worksOnline: _parseBool(json['works_online']),
-      worksInStore: _parseBool(json['works_in_store']),
+      reduction: parseNum(json['discount']),
+      reductionIsPercentage: parseBool(json['is_discount_percentage']),
+      price: parseInt(json['price']),
+      hasLimits: parseBool(json['has_limits']),
+      worksOnline: parseBool(json['works_online']),
+      worksInStore: parseBool(json['works_in_store']),
+      expiryDate: json['expiry_date'] != null 
+        ? DateTime.parse(json['expiry_date']) 
+        : null,
+      description: json['description'] ?? '',
+      shopId: json['shop_id']?.toString() ?? '',
+      shopName: json['shop_name'] ?? '',
+      shopNameColor: parseColor(json['shop_name_color'].toString()),
+      shopBgColor: parseColor( json['shop_bg_color'].toString()),
+      sellerId: json['seller_id']?.toString() ?? '',
+      sellerUsername: json['seller_username'],
+      sellerReputation: parseInt(json['seller_reputation']),
+      sellerJoinDate: json['seller_join_date'] != null
+        ? DateTime.parse(json['seller_join_date'])
+        : null,
+      isSold: parseBool(json['is_active']),
+      listingDate: json['listing_date'] != null
+        ? DateTime.parse(json['listing_date'])
+        : DateTime.now(),
+    );
+  }
+
+  factory Coupon.listedByMeFromJson(Map<String, dynamic> json) {
+    return Coupon(
+      id: json['id']?.toString() ?? '',
+      reduction: parseNum(json['discount']),
+      reductionIsPercentage: parseBool(json['is_discount_percentage']),
+      price: parseInt(json['price']),
+      hasLimits: parseBool(json['has_limits']),
+      worksOnline: parseBool(json['works_online']),
+      worksInStore: parseBool(json['works_in_store']),
       expiryDate: json['expiry_date'] != null 
         ? DateTime.parse(json['expiry_date']) 
         : DateTime.now(),
       description: json['description'],
       shopId: json['shop_id']?.toString() ?? '',
-      shopName: json['shop_name'] ?? 'Shop ${json['shop_id']}', // Fallback if not joined
-      shopNameColor: json['shop_name_color'] != null 
-        ? Color(int.parse(json['shop_name_color'].toString())) 
-        : const Color(0xFF000000),
-      shopBgColor: json['shop_bg_color'] != null 
-        ? Color(int.parse(json['shop_bg_color'].toString())) 
-        : const Color(0xFFFFFFFF),
-      sellerId: json['owner_id']?.toString() ?? '',
-      sellerUsername: json['owner_username'], // Will be null if not joined
-      sellerReputation: _parseInt(json['owner_reputation']),
-      sellerJoinDate: json['owner_join_date'] != null
-        ? DateTime.parse(json['owner_join_date'])
-        : null,
-      isSold: !_parseBool(json['is_active']), // is_active:1 means NOT sold
-      isMultipleUse: _parseBool(json['is_multiple_use']),
+      shopName: json['shop_name'] ?? 'Shop ${json['shop_id']}',
+      shopNameColor: parseColor(json['shop_name_color'].toString()),
+      shopBgColor: parseColor(json['shop_bg_color'].toString()),
+      isSold: parseBool(json['is_active']),
+      listingDate: json['listing_date'] != null
+        ? DateTime.parse(json['listing_date'])
+        : DateTime.now(),
+      isMultipleUse: parseBool(json['is_multiple_use']),
+      code: json['code']?.toString()
     );
   }
 
-  /// Helper to parse double from various types (String, int, double)
-  static double _parseDouble(dynamic value) {
-    if (value == null) return 0.0;
-    if (value is double) return value;
-    if (value is int) return value.toDouble();
-    if (value is String) return double.tryParse(value) ?? 0.0;
-    return 0.0;
+  factory Coupon.boughtByMeFromJson(Map<String, dynamic> json) {
+    return Coupon(
+      id: json['id']?.toString() ?? '',
+      reduction: parseNum(json['discount']),
+      reductionIsPercentage: parseBool(json['is_discount_percentage']),
+      price: parseInt(json['price']),
+      hasLimits: parseBool(json['has_limits']),
+      worksOnline: parseBool(json['works_online']),
+      worksInStore: parseBool(json['works_in_store']),
+      expiryDate: json['expiry_date'] != null 
+        ? DateTime.parse(json['expiry_date']) 
+        : DateTime.now(),
+      description: json['description'],
+      shopId: json['shop_id']?.toString() ?? '',
+      shopName: json['shop_name'] ?? '',
+      shopNameColor: parseColor(json['shop_name_color'].toString()),
+      shopBgColor: parseColor(json['shop_bg_color'].toString()),
+      sellerId: json['seller_id']?.toString() ?? '',
+      sellerUsername: json['seller_username'],
+      sellerReputation: parseInt(json['seller_reputation']),
+      sellerJoinDate: json['seller_join_date'] != null
+        ? DateTime.parse(json['seller_join_date'])
+        : null,
+      isSold: parseBool(json['is_active']),
+      listingDate: json['listing_date'] != null
+        ? DateTime.parse(json['listing_date'])
+        : DateTime.now(),
+      isUsed: parseBool(json['is_used']),
+      code: json['code']?.toString()
+    );
   }
 
-  /// Helper to parse int from various types (String, int, double)
-  static int _parseInt(dynamic value) {
-    if (value == null) return 0;
-    if (value is int) return value;
-    if (value is double) return value.toInt();
-    if (value is String) return int.tryParse(value) ?? 0;
-    return 0;
-  }
 
-  /// Helper to parse bool from various types (bool, int, String)
-  static bool _parseBool(dynamic value) {
-    if (value == null) return false;
-    if (value is bool) return value;
-    if (value is int) return value != 0;
-    if (value is String) return value.toLowerCase() == 'true' || value == '1';
-    return false;
-  }
 
   @override
   List<Object?> get props => [
     id,
-    listingId,
     reduction,
     reductionIsPercentage,
     price,
+    hasLimits,
+    worksOnline,
+    worksInStore,
+    expiryDate,
+    description,
     shopId,
     shopName,
     shopNameColor,
     shopBgColor,
-    hasLimits,
+    listingDate,
+    isSold,
     sellerId,
     sellerUsername,
     sellerReputation,
-    worksOnline,
-    worksInStore,
-    expiryDate,
-    isSold,
-    listingDate,
+    sellerJoinDate,
     isMultipleUse,
+    isUsed,
+    purchaseDate,
+    code,
   ];
 
   Coupon copyWith({
     String? id,
-    String? listingId,
     double? reduction,
     bool? reductionIsPercentage,
-    double? price,
+    int? price,
     bool? hasLimits,
     bool? worksOnline,
     bool? worksInStore,
@@ -154,17 +194,19 @@ class Coupon extends Equatable {
     String? shopName,
     Color? shopNameColor,
     Color? shopBgColor,
+    DateTime? listingDate,
+    bool? isSold,
     String? sellerId,
     String? sellerUsername,
     int? sellerReputation,
     DateTime? sellerJoinDate,
-    bool? isSold,
-    DateTime? listingDate,
     bool? isMultipleUse,
+    bool? isUsed,
+    DateTime? purchaseDate,
+    String? code,
   }) {
     return Coupon(
       id: id ?? this.id,
-      listingId: listingId ?? this.listingId,
       reduction: reduction ?? this.reduction,
       reductionIsPercentage: reductionIsPercentage ?? this.reductionIsPercentage,
       price: price ?? this.price,
@@ -177,13 +219,16 @@ class Coupon extends Equatable {
       shopName: shopName ?? this.shopName,
       shopNameColor: shopNameColor ?? this.shopNameColor,
       shopBgColor: shopBgColor ?? this.shopBgColor,
+      listingDate: listingDate ?? this.listingDate,
+      isSold: isSold ?? this.isSold,
       sellerId: sellerId ?? this.sellerId,
       sellerUsername: sellerUsername ?? this.sellerUsername,
       sellerReputation: sellerReputation ?? this.sellerReputation,
       sellerJoinDate: sellerJoinDate ?? this.sellerJoinDate,
-      isSold: isSold ?? this.isSold,
-      listingDate: listingDate ?? this.listingDate,
       isMultipleUse: isMultipleUse ?? this.isMultipleUse,
+      isUsed: isUsed ?? this.isUsed,
+      purchaseDate: purchaseDate ?? this.purchaseDate,
+      code: code ?? this.code,
     );
   }
 }

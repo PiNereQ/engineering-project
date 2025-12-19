@@ -9,7 +9,6 @@ import 'package:proj_inz/bloc/payment/payment_bloc.dart';
 import 'package:proj_inz/core/theme.dart';
 import 'package:proj_inz/core/utils/utils.dart';
 import 'package:proj_inz/data/models/coupon_model.dart';
-import 'package:proj_inz/data/models/listing_model.dart';
 import 'package:proj_inz/data/repositories/chat_repository.dart';
 import 'package:proj_inz/data/repositories/coupon_repository.dart';
 import 'package:proj_inz/presentation/screens/bought_coupon_detail_screen.dart';
@@ -122,7 +121,7 @@ class CouponDetailsScreen extends StatelessWidget {
                             _CouponDetails(coupon: state.coupon,),
                             const SizedBox(height: 24),
                             _SellerDetails(
-                              sellerId: state.coupon.sellerId,
+                              sellerId: state.coupon.sellerId!,
                               sellerUsername: state.coupon.sellerUsername.toString(),
                               sellerReputation: state.coupon.sellerReputation,
                               sellerJoinDate: state.coupon.sellerJoinDate ?? DateTime(1970, 1, 1),
@@ -167,11 +166,11 @@ class _CouponDetails extends StatelessWidget {
     final Color shopNameColor = coupon.shopNameColor;
     final num reduction = coupon.reduction;
     final bool reductionIsPercentage = coupon.reductionIsPercentage;
-    final num price = coupon.price;
+    final int price = coupon.price;
     final bool hasLimits = coupon.hasLimits;
     final bool worksOnline = coupon.worksOnline;
     final bool worksInStore = coupon.worksInStore;
-    final DateTime expiryDate = coupon.expiryDate;
+    final DateTime? expiryDate = coupon.expiryDate;
     final String? description = coupon.description;
     final bool isSold = coupon.isSold;
 
@@ -209,7 +208,7 @@ class _CouponDetails extends StatelessWidget {
           ),
         ),
         TextSpan(
-          text: "$price zł",
+          text: "${formatPrice(price)} zł",
           style: const TextStyle(
             color: AppColors.textPrimary,
             fontSize: 28,
@@ -249,7 +248,9 @@ class _CouponDetails extends StatelessWidget {
     );
 
     final expiryDateText = Text(
-      '${expiryDate.day}.${expiryDate.month}.${expiryDate.year} r.',
+      expiryDate == null
+          ? 'brak'
+          : formatDate(expiryDate),
       style: const TextStyle(
         color: AppColors.textSecondary,
         fontSize: 18,
@@ -483,11 +484,7 @@ class _CouponDetails extends StatelessWidget {
                       label: 'Kup teraz',
                       onTap: () async {
                         if (kDebugMode) {
-                          debugPrint('Buy button pressed for coupon: id=${coupon.id}, listingId=${coupon.listingId}');
-                        }
-                        if (coupon.listingId == null) {
-                          showCustomSnackBar(context, 'Błąd: Brak ID ogłoszenia');
-                          return;
+                          debugPrint('Buy button pressed for coupon: id=${coupon.id}');
                         }
                         
                         final buyerId = FirebaseAuth.instance.currentUser?.uid;
@@ -496,24 +493,12 @@ class _CouponDetails extends StatelessWidget {
                           return;
                         }
                         
-                        // Create Listing object from coupon data
-                        final listing = Listing(
-                          id: coupon.listingId!,
-                          couponId: coupon.id,
-                          sellerId: coupon.sellerId,
-                          price: coupon.price,
-                          isMultipleUse: coupon.isMultipleUse,
-                          isActive: true,
-                          isDeleted: false,
-                          isBlocked: false,
-                          createdAt: coupon.listingDate ?? DateTime.now(),
-                        );
-                        
                         context.read<PaymentBloc>().add(
                           StartPayment(
-                            listing: listing,
+                            couponId: coupon.id,
                             buyerId: buyerId,
-                            amount: (coupon.price * 100).toInt(),
+                            sellerId: coupon.sellerId!,
+                            amount: coupon.price,
                           ),
                         );
                       },
@@ -540,7 +525,7 @@ class _SellerDetails extends StatelessWidget {
 
   final String sellerId;
   final String sellerUsername;
-  final num sellerReputation;
+  final int? sellerReputation;
   final DateTime sellerJoinDate;
 
   @override
@@ -603,14 +588,25 @@ class _SellerDetails extends StatelessWidget {
                         height: 0.75,
                       ),
                     ),
-                    ReputationBar(
-                      value: sellerReputation.toInt(),
-                      maxWidth: 120,
-                      height: 8,
-                      showValue: true,
-                    ),
+                    sellerReputation == null
+                      ? Text(
+                        'Brak ocen',
+                        style: const TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 16,
+                          fontFamily: 'Itim',
+                          fontWeight: FontWeight.w400,
+                          height: 0.75,
+                        ),
+                      )
+                      : ReputationBar(
+                        value: sellerReputation!,
+                        maxWidth: 120,
+                        height: 8,
+                        showValue: true,
+                      ),
                     Text(
-                      'Na Coupidynie od ${sellerJoinDate.day}.${sellerJoinDate.month}.${sellerJoinDate.year} r.',
+                      'Na Coupidynie od ${formatDate(sellerJoinDate)}',
                       style: const TextStyle(
                         color: AppColors.textSecondary,
                         fontSize: 16,

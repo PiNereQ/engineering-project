@@ -32,15 +32,15 @@ class CouponCardHorizontal extends StatelessWidget {
     final String couponId = coupon.id;
     final num reduction = coupon.reduction;
     final bool reductionIsPercentage = coupon.reductionIsPercentage;
-    final num price = coupon.price;
+    final int price = coupon.price;
     final String shopName = coupon.shopName;
     final Color shopNameColor = coupon.shopNameColor;
     final Color shopBgColor = coupon.shopBgColor;
     final bool hasLimits = coupon.hasLimits;
-    final int sellerReputation = coupon.sellerReputation;
+    final int? sellerReputation = coupon.sellerReputation;
     final bool worksOnline = coupon.worksOnline;
     final bool worksInStore = coupon.worksInStore;
-    final DateTime expiryDate = coupon.expiryDate;
+    final DateTime? expiryDate = coupon.expiryDate;
 
     final reductionText =
         isInteger(reduction)
@@ -85,7 +85,7 @@ class CouponCardHorizontal extends StatelessWidget {
           ),
         ),
         TextSpan(
-          text: "$price zł",
+          text: "${formatPrice(price)} zł",
           style: const TextStyle(
             color: AppColors.textPrimary,
             fontSize: 24,
@@ -97,7 +97,7 @@ class CouponCardHorizontal extends StatelessWidget {
     );
 
     final reputationText = TextSpan(
-      text: 'Reputacja: $sellerReputation',
+      text: 'Reputacja: ${sellerReputation ?? 'Brak ocen'}',
       style: const TextStyle(
         color: AppColors.textPrimary,
         fontSize: 12,
@@ -124,7 +124,7 @@ class CouponCardHorizontal extends StatelessWidget {
     );
 
     final expiryDateText = TextSpan(
-      text: '${expiryDate.day}.${expiryDate.month}.${expiryDate.year} r.',
+      text: expiryDate == null ? 'Brak daty ważności' : formatDate(expiryDate),
       style: const TextStyle(
         color: AppColors.textPrimary,
         fontSize: 12,
@@ -158,7 +158,7 @@ class CouponCardHorizontal extends StatelessWidget {
             child: GestureDetector(
               onTap: () {
                 if (kDebugMode) {
-                  print('Tapping coupon: id=${coupon.id}, listingId=${coupon.listingId}');
+                  print('Tapping coupon: id=${coupon.id}');
                 }
                 Navigator.push(
                   context,
@@ -269,15 +269,15 @@ class CouponCardVertical extends StatelessWidget {
     final String couponId = coupon.id;
     final num reduction = coupon.reduction;
     final bool reductionIsPercentage = coupon.reductionIsPercentage;
-    final num price = coupon.price;
+    final int price = coupon.price;
     final String shopName = coupon.shopName;
     final Color shopNameColor = coupon.shopNameColor;
     final Color shopBgColor = coupon.shopBgColor;
     final bool hasLimits = coupon.hasLimits;
-    final int sellerReputation = coupon.sellerReputation;
+    final int? sellerReputation = coupon.sellerReputation;
     final bool worksOnline = coupon.worksOnline;
     final bool worksInStore = coupon.worksInStore;
-    final DateTime expiryDate = coupon.expiryDate;
+    final DateTime? expiryDate = coupon.expiryDate;
 
     final reductionText =
         isInteger(reduction)
@@ -317,7 +317,7 @@ class CouponCardVertical extends StatelessWidget {
     );
 
     final priceText = Text(
-      "${isInteger(price) ? price.toInt() : price} zł",
+      "${formatPrice(price)} zł",
       style: const TextStyle(
         color: AppColors.textPrimary,
         fontSize: 22,
@@ -331,7 +331,7 @@ class CouponCardVertical extends StatelessWidget {
     );
 
     final reputationText = Text(
-      '$sellerReputation',
+      '${sellerReputation ?? 'Brak ocen'}',
       style: const TextStyle(
         color: AppColors.textPrimary,
         fontSize: 12,
@@ -356,7 +356,9 @@ class CouponCardVertical extends StatelessWidget {
     );
 
     final expiryDateText = Text(
-      '${expiryDate.day}.${expiryDate.month}.${expiryDate.year} r.',
+      expiryDate == null
+          ? 'Brak daty ważności'
+          : formatDate(expiryDate),
       style: const TextStyle(
         color: AppColors.textPrimary,
         fontSize: 12,
