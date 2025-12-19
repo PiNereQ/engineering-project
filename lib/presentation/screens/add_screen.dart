@@ -1110,6 +1110,9 @@ class _AddScreenState extends State<AddScreen> {
                                                 expiryDateStr = "${_expiryDate.year}-${_expiryDate.month.toString().padLeft(2, '0')}-${_expiryDate.day.toString().padLeft(2, '0')}";
                                               }
 
+                                              double priceDouble = double.tryParse(_priceController.text) ?? 0;
+                                              int priceInSmallestUnit = (priceDouble * 100).toInt();
+
                                               final offer = CouponOffer(
                                                 description: _descriptionController.text.trim(),
                                                 discount:
@@ -1120,9 +1123,7 @@ class _AddScreenState extends State<AddScreen> {
                                                 isDiscountPercentage:
                                                     _selectedType ==
                                                     CouponType.percent,
-                                                price: (double.tryParse(
-                                                    _priceController.text,
-                                                  ) ?? 0 * 100).toInt(),
+                                                price: priceInSmallestUnit,
                                                 code: _codeController.text,
                                                 hasLimits: _hasRestrictions,
                                                 worksOnline: _inOnlineStore,
