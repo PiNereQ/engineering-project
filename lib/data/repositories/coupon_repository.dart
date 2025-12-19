@@ -372,6 +372,7 @@ class CouponRepository {
         worksInStore: data['works_in_store'] == true || data['works_in_store'] == 1,
         expiryDate: data['expiry_date'] != null ? DateTime.parse(data['expiry_date']) : DateTime.now().add(Duration(days: 30)),
         description: data['description'],
+        isMultipleUse: data['is_multiple_use'] == true || data['is_multiple_use'] == 1,
         shopId: shopId,
         shopName: shopData['name'] ?? 'Unknown Shop',
         shopNameColor: _parseColor(shopData['name_color']),
@@ -418,6 +419,7 @@ class CouponRepository {
         sellerReputation: 0, // Not included in this endpoint
         sellerUsername: data['seller_username'],
         isSold: false, // Active listings are not sold
+        isMultipleUse: data['is_multiple_use'] == true || data['is_multiple_use'] == 1,
       );
     } catch (e) {
       if (kDebugMode) debugPrint('Error mapping listing to coupon: $e');

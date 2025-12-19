@@ -8,11 +8,16 @@ abstract class PaymentEvent extends Equatable {
 }
 
 class StartPayment extends PaymentEvent {
-  final int amount;
-  final String listingId;
+  final Listing listing;
+  final String buyerId;
+  final int amount; // Amount in smallest currency unit (e.g., 6800 for 68.00 PLN)
 
-  const StartPayment({required this.amount, required this.listingId});
+  const StartPayment({
+    required this.listing,
+    required this.buyerId,
+    required this.amount,
+  });
 
   @override
-  List<Object?> get props => [amount, listingId];
+  List<Object?> get props => [listing, buyerId, amount];
 }

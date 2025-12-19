@@ -9,6 +9,7 @@ import 'package:proj_inz/bloc/payment/payment_bloc.dart';
 import 'package:proj_inz/core/theme.dart';
 import 'package:proj_inz/core/utils/utils.dart';
 import 'package:proj_inz/data/models/coupon_model.dart';
+import 'package:proj_inz/data/models/listing_model.dart';
 import 'package:proj_inz/data/repositories/chat_repository.dart';
 import 'package:proj_inz/data/repositories/coupon_repository.dart';
 import 'package:proj_inz/presentation/screens/bought_coupon_detail_screen.dart';
@@ -488,10 +489,31 @@ class _CouponDetails extends StatelessWidget {
                           showCustomSnackBar(context, 'Błąd: Brak ID ogłoszenia');
                           return;
                         }
+                        
+                        final buyerId = FirebaseAuth.instance.currentUser?.uid;
+                        if (buyerId == null) {
+                          showCustomSnackBar(context, 'Błąd: Użytkownik nie zalogowany');
+                          return;
+                        }
+                        
+                        // Create Listing object from coupon data
+                        final listing = Listing(
+                          id: coupon.listingId!,
+                          couponId: coupon.id,
+                          sellerId: coupon.sellerId,
+                          price: coupon.price,
+                          isMultipleUse: coupon.isMultipleUse,
+                          isActive: true,
+                          isDeleted: false,
+                          isBlocked: false,
+                          createdAt: coupon.listingDate ?? DateTime.now(),
+                        );
+                        
                         context.read<PaymentBloc>().add(
                           StartPayment(
+                            listing: listing,
+                            buyerId: buyerId,
                             amount: (coupon.price * 100).toInt(),
-                            listingId: coupon.listingId!,
                           ),
                         );
                       },
@@ -500,7 +522,7 @@ class _CouponDetails extends StatelessWidget {
                   ],
                 ),
               ),
-            ],    
+            ],      
           ],
         ),
       ),
