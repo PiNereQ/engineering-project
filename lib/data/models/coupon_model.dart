@@ -33,6 +33,7 @@ class Coupon extends Equatable {
   final bool? isMultipleUse;      // |        NO       |     YES      |      NO      | // Can this coupon be sold multiple times
   final bool? isUsed;             // |        NO       |      NO      |     YES      | // Has this owned coupon been used by me
   final DateTime? purchaseDate;   // |        NO       |      NO      |     YES      | // When I bought this coupon
+  final String? transactionId;    // |        NO       |      NO      |     YES      | // ID of the transaction when listing the coupon
   final String? code;             // |        NO       |     YES      |     YES      | // Coupon code
 
 
@@ -59,6 +60,7 @@ class Coupon extends Equatable {
     this.isMultipleUse,
     this.isUsed,
     this.purchaseDate,
+    this.transactionId,
     this.code,
   }); 
 
@@ -82,14 +84,12 @@ class Coupon extends Equatable {
       shopBgColor: parseColor( json['shop_bg_color'].toString()),
       sellerId: json['seller_id']?.toString() ?? '',
       sellerUsername: json['seller_username'],
-      sellerReputation: parseInt(json['seller_reputation']),
+      sellerReputation: json['seller_reputation'] == null ? null : parseInt(json['seller_reputation']),
       sellerJoinDate: json['seller_join_date'] != null
         ? DateTime.parse(json['seller_join_date'])
         : null,
       isSold: !parseBool(json['is_active']),
-      listingDate: json['listing_date'] != null
-        ? DateTime.parse(json['listing_date'])
-        : DateTime.now(),
+      listingDate: DateTime.parse(json['listing_date']),
     );
   }
 
@@ -104,16 +104,14 @@ class Coupon extends Equatable {
       worksInStore: parseBool(json['works_in_store']),
       expiryDate: json['expiry_date'] != null 
         ? DateTime.parse(json['expiry_date']) 
-        : DateTime.now(),
+        : null,
       description: json['description'],
       shopId: json['shop_id']?.toString() ?? '',
       shopName: json['shop_name'] ?? 'Shop ${json['shop_id']}',
       shopNameColor: parseColor(json['shop_name_color'].toString()),
       shopBgColor: parseColor(json['shop_bg_color'].toString()),
       isSold: !parseBool(json['is_active']),
-      listingDate: json['listing_date'] != null
-        ? DateTime.parse(json['listing_date'])
-        : DateTime.now(),
+      listingDate: DateTime.parse(json['listing_date']),
       isMultipleUse: parseBool(json['is_multiple_use']),
       code: json['code']?.toString()
     );
@@ -130,7 +128,7 @@ class Coupon extends Equatable {
       worksInStore: parseBool(json['works_in_store']),
       expiryDate: json['expiry_date'] != null 
         ? DateTime.parse(json['expiry_date']) 
-        : DateTime.now(),
+        : null,
       description: json['description'],
       shopId: json['shop_id']?.toString() ?? '',
       shopName: json['shop_name'] ?? '',
@@ -138,7 +136,7 @@ class Coupon extends Equatable {
       shopBgColor: parseColor(json['shop_bg_color'].toString()),
       sellerId: json['seller_id']?.toString() ?? '',
       sellerUsername: json['seller_username'],
-      sellerReputation: parseInt(json['seller_reputation']),
+      sellerReputation: json['seller_reputation'] == null ? null : parseInt(json['seller_reputation']),
       sellerJoinDate: json['seller_join_date'] != null
         ? DateTime.parse(json['seller_join_date'])
         : null,
@@ -147,6 +145,8 @@ class Coupon extends Equatable {
         ? DateTime.parse(json['listing_date'])
         : DateTime.now(),
       isUsed: parseBool(json['is_used']),
+      purchaseDate: DateTime.parse(json['purchase_date']),
+      transactionId: json['transaction_id']?.toString(),
       code: json['code']?.toString()
     );
   }
