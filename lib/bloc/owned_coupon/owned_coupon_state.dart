@@ -19,7 +19,7 @@ final class OwnedCouponLoadInProgress extends OwnedCouponState {
 }
 
 class OwnedCouponLoadSuccess extends OwnedCouponState {
-  final OwnedCoupon coupon;
+  final Coupon coupon;
 
   const OwnedCouponLoadSuccess({required this.coupon});
 

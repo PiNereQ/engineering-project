@@ -13,7 +13,7 @@ class CategoryRepository {
     if (query.isEmpty) return [];
 
     try {
-      final response = await _api.getJson('/categories');
+      final response = await _api.get('/categories');
       final List<dynamic> categoriesData = response is List ? response : [];
       
       final lowercaseQuery = query.toLowerCase();
@@ -34,7 +34,7 @@ class CategoryRepository {
   /// Fetch shops by category (GET /shops and filter by category)
   Future<List<Shop>> fetchShopsByCategory(Category category) async {
     try {
-      final response = await _api.getJson('/shops');
+      final response = await _api.get('/shops');
       final List<dynamic> shopsData = response is List ? response : [];
       
       // Filter shops that belong to this category

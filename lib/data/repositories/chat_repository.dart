@@ -21,7 +21,7 @@ class ChatRepository {
   /// Throws on API/network errors.
   Future<List<Conversation>> getConversations({required bool asBuyer, required String userId}) async {
     try {
-      final response = await _api.getJson(
+      final response = await _api.get(
         '/chat/conversations',
         queryParameters: {
           'role': asBuyer ? 'buyer' : 'seller',
@@ -67,7 +67,7 @@ class ChatRepository {
     required String sellerId,
   }) async {
     try {
-      final response = await _api.getJson(
+      final response = await _api.get(
         '/chat/conversations/exists',
         queryParameters: {
           'couponId': couponId,
@@ -111,7 +111,7 @@ class ChatRepository {
     };
 
     try {
-      final response = await _api.postJson('/chat/conversations', body: newConversation);
+      final response = await _api.post('/chat/conversations', body: newConversation);
       return Conversation.fromJson(response as Map<String, dynamic>);
     } catch (e) {
       if (kDebugMode) debugPrint('Error creating conversation via API: $e');
@@ -128,7 +128,7 @@ class ChatRepository {
   /// Throws on API/network errors.
   Future<List<Message>> getMessages(String conversationId) async {
     try {
-      final response = await _api.getJson('/chat/conversations/$conversationId/messages');
+      final response = await _api.get('/chat/conversations/$conversationId/messages');
 
       return (response as List).map((data) {
         return Message.fromJson(data as Map<String, dynamic>);
@@ -150,7 +150,7 @@ class ChatRepository {
   /// Throws on API/network errors.
   void markConversationAsRead(String conversationId, String userId) {
     try {
-      _api.patchJson(
+      _api.patch(
         '/chat/conversations/$conversationId/read',
         body: {
           'user_id': userId,
@@ -182,7 +182,7 @@ class ChatRepository {
       "content": text
     };
     try {
-      await _api.postJson('/chat/conversations/$conversationId/messages', body: newMessage);
+      await _api.post('/chat/conversations/$conversationId/messages', body: newMessage);
     } catch (e) {
       if (kDebugMode) {
         debugPrint('Error sending message to API: $e');
@@ -200,7 +200,7 @@ class ChatRepository {
   /// Throws on API/network errors.
   Future<bool> hasUnreadMessages(String currentUserId) async {
     try {
-      final response = await _api.getJson('/chat/unread-summary');
+      final response = await _api.get('/chat/unread-summary');
       return (response as Map<String, dynamic>)['has_unread'] == 1 ? true : false;
     } catch (e) {
       if (kDebugMode) {

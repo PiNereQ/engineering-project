@@ -32,7 +32,7 @@ class UserRepository {
         debugPrint('Creating user with API payload: $apiBody');
       }
 
-      await _api.postJson('/users', body: apiBody);
+      await _api.post('/users', body: apiBody);
     } catch (e) {
       if (kDebugMode) {
         debugPrint('Error creating user in API: $e');
@@ -46,7 +46,7 @@ class UserRepository {
     if (username == null || username.isEmpty) return false;
     
     try {
-      final response = await _api.getJson('/users');
+      final response = await _api.get('/users');
       if (response is List) {
         return response.any((user) => user['username'] == username);
       }
@@ -60,7 +60,7 @@ class UserRepository {
   /// Get user profile by ID (GET /users/{id})
   Future<Map<String, dynamic>?> getUserProfile(String uid) async {
     try {
-      final data = await _api.getJson('/users/$uid');
+      final data = await _api.get('/users/$uid');
       return data as Map<String, dynamic>;
     } catch (e) {
       if (kDebugMode) debugPrint('Error getting user profile: $e');
@@ -72,7 +72,7 @@ class UserRepository {
   /// Note: This endpoint may need to be implemented on the backend
   Future<void> updateUserProfile(String uid, Map<String, dynamic> data) async {
     try {
-      await _api.putJson('/users/$uid', body: data);
+      await _api.put('/users/$uid', body: data);
     } catch (e) {
       if (kDebugMode) debugPrint('Error updating user profile: $e');
       rethrow;
@@ -105,7 +105,7 @@ class UserRepository {
   Future<void> ensureUserExistsInApi(String uid, String email, String username) async {
     try {
       // Try to get user from API
-      await _api.getJson('/users/$uid');
+      await _api.get('/users/$uid');
       if (kDebugMode) {
         debugPrint('User $uid already exists in API');
       }

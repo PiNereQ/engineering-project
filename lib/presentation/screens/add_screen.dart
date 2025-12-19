@@ -1110,13 +1110,8 @@ class _AddScreenState extends State<AddScreen> {
                                                 expiryDateStr = "${_expiryDate.year}-${_expiryDate.month.toString().padLeft(2, '0')}-${_expiryDate.day.toString().padLeft(2, '0')}";
                                               }
 
-                                              // Handle description (nullable if empty)
-                                              String? description = _descriptionController.text.trim().isEmpty 
-                                                  ? null 
-                                                  : _descriptionController.text.trim();
-
                                               final offer = CouponOffer(
-                                                description: description,
+                                                description: _descriptionController.text.trim(),
                                                 discount:
                                                     double.tryParse(
                                                       _reductionController.text,
@@ -1125,11 +1120,9 @@ class _AddScreenState extends State<AddScreen> {
                                                 isDiscountPercentage:
                                                     _selectedType ==
                                                     CouponType.percent,
-                                                price:
-                                                    double.tryParse(
-                                                      _priceController.text,
-                                                    ) ??
-                                                    0,
+                                                price: (double.tryParse(
+                                                    _priceController.text,
+                                                  ) ?? 0 * 100).toInt(),
                                                 code: _codeController.text,
                                                 hasLimits: _hasRestrictions,
                                                 worksOnline: _inOnlineStore,

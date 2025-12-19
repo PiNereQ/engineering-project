@@ -4,7 +4,6 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
-import 'package:proj_inz/data/models/listing_model.dart';
 import 'package:http/http.dart' as http;
 
 part 'payment_event.dart';
@@ -20,7 +19,7 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
           headers: {'Content-Type': 'application/json'},
           body: jsonEncode({
             'amount': event.amount, // smallest currency unit, e.g., 1999 = 19.99 PLN
-            'listingId': event.listing.id,
+            'couponId': event.couponId,
           }),
         );
 
@@ -53,12 +52,10 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
           headers: {'Content-Type': 'application/json'},
           body: jsonEncode({
             'paymentIntentId': paymentIntentId,
-            'listingId': event.listing.id,
-            'couponId': event.listing.couponId,
+            'couponId': event.couponId,
             'buyerId': event.buyerId,
-            'sellerId': event.listing.sellerId,
-            'price': event.listing.price,
-            'isMultipleUse': event.listing.isMultipleUse,
+            'sellerId': event.sellerId,
+            'price': event.amount
           }),
         );
 
@@ -71,7 +68,7 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
         await http.post(
           Uri.parse('http://49.13.155.21:8000/payments/cancel-payment'),
           headers: {'Content-Type': 'application/json'},
-          body: jsonEncode({'listingId': event.listing.id}),
+          body: jsonEncode({'couponId': event.couponId}),
         );
         if (e.error.code == FailureCode.Canceled) {
           emit(const PaymentFailure(error: "Płatność została anulowana."));

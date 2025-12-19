@@ -12,7 +12,7 @@ final class OwnedCouponListInitial extends OwnedCouponListState {}
 final class OwnedCouponListLoadInProgress extends OwnedCouponListState {}
 
 class OwnedCouponListLoadSuccess extends OwnedCouponListState {
-  final List<OwnedCoupon> coupons;
+  final List<Coupon> coupons;
   final bool hasMore;
 
   const OwnedCouponListLoadSuccess({required this.coupons, required this.hasMore});

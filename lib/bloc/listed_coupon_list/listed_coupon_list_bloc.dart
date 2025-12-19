@@ -1,8 +1,8 @@
 
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:proj_inz/data/models/coupon_model.dart';
 import 'listed_coupon_list_event.dart';
 import 'listed_coupon_list_state.dart';
-import 'package:proj_inz/data/models/listed_coupon_model.dart';
 import 'package:flutter/foundation.dart';
 import 'package:proj_inz/data/repositories/coupon_repository.dart';
 
@@ -12,8 +12,8 @@ class ListedCouponListBloc extends Bloc<ListedCouponListEvent, ListedCouponListS
   String? _userId;
   final CouponRepository couponRepository;
 
-  List<ListedCoupon> _allCoupons = [];
-  List<ListedCoupon> _filtered = [];
+  List<Coupon> _allCoupons = [];
+  List<Coupon> _filtered = [];
 
   // filters
   bool _reductionIsPercentage = true;
@@ -176,10 +176,20 @@ List<({String id, String name})> get uniqueShops {
         _filtered.sort((a, b) => a.listingDate.compareTo(b.listingDate));
         break;
       case ListedCouponsOrdering.expiryDateAsc:
-        _filtered.sort((a, b) => a.expiryDate.compareTo(b.expiryDate));
+        _filtered.sort((a, b) {
+          if (a.expiryDate == null && b.expiryDate == null) return 0;
+          if (a.expiryDate == null) return -1;
+          if (b.expiryDate == null) return 1;
+          return a.expiryDate!.compareTo(b.expiryDate!);
+        });
         break;
       case ListedCouponsOrdering.expiryDateDesc:
-        _filtered.sort((a, b) => b.expiryDate.compareTo(a.expiryDate));
+        _filtered.sort((a, b) {
+          if (a.expiryDate == null && b.expiryDate == null) return 0;
+          if (a.expiryDate == null) return -1;
+          if (b.expiryDate == null) return 1;
+          return b.expiryDate!.compareTo(a.expiryDate!);
+        });
         break;
       case ListedCouponsOrdering.priceAsc:
         _filtered.sort((a, b) => a.price.compareTo(b.price));

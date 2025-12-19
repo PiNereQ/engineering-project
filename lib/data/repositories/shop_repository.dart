@@ -15,7 +15,7 @@ class ShopRepository {
     }
 
     try {
-      final data = await _api.getJson('/shops/$shopId');
+      final data = await _api.get('/shops/$shopId');
       
       final shop = Shop(
         id: data['id'].toString(),
@@ -36,7 +36,7 @@ class ShopRepository {
   /// Fetch all shops from API (GET /shops)
   Future<List<Shop>> fetchAllShops() async {
     try {
-      final response = await _api.getJson('/shops');
+      final response = await _api.get('/shops');
       final List<dynamic> shopsData = response is List ? response : [];
 
       final shops = shopsData.map((data) {

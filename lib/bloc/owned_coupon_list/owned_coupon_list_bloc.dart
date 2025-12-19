@@ -1,7 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
-import 'package:proj_inz/data/models/owned_coupon_model.dart';
+import 'package:proj_inz/data/models/coupon_model.dart';
 import 'package:proj_inz/data/repositories/coupon_repository.dart';
 
 part 'owned_coupon_list_event.dart';
@@ -40,13 +40,13 @@ class OwnedCouponListBloc extends Bloc<OwnedCouponListEvent, OwnedCouponListStat
   final CouponRepository couponRepository;
   final int limit = 50;
   
-  final List<OwnedCoupon> _allCoupons = [];
+  final List<Coupon> _allCoupons = [];
   int? _lastOffset;
   bool _hasMore = true;
   bool _isFetching = false;
   String? _userId;
 
-  List<OwnedCoupon> get allCoupons => List.unmodifiable(_allCoupons);
+  List<Coupon> get allCoupons => List.unmodifiable(_allCoupons);
 
   List<({String id, String name})> get uniqueShops {
     final map = <String, String>{};
@@ -131,8 +131,8 @@ class OwnedCouponListBloc extends Bloc<OwnedCouponListEvent, OwnedCouponListStat
           return false;
         }
 
-        if (!_showUsed && c.isUsed) return false;
-        if (!_showUnused && !c.isUsed) return false;
+        if (!_showUsed && c.isUsed!) return false;
+        if (!_showUnused && c.isUsed!) return false;
 
         if (_shopId != null && c.shopId != _shopId) return false;
 
@@ -149,9 +149,15 @@ class OwnedCouponListBloc extends Bloc<OwnedCouponListEvent, OwnedCouponListStat
             return (b.purchaseDate ?? DateTime(0))
                 .compareTo(a.purchaseDate ?? DateTime(0));
           case OwnedCouponsOrdering.expiryDateAsc:
-            return a.expiryDate.compareTo(b.expiryDate);
+            if (a.expiryDate == null && b.expiryDate == null) return 0;
+            if (a.expiryDate == null) return -1;
+            if (b.expiryDate == null) return 1;
+            return a.expiryDate!.compareTo(b.expiryDate!);
           case OwnedCouponsOrdering.expiryDateDesc:
-            return b.expiryDate.compareTo(a.expiryDate);
+            if (a.expiryDate == null && b.expiryDate == null) return 0;
+            if (a.expiryDate == null) return -1;
+            if (b.expiryDate == null) return 1;
+            return b.expiryDate!.compareTo(a.expiryDate!);
           case OwnedCouponsOrdering.priceAsc:
             return a.price.compareTo(b.price);
           case OwnedCouponsOrdering.priceDesc:

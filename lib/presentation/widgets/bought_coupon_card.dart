@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
 import 'package:proj_inz/core/utils/utils.dart';
-import 'package:proj_inz/data/models/owned_coupon_model.dart';
+import 'package:proj_inz/data/models/coupon_model.dart';
 import 'package:proj_inz/presentation/screens/bought_coupon_detail_screen.dart';
 import 'package:proj_inz/presentation/widgets/dashed_separator.dart';
 import 'package:proj_inz/core/theme.dart';
 
 class OwnedCouponCardHorizontal extends StatelessWidget {
-  final OwnedCoupon coupon;
+  final Coupon coupon;
 
   const OwnedCouponCardHorizontal({
     super.key, 
@@ -19,15 +19,15 @@ class OwnedCouponCardHorizontal extends StatelessWidget {
     final String couponId = coupon.id;
     final num reduction = coupon.reduction;
     final bool reductionIsPercentage = coupon.reductionIsPercentage;
-    final num price = coupon.price;
+    final int price = coupon.price;
     final String shopName = coupon.shopName;
     final Color shopNameColor = coupon.shopNameColor;
     final Color shopBgColor = coupon.shopBgColor;
     final bool hasLimits = coupon.hasLimits;
     final bool worksOnline = coupon.worksOnline;
     final bool worksInStore = coupon.worksInStore;
-    final DateTime expiryDate = coupon.expiryDate;
-    final bool isUsed = coupon.isUsed;
+    final DateTime? expiryDate = coupon.expiryDate;
+    final bool isUsed = coupon.isUsed!;
 
     final reductionText =
         isInteger(reduction)
@@ -72,7 +72,7 @@ class OwnedCouponCardHorizontal extends StatelessWidget {
           ),
         ),
         TextSpan(
-          text: "$price zł",
+          text: "${formatPrice(price)} zł",
           style: TextStyle(
             color: isUsed ? AppColors.textSecondary : AppColors.textPrimary,
             fontSize: 24,
@@ -100,12 +100,12 @@ class OwnedCouponCardHorizontal extends StatelessWidget {
     );
 
     final expiryDateText = TextSpan(
-      text: '${expiryDate.day}.${expiryDate.month}.${expiryDate.year}r.',
+      text: expiryDate == null ? 'brak daty ważności' : formatDate(expiryDate),
       style: TextStyle(
         color: isUsed ? AppColors.textSecondary : AppColors.textPrimary,
         fontSize: 12,
         fontFamily: 'Itim',
-        fontWeight: FontWeight.w400,
+        fontWeight: FontWeight.w400, 
         height: 1.0,
       ),
     );

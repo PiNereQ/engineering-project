@@ -19,7 +19,7 @@ final class ListedCouponLoadInProgress extends ListedCouponState {
 }
 
 class ListedCouponLoadSuccess extends ListedCouponState {
-  final ListedCoupon coupon;
+  final Coupon coupon;
 
   const ListedCouponLoadSuccess({required this.coupon});
 

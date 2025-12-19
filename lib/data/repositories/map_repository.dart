@@ -12,7 +12,7 @@ class MapRepository {
   /// Fetch locations within specific bounds from API (GET /shops/locations?latS=&lngW=&latN=&lngE=)
   Future<List<ShopLocation>> fetchLocationsInBounds(LatLngBounds bounds) async {
     try {
-      final response = await _api.getJson(
+      final response = await _api.get(
         '/shops/locations',
         queryParameters: {
           'south': bounds.south.toString(),

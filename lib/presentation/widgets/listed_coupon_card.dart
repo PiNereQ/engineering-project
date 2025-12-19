@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:proj_inz/core/theme.dart';
 import 'package:proj_inz/core/utils/utils.dart';
-import 'package:proj_inz/data/models/listed_coupon_model.dart';
+import 'package:proj_inz/data/models/coupon_model.dart';
 import 'package:proj_inz/presentation/screens/listed_coupon_detail_screen.dart';
 import 'package:proj_inz/presentation/widgets/dashed_separator.dart';
 
 class ListedCouponCardHorizontal extends StatelessWidget {
-  final ListedCoupon coupon;
+  final Coupon coupon;
 
   const ListedCouponCardHorizontal({
     super.key,
@@ -69,7 +69,7 @@ class ListedCouponCardHorizontal extends StatelessWidget {
           ),
         ),
         TextSpan(
-          text: "$price zł",
+          text: "${formatPrice(price)} zł",
           style: TextStyle(
             color: isSold ? AppColors.textSecondary : AppColors.textPrimary,
             fontSize: 24,
@@ -82,7 +82,7 @@ class ListedCouponCardHorizontal extends StatelessWidget {
 
     final expiryDateText = TextSpan(
       text:
-          "ważny do ${expiryDate.day}.${expiryDate.month}.${expiryDate.year}r.",
+      expiryDate == null ? 'brak daty ważności' : "ważny do ${formatDate(expiryDate)}",
       style: TextStyle(
         color: isSold ? AppColors.textSecondary : AppColors.textPrimary,
         fontSize: 12,
