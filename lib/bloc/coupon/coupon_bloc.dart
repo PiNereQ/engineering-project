@@ -6,11 +6,11 @@ import 'package:proj_inz/data/repositories/coupon_repository.dart';
 part 'coupon_event.dart';
 part 'coupon_state.dart';
 
-class OwnedCouponBloc extends Bloc<CouponEvent, CouponState> {
+class CouponBloc extends Bloc<CouponEvent, CouponState> {
   final CouponRepository couponRepository;
   final String couponId;
 
-  OwnedCouponBloc(this.couponRepository, this.couponId) : super(CouponInitial()) {
+  CouponBloc(this.couponRepository, this.couponId) : super(CouponInitial()) {
     on<_PreloadCoupon>((event, emit) {
       emit(CouponLoadSuccess(coupon: event.coupon));
     });
@@ -26,27 +26,12 @@ class OwnedCouponBloc extends Bloc<CouponEvent, CouponState> {
       }
     });
 
-    on<BuyCouponRequested>((event, emit) async {
-      emit(const CouponLoadInProgress());
-
-      try {
-        // TODO: Implement buyCoupon API endpoint
-        // await couponRepository.buyCoupon(
-        //   couponId: event.couponId,
-        //   buyerId: event.userId,
-        // );
-        final coupon = await couponRepository.fetchCouponDetailsById(couponId);
-        emit(CouponLoadSuccess(coupon: coupon));
-      } catch (e) {
-        emit(CouponLoadFailure(message: e.toString()));
-      }
-    });
   }
 
   /// Factory constructor that creates a bloc with preloaded coupon data
   /// Use this when you already have the coupon object and don't need to fetch it
-  factory OwnedCouponBloc.withCoupon(Coupon coupon) {
-    final bloc = OwnedCouponBloc(
+  factory CouponBloc.withCoupon(Coupon coupon) {
+    final bloc = CouponBloc(
       CouponRepository(), 
       coupon.id,
     );
