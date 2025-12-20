@@ -273,10 +273,9 @@ class _CouponDetails extends StatelessWidget {
           showCustomSnackBar(context, 'Płatność zakończona sukcesem!');
           final userId = FirebaseAuth.instance.currentUser?.uid;
           if (context.mounted && userId != null) {
-            context.read<OwnedCouponBloc>().add(
-              BuyCouponRequested(couponId: coupon.id, userId: userId),
-            );
-            
+            // context.read<OwnedCouponBloc>().add(
+            //   BuyCouponRequested(couponId: coupon.id, userId: userId),
+            // );
             Navigator.of(context).pushReplacement(
               MaterialPageRoute(
               builder: (_) => BoughtCouponDetailsScreen(couponId: coupon.id),
@@ -499,6 +498,7 @@ class _CouponDetails extends StatelessWidget {
                             buyerId: buyerId,
                             sellerId: coupon.sellerId!,
                             amount: coupon.price,
+                            isMultipleUse: coupon.isMultipleUse ?? false,
                           ),
                         );
                       },
