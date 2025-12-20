@@ -17,122 +17,130 @@ class RatingDialog extends StatefulWidget {
 }
 
 class _RatingDialogState extends State<RatingDialog> {
-  int selectedStars = 1;
+  int selectedStars = 5;
   final TextEditingController commentController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
+    return Dialog(
       backgroundColor: AppColors.surface,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(24),
         side: const BorderSide(width: 2, color: AppColors.textPrimary),
       ),
-      title: const Text(
-        'Oceń transakcję',
-        style: TextStyle(
-          fontFamily: 'Itim',
-          fontSize: 22,
-          color: AppColors.textPrimary,
-        ),
-      ),
-      content: ConstrainedBox(
-        constraints: const BoxConstraints(
-          maxWidth: 420,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Twoja ocena',
-              style: TextStyle(
-                fontFamily: 'Itim',
-                fontSize: 16,
-                color: AppColors.textSecondary,
+      child: SizedBox(
+        width: 420,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 24, 24, 12),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Oceń transakcję',
+                style: TextStyle(
+                  fontFamily: 'Itim',
+                  fontSize: 22,
+                  color: AppColors.textPrimary,
+                ),
               ),
-            ),
-            const SizedBox(height: 12),
 
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: List.generate(5, (index) {
-                final star = index + 1;
-                return GestureDetector(
-                  onTap: () => setState(() => selectedStars = star),
-                  child: Icon(
-                    Icons.star_rounded,
-                    size: 36,
-                    color: selectedStars >= star
-                        ? Colors.amber
-                        : AppColors.textSecondary,
-                  ),
-                );
-              }),
-            ),
+              const SizedBox(height: 16),
 
-            const SizedBox(height: 16),
-
-            TextField(
-              controller: commentController,
-              maxLines: 3,
-              style: const TextStyle(
-                fontFamily: 'Itim',
-                fontSize: 16,
-                color: AppColors.textPrimary,
-              ),
-              decoration: InputDecoration(
-                hintText: 'Komentarz (opcjonalnie)',
-                hintStyle: const TextStyle(
+              const Text(
+                'Twoja ocena',
+                style: TextStyle(
                   fontFamily: 'Itim',
                   fontSize: 16,
                   color: AppColors.textSecondary,
                 ),
-                filled: true,
-                fillColor: AppColors.surface,
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  borderSide: const BorderSide(
-                    width: 2,
-                    color: AppColors.textPrimary,
-                  ),
+              ),
+
+              const SizedBox(height: 12),
+
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: List.generate(5, (index) {
+                  final star = index + 1;
+                  return GestureDetector(
+                    onTap: () => setState(() => selectedStars = star),
+                    child: Icon(
+                      Icons.star_rounded,
+                      size: 36,
+                      color: selectedStars >= star
+                          ? Colors.amber
+                          : AppColors.textSecondary,
+                    ),
+                  );
+                }),
+              ),
+
+              const SizedBox(height: 16),
+
+              TextField(
+                controller: commentController,
+                maxLines: 3,
+                style: const TextStyle(
+                  fontFamily: 'Itim',
+                  fontSize: 16,
+                  color: AppColors.textPrimary,
                 ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  borderSide: const BorderSide(
-                    width: 2,
-                    color: AppColors.primaryButton,
+                decoration: InputDecoration(
+                  hintText: 'Komentarz (opcjonalnie)',
+                  hintStyle: const TextStyle(
+                    fontFamily: 'Itim',
+                    fontSize: 16,
+                    color: AppColors.textSecondary,
                   ),
-                ),
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
+                  filled: true,
+                  fillColor: AppColors.surface,
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: const BorderSide(width: 2),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: const BorderSide(
+                      width: 2,
+                      color: AppColors.primaryButton,
+                    ),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
                 ),
               ),
-            ),
-          ],
+
+              const SizedBox(height: 24),
+
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  CustomTextButton.small(
+                    label: 'Anuluj',
+                    width: 100,
+                    onTap: widget.onCancel,
+                  ),
+                  const SizedBox(width: 12),
+                  CustomTextButton.primarySmall(
+                    label: 'Wyślij',
+                    width: 100,
+                    onTap: () {
+                      widget.onSubmit(
+                        selectedStars,
+                        commentController.text.trim().isEmpty
+                            ? null
+                            : commentController.text.trim(),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
-      actionsPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      actions: [
-        CustomTextButton.small(
-          label: 'Anuluj',
-          width: 100,
-          onTap: widget.onCancel,
-        ),
-        CustomTextButton.primarySmall(
-          label: 'Wyślij',
-          width: 100,
-          onTap: () {
-                  widget.onSubmit(
-                    selectedStars,
-                    commentController.text.trim().isEmpty
-                        ? null
-                        : commentController.text.trim(),
-                  );
-                },
-        ),
-      ],
     );
   }
 }

@@ -15,8 +15,8 @@ import 'package:proj_inz/presentation/widgets/custom_snack_bar.dart';
 import 'package:proj_inz/presentation/widgets/dashed_separator.dart';
 import 'package:proj_inz/presentation/widgets/error_card.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_icon_button.dart';
-import 'package:proj_inz/presentation/widgets/input/buttons/custom_switch.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_text_button.dart';
+import 'package:proj_inz/presentation/widgets/rating_popup.dart';
 import 'package:proj_inz/presentation/widgets/reputation_bar.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
@@ -148,7 +148,7 @@ class BoughtCouponDetailsScreen extends StatelessWidget {
 }
 
 
-class _CouponDetails extends StatelessWidget {
+class _CouponDetails extends StatefulWidget {
   const _CouponDetails({
     required this.coupon,
   });
@@ -156,19 +156,32 @@ class _CouponDetails extends StatelessWidget {
   final Coupon coupon;
 
   @override
+  State<_CouponDetails> createState() => _CouponDetailsState();
+}
+
+class _CouponDetailsState extends State<_CouponDetails> {
+  late bool isUsed;
+
+  @override
+  void initState() {
+    super.initState();
+    isUsed = widget.coupon.isUsed ?? false;
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final Color shopBgColor = coupon.shopBgColor;
-    final String shopName = coupon.shopName;
-    final Color shopNameColor = coupon.shopNameColor;
-    final num reduction = coupon.reduction;
-    final bool reductionIsPercentage = coupon.reductionIsPercentage;
-    final int price = coupon.price;
-    final bool hasLimits = coupon.hasLimits;
-    final bool worksOnline = coupon.worksOnline;
-    final bool worksInStore = coupon.worksInStore;
-    final DateTime? expiryDate = coupon.expiryDate;
-    final String? description = coupon.description;
-    final String code = coupon.code!; 
+    final Color shopBgColor = widget.coupon.shopBgColor;
+    final String shopName = widget.coupon.shopName;
+    final Color shopNameColor = widget.coupon.shopNameColor;
+    final num reduction = widget.coupon.reduction;
+    final bool reductionIsPercentage = widget.coupon.reductionIsPercentage;
+    final int price = widget.coupon.price;
+    final bool hasLimits = widget.coupon.hasLimits;
+    final bool worksOnline = widget.coupon.worksOnline;
+    final bool worksInStore = widget.coupon.worksInStore;
+    final DateTime? expiryDate = widget.coupon.expiryDate;
+    final String? description = widget.coupon.description;
+    final String code = widget.coupon.code!; 
     
     final reductionText = isInteger(reduction)
     ? reduction.toString()
@@ -282,7 +295,7 @@ class _CouponDetails extends StatelessWidget {
                   alignment: Alignment.center,
                   padding: const EdgeInsets.symmetric(horizontal: 8),
                   decoration: ShapeDecoration(
-                    color: coupon.isUsed! ? AppColors.primaryButtonPressed : shopBgColor,
+                    color: isUsed ? AppColors.primaryButtonPressed : shopBgColor,
                     shape: RoundedRectangleBorder(
                       side: const BorderSide(width: 2),
                       borderRadius: BorderRadius.circular(8),
@@ -293,7 +306,7 @@ class _CouponDetails extends StatelessWidget {
                     child: Text(
                       shopName,
                       style: TextStyle(
-                        color: coupon.isUsed! ? AppColors.textSecondary : shopNameColor,
+                        color: isUsed ? AppColors.textSecondary : shopNameColor,
                         fontSize: 30,
                         fontFamily: 'Roboto',
                         fontWeight: FontWeight.w700,
@@ -451,30 +464,94 @@ class _CouponDetails extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               spacing: 12,
               children: [
-                CustomTextButton(
+                CustomTextButton.primary(
                   label: 'Wyświetl kod kuponu',
                   onTap: () => _showCodeDialog(context, code),
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  spacing: 8,
-                  children: [
-                    CustomSwitch(value: coupon.isUsed!, onChanged: (_) {}, ), // TODO: implement change of state
-                    Text(
-                      'kupon wykorzystany',
-                      style: TextStyle(
-                        color: AppColors.textPrimary,
-                        fontSize: 20,
-                        fontFamily: 'Itim',
-                        fontWeight: FontWeight.w400,
-                        height: 0.75,
+                if (!isUsed)
+                  CustomTextButton(
+                    label: 'Oznacz kupon jako wykorzystany',
+                    onTap: () async {
+                      final confirm = await showDialog<bool>(
+                        context: context,
+                        builder: (_) => AlertDialog(
+                          backgroundColor: AppColors.surface,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(24),
+                            side: const BorderSide(width: 2, color: AppColors.textPrimary),
+                          ),
+                          title: const Text(
+                            'Oznaczyć kupon jako wykorzystany?',
+                            style: TextStyle(
+                              fontFamily: 'Itim',
+                              fontSize: 22,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                          content: const Text(
+                            'Po oznaczeniu kuponu jako wykorzystany musisz wystawić ocenę transakcji.',
+                            style: TextStyle(
+                              fontFamily: 'Itim',
+                              fontSize: 16,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                          actionsPadding:
+                              const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          actions: [
+                            CustomTextButton.small(
+                              label: 'Anuluj',
+                              width: 100,
+                              onTap: () => Navigator.pop(context, false),
+                            ),
+                            CustomTextButton.primarySmall(
+                              label: 'Dalej',
+                              width: 100,
+                              onTap: () => Navigator.pop(context, true),
+                            ),
+                          ],
+                        ),
+                      );
+
+                      if (confirm != true) return;
+
+                      final rated = await showDialog<bool>(
+                        context: context,
+                        barrierDismissible: false,
+                        builder: (_) => RatingDialog(
+                          onCancel: () => Navigator.pop(context, false),
+                          onSubmit: (stars, comment) {
+                            // TODO: backend (POST /ratings)
+                            Navigator.pop(context, true);
+                          },
+                        ),
+                      );
+
+                      if (rated == true && mounted) {
+                        setState(() {
+                          isUsed = true;
+                        });
+                      }
+                    },
+                  ),
+
+                if (isUsed)
+                  const Padding(
+                    padding: EdgeInsets.only(top: 8),
+                    child: Center(
+                      child: Text(
+                        'Kupon został wykorzystany',
+                        style: TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 16,
+                          fontFamily: 'Itim',
+                        ),
                       ),
                     ),
-                  ],
-                ),
+                  ),
               ],
             ),
           )
