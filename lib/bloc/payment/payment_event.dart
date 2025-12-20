@@ -12,12 +12,14 @@ class StartPayment extends PaymentEvent {
   final String buyerId;
   final String sellerId;
   final int amount; // Amount in smallest currency unit (e.g., 6800 for 68.00 PLN)
+  final bool isMultipleUse;
 
   const StartPayment({
     required this.couponId,
     required this.buyerId,
     required this.sellerId,
     required this.amount,
+    required this.isMultipleUse,
   });
 
   @override

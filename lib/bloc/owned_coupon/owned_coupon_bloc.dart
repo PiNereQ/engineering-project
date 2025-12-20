@@ -13,7 +13,6 @@ class OwnedCouponBloc extends Bloc<OwnedCouponEvent, OwnedCouponState> {
   OwnedCouponBloc(this.couponRepository, this.couponId) : super(OwnedCouponInitial()) {
     on<FetchCouponDetails>((event, emit) async {
       emit(const OwnedCouponLoadInProgress());
-
       try {
         final coupon = await couponRepository.fetchOwnedCouponDetailsById(couponId);
         emit(OwnedCouponLoadSuccess(coupon: coupon));

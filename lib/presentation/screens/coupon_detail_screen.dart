@@ -32,7 +32,7 @@ class CouponDetailsScreen extends StatelessWidget {
         BlocProvider(
           create:
               (context) =>
-                  OwnedCouponBloc.withCoupon(coupon),
+                  CouponBloc.withCoupon(coupon),
         ),
         BlocProvider(create: (_) => PaymentBloc()),
         BlocProvider(
@@ -67,7 +67,7 @@ class CouponDetailsScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 16,),
-                BlocBuilder<OwnedCouponBloc, CouponState>(
+                BlocBuilder<CouponBloc, CouponState>(
                   builder: (context, state) {
                     if (state is CouponLoadInProgress) {
                       return const Center(child: CircularProgressIndicator());
@@ -273,13 +273,10 @@ class _CouponDetails extends StatelessWidget {
           showCustomSnackBar(context, 'Płatność zakończona sukcesem!');
           final userId = FirebaseAuth.instance.currentUser?.uid;
           if (context.mounted && userId != null) {
-            context.read<OwnedCouponBloc>().add(
-              BuyCouponRequested(couponId: coupon.id, userId: userId),
-            );
-            
+
             Navigator.of(context).pushReplacement(
               MaterialPageRoute(
-              builder: (_) => BoughtCouponDetailsScreen(couponId: coupon.id),
+              builder: (context) => BoughtCouponDetailsScreen(couponId: coupon.id),
               ),
             );
             context.read<CouponListBloc>().add(RefreshCoupons()); // TODO: add listener for success state so the refresh is run after backend change
@@ -499,6 +496,7 @@ class _CouponDetails extends StatelessWidget {
                             buyerId: buyerId,
                             sellerId: coupon.sellerId!,
                             amount: coupon.price,
+                            isMultipleUse: coupon.isMultipleUse ?? false,
                           ),
                         );
                       },

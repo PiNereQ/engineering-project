@@ -55,7 +55,8 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
             'couponId': event.couponId,
             'buyerId': event.buyerId,
             'sellerId': event.sellerId,
-            'price': event.amount
+            'price': event.amount,
+            'isMultipleUse': event.isMultipleUse
           }),
         );
 
