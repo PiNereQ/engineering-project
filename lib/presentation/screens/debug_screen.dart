@@ -4,6 +4,7 @@ import 'package:proj_inz/core/theme.dart';
 import 'package:proj_inz/core/utils/utils.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_text_button.dart';
 import 'package:proj_inz/presentation/widgets/rating_popup.dart';
+import 'package:proj_inz/presentation/widgets/system_chat_tile.dart';
 
 
 class DebugScreen extends StatefulWidget {
@@ -192,7 +193,49 @@ Padding(
   ),
 ),          
                
-          
+ Padding(
+  padding: const EdgeInsets.all(16.0),
+  child: Container(
+    width: double.infinity,
+    padding: const EdgeInsets.all(16),
+    decoration: BoxDecoration(
+      border: Border.all(color: Colors.orange),
+      borderRadius: BorderRadius.circular(12),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'DEBUG - Systemowa wiadomość w czacie',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+
+        const SizedBox(height: 16),
+
+        SystemChatTile(
+          text: 'Kupujący oznaczył kupon jako wykorzystany.',
+          onRate: () {
+            showDialog(
+              context: context,
+              barrierDismissible: false,
+              builder: (_) => RatingDialog(
+                onCancel: () => Navigator.pop(context),
+                onSubmit: (stars, comment) {
+                  print('⭐ System rating: $stars');
+                  print('💬 System comment: $comment');
+                  Navigator.pop(context);
+                },
+              ),
+            );
+          },
+        ),
+      ],
+    ),
+  ),
+),         
           ],
           
         ),
