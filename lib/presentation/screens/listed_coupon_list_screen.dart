@@ -120,6 +120,24 @@ class _ListedCouponListScreenState extends State<ListedCouponListScreen> {
     }
 
     if (state is ListedCouponListLoadSuccess) {
+      if (state.coupons.isEmpty) {
+        return const SliverFillRemaining(
+          child: Center(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 24),
+              child: Text(
+                "Nie masz żadnych wystawionych kuponów.",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontFamily: 'Itim',
+                  color: AppColors.textPrimary,
+                ),
+              ),
+            ),
+          ),
+        );
+      }
+
       return SliverPadding(
         padding: const EdgeInsets.symmetric(horizontal: 24),
         sliver: SliverList(

@@ -8,7 +8,6 @@ import 'package:proj_inz/presentation/screens/sign_up_screen.dart';
 import 'package:proj_inz/presentation/widgets/custom_snack_bar.dart';
 import 'package:proj_inz/presentation/widgets/dashed_separator.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_text_button.dart';
-import 'package:proj_inz/presentation/widgets/input/buttons/google_sign_in_button.dart';
 import 'package:proj_inz/presentation/widgets/input/text_fields/labeled_text_field.dart';
 import 'package:proj_inz/core/theme.dart';
 
@@ -207,16 +206,6 @@ GestureDetector(
                     backgroundColor: AppColors.primaryButton,
                     isLoading: widget.isLoading,
                   ),
-                  const Text(
-                    'lub',
-                    style: TextStyle(
-                      color: AppColors.textPrimary,
-                      fontSize: 18,
-                      fontFamily: 'Itim',
-                      fontWeight: FontWeight.w400,
-                    ),
-                  ),
-                  GoogleSignInButton(onTap: () {}),
                 ],
               ),
             ),

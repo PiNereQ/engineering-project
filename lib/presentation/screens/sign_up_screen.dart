@@ -248,11 +248,10 @@ class _RegistrationCardState extends State<_RegistrationCard> {
                       ),
                       CustomTextButton(
                         label: "Zarejestruj",
-                        onTap:widget.isLoading
-                            ? () {}
-                            : _handleSubmit,
-                        backgroundColor: AppColors.primaryButton,
-                        isLoading: widget.isLoading,
+                        onTap: widget.isLoading ? () {} : _handleSubmit,
+                        backgroundColor: widget.isLoading
+                            ? AppColors.primaryButtonPressed
+                            : AppColors.primaryButton,
                       ),
                     ],
                   ),

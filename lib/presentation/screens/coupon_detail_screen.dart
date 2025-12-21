@@ -59,10 +59,6 @@ class CouponDetailsScreen extends StatelessWidget {
                           Navigator.of(context).pop();
                         },
                       ),
-                      CustomIconButton(
-                        icon: SvgPicture.asset('assets/icons/share.svg'),
-                        onTap: () {},
-                      ),
                     ],
                   ),
                 ),
