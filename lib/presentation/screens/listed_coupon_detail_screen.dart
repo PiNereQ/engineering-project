@@ -471,7 +471,7 @@ class _CouponDetails extends StatelessWidget {
                     context,
                     'Kupon został usunięty',
                   );
-                  Navigator.of(context).pop();
+                  Navigator.of(context).pop(true);
                 }
               } catch (e) {
                 if (context.mounted) {

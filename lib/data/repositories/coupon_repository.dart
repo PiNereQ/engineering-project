@@ -244,7 +244,18 @@ class CouponRepository {
   /// Deactivate listed coupon via API (DELETE /coupons/{couponId})
   Future<void> deactivateListedCoupon(String couponId) async {
     try {
-      await _api.delete('/coupons/$couponId', useAuthToken: true);
+      final userId = await userRepository.getCurrentUserId();
+
+      await _api.delete(
+        '/coupons/$couponId',
+        queryParameters: {
+          'user_id': userId,
+        },
+        body: {
+          'isDeleted': true,
+        },
+        useAuthToken: true,
+      );
     } catch (e) {
       if (kDebugMode) debugPrint('Error in deactivateListedCoupon: $e');
       rethrow;

@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:proj_inz/bloc/listed_coupon_list/listed_coupon_list_bloc.dart';
+import 'package:proj_inz/bloc/listed_coupon_list/listed_coupon_list_event.dart';
 import 'package:proj_inz/core/theme.dart';
 import 'package:proj_inz/core/utils/utils.dart';
 import 'package:proj_inz/data/models/coupon_model.dart';
@@ -124,14 +127,17 @@ class ListedCouponCardHorizontal extends StatelessWidget {
             children: [
               Expanded(
                 child: GestureDetector(
-                  onTap: () {
-                    Navigator.push(
+                  onTap: () async {
+                    final result = await Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder:
-                            (context) => ListedCouponDetailsScreen(couponId: couponId)
+                        builder: (_) => ListedCouponDetailsScreen(couponId: coupon.id),
                       ),
                     );
+
+                    if (result == true && context.mounted) {
+                      context.read<ListedCouponListBloc>().add(RefreshListedCoupons());
+                    }
                   },
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
