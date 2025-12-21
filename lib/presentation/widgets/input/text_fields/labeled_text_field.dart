@@ -13,6 +13,7 @@ class LabeledTextField extends StatefulWidget {
   final LabeledTextFieldWidth width;
   final TextAlign textAlign;
   final int maxLines;
+  final int? maxLength;
   final bool isPassword;
 
   final TextEditingController? controller;
@@ -31,6 +32,7 @@ class LabeledTextField extends StatefulWidget {
     this.width = LabeledTextFieldWidth.full,
     this.textAlign = TextAlign.left,
     this.maxLines = 1,
+    this.maxLength,
     this.isPassword = false,
     this.controller,
     this.keyboardType,
