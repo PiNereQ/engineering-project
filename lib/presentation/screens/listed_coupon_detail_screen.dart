@@ -406,11 +406,12 @@ class _CouponDetails extends StatelessWidget {
                           },
                         ),
 
-                        CustomTextButton(
-                          label: 'Usuń kupon',
-                          icon: const Icon(Icons.delete_outline),
-                          onTap: () => _showDeleteConfirmation(context),
-                        ),
+                        if (!coupon.isSold)
+                          CustomTextButton(
+                            label: 'Usuń kupon',
+                            icon: const Icon(Icons.delete_outline),
+                            onTap: () => _showDeleteConfirmation(context),
+                          ),
               ],
             ),
           ),
