@@ -20,33 +20,19 @@ class PhoneNumberConfirmationScreen extends StatefulWidget {
 }
 
 class _PhoneNumberConfirmationScreenState extends State<PhoneNumberConfirmationScreen> {
-  bool _isAfterRegistration = false;
-  bool _numberSubmitted = false;
-
-  void _previousStep() {
-    setState(() {
-      _numberSubmitted = false;
-    });
-  }
-
-  void _nextStep() {
-    setState(() {
-      _numberSubmitted = true;
-    });
-  }
+  bool _isDuringRegistration = false;
 
   @override
   Widget build(BuildContext context) {
     BlocListener<NumberVerificationBloc, NumberVerificationState>(
       listener: (context, state) {
-        if (state is NumberVerificationAfterRegistration) {
+        if (state is NumberVerificationDuringRegistrationInitial) {
           setState(() {
-            _isAfterRegistration = true;
+            _isDuringRegistration = true;
           });
         }
       }
     );
-
 
     return Scaffold(
       resizeToAvoidBottomInset: true,
@@ -55,12 +41,13 @@ class _PhoneNumberConfirmationScreenState extends State<PhoneNumberConfirmationS
           Container(decoration: const BoxDecoration(color: AppColors.background)),
           BlocConsumer<NumberVerificationBloc, NumberVerificationState>(
             listener: (context, state) {
+              
               if (state is NumberVerificationSuccess) {
                 showCustomSnackBar(context, "Numer telefonu został potwierdzony!");
               }
 
-              if (state is NumberVerificationSkipRequested) {
-                if (_isAfterRegistration) {
+              if (state is NumberVerificationSkipped) {
+                if (_isDuringRegistration) {
                   Navigator.of(context).pushReplacement(
                     MaterialPageRoute(builder: (context) => const MainScreen()),
                   );
@@ -74,9 +61,9 @@ class _PhoneNumberConfirmationScreenState extends State<PhoneNumberConfirmationS
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(16, 72, 16, 24),
                   child: Center(
-                    child: !_numberSubmitted
-                      ? _PhoneNumberStepCard(isLoading: state is NumberVerificationInProgress, onNext: _nextStep)
-                      : _ConfirmationCodeStep(isLoading: state is NumberVerificationInProgress, onPrevious: _previousStep),
+                    child: (state is NumberVerificationDuringRegistrationInitial || state is NumberVerificationAfterRegistrationInitial || state is NumberSubmitInProgress)
+                      ? _PhoneNumberStepCard(isLoading: state is NumberSubmitInProgress, isDuringRegistration: _isDuringRegistration,)
+                      : _ConfirmationCodeStep(isLoading: state is NumberVerificationInProgress, isDuringRegistration: _isDuringRegistration),
                   ),
                 ),
               );
@@ -90,10 +77,10 @@ class _PhoneNumberConfirmationScreenState extends State<PhoneNumberConfirmationS
 
 class _PhoneNumberStepCard extends StatefulWidget {
   final bool isLoading;
-  final VoidCallback onNext;
+  final bool isDuringRegistration;
 
   const _PhoneNumberStepCard({
-    required this.isLoading, required this.onNext
+    required this.isLoading, required this.isDuringRegistration
   });
 
   @override
@@ -116,12 +103,20 @@ class _PhoneNumberStepCardState extends State<_PhoneNumberStepCard> {
       setState(() {
         _errorMessage = null;
       });
-    widget.onNext;
+      context.read<NumberVerificationBloc>().add(
+        NumberVerificationRequested(
+          number: _phoneNumberController.text.replaceAll(' ', '').trim(),
+        ),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+
+    final textAfterRegistration = 'Abyś mogła/mógł kupować i sprzedawać kupony potrzebujemy od Ciebie numer telefonu w celach weryfikacji. \n\n Podaj go, a prześlemy Tobie SMSem kod. Numer telefonu zostanie przypisany do konta. ';
+    final textDuringRegistration = 'Abyś mogła/mógł kupować i sprzedawać kupony potrzebujemy od Ciebie numer telefonu w celach weryfikacji. Możesz na razie pominąć ten krok.\n\n Podaj go, a prześlemy Tobie SMSem kod. Numer telefonu zostanie przypisany do konta. ';
+
     return Container(
       decoration: ShapeDecoration(
         color: AppColors.surface,
@@ -162,8 +157,10 @@ class _PhoneNumberStepCardState extends State<_PhoneNumberStepCard> {
                       ),
                     ),
                   ),
-                  const Text(
-                    'Podaj swój numer telefonu, a prześlemy Tobie SMSem kod weryfikacyjny. Numer telefonu zostanie przypisany do konta. ',
+                  Text(
+                    widget.isDuringRegistration
+                     ? textDuringRegistration
+                     : textAfterRegistration,
                     textAlign: TextAlign.justify,
                     style: TextStyle(
                       color: AppColors.textPrimary,
@@ -176,7 +173,9 @@ class _PhoneNumberStepCardState extends State<_PhoneNumberStepCard> {
                     label: "Numer telefonu",
                     controller: _phoneNumberController,
                     iconOnLeft: false,
-                    validator: emailValidator,
+                    keyboardType: TextInputType.phone,
+                    validator: phoneNumberValidator,
+                    //inputFormatters: [PolishPhoneInputFormatter()], 798447
                   ),
                   if (_errorMessage != null)
                     Text(
@@ -193,7 +192,7 @@ class _PhoneNumberStepCardState extends State<_PhoneNumberStepCard> {
                     spacing: 18,
                     children: [
                       CustomTextButton(
-                        label: "Pomiń",
+                        label: widget.isDuringRegistration ? "Pomiń" : "Anuluj",
                         onTap: widget.isLoading
                             ? () {}
                             : _handleSkip,
@@ -221,10 +220,10 @@ class _PhoneNumberStepCardState extends State<_PhoneNumberStepCard> {
 
 class _ConfirmationCodeStep extends StatefulWidget {
   final bool isLoading;
-  final VoidCallback onPrevious;
+  final bool isDuringRegistration;
 
   const _ConfirmationCodeStep({
-    required this.isLoading, required this.onPrevious
+    required this.isLoading, required this.isDuringRegistration
   });
 
   @override
@@ -237,7 +236,15 @@ class _ConfirmationCodeStepState extends State<_ConfirmationCodeStep> {
   String? _errorMessage;
 
   void _handleBack() {
-    widget.onPrevious;
+    if (widget.isDuringRegistration) {
+      context.read<NumberVerificationBloc>().add(
+        NumberVerificationFormShownDuringRegistration(),
+      );
+    } else {
+      context.read<NumberVerificationBloc>().add(
+        NumberVerificationFormShownAfterRegistration(),
+      );
+    }
   }
 
   void _handleSubmit() {
@@ -247,8 +254,9 @@ class _ConfirmationCodeStepState extends State<_ConfirmationCodeStep> {
       });
 
       context.read<NumberVerificationBloc>().add(
-        NumberVerificationRequested(
-          number: _verificationCodeController.text.trim(),
+        ConfirmationCodeSubmitted(
+          verificationId: (context.read<NumberVerificationBloc>().state as NumberSubmitSuccess).verificationId,
+          smsCode: _verificationCodeController.text.trim(),
         ),
       );
     }
@@ -300,7 +308,15 @@ class _ConfirmationCodeStepState extends State<_ConfirmationCodeStep> {
                     label: "Kod weryfikacyjny",
                     controller: _verificationCodeController,
                     iconOnLeft: false,
-                    validator: emailValidator,
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'Proszę podać kod weryfikacyjny';
+                      }
+                      if (value.trim().length != 6) {
+                        return 'Kod weryfikacyjny musi mieć 6 cyfr';
+                      }
+                      return null;
+                    },
                   ),
                   if (_errorMessage != null)
                     Text(
@@ -355,7 +371,7 @@ class _ConfirmationCodeStepState extends State<_ConfirmationCodeStep> {
                   ),
                   CustomTextButton.small(
                     label: "Wyślj ponownie",
-                    onTap: () {}
+                    onTap: () {} // TODO: implement resend code functionality
                   ),
                 ],
               ),

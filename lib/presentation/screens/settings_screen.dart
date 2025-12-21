@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:proj_inz/bloc/number_verification/number_verification_bloc.dart';
 import 'package:proj_inz/core/theme.dart';
+import 'package:proj_inz/presentation/screens/phone_number_confirmation_screen.dart';
 import 'package:proj_inz/presentation/widgets/dashed_separator.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_icon_button.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_text_button.dart';
@@ -94,10 +96,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               ? user['joinDate'].toString().substring(0, 10)
                               : '—',
                         ),
-                        const _KeyValueRow(
+                        _KeyValueRow(
                           label: 'Numer telefonu',
-                          value: 'Niepotwierdzony',
-                          trailing: _InlineAction(text: 'Potwierdź'),
+                          value: 'Niepotwierdzony', // TODO: load actual status
+                          trailing: _InlineAction(
+                            text: 'Potwierdź',
+                            onTap: () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (context) => BlocProvider<NumberVerificationBloc>.value(
+                                    value: context.read<NumberVerificationBloc>()..add(
+                                      NumberVerificationFormShownAfterRegistration(),
+                                    ),
+                                    child: const PhoneNumberConfirmationScreen(),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
                         ),
 
                         Padding(
@@ -306,17 +322,22 @@ class _KeyValueRow extends StatelessWidget {
 
 class _InlineAction extends StatelessWidget {
   final String text;
-  const _InlineAction({required this.text});
+  final VoidCallback? onTap;
+  const _InlineAction({required this.text, required this.onTap});
+  
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      text,
-      style: const TextStyle(
-        fontFamily: 'Itim',
-        fontSize: 16,
-        color: AppColors.primaryButton,
-      ),
+    return GestureDetector(
+      onTap: onTap,
+      child: Text(
+        text,
+        style: const TextStyle(
+          fontFamily: 'Itim',
+          fontSize: 16,
+          color: AppColors.primaryButton,
+        ),
+      )
     );
   }
 }

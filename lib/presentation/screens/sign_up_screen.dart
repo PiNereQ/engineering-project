@@ -29,7 +29,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
           if (state is AuthSignUpSuccess) {
             showCustomSnackBar(context, "Zarejestrowano pomyślnie!");
             context.read<NumberVerificationBloc>().add(
-              NumberVerificationFirstRequested(),
+              NumberVerificationFormShownDuringRegistration(),
             );
             Navigator.of(context).pushAndRemoveUntil(
               MaterialPageRoute(builder: (context) => const MainScreen()),

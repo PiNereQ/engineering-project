@@ -12,6 +12,23 @@ String? emailValidator(String? value) {
   return null;
 }
 
+String? phoneNumberValidator(String? value) {
+  if (value == null || value.isEmpty) {
+    return "Podaj numer telefonu";
+  }
+
+  final countryCodeRegex = RegExp(r'^\+48*');
+  if (!countryCodeRegex.hasMatch(value)) {
+    return "Numer telefonu musi zaczynać się od +48";
+  }
+
+  final phoneRegex = RegExp(r'^\+48\d{9}$');
+  if (!phoneRegex.hasMatch(value.replaceAll(' ', ''))) {
+    return "Podaj poprawny numer telefonu w\nformacie +48 XXX XXX XXX";
+  }
+  return null;
+}
+
 String? usernameValidator(String? value) {
   if (value == null || value.isEmpty) {
     return "Podaj nazwę użytkownika";

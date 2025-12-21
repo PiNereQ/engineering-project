@@ -57,7 +57,7 @@ class _MainScreenState extends State<MainScreen> {
       ],
       child: BlocBuilder<NumberVerificationBloc, NumberVerificationState>(
         builder: (context, state) {
-          if (state is NumberVerificationAfterRegistration) return const PhoneNumberConfirmationScreen();
+          if (state is NumberVerificationDuringRegistrationInitial) return const PhoneNumberConfirmationScreen();
 
           return BlocBuilder<NavbarBloc, NavbarState>(
             builder: (context, state) {
