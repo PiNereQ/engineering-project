@@ -484,15 +484,19 @@ class _AddScreenState extends State<AddScreen> {
                                           width: LabeledTextFieldWidth.full,
                                           iconOnLeft: true,
                                           controller: _codeController,
+                                          maxLength: 50,
                                           onChanged: (val) {
                                             setState(() {
                                               _userMadeInput = true;
                                             });
                                           },
                                           validator: (val) {
-                                            if (val == null || val.isEmpty) {
+                                            if (val == null || val.trim().isEmpty) {
                                               return 'Wymagane';
                                             }
+                                            if (val.length > 50) {
+                                              return 'Kod może mieć maksymalnie 50 znaków';
+                                            }                                            
                                             return null;
                                           },
                                         ),
@@ -637,12 +641,14 @@ class _AddScreenState extends State<AddScreen> {
                                                     );
 
                                                 if (scannedValue != null &&
-                                                    scannedValue
-                                                        .trim()
-                                                        .isNotEmpty) {
+                                                    scannedValue.trim().isNotEmpty) {
+                                                  final trimmed = scannedValue.trim();
+
                                                   setState(() {
                                                     _codeController.text =
-                                                        scannedValue.trim();
+                                                        trimmed.length > 50
+                                                            ? trimmed.substring(0, 50)
+                                                            : trimmed;
                                                     _userMadeInput = true;
                                                   });
                                                 }
@@ -1020,6 +1026,7 @@ class _AddScreenState extends State<AddScreen> {
                                               'Np. kupon nie obejmuje produktów z kategorii Elektronika...',
                                           width: LabeledTextFieldWidth.full,
                                           maxLines: 6,
+                                          maxLength: 255,
                                           textAlign: TextAlign.left,
                                           controller: _descriptionController,
                                           onChanged: (val) {
@@ -1029,9 +1036,12 @@ class _AddScreenState extends State<AddScreen> {
                                           },
                                           validator: (val) {
                                               if (val == null ||
-                                                  val.isEmpty && _hasRestrictions) {
+                                                  val.trim().isEmpty && _hasRestrictions) {
                                                 return 'Wpisz opis ograniczeń';
                                               }
+                                              if (val.length > 255) {
+                                                return 'Opis może mieć maksymalnie 255 znaków';
+                                              }                                            
                                               return null;
                                           },
                                         ),
