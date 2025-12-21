@@ -48,7 +48,7 @@ class ProfileScreen extends StatefulWidget {
       final profile = await _userRepository.getUserProfile(userId);
 
       setState(() {
-        reputation = profile?['reputation'] ?? 0;
+        reputation = profile?['reputation'];
         username = profile?['username'] ?? 'User';
         isLoadingProfile = false;
       });
@@ -124,13 +124,37 @@ Widget build(BuildContext context) {
                     ),
                     if (isLoadingProfile)
                       const CircularProgressIndicator()
+                    else if (reputation == null)
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        spacing: 6,
+                        children: const [
+                          Text(
+                            'Brak ocen',
+                            style: TextStyle(
+                              fontFamily: 'Itim',
+                              fontSize: 18,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                          Text(
+                            'Twój poziom reputacji zmieni się, gdy otrzymasz więcej niż 3 oceny transakcji.',
+                            style: TextStyle(
+                              fontFamily: 'Itim',
+                              fontSize: 14,
+                              color: AppColors.textSecondary,
+                              height: 1.3,
+                            ),
+                          ),
+                        ],
+                      )
                     else
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: ReputationBar(
-                        value: reputation ?? 0,
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: ReputationBar(
+                          value: reputation!,
+                        ),
                       ),
-                    ),
                   ],
                 ),
                 // Twoje kupony
