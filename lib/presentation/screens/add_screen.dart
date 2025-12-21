@@ -416,34 +416,35 @@ class _AddScreenState extends State<AddScreen> {
                                               },
                                             ),
                                             GestureDetector(
-                                              onTap: () async {
-                                                DateTime now = DateTime.now();
-                                                DateTime today = DateTime(
-                                                  now.year,
-                                                  now.month,
-                                                  now.day,
-                                                );
+                                              onTap: !_hasExpiryDate
+                                                  ? null
+                                                  : () async {
+                                                      DateTime now = DateTime.now();
+                                                      DateTime today = DateTime(now.year, now.month, now.day);
 
-                                                DateTime? pickedDate =
-                                                    await showDatePicker(
-                                                      context: context,
-                                                      initialDate: today,
-                                                      firstDate: today,
-                                                      lastDate: DateTime(2100),
-                                                    );
-                                                if (pickedDate != null) {
-                                                  setState(() {
-                                                    _expiryDateController.text =
-                                                        "${pickedDate.day.toString().padLeft(2, '0')}-${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.year}";
-                                                    _expiryDate = pickedDate;
-                                                    _userMadeInput = true;
-                                                  });
-                                                }
-                                              },
+                                                      DateTime? pickedDate = await showDatePicker(
+                                                        context: context,
+                                                        initialDate: today,
+                                                        firstDate: today,
+                                                        lastDate: DateTime(2100),
+                                                      );
+
+                                                      if (pickedDate != null) {
+                                                        setState(() {
+                                                          _expiryDateController.text =
+                                                              "${pickedDate.day.toString().padLeft(2, '0')}-"
+                                                              "${pickedDate.month.toString().padLeft(2, '0')}-"
+                                                              "${pickedDate.year}";
+                                                          _expiryDate = pickedDate;
+                                                          _userMadeInput = true;
+                                                        });
+                                                      }
+                                                    },
                                               child: AbsorbPointer(
                                                 child: LabeledTextField(
                                                   label: 'Data ważności',
                                                   placeholder: 'DD-MM-RRRR',
+                                                  enabled: _hasExpiryDate,
                                                   width:
                                                       LabeledTextFieldWidth
                                                           .half,
@@ -471,6 +472,11 @@ class _AddScreenState extends State<AddScreen> {
                                           onTap: () {
                                             setState(() {
                                               _hasExpiryDate = !_hasExpiryDate;
+
+                                              if (!_hasExpiryDate) {
+                                                _expiryDateController.clear();
+                                              }
+
                                               _userMadeInput = true;
                                             });
                                           },
