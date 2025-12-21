@@ -4,6 +4,7 @@ import 'package:proj_inz/bloc/auth/auth_bloc.dart';
 import 'package:proj_inz/bloc/number_verification/number_verification_bloc.dart';
 import 'package:proj_inz/core/theme.dart';
 import 'package:proj_inz/core/utils/validators.dart';
+import 'package:proj_inz/presentation/screens/legal_document_screen.dart';
 import 'package:proj_inz/presentation/screens/main_screen.dart';
 import 'package:proj_inz/presentation/widgets/custom_snack_bar.dart';
 import 'package:proj_inz/presentation/widgets/dashed_separator.dart';
@@ -248,11 +249,10 @@ class _RegistrationCardState extends State<_RegistrationCard> {
                       ),
                       CustomTextButton(
                         label: "Zarejestruj",
-                        onTap:widget.isLoading
-                            ? () {}
-                            : _handleSubmit,
-                        backgroundColor: AppColors.primaryButton,
-                        isLoading: widget.isLoading,
+                        onTap: widget.isLoading ? () {} : _handleSubmit,
+                        backgroundColor: widget.isLoading
+                            ? AppColors.primaryButtonPressed
+                            : AppColors.primaryButton,
                       ),
                     ],
                   ),
@@ -270,14 +270,30 @@ class _RegistrationCardState extends State<_RegistrationCard> {
                   _FooterLink(
                     label: "Regulamin aplikacji",
                     onTap: () {
-                      // TODO: open regulamin
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const LegalDocumentScreen(
+                            title: 'Regulamin',
+                            assetPath: 'assets/legal/regulamin.md',
+                          ),
+                        ),
+                      );
                     },
                   ),
                   const Text("•"),
                   _FooterLink(
                     label: "Polityka prywatności",
                     onTap: () {
-                      // TODO: open polityka
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const LegalDocumentScreen(
+                            title: 'Polityka prywatności',
+                            assetPath: 'assets/legal/polityka_prywatnosci.md',
+                          ),
+                        ),
+                      );
                     },
                   ),
                 ],

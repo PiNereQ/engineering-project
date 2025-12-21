@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -86,7 +87,8 @@ class _CouponListScreenContentState extends State<_CouponListScreenContent> {
     final state = bloc.state;
     // Only fetch if the state is initial (not loaded yet) and debug flag is off
     if (state is CouponListInitial && !stopCouponLoading) {
-      bloc.add(FetchCoupons(shopId: widget.selectedShopId));
+      final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
+      bloc.add(FetchCoupons(shopId: widget.selectedShopId, userId: userId));
     }
   }
 

@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:proj_inz/core/theme.dart';
+import 'package:proj_inz/presentation/screens/legal_document_screen.dart';
 import 'package:proj_inz/presentation/widgets/dashed_separator.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_icon_button.dart';
+import 'package:proj_inz/presentation/widgets/input/buttons/custom_switch.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_text_button.dart';
-import 'package:proj_inz/presentation/widgets/input/buttons/radio_button.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:proj_inz/data/repositories/user_repository.dart';
 
@@ -131,21 +132,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     const _SwitchRow(label: 'Wiadomości (Czat)'),
                     const _SwitchRow(label: 'Zmiana statusu kuponu'),
                     const _SwitchRow(label: 'Kupony rekomendowane'),
-
-                    const SizedBox(height: 16),
-                    DashedSeparator(),
-                    const SizedBox(height: 16),
-
-                    _NavRow(
-                      label: 'Częstotliwość powiadomień',
-                      onTap: () {
-                        showDialog(
-                          context: context,
-                          builder: (_) => const _NotificationFrequencyDialog(),
-                        );
-                      },
-                    ),
-
                   ],
                 ),
               ),
@@ -178,8 +164,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
               _SectionCard(
                 child: Column(
                   children: [
-                    _NavRow(label: 'Regulamin', onTap: () {  },),
-                    _NavRow(label: 'Polityka prywatności', onTap: () {  },),
+                    _NavRow(label: 'Regulamin',   onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const LegalDocumentScreen(
+                          title: 'Regulamin',
+                          assetPath: 'assets/legal/regulamin.md',
+                        ),
+                      ),
+                    ),),
+                    _NavRow(label: 'Polityka prywatności', onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const LegalDocumentScreen(
+                          title: 'Polityka prywatności',
+                          assetPath: 'assets/legal/polityka_prywatnosci.md',
+                        ),
+                      ),
+                    ),),
                     _NavRow(label: 'Dokumentacja użytkownika', onTap: () {  },),
                   ],
                 ),
@@ -351,26 +353,40 @@ class _StatItem extends StatelessWidget {
   }
 }
 
-class _SwitchRow extends StatelessWidget {
-  final String label;
-  const _SwitchRow({required this.label});
+  class _SwitchRow extends StatefulWidget {
+    final String label;
+    const _SwitchRow({required this.label});
 
-  @override
-  Widget build(BuildContext context) {
-    return SwitchListTile(
-      contentPadding: EdgeInsets.zero,
-      title: Text(
-        label,
-        style: const TextStyle(
-          fontFamily: 'Itim',
-          fontSize: 18,
-        ),
-      ),
-      value: false,
-      onChanged: (_) {},
-    );
+    @override
+    State<_SwitchRow> createState() => _SwitchRowState();
   }
-}
+
+  class _SwitchRowState extends State<_SwitchRow> {
+    bool value = true;
+
+    @override
+    Widget build(BuildContext context) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              widget.label,
+              style: const TextStyle(
+                fontFamily: 'Itim',
+                fontSize: 18,
+              ),
+            ),
+            CustomSwitch(
+              value: value,
+              onChanged: (v) => setState(() => value = v),
+            ),
+          ],
+        ),
+      );
+    }
+  }
 
 class _NavRow extends StatelessWidget {
   final String label;
@@ -434,83 +450,6 @@ class _DeleteAccountDialog extends StatelessWidget {
         ),
         CustomTextButton.primarySmall(
           label: 'Usuń',
-          width: 100,
-          onTap: () {
-            Navigator.pop(context);
-            // TODO backend
-          },
-        ),
-      ],
-    );
-  }
-}
-
-class _NotificationFrequencyDialog extends StatefulWidget {
-  const _NotificationFrequencyDialog();
-
-  @override
-  State<_NotificationFrequencyDialog> createState() =>
-      _NotificationFrequencyDialogState();
-}
-
-class _NotificationFrequencyDialogState
-    extends State<_NotificationFrequencyDialog> {
-  String selected = 'Natychmiast';
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      backgroundColor: AppColors.surface,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(24),
-        side: const BorderSide(width: 2, color: AppColors.textPrimary),
-      ),
-      title: const Text(
-        'Częstotliwość powiadomień',
-        style: TextStyle(
-          fontFamily: 'Itim',
-          fontSize: 22,
-          color: AppColors.textPrimary,
-        ),
-      ),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Align(
-            alignment: Alignment.centerLeft,
-            child: CustomRadioButton(
-              label: 'Natychmiast',
-              selected: selected == 'Natychmiast',
-              onTap: () => setState(() => selected = 'Natychmiast'),
-            ),
-          ),
-          Align(
-            alignment: Alignment.centerLeft,
-            child: CustomRadioButton(
-              label: 'Raz dziennie',
-              selected: selected == 'Raz dziennie',
-              onTap: () => setState(() => selected = 'Raz dziennie'),
-            ),
-          ),
-          Align(
-            alignment: Alignment.centerLeft,
-            child: CustomRadioButton(
-              label: 'Raz w tygodniu',
-              selected: selected == 'Raz w tygodniu',
-              onTap: () => setState(() => selected = 'Raz w tygodniu'),
-            ),
-          ),
-        ],
-      ),
-      actionsPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      actions: [
-        CustomTextButton.small(
-          label: 'Anuluj',
-          width: 100,
-          onTap: () => Navigator.pop(context),
-        ),
-        CustomTextButton.primarySmall(
-          label: 'Zapisz',
           width: 100,
           onTap: () {
             Navigator.pop(context);

@@ -34,9 +34,13 @@ class CouponRepository {
   // COUPON LIST METHODS ===========================
 
   /// Fetch all coupons from API (GET /coupons)
-  Future<List<Map<String, dynamic>>> fetchAllCouponsFromApi() async {
+  Future<List<Map<String, dynamic>>> fetchAllCouponsFromApi(String userId) async {
     try {
-      final response = await _api.get('/coupons/available', useAuthToken: true);
+      final response = await _api.get(
+        '/coupons/available',
+        queryParameters: {"user_id": userId},
+        useAuthToken: true,
+      );
       if (response is List) {
         return response.cast<Map<String, dynamic>>();
       }
@@ -52,11 +56,12 @@ class CouponRepository {
     required int limit,
     int offset = 0,
     String? shopId,
+    required String userId,
   }) async {
     try {
       // TODO: move pagination to backend
       // TODO: move filtering and sorting to backend
-      final listingsData = await fetchAllCouponsFromApi();
+      final listingsData = await fetchAllCouponsFromApi(userId);
       
       // Filter by shop if specified
       var filtered = shopId != null 
@@ -228,6 +233,79 @@ class CouponRepository {
     }
   }
 
+  // SAVED COUPON METHODS =======================
+
+  /// Fetch user's listed coupons (GET /coupons/listed?seller_id={userId})
+  Future<List<Map<String, dynamic>>> fetchSavedCouponsFromApi(String userId) async {
+    try {
+      final response = await _api.get(
+        '/coupons/saved',
+        queryParameters: {'user_id': userId},
+        useAuthToken: true
+      );
+      if (response is List) {
+        return response.cast<Map<String, dynamic>>();
+      }
+      return [];
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error fetching saved coupons from API: $e');
+      rethrow;
+    }
+  }
+
+  /// Fetch saved coupons with pagination (GET /coupons/listed)
+  Future<PaginatedListedCouponsResult> fetchSavedCouponsPaginated(
+    int limit,
+    int offset,
+    String userId,
+  ) async {
+    // TODO: move pagination to backend
+    // TODO: move filtering and sorting to backend
+    try {
+      final savedCouponsData = await fetchSavedCouponsFromApi(userId);
+      final start = offset;
+      final end = (start + limit).clamp(0, savedCouponsData.length);
+      final paginated = savedCouponsData.sublist(start, end);
+      final coupons = await Future.wait(
+        paginated.map((data) async => Coupon.listedByMeFromJson(data)),
+      );
+      return PaginatedListedCouponsResult(
+        coupons: coupons.whereType<Coupon>().toList(),
+        lastOffset: end < savedCouponsData.length ? end : null,
+      );
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error in fetchSavedCouponsPaginated: $e');
+      rethrow;
+    }
+  }
+
+    /// Add a coupon to the saved list (POST /coupons/saved/:coupon_id)
+  Future<void> addCouponToSaved({required String couponId, required String userId}) async {
+    try {
+      await _api.post(
+        '/coupons/saved/$couponId',
+        queryParameters: {'user_id': userId},
+        useAuthToken: true,
+      );
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error adding coupon to saved: $e');
+      rethrow;
+    }
+  }
+
+  /// Remove a coupon from the saved list (DELETE /coupons/saved/:coupon_id)
+  Future<void> removeCouponFromSaved({required String couponId, required String userId}) async {
+    try {
+      await _api.delete(
+        '/coupons/saved/$couponId',
+        queryParameters: {'user_id': userId},
+        useAuthToken: true,
+      );
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error removing coupon from saved: $e');
+      rethrow;
+    }
+  }
   
   // GENERAL METHODS ===============================
 
@@ -265,8 +343,7 @@ class CouponRepository {
   /// Fetch three coupons for a specific shop
   Future<List<Coupon>> fetchThreeCouponsForShop(String shopId) async {
     try {
-      final userId = await userRepository.getCurrentUserId();
-      final result = await fetchCouponsPaginated(limit: 3, shopId: shopId);
+      final result = await fetchCouponsPaginated(limit: 3, shopId: shopId, userId: await userRepository.getCurrentUserId());
       return result.ownedCoupons;
     } catch (e) {
       if (kDebugMode) debugPrint('Error in fetchThreeCouponsForShop: $e');

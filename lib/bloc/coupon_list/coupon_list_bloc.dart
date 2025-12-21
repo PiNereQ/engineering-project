@@ -23,6 +23,7 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
   int? _lastOffset;
   bool _hasMore = true;
   bool _isFetching = false;
+  String? _userId;
 
   // filters
   bool? _reductionIsFixed;
@@ -52,6 +53,7 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
     _allCoupons.clear();
     _lastOffset = null;
     _hasMore = true;
+    _userId = event.userId;
     add(FetchMoreCoupons());
   }
 
@@ -64,16 +66,21 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
       debugPrint("No more coupons to load.");
       return;
     }
+    if (_userId == null) {
+      debugPrint("No user ID provided");
+      emit(CouponListLoadFailure(message: 'User ID required'));
+      return;
+    }
 
     _isFetching = true;
     emit(CouponListLoadInProgress());
 
     try {
-      // Fetch listings using the repository's paginated method which properly maps listing data
       final result = await couponRepository.fetchCouponsPaginated(
         limit: _limit,
         offset: _lastOffset ?? 0,
         shopId: null, // No shop filter for main list
+        userId: _userId!,
       );
       debugPrint('Fetched ${result.ownedCoupons.length} coupons with proper mapping');
 
@@ -104,7 +111,9 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
     _allCoupons.clear();
     _lastOffset = null;
     _hasMore = true;
-    add(FetchCoupons());
+    if (_userId != null) {
+      add(FetchCoupons(userId: _userId!));
+    }
   }
 
   void _onApplyCouponFilters(ApplyCouponFilters event, Emitter<CouponListState> emit) {
@@ -123,7 +132,9 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
       _minReputation
     ));
 
-    add(FetchCoupons());
+    if (_userId != null) {
+      add(FetchCoupons(userId: _userId!));
+    }
   }
 
   void _onClearCouponFilters(ClearCouponFilters event, Emitter<CouponListState> emit) {
@@ -141,7 +152,9 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
       _minReputation
     ));
 
-    add(FetchCoupons());
+    if (_userId != null) {
+      add(FetchCoupons(userId: _userId!));
+    }
   }
 
   void _onReadCouponFilters(ReadCouponFilters event, Emitter<CouponListState> emit) {
@@ -164,7 +177,9 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
     _ordering = event.ordering;
     emit(CouponListOrderingApplySuccess(_ordering));
 
-    add(FetchCoupons());
+    if (_userId != null) {
+      add(FetchCoupons(userId: _userId!));
+    }
   }
 
   void _onReadCouponOrdering(ReadCouponOrdering event, Emitter<CouponListState> emit) {
