@@ -3,12 +3,14 @@ import 'package:proj_inz/core/theme.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_text_button.dart';
 
 class SystemChatTile extends StatelessWidget {
+  final bool hasRated;
   final String text;
   final VoidCallback onRate;
 
   const SystemChatTile({
     super.key,
     required this.text,
+    required this.hasRated,
     required this.onRate,
   });
 
@@ -20,13 +22,13 @@ class SystemChatTile extends StatelessWidget {
       decoration: ShapeDecoration(
         color: AppColors.background,
         shape: RoundedRectangleBorder(
-          side: const BorderSide(width: 2, color: AppColors.textPrimary),
           borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(width: 2, color: AppColors.textPrimary),
         ),
         shadows: const [
           BoxShadow(
             color: AppColors.textPrimary,
-            offset: Offset(3, 3),
+            offset: Offset(4, 4),
             blurRadius: 0,
           ),
         ],
@@ -36,7 +38,11 @@ class SystemChatTile extends StatelessWidget {
         children: [
           const Row(
             children: [
-              Icon(Icons.info_outline, size: 20),
+              Icon(
+                Icons.info_outline,
+                size: 20,
+                color: AppColors.textSecondary,
+              ),
               SizedBox(width: 8),
               Text(
                 'Informacja systemowa',
@@ -64,10 +70,19 @@ class SystemChatTile extends StatelessWidget {
 
           Align(
             alignment: Alignment.centerRight,
-            child: CustomTextButton.primarySmall(
-              label: 'Oceń kupującego',
-              onTap: onRate,
-            ),
+            child: !hasRated
+                ? CustomTextButton.primarySmall(
+                    label: 'Oceń kupującego',
+                    onTap: onRate,
+                  )
+                : const Text(
+                    'Oceniłeś kupującego',
+                    style: TextStyle(
+                      fontFamily: 'Itim',
+                      fontSize: 14,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
           ),
         ],
       ),

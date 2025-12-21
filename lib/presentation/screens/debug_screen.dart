@@ -230,7 +230,7 @@ Padding(
                 },
               ),
             );
-          },
+          }, hasRated: false,
         ),
       ],
     ),

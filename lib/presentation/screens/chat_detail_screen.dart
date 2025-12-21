@@ -11,6 +11,9 @@ import 'package:proj_inz/presentation/widgets/chat_report_popup.dart';
 import 'package:proj_inz/presentation/widgets/coupon_preview_popup.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_icon_button.dart';
 import 'package:proj_inz/presentation/widgets/reputation_bar.dart';
+import 'package:proj_inz/presentation/widgets/system_chat_tile.dart';
+import 'package:proj_inz/presentation/widgets/rating_popup.dart';
+
 import '../widgets/chat_bubble.dart';
 
 import 'package:proj_inz/bloc/chat/detail/chat_detail_bloc.dart';
@@ -508,6 +511,38 @@ class _ChatDetailViewState extends State<ChatDetailView> {
     super.dispose();
   }
 
+  bool _sellerRatedBuyer = false;
+
+  bool _shouldShowRatingRequestForSeller() {
+    final currentUserId = FirebaseAuth.instance.currentUser?.uid;
+    if (currentUserId == null) return false;
+
+    // only seller sees the system message
+    if (currentUserId != widget.sellerId) return false;
+
+    // moked for now
+    // TODO: coupon.isUsed == true && rating_not_given
+    return true;
+  }
+
+  void _openRatingDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => RatingDialog(
+        onCancel: () => Navigator.pop(context),
+        onSubmit: (stars, comment) {
+          // TODO: POST /ratings
+
+          setState(() {
+            _sellerRatedBuyer = true;
+          });
+
+          Navigator.pop(context);
+        },
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -578,33 +613,30 @@ class _ChatDetailViewState extends State<ChatDetailView> {
                       }
 
                       if (state is ChatDetailLoaded) {
-                        if (state.messages.isEmpty) {
-                          return const Center(
-                            child: Text(
-                              "Brak wiadomości. Napisz coś jako pierwszy!",
-                              style: TextStyle(
-                                fontFamily: 'Itim',
-                                fontSize: 16,
-                              ),
-                            ),
-                          );
-                        }
-
-                        return ListView.builder(
+                        return ListView(
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                          itemCount: state.messages.length,
-                          itemBuilder: (context, index) {
-                            final msg = state.messages[index];
-                            final currentUserId = FirebaseAuth.instance.currentUser?.uid;
-                            final isMine = msg.senderId == currentUserId;
+                          children: [
+                            // messages from seller and buyer
+                            ...state.messages.map((msg) {
+                              final currentUserId = FirebaseAuth.instance.currentUser?.uid;
+                              final isMine = msg.senderId == currentUserId;
 
-                            return ChatBubble(
-                              text: msg.text,
-                              time: _formatTime(msg.timestamp),
-                              isMine: isMine,
-                              isUnread: !msg.isRead,
-                            );
-                          },
+                              return ChatBubble(
+                                text: msg.text,
+                                time: _formatTime(msg.timestamp),
+                                isMine: isMine,
+                                isUnread: !msg.isRead,
+                              );
+                            }),
+
+                            // system message - mock for now
+                            if (_shouldShowRatingRequestForSeller())
+                              SystemChatTile(
+                                text: 'Kupujący oznaczył kupon jako wykorzystany.',
+                                onRate: _openRatingDialog,
+                                hasRated: _sellerRatedBuyer,
+                              ),
+                          ],
                         );
                       }
 
