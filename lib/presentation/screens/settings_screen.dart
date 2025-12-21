@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:proj_inz/core/theme.dart';
+import 'package:proj_inz/presentation/screens/legal_document_screen.dart';
 import 'package:proj_inz/presentation/widgets/dashed_separator.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_icon_button.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_switch.dart';
@@ -163,8 +164,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
               _SectionCard(
                 child: Column(
                   children: [
-                    _NavRow(label: 'Regulamin', onTap: () {  },),
-                    _NavRow(label: 'Polityka prywatności', onTap: () {  },),
+                    _NavRow(label: 'Regulamin',   onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const LegalDocumentScreen(
+                          title: 'Regulamin',
+                          assetPath: 'assets/legal/regulamin.md',
+                        ),
+                      ),
+                    ),),
+                    _NavRow(label: 'Polityka prywatności', onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const LegalDocumentScreen(
+                          title: 'Polityka prywatności',
+                          assetPath: 'assets/legal/polityka_prywatnosci.md',
+                        ),
+                      ),
+                    ),),
                     _NavRow(label: 'Dokumentacja użytkownika', onTap: () {  },),
                   ],
                 ),
