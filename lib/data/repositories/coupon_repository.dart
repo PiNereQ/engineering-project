@@ -234,7 +234,13 @@ class CouponRepository {
   /// Create new coupon offer via API (POST /coupons)
   Future<void> postCouponOffer(CouponOffer coupon) async {
     try {
-      await _api.post('/coupons', body: coupon.toJson(), useAuthToken: true);
+      final userId = await userRepository.getCurrentUserId();
+      await _api.post(
+        '/coupons',
+        body: coupon.toJson(), 
+        useAuthToken: true,
+        queryParameters: {"user_id": userId}
+        );
     } catch (e) {
       if (kDebugMode) debugPrint('Error posting coupon: $e');
       rethrow;
@@ -244,7 +250,12 @@ class CouponRepository {
   /// Deactivate listed coupon via API (DELETE /coupons/{couponId})
   Future<void> deactivateListedCoupon(String couponId) async {
     try {
-      await _api.delete('/coupons/$couponId', useAuthToken: true);
+      final userId = await userRepository.getCurrentUserId();
+      await _api.delete(
+        '/coupons/$couponId', 
+        useAuthToken: true,
+        queryParameters: {"user_id": userId}
+        );
     } catch (e) {
       if (kDebugMode) debugPrint('Error in deactivateListedCoupon: $e');
       rethrow;
@@ -254,6 +265,7 @@ class CouponRepository {
   /// Fetch three coupons for a specific shop
   Future<List<Coupon>> fetchThreeCouponsForShop(String shopId) async {
     try {
+      final userId = await userRepository.getCurrentUserId();
       final result = await fetchCouponsPaginated(limit: 3, shopId: shopId);
       return result.ownedCoupons;
     } catch (e) {
