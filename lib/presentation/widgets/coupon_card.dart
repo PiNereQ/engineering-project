@@ -235,7 +235,9 @@ class CouponCardHorizontal extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.fromLTRB(4, 10, 16, 10),
             child: Center(
-              child: CustomFollowButton.small(
+              child: isBought
+              ? const Icon(Icons.check_rounded, size: 36)
+              : CustomFollowButton.small(
                 onTap: () {},
                 isPressed: isSaved
               ),
