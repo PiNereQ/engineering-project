@@ -708,6 +708,7 @@ class _SellerDetails extends StatelessWidget {
                                   buyerId: buyerId,
                                   sellerId: sellerId,
                                   couponId: couponId,
+                                  isOwnedCoupon: true,
                                 ),
                               ),
                             );

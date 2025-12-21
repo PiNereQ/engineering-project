@@ -376,6 +376,7 @@ class ChatInputBar extends StatelessWidget {
 
 // main screen
 class ChatDetailScreen extends StatelessWidget {
+  final bool isOwnedCoupon;
   final Conversation? initialConversation;
 
   final String buyerId;
@@ -385,6 +386,7 @@ class ChatDetailScreen extends StatelessWidget {
 
   const ChatDetailScreen({
     super.key,
+    required this.isOwnedCoupon,
     this.initialConversation,
     required this.buyerId,
     required this.sellerId,
@@ -400,15 +402,25 @@ class ChatDetailScreen extends StatelessWidget {
       sellerId: conversation.sellerId,
       couponId: conversation.couponId,
       relatedCoupon: null,
+      isOwnedCoupon: true,
     );
   }
 
+Future<Coupon> _fetchCoupon(BuildContext context) {
+  final repo = context.read<CouponRepository>();
+
+  if (isOwnedCoupon) {
+    return repo.fetchOwnedCouponDetailsById(couponId);
+  } else {
+    return repo.fetchCouponDetailsById(couponId);
+  }
+}
+
 @override
 Widget build(BuildContext context) {
-  final couponRepo = context.read<CouponRepository>();
 
   return FutureBuilder<Coupon>(
-    future: couponRepo.fetchCouponDetailsById(couponId),
+    future: _fetchCoupon(context),
     builder: (context, snapshot) {
       if (!snapshot.hasData) {
         return const Scaffold(
