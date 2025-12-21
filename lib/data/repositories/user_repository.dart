@@ -122,4 +122,28 @@ class UserRepository {
       );
     }
   }
+
+  /// PATCH /users/:id/add_phone_number?phone_number=...
+  Future<void> addPhoneNumberToUser({required String uid, required String phoneNumber}) async {
+    try {
+      await _api.patch('/users/$uid/add-phone-number', body: {'phone_number': phoneNumber});
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error adding phone number: $e');
+      rethrow;
+    }
+  }
+
+  /// GET /users/is_phone_number_used?phone_number=...
+  Future<bool> isPhoneNumberUsed(String phoneNumber) async {
+    try {
+      final resp = await _api.get('/users/is-phone-number-used', queryParameters: {'phone_number': phoneNumber});
+      if (resp is Map && resp.containsKey('is_used')) {
+        return resp['is_used'] == true;
+      }
+      return false;
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error checking phone number: $e');
+      return false;
+    }
+  }
 }

@@ -17,16 +17,23 @@ class NumberVerificationAfterRegistrationInitial extends NumberVerificationState
 class NumberSubmitInProgress extends NumberVerificationState {}
 
 class NumberSubmitSuccess extends NumberVerificationState {
+  final String phoneNumber;
   final String verificationId;
   final int? resendToken;
 
-  const NumberSubmitSuccess({required this.verificationId, required this.resendToken});
-
+  const NumberSubmitSuccess({required this.phoneNumber, required this.verificationId, required this.resendToken});
   @override
   List<Object?> get props => [verificationId, resendToken];
 }
 
-class NumberSubmitFailure extends NumberVerificationState {}
+class NumberSubmitFailure extends NumberVerificationState {
+  final String? message;
+
+  const NumberSubmitFailure({this.message});
+  
+  @override
+  List<Object?> get props => [message];
+}
 
 class NumberVerificationInProgress extends NumberVerificationState {}
 class NumberVerificationSuccess extends NumberVerificationState {}
@@ -34,6 +41,13 @@ class NumberVerificationFailure extends NumberVerificationState {}
 
 class NumberVerificationSkipped extends NumberVerificationState {}
 
+class NumberVerificationReturnToPhoneNumberStepState extends NumberVerificationState {
+  final String phoneNumber;
+  const NumberVerificationReturnToPhoneNumberStepState({required this.phoneNumber});
+
+  @override
+  List<Object?> get props => [phoneNumber];
+}
 
 // Checking if phone number is verified
 class NumberCheckInProgress extends NumberVerificationState {}

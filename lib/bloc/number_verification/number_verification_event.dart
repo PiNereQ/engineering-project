@@ -1,4 +1,26 @@
+
 part of 'number_verification_bloc.dart';
+
+class ResendCountdownTicked extends NumberVerificationEvent {
+  final int secondsLeft;
+  final String verificationId;
+  final int? resendToken;
+
+  ResendCountdownTicked({required this.secondsLeft, required this.verificationId, required this.resendToken});
+
+  @override
+  List<Object?> get props => [secondsLeft, verificationId, resendToken];
+}
+
+class ResendCodeRequested extends NumberVerificationEvent {
+  final String phoneNumber;
+  final int? resendToken;
+
+  ResendCodeRequested({required this.phoneNumber, this.resendToken});
+
+  @override
+  List<Object?> get props => [phoneNumber, resendToken];
+}
 
 abstract class NumberVerificationEvent extends Equatable {
   @override
@@ -21,10 +43,11 @@ class NumberVerificationRequested extends NumberVerificationEvent {
 }
 
 class PhoneNumberCodeSent extends NumberVerificationEvent {
+  final String phoneNumber;
   final String verificationId;
   final int? resendToken;
 
-  PhoneNumberCodeSent({required this.verificationId, required this.resendToken});
+  PhoneNumberCodeSent({required this.phoneNumber, required this.verificationId, required this.resendToken});
 
   @override
   List<Object?> get props => [verificationId, resendToken];
@@ -45,3 +68,10 @@ class PhoneNumberVerificationCompleted extends NumberVerificationEvent {}
 class NumberVerificationCheckRequested extends NumberVerificationEvent {}
 
 
+class NumberVerificationReturnToPhoneNumberStep extends NumberVerificationEvent {
+  final String phoneNumber;
+  NumberVerificationReturnToPhoneNumberStep({required this.phoneNumber});
+
+  @override
+  List<Object?> get props => [phoneNumber];
+}

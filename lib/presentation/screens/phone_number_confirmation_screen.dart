@@ -4,7 +4,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:proj_inz/bloc/number_verification/number_verification_bloc.dart';
 import 'package:proj_inz/core/theme.dart';
 import 'package:proj_inz/core/utils/validators.dart';
-import 'package:proj_inz/presentation/screens/main_screen.dart';
 import 'package:proj_inz/presentation/widgets/custom_snack_bar.dart';
 import 'package:proj_inz/presentation/widgets/dashed_separator.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_text_button.dart';
@@ -44,16 +43,11 @@ class _PhoneNumberConfirmationScreenState extends State<PhoneNumberConfirmationS
               
               if (state is NumberVerificationSuccess) {
                 showCustomSnackBar(context, "Numer telefonu został potwierdzony!");
+                Navigator.of(context).pop();
               }
 
               if (state is NumberVerificationSkipped) {
-                if (_isDuringRegistration) {
-                  Navigator.of(context).pushReplacement(
-                    MaterialPageRoute(builder: (context) => const MainScreen()),
-                  );
-                } else {
                   Navigator.of(context).pop();
-                }
               }
             },
             builder: (context, state) {
