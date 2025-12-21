@@ -6,11 +6,14 @@ import 'package:proj_inz/presentation/screens/listed_coupon_detail_screen.dart';
 import 'package:proj_inz/presentation/widgets/dashed_separator.dart';
 
 class ListedCouponCardHorizontal extends StatelessWidget {
+  final VoidCallback? onCouponRemoved;
+
   final Coupon coupon;
 
   const ListedCouponCardHorizontal({
     super.key,
     required this.coupon,
+    this.onCouponRemoved,
   });
 
   @override
@@ -124,14 +127,17 @@ class ListedCouponCardHorizontal extends StatelessWidget {
             children: [
               Expanded(
                 child: GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
+                  onTap: () async {
+                    final result = await Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder:
-                            (context) => ListedCouponDetailsScreen(couponId: couponId)
+                        builder: (_) =>
+                            ListedCouponDetailsScreen(couponId: couponId),
                       ),
                     );
+
+                    if (result == true && context.mounted) {
+                      onCouponRemoved?.call();
+                    }
                   },
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.center,

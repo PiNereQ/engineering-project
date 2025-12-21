@@ -110,7 +110,7 @@ class Coupon extends Equatable {
       shopName: json['shop_name'] ?? 'Shop ${json['shop_id']}',
       shopNameColor: parseColor(json['shop_name_color'].toString()),
       shopBgColor: parseColor(json['shop_bg_color'].toString()),
-      isSold: !parseBool(json['is_active']),
+      isSold: !parseBool(json['is_active']) && json['is_deleted'] != true,
       listingDate: DateTime.parse(json['listing_date']),
       isMultipleUse: parseBool(json['is_multiple_use']),
       code: json['code']?.toString()

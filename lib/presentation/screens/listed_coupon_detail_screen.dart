@@ -406,11 +406,12 @@ class _CouponDetails extends StatelessWidget {
                           },
                         ),
 
-                        CustomTextButton(
-                          label: 'Usuń kupon',
-                          icon: const Icon(Icons.delete_outline),
-                          onTap: () => _showDeleteConfirmation(context),
-                        ),
+                        if (!coupon.isSold)
+                          CustomTextButton(
+                            label: 'Usuń kupon',
+                            icon: const Icon(Icons.delete_outline),
+                            onTap: () => _showDeleteConfirmation(context),
+                          ),
               ],
             ),
           ),
@@ -420,6 +421,14 @@ class _CouponDetails extends StatelessWidget {
   }
 
   Future<void> _showDeleteConfirmation(BuildContext context) {
+    if (coupon.isSold) {
+      showCustomSnackBar(
+        context,
+        'Nie można usunąć sprzedanego kuponu',
+      );
+      return Future.value();
+    }
+
     return showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -459,7 +468,7 @@ class _CouponDetails extends StatelessWidget {
             label: 'Usuń',
             width: 100,
             onTap: () async {
-              Navigator.of(context).pop();
+              Navigator.of(context).pop(true);
 
               try {
                 await context

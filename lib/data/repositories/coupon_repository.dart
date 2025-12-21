@@ -195,15 +195,21 @@ class CouponRepository {
     // TODO: move filtering and sorting to backend
     try {
       final listedCouponsData = await fetchListedCouponsFromApi(userId);
+      
+      //frontend filtering of deleted coupons
+      final filtered = listedCouponsData.where(
+        (json) => json['is_deleted'] != true,
+      ).toList();
+
       final start = offset;
-      final end = (start + limit).clamp(0, listedCouponsData.length);
-      final paginated = listedCouponsData.sublist(start, end);
+      final end = (start + limit).clamp(0, filtered.length);
+      final paginated = filtered.sublist(start, end);
       final coupons = await Future.wait(
         paginated.map((data) async => Coupon.listedByMeFromJson(data)),
       );
       return PaginatedListedCouponsResult(
         coupons: coupons.whereType<Coupon>().toList(),
-        lastOffset: end < listedCouponsData.length ? end : null,
+        lastOffset: end < filtered.length ? end : null,
       );
     } catch (e) {
       if (kDebugMode) debugPrint('Error in fetchListedCouponsPaginated: $e');
@@ -219,7 +225,13 @@ class CouponRepository {
         queryParameters: {'user_id': userId},
         useAuthToken: true
       );
-      final coupon = Coupon.listedByMeFromJson( data as Map<String, dynamic>);
+      final json = data as Map<String, dynamic>;
+
+      if (json['is_deleted'] == true) {
+        throw Exception('Coupon deleted');
+      }
+
+      final coupon = Coupon.listedByMeFromJson(json);
 
       return coupon;
     } catch (e) {
@@ -244,12 +256,24 @@ class CouponRepository {
   /// Deactivate listed coupon via API (DELETE /coupons/{couponId})
   Future<void> deactivateListedCoupon(String couponId) async {
     try {
-      await _api.delete('/coupons/$couponId', useAuthToken: true);
+      final userId = await userRepository.getCurrentUserId();
+
+      await _api.delete(
+        '/coupons/$couponId',
+        queryParameters: {
+          'user_id': userId,
+        },
+        body: {
+          'isDeleted': true,
+        },
+        useAuthToken: true,
+      );
     } catch (e) {
       if (kDebugMode) debugPrint('Error in deactivateListedCoupon: $e');
       rethrow;
     }
   }
+
 
   /// Fetch three coupons for a specific shop
   Future<List<Coupon>> fetchThreeCouponsForShop(String shopId) async {

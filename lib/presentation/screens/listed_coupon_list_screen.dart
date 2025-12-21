@@ -35,7 +35,7 @@ class _ListedCouponListScreenState extends State<ListedCouponListScreen> {
     super.dispose();
   }
 
-  void _setupListener(BuildContext context) {
+  void _setupListener() {
     _scrollController.addListener(() {
       if (_scrollController.position.pixels >=
           _scrollController.position.maxScrollExtent - 150) {
@@ -46,37 +46,35 @@ class _ListedCouponListScreenState extends State<ListedCouponListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
-    return BlocProvider(
-      create: (context) => ListedCouponListBloc(context.read<CouponRepository>())
-        ..add(FetchListedCoupons(userId: userId)),
-      child: BlocBuilder<ListedCouponListBloc, ListedCouponListState>(
-        builder: (context, state) {
-          if (!_listenerAdded) {
-            _setupListener(context);
-            _listenerAdded = true;
-          }
+    return BlocBuilder<ListedCouponListBloc, ListedCouponListState>(
+      builder: (context, state) {
+        if (!_listenerAdded) {
+          _setupListener();
+          _listenerAdded = true;
+        }
 
-          return Scaffold(
-            backgroundColor: AppColors.background,
-            body: SafeArea(
-              child: RefreshIndicator(
-                onRefresh: () async {
-                  context.read<ListedCouponListBloc>().add(RefreshListedCoupons());
-                },
-                child: CustomScrollView(
-                  controller: _scrollController,
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  slivers: [
-                    const _Toolbar(),
-                    _listContent(state),
-                  ],
-                ),
+        return Scaffold(
+          backgroundColor: AppColors.background,
+          body: SafeArea(
+            child: RefreshIndicator(
+              onRefresh: () async {
+                final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
+                context
+                    .read<ListedCouponListBloc>()
+                    .add(FetchListedCoupons(userId: userId));
+              },
+              child: CustomScrollView(
+                controller: _scrollController,
+                physics: const AlwaysScrollableScrollPhysics(),
+                slivers: [
+                  const _Toolbar(),
+                  _listContent(state),
+                ],
               ),
             ),
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 
@@ -106,7 +104,6 @@ class _ListedCouponListScreenState extends State<ListedCouponListScreen> {
     }
 
     if (state is ListedCouponListLoadFailure) {
-      if (kDebugMode) debugPrint(state.message);
       return SliverFillRemaining(
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -128,7 +125,16 @@ class _ListedCouponListScreenState extends State<ListedCouponListScreen> {
               final coupon = state.coupons[index];
               return Padding(
                 padding: const EdgeInsets.only(bottom: 16),
-                child: ListedCouponCardHorizontal(coupon: coupon),
+                child: ListedCouponCardHorizontal(
+                  coupon: coupon,
+                  onCouponRemoved: () {
+                    final userId =
+                        FirebaseAuth.instance.currentUser?.uid ?? '';
+                    context
+                        .read<ListedCouponListBloc>()
+                        .add(FetchListedCoupons(userId: userId));
+                  },
+                ),
               );
             },
             childCount: state.coupons.length,

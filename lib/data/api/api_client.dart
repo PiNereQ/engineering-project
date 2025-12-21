@@ -163,7 +163,7 @@ class ApiClient {
   /// Sends a DELETE request to the given [path] with optional [queryParameters].
   /// Returns the decoded JSON response on success.
   /// Throws an [Exception] if the request fails.
-  Future<dynamic> delete(String path, {Map<String, String>? queryParameters, bool useAuthToken = false}) async {
+  Future<dynamic> delete(String path, {Map<String, String>? queryParameters, bool useAuthToken = false, required Map<String, bool> body}) async {
     final uri = _uri(path, queryParameters: queryParameters);
     Map<String, String> headers = {};
     if (useAuthToken) {
