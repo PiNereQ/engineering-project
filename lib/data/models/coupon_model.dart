@@ -26,6 +26,7 @@ class Coupon extends Equatable {
   
   // specific fields
   //                                 | Available to me | Listed by me | Bought by me |
+  final bool? isSaved;            // |       YES       |      NO      |      NO      | // Have I saved this coupon for later
   final String? sellerId;         // |       YES       |      NO      |     YES      |
   final String? sellerUsername;   // |       YES       |      NO      |     YES      |
   final int? sellerReputation;    // |       YES       |      NO      |     YES      |
@@ -51,6 +52,7 @@ class Coupon extends Equatable {
     required this.shopName,
     required this.shopNameColor,
     required this.shopBgColor,
+    this.isSaved,
     this.sellerId,
     this.sellerUsername,
     this.sellerReputation,
@@ -82,6 +84,7 @@ class Coupon extends Equatable {
       shopName: json['shop_name'] ?? '',
       shopNameColor: parseColor(json['shop_name_color'].toString()),
       shopBgColor: parseColor( json['shop_bg_color'].toString()),
+      isSaved: parseBool(json['is_saved']),
       sellerId: json['seller_id']?.toString() ?? '',
       sellerUsername: json['seller_username'],
       sellerReputation: json['seller_reputation'] == null ? null : parseInt(json['seller_reputation']),

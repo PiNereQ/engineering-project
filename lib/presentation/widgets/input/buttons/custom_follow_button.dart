@@ -4,32 +4,38 @@ import 'package:proj_inz/core/theme.dart';
 class CustomFollowButton extends StatefulWidget {
   final double _size;
   final VoidCallback onTap;
+  final bool isPressed;
 
   const CustomFollowButton._({
     super.key,
     required double size,
     required this.onTap,
+    required this.isPressed,
   }) : _size = size;
 
   factory CustomFollowButton({
     Key? key,
     required VoidCallback onTap,
+    bool isPressed = false,
   }) {
     return CustomFollowButton._(
       key: key,
       onTap: onTap,
       size: 48,
+      isPressed: isPressed,
     );
   }
 
   factory CustomFollowButton.small({
     Key? key,
     required VoidCallback onTap,
+    bool isPressed = false,
   }) {
     return CustomFollowButton._(
       key: key,
       onTap: onTap,
       size: 36,
+      isPressed: isPressed,
     );
   }
 
@@ -37,22 +43,29 @@ class CustomFollowButton extends StatefulWidget {
   State<CustomFollowButton> createState() => _CustomFollowButtonState();
 }
 
+
 class _CustomFollowButtonState extends State<CustomFollowButton> {
-  bool _isPressed = false;
+  late bool _isPressed;
+
+  @override
+  void initState() {
+    super.initState();
+    _isPressed = widget.isPressed;
+  }
+
+  @override
+  void didUpdateWidget(covariant CustomFollowButton oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.isPressed != widget.isPressed) {
+      _isPressed = widget.isPressed;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: widget.onTap,
-      onTapDown: (TapDownDetails details) => (setState(() => (_isPressed = true))),
-      onTapCancel: () => (setState(() => (_isPressed = false))),
-      onTapUp: (TapUpDetails details) async {
-        await Future.delayed(const Duration(milliseconds: 80));
-        if (mounted) {
-          setState(() {
-            _isPressed = false;
-          });
-        }
+      onTap: () {
+        widget.onTap();
       },
       child: Container(
         padding: _isPressed

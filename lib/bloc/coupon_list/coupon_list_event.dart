@@ -7,13 +7,15 @@ sealed class CouponListEvent extends Equatable {
   List<Object?> get props => [];
 }
 
+
 class FetchCoupons extends CouponListEvent {
   final String? shopId;
+  final String userId;
 
-  const FetchCoupons({this.shopId});
+  const FetchCoupons({this.shopId, required this.userId});
 
   @override
-  List<Object?> get props => [shopId];
+  List<Object?> get props => [shopId, userId];
 }
 
 class FetchMoreCoupons extends CouponListEvent {}
