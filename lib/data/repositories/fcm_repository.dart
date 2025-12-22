@@ -15,6 +15,7 @@ class FcmRepository {
   void registerHandlers({required BuildContext context}) async {
     // Foreground message handler
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      // TODO: Implement behavior for foreground messages, e.g., show a dialog or in-app notification
       final title = message.notification?.title ?? 'Nowa wiadomość';
       final body = message.notification?.body ?? '';
       if (context.mounted) {
