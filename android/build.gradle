@@ -5,6 +5,7 @@ buildscript {
         mavenCentral() // Add this to resolve dependencies from Maven Central
     }
     dependencies {
+        classpath 'com.google.gms:google-services:4.4.0'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath 'com.android.tools.build:gradle:8.6.1'
     }

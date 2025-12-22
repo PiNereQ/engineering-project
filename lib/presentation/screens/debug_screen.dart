@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:proj_inz/core/utils/utils.dart';
+import 'package:proj_inz/data/repositories/fcm_repository.dart';
+import 'package:proj_inz/data/repositories/user_repository.dart';
 
 
 class DebugScreen extends StatefulWidget {
@@ -11,6 +14,21 @@ class DebugScreen extends StatefulWidget {
 }
 
 class _DebugScreenState extends State<DebugScreen> {
+    String? _fcmToken;
+    Future<void> _getNewFcmToken() async {
+      final repo = FcmRepository(userRepository: context.read<UserRepository>()); // UserRepository not needed for token fetch
+      final token = await repo.getNewFcmToken();
+      if (mounted) {
+        setState(() {
+          _fcmToken = token;
+        });
+      }
+      if (token != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('New FCM token: $token')),
+        );
+      }
+    }
   String? _authToken;
 
   @override
@@ -71,6 +89,23 @@ class _DebugScreenState extends State<DebugScreen> {
                 ),
               ),
             ),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ElevatedButton(
+                    onPressed: _getNewFcmToken,
+                    child: const Text('Get New FCM Token'),
+                  ),
+                  const SizedBox(height: 8),
+                  SelectableText(
+                    _fcmToken != null ? 'FCM Token: $_fcmToken' : 'No FCM token fetched yet.',
+                    style: const TextStyle(fontSize: 12, fontFamily: 'monospace'),
+                  ),
+                ],
+              ),
+            ),
             Text(formatReduction(20, true)),
             Text(formatReduction(20.1 , true)),
             Text(formatReduction(20, false)),
@@ -79,6 +114,5 @@ class _DebugScreenState extends State<DebugScreen> {
         ),
       )
     );
-    
   }
 }
