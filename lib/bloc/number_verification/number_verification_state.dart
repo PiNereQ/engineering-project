@@ -53,14 +53,6 @@ class NumberVerificationFailure extends NumberVerificationState {}
 
 class NumberVerificationSkipped extends NumberVerificationState {}
 
-class NumberVerificationReturnToPhoneNumberStepState extends NumberVerificationState {
-  final String phoneNumber;
-  const NumberVerificationReturnToPhoneNumberStepState({required this.phoneNumber});
-
-  @override
-  List<Object?> get props => [phoneNumber];
-}
-
 // Checking if phone number is verified
 class NumberCheckInProgress extends NumberVerificationState {}
 class NumberCheckSuccess extends NumberVerificationState {}

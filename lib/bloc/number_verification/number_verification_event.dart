@@ -78,12 +78,3 @@ class ConfirmationCodeSubmitted extends NumberVerificationEvent {
 class PhoneNumberVerificationCompleted extends NumberVerificationEvent {}
 
 class NumberVerificationCheckRequested extends NumberVerificationEvent {}
-
-
-class NumberVerificationReturnToPhoneNumberStep extends NumberVerificationEvent {
-  final String phoneNumber;
-  NumberVerificationReturnToPhoneNumberStep({required this.phoneNumber});
-
-  @override
-  List<Object?> get props => [phoneNumber];
-}

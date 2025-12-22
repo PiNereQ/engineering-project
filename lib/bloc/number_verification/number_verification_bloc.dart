@@ -73,11 +73,6 @@ class NumberVerificationBloc extends Bloc<NumberVerificationEvent, NumberVerific
       }
     });
 
-        on<NumberVerificationReturnToPhoneNumberStep>((event, emit) async {
-      if (kDebugMode) print('[NumberVerificationBloc] Returning to phone number step with ${event.phoneNumber}');
-      emit(NumberVerificationReturnToPhoneNumberStepState(phoneNumber: event.phoneNumber));
-    });
-
     on<PhoneNumberCodeSent>((event, emit) async {
       if(kDebugMode) print('[NumberVerificationBloc] Emitting CodeSentState with verificationId: ${event.verificationId}');
 
