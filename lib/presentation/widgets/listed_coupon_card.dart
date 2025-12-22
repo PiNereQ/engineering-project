@@ -28,16 +28,12 @@ class ListedCouponCardHorizontal extends StatelessWidget {
     final isSold = coupon.isSold;
 
     final reductionText =
-        isInteger(reduction)
-            ? reduction.toString()
-            : reductionIsPercentage
-            ? reduction.toString().replaceAll('.', ',')
-            : reduction.toStringAsFixed(2).replaceAll('.', ',');
+        formatReduction(reduction.toDouble(), reductionIsPercentage);
 
     final titleText = TextSpan(
       text: reductionIsPercentage
-          ? "Kupon -$reductionText%\n"
-          : "Kupon na $reductionText zł\n",
+          ? "Kupon -$reductionText\n"
+          : "Kupon na $reductionText\n",
       style: TextStyle(
         color: isSold ? AppColors.textSecondary : AppColors.textPrimary,
         fontSize: 20,

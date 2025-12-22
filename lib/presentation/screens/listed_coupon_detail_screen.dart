@@ -115,16 +115,13 @@ class _CouponDetails extends StatelessWidget {
     final DateTime? expiryDate = coupon.expiryDate;
     final String? description = coupon.description;
 
-    final reductionText = isInteger(reduction)
-    ? reduction.toString()
-    : reductionIsPercentage
-      ? reduction.toString().replaceAll('.', ',')
-      : reduction.toStringAsFixed(2).replaceAll('.', ',');
+    final reductionText =
+        formatReduction(reduction.toDouble(), reductionIsPercentage);
 
     final titleText = TextSpan(
-      text: reductionIsPercentage 
-      ? 'Kupon -$reductionText%'
-      : 'Kupon na $reductionText zł',
+      text: reductionIsPercentage
+          ? 'Kupon -$reductionText'
+          : 'Kupon na $reductionText',
       style: const TextStyle(
       color: AppColors.textPrimary,
       fontSize: 30,

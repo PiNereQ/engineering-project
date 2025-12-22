@@ -30,17 +30,13 @@ class OwnedCouponCardHorizontal extends StatelessWidget {
     final bool isUsed = coupon.isUsed!;
 
     final reductionText =
-        isInteger(reduction)
-            ? reduction.toString()
-            : reductionIsPercentage
-            ? reduction.toString().replaceAll('.', ',')
-            : reduction.toStringAsFixed(2).replaceAll('.', ',');
+        formatReduction(reduction.toDouble(), reductionIsPercentage);
 
     final titleText = TextSpan(
       text:
-          reductionIsPercentage
-              ? 'Kupon -$reductionText%\n'
-              : 'Kupon na $reductionText zł\n',
+      reductionIsPercentage
+        ? 'Kupon -$reductionText\n'
+        : 'Kupon na $reductionText\n',
       style: TextStyle(
         color: isUsed ? AppColors.textSecondary : AppColors.textPrimary,
         fontSize: 20,
