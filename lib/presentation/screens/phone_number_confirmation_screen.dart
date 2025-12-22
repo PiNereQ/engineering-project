@@ -43,7 +43,7 @@ class _PhoneNumberConfirmationScreenState extends State<PhoneNumberConfirmationS
             listener: (context, state) {
               
               if (state is NumberVerificationSuccess) {
-                showCustomSnackBar(context, "Numer telefonu został potwierdzony!");
+                showCustomSnackBar(context, "Numer telefonu został przypisany do konta!");
                 Navigator.of(context).pop();
               }
 

@@ -59,11 +59,10 @@ class _MainScreenState extends State<MainScreen> {
         builder: (context, state) {
             if (state is NumberVerificationDuringRegistrationInitial) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
-              Navigator.of(context).pushAndRemoveUntil(
+              Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (context) => const PhoneNumberConfirmationScreen(),
                 ),
-                (route) => false,
               );
             });
           }
