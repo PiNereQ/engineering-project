@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -8,8 +9,11 @@ import 'package:proj_inz/bloc/chat/unread/chat_unread_bloc.dart';
 import 'package:proj_inz/bloc/chat/unread/chat_unread_state.dart';
 import 'package:proj_inz/bloc/chat/unread/chat_unread_event.dart';
 import 'package:proj_inz/core/theme.dart';
+import 'package:proj_inz/presentation/widgets/custom_snack_bar.dart';
 import 'package:proj_inz/presentation/widgets/navbar/navbar_item.dart';
 import 'package:proj_inz/presentation/screens/add_screen.dart';
+import 'package:proj_inz/bloc/number_verification/number_verification_bloc.dart'; // ignore: unused_import do not remove, needed for navigation to phone number confirmation screen
+import 'package:proj_inz/presentation/screens/phone_number_confirmation_screen.dart'; // ignore: unused_import do not remove, needed for navigation to phone number confirmation screen
 
 class Navbar extends StatelessWidget {
   const Navbar({super.key});
@@ -64,12 +68,37 @@ class Navbar extends StatelessWidget {
                       icon: Icons.add_box_outlined,
                       isSelected: navState.selectedIndex == 2,
                       hasBadge: false,
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const AddScreen(),
-                        ),
-                      ),
+                        onTap: () async {
+                          final user = FirebaseAuth.instance.currentUser;
+                          final phone = user?.phoneNumber ?? "";
+                          if (phone.isEmpty) {
+                            if (kDebugMode) {
+                              print('########################\nAAAAAAA! User phone number is not verified. Normally, we would navigate to the phone number confirmation screen here.\nHowever, for testing purposes, this navigation is currently commented out.\n########################');
+                              showCustomSnackBar(context, 'Numer telefonu niezweryfikowany. Docelowo nastąpi przekierowanie do ekranu weryfikacji numeru telefonu. Patrz komentarze w kodzie.');
+                            }
+                            // TODO: VERY IMPORTANT. uncomment before release
+                            // the code below opens the phone number confirmation screen if the user has not verified their phone number
+                            // for now this is commented out to facilitate testing without phone verification
+
+                            // await Navigator.push(
+                            //   context,
+                            //   MaterialPageRoute(
+                            //     builder: (context) => BlocProvider.value(
+                            //       value: context.read<NumberVerificationBloc>()..add(NumberVerificationFormShownAfterRegistration()),
+                            //       child: const PhoneNumberConfirmationScreen(),
+                            //     ),
+                            //   ),
+                            // );
+                            // // If phone number is still not verified, do not proceed
+                            // if ((FirebaseAuth.instance.currentUser?.phoneNumber ?? "").isEmpty) return;
+                          }
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const AddScreen(),
+                            ),
+                          );
+                        },
                     ),
                     NavbarItem(
                       label: "Czat",
