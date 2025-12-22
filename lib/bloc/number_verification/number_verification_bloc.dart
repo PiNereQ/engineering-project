@@ -12,6 +12,45 @@ class NumberVerificationBloc extends Bloc<NumberVerificationEvent, NumberVerific
     final UserRepository userRepository;
 
   NumberVerificationBloc({required this.userRepository}) : super(NumberVerificationInitial()) {
+      // Timer for resend cooldown
+      Duration resendCooldown = const Duration(seconds: 30);
+      DateTime? _lastResendTime;
+
+        on<ResendCodeRequested>((event, emit) async {
+          if (kDebugMode) print('[NumberVerificationBloc] ResendCodeRequested for ${event.phoneNumber}');
+          // Prevent resending if cooldown not passed
+          if (_lastResendTime != null && DateTime.now().difference(_lastResendTime!) < resendCooldown) {
+            if (kDebugMode) print('[NumberVerificationBloc] Resend attempted before cooldown.');
+            return;
+          }
+          _lastResendTime = DateTime.now();
+          //emit(NumberSubmitInProgress());
+          try {
+            await FirebaseAuth.instance.verifyPhoneNumber(
+              phoneNumber: event.phoneNumber,
+              forceResendingToken: event.resendToken,
+              verificationCompleted: (PhoneAuthCredential credential) async {
+                add(PhoneNumberVerificationCompleted());
+              },
+              verificationFailed: (FirebaseAuthException e) {
+                if (kDebugMode) print('[NumberVerificationBloc] Resend failed: ${e.message}');
+                emit(NumberSubmitFailure());
+              },
+              codeSent: (String verificationId, int? resendToken) async {
+                if (kDebugMode) print('[NumberVerificationBloc] Resend code sent with verificationId: $verificationId');
+                add(PhoneNumberCodeSent(
+                  phoneNumber: event.phoneNumber,
+                  verificationId: verificationId,
+                  resendToken: resendToken,
+                ));
+              },
+              codeAutoRetrievalTimeout: (String verificationId) {},
+            );
+          } on Exception catch (e) {
+            if (kDebugMode) print('[NumberVerificationBloc] Error during resend: $e');
+            emit(NumberSubmitFailure(message: 'Wystąpił błąd podczas ponownego wysyłania kodu.'));
+          }
+        });
     on<NumberVerificationFormShownDuringRegistration>((event, emit) async {
       if(kDebugMode) print('[NumberVerificationBloc] Showing number verification form during registration');
       emit(NumberVerificationDuringRegistrationInitial(phoneNumber:  event.phoneNumber));

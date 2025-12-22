@@ -1,4 +1,5 @@
 import 'dart:core';
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -222,6 +223,7 @@ class _PhoneNumberStepCardState extends State<_PhoneNumberStepCard> {
 }
 
 class _ConfirmationCodeStep extends StatefulWidget {
+  // Add timer logic for resend button
   final bool isLoading;
   final bool isDuringRegistration;
 
@@ -234,6 +236,49 @@ class _ConfirmationCodeStep extends StatefulWidget {
 }
 
 class _ConfirmationCodeStepState extends State<_ConfirmationCodeStep> {
+    int _secondsLeft = 0;
+    Timer? _timer;
+
+    @override
+    void initState() {
+      super.initState();
+      _startResendTimer();
+    }
+
+    @override
+    void dispose() {
+      _timer?.cancel();
+      super.dispose();
+    }
+
+    void _startResendTimer() {
+      setState(() {
+        _secondsLeft = 30;
+      });
+      _timer?.cancel();
+      _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+        if (_secondsLeft > 0) {
+          setState(() {
+            _secondsLeft--;
+          });
+        } else {
+          timer.cancel();
+        }
+      });
+    }
+
+    void _handleResend() {
+      final state = context.read<NumberVerificationBloc>().state;
+      if (state is NumberSubmitSuccess) {
+        context.read<NumberVerificationBloc>().add(
+          ResendCodeRequested(
+            phoneNumber: state.phoneNumber,
+            resendToken: state.resendToken,
+          ),
+        );
+        _startResendTimer();
+      }
+    }
   final _formKey = GlobalKey<FormState>();
   final _verificationCodeController = TextEditingController();
   String? _errorMessage;
@@ -373,8 +418,8 @@ class _ConfirmationCodeStepState extends State<_ConfirmationCodeStep> {
                     ),
                   ),
                   CustomTextButton.small(
-                    label: "Wyślj ponownie",
-                    onTap: () {} // TODO: implement resend code functionality
+                    label: _secondsLeft > 0 ? 'Wyślij ponownie (za ${_secondsLeft}s)' : 'Wyślij ponownie',
+                    onTap: _secondsLeft > 0 ? () {} : _handleResend,
                   ),
                 ],
               ),
