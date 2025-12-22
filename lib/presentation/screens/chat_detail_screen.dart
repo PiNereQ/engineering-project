@@ -466,14 +466,6 @@ class _ChatDetailViewState extends State<ChatDetailView> {
   late final TextEditingController _controller;
   bool _showPopup = false;
 
-  String buildCouponTitle(num reduction, bool reductionIsPercentage, String shopName) {
-    final reductionText = formatNumber(reduction);
-
-    return reductionIsPercentage
-        ? "-$reductionText% • $shopName"
-        : "-$reductionText zł • $shopName";
-  }
-
   String buildJoinDate(Coupon? c) {
     if (c == null || c.sellerJoinDate == null) return "—";
 
@@ -520,11 +512,17 @@ class _ChatDetailViewState extends State<ChatDetailView> {
           appBar: PreferredSize(
             preferredSize: const Size.fromHeight(180),
             child: ChatHeader(
-              couponTitle: _conversation != null
-                  ? buildCouponTitle(_conversation!.couponDiscount, _conversation!.couponDiscountIsPercentage, _conversation!.couponShopName)
-                  : (widget.relatedCoupon != null
-                      ? buildCouponTitle(widget.relatedCoupon!.reduction, widget.relatedCoupon!.reductionIsPercentage, widget.relatedCoupon!.shopName)
-                      : "Kupon"),
+              couponTitle: formatChatCouponTitle(
+                reduction: _conversation != null
+                    ? _conversation!.couponDiscount
+                    : widget.relatedCoupon!.reduction,
+                isPercentage: _conversation != null
+                    ? _conversation!.couponDiscountIsPercentage
+                    : widget.relatedCoupon!.reductionIsPercentage,
+                shopName: _conversation != null
+                    ? _conversation!.couponShopName
+                    : widget.relatedCoupon!.shopName,
+              ),
 
               username: _conversation != null
                   ? _getOtherUsername()
@@ -744,11 +742,4 @@ class _ChatDetailViewState extends State<ChatDetailView> {
     // Use helper to format time in local timezone
     return formatTimeLocal(time);
   }
-}
-
-String formatNumber(num value) {
-  if (value % 1 == 0) {
-    return value.toInt().toString();
-  }
-  return value.toString().replaceAll('.', ',');
 }

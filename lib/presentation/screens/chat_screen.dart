@@ -7,6 +7,7 @@ import 'package:proj_inz/bloc/chat/list/chat_list_state.dart';
 import 'package:proj_inz/bloc/chat/unread/chat_unread_bloc.dart';
 import 'package:proj_inz/bloc/chat/unread/chat_unread_event.dart';
 import 'package:proj_inz/core/theme.dart';
+import 'package:proj_inz/core/utils/utils.dart';
 import 'package:proj_inz/data/models/conversation_model.dart';
 import 'package:proj_inz/presentation/widgets/conversation_tile.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_text_button.dart';
@@ -177,7 +178,11 @@ class _ChatScreenState extends State<ChatScreen> {
                           },
                           child: ConversationTile(
                             username: _getUsername(c),
-                            title: 'Kupon na ${c.couponDiscount}${c.couponDiscountIsPercentage == 'true' ? '%' : 'zł'} do ${c.couponShopName}',
+                            title: formatChatCouponTitle(
+                              reduction: c.couponDiscount,
+                              isPercentage: parseBool(c.couponDiscountIsPercentage),
+                              shopName: c.couponShopName,
+                            ),
                             message: c.lastMessage,
                             isRead: c.isReadByCurrentUser,
                           ),

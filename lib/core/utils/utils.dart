@@ -96,3 +96,24 @@ String formatReduction(double reduction, bool isPercentage) {
     return '${reduction.toStringAsFixed(2).replaceAll('.', ',')} zł';
   }
 }
+
+/// Helper to format number without trailing .0 and with comma as decimal separator
+String formatNumber(num value) {
+  if (value % 1 == 0) {
+    return value.toInt().toString();
+  }
+  return value.toString().replaceAll('.', ',');
+}
+
+/// Helper to format chat coupon title
+String formatChatCouponTitle({
+  required num reduction,
+  required bool isPercentage,
+  required String shopName,
+}) {
+  final value = formatNumber(reduction);
+
+  return isPercentage
+      ? "-$value% • $shopName"
+      : "-$value zł • $shopName";
+}
