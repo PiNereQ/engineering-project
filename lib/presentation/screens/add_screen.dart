@@ -395,16 +395,19 @@ class _AddScreenState extends State<AddScreen> {
                                                 if (val == null || val.isEmpty) {
                                                   return 'Wymagane';
                                                 }
-                                                if (double.tryParse(val) ==
+
+                                                final normalized = val.replaceAll(',', '.');
+
+                                                if (double.tryParse(normalized) ==
                                                     null) {
                                                   return 'Niepoprawna liczba';
                                                 }
                                                 // Check for at most 2 decimal places (grosze)
-                                                final parts = val.replaceAll(',', '.').split('.');
+                                                final parts = normalized.split('.');
                                                 if (parts.length > 1 && parts[1].length > 2) {
                                                   return 'Cena może mieć maksymalnie 2 miejsca po przecinku';
                                                 }
-                                                if (double.tryParse(val)! <= 2) {
+                                                if (double.tryParse(normalized)! <= 2) {
                                                   return 'Wpisz więcej niż 2';
                                                 }
                                                 return null;
@@ -750,20 +753,23 @@ class _AddScreenState extends State<AddScreen> {
                                                               val.isEmpty) {
                                                             return 'Wymagane';
                                                           }
+
+                                                          final normalized = val.replaceAll(',', '.');
+
                                                           if (double.tryParse(
-                                                                val,
+                                                                normalized,
                                                               ) ==
                                                               null) {
                                                             return 'Niepoprawna liczba';
                                                           }
                                                           if (double.tryParse(
-                                                                val,
+                                                                normalized,
                                                               )! <=
                                                               0) {
                                                             return 'Wpisz więcej niż 0';
                                                           }
                                                           if (double.tryParse(
-                                                                val,
+                                                                normalized,
                                                               )! >
                                                               100) {
                                                             return 'Wpisz conajwyżej 100';
@@ -798,14 +804,17 @@ class _AddScreenState extends State<AddScreen> {
                                                               val.isEmpty) {
                                                             return 'Wymagane';
                                                           }
+
+                                                          final normalized = val.replaceAll(',', '.');
+
                                                           if (double.tryParse(
-                                                                val,
+                                                                normalized,
                                                               ) ==
                                                               null) {
                                                             return 'Niepoprawna liczba';
                                                           }
                                                           if (double.tryParse(
-                                                                val,
+                                                                normalized,
                                                               )! <=
                                                               0) {
                                                             return 'Wpisz więcej niż 0';
@@ -1126,14 +1135,18 @@ class _AddScreenState extends State<AddScreen> {
                                                 expiryDateStr = "${_expiryDate.year}-${_expiryDate.month.toString().padLeft(2, '0')}-${_expiryDate.day.toString().padLeft(2, '0')}";
                                               }
 
-                                              double priceDouble = double.tryParse(_priceController.text) ?? 0;
+                                              final normalizedPrice = _priceController.text.replaceAll(',', '.');
+
+                                              double priceDouble = double.tryParse(normalizedPrice) ?? 0;
                                               int priceInSmallestUnit = (priceDouble * 100).toInt();
+
+                                              final normalizedDiscount = _reductionController.text.replaceAll(',', '.');
 
                                               final offer = CouponOffer(
                                                 description: _descriptionController.text.trim(),
                                                 discount:
                                                     double.tryParse(
-                                                      _reductionController.text,
+                                                      normalizedDiscount,
                                                     ) ??
                                                     0,
                                                 isDiscountPercentage:

@@ -44,17 +44,10 @@ class CouponCardHorizontal extends StatelessWidget {
     final bool isSaved = coupon.isSaved ?? false;
 
     final reductionText =
-        isInteger(reduction)
-            ? reduction.toString()
-            : reductionIsPercentage
-            ? reduction.toString().replaceAll('.', ',')
-            : reduction.toStringAsFixed(2).replaceAll('.', ',');
+        formatReduction(reduction.toDouble(), reductionIsPercentage);
 
     final titleText = TextSpan(
-      text:
-          reductionIsPercentage
-              ? 'Kupon -$reductionText%\n'
-              : 'Kupon na $reductionText zł\n',
+      text: 'Kupon -$reductionText\n',
       style: const TextStyle(
         color: AppColors.textPrimary,
         fontSize: 20,
@@ -283,16 +276,12 @@ class CouponCardVertical extends StatelessWidget {
     final DateTime? expiryDate = coupon.expiryDate;
 
     final reductionText =
-        isInteger(reduction)
-            ? reduction.toInt().toString()
-            : reductionIsPercentage
-            ? reduction.toString().replaceAll('.', ',')
-            : reduction.toStringAsFixed(2).replaceAll('.', ',');
+        formatReduction(reduction.toDouble(), reductionIsPercentage);
 
     final titleText = Text(
-          reductionIsPercentage
-              ? '-$reductionText%'
-              : '$reductionText zł',
+        reductionIsPercentage
+            ? '-$reductionText'
+            : reductionText,
       style: const TextStyle(
         color: AppColors.textPrimary,
         fontSize: 18,
