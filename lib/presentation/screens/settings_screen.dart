@@ -24,12 +24,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   void initState() {
     super.initState();
+    _fetchProfile();
+  }
 
+  void _fetchProfile() {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
-
-    _profileFuture =
-        context.read<UserRepository>().getUserProfile(user.uid);
+    setState(() {
+      _profileFuture = context.read<UserRepository>().getUserProfile(user.uid);
+    });
   }
 
   @override
@@ -77,6 +80,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   }
 
                   final user = snapshot.data!;
+                  final bool hasPhoneNumber = FirebaseAuth.instance.currentUser?.phoneNumber != null;
 
                   return _SectionCard(
                     child: Column(
@@ -92,28 +96,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ),
                         _KeyValueRow(
                           label: 'Data dołączenia',
-                          value: user['joinDate'] != null
-                              ? user['joinDate'].toString().substring(0, 10)
+                          value: user['join_date'] != null
+                              ? user['join_date'].toString().substring(0, 10)
                               : '—',
                         ),
                         _KeyValueRow(
                           label: 'Numer telefonu',
-                          value: 'Niepotwierdzony', // TODO: load actual status
-                          trailing: _InlineAction(
-                            text: 'Potwierdź',
-                            onTap: () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (context) => BlocProvider<NumberVerificationBloc>.value(
-                                    value: context.read<NumberVerificationBloc>()..add(
-                                      NumberVerificationFormShownAfterRegistration(),
-                                    ),
-                                    child: const PhoneNumberConfirmationScreen(),
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
+                          value: hasPhoneNumber ? 'Potwierdzony' : 'Niepotwierdzony',
+                          trailing: !hasPhoneNumber
+                              ? _InlineAction(
+                                  text: 'Potwierdź',
+                                  onTap: () async {
+                                    await Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder: (context) => BlocProvider<NumberVerificationBloc>.value(
+                                          value: context.read<NumberVerificationBloc>()..add(
+                                            NumberVerificationFormShownAfterRegistration(),
+                                          ),
+                                          child: const PhoneNumberConfirmationScreen(),
+                                        ),
+                                      ),
+                                    );
+                                    _fetchProfile();
+                                  },
+                                )
+                              : null,
                         ),
 
                         Padding(

@@ -356,6 +356,7 @@ class _ConfirmationCodeStepState extends State<_ConfirmationCodeStep> {
                     label: "Kod weryfikacyjny",
                     controller: _verificationCodeController,
                     iconOnLeft: false,
+                    keyboardType: TextInputType.number,
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) {
                         return 'Proszę podać kod weryfikacyjny';
