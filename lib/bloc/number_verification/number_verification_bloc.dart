@@ -14,12 +14,12 @@ class NumberVerificationBloc extends Bloc<NumberVerificationEvent, NumberVerific
   NumberVerificationBloc({required this.userRepository}) : super(NumberVerificationInitial()) {
     on<NumberVerificationFormShownDuringRegistration>((event, emit) async {
       if(kDebugMode) print('[NumberVerificationBloc] Showing number verification form during registration');
-      emit(NumberVerificationDuringRegistrationInitial());
+      emit(NumberVerificationDuringRegistrationInitial(phoneNumber:  event.phoneNumber));
     });
 
     on<NumberVerificationFormShownAfterRegistration>((event, emit) async {
      if(kDebugMode)  print('[NumberVerificationBloc] Showing number verification form after registration');
-      emit(NumberVerificationAfterRegistrationInitial());
+      emit(NumberVerificationAfterRegistrationInitial(phoneNumber: event.phoneNumber));
     });
 
     on<NumberVerificationSkipRequested>((event, emit) async {

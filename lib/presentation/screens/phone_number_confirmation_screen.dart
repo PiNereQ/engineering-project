@@ -1,4 +1,5 @@
 import 'dart:core';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:proj_inz/bloc/number_verification/number_verification_bloc.dart';
@@ -55,9 +56,12 @@ class _PhoneNumberConfirmationScreenState extends State<PhoneNumberConfirmationS
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(16, 72, 16, 24),
                   child: Center(
-                    child: (state is NumberVerificationDuringRegistrationInitial || state is NumberVerificationAfterRegistrationInitial || state is NumberSubmitInProgress)
-                      ? _PhoneNumberStepCard(isLoading: state is NumberSubmitInProgress, isDuringRegistration: _isDuringRegistration,)
-                      : _ConfirmationCodeStep(isLoading: state is NumberVerificationInProgress, isDuringRegistration: _isDuringRegistration),
+                    child: (state is NumberVerificationDuringRegistrationInitial ||
+                            state is NumberVerificationAfterRegistrationInitial ||
+                            state is NumberSubmitInProgress ||
+                            state is NumberSubmitFailure)
+                        ? _PhoneNumberStepCard(isLoading: state is NumberSubmitInProgress, isDuringRegistration: _isDuringRegistration, initialPhoneNumber: (state is NumberVerificationDuringRegistrationInitial) ? state.phoneNumber : (state is NumberVerificationAfterRegistrationInitial) ? state.phoneNumber : null,)
+                        : _ConfirmationCodeStep(isLoading: state is NumberVerificationInProgress, isDuringRegistration: _isDuringRegistration),
                   ),
                 ),
               );
@@ -72,9 +76,12 @@ class _PhoneNumberConfirmationScreenState extends State<PhoneNumberConfirmationS
 class _PhoneNumberStepCard extends StatefulWidget {
   final bool isLoading;
   final bool isDuringRegistration;
+  final String? initialPhoneNumber;
 
   const _PhoneNumberStepCard({
-    required this.isLoading, required this.isDuringRegistration
+    required this.isLoading,
+    required this.isDuringRegistration,
+    this.initialPhoneNumber,
   });
 
   @override
@@ -82,11 +89,19 @@ class _PhoneNumberStepCard extends StatefulWidget {
 }
 
 class _PhoneNumberStepCardState extends State<_PhoneNumberStepCard> {
+
   final _formKey = GlobalKey<FormState>();
-  final _phoneNumberController = TextEditingController();
+  late final TextEditingController _phoneNumberController;
   String? _errorMessage;
 
+  @override
+  void initState() {
+    super.initState();
+    _phoneNumberController = TextEditingController(text: widget.initialPhoneNumber ?? '');
+  }
+
   void _handleSkip() {
+    if (kDebugMode) print('_handleSkip called');
     context.read<NumberVerificationBloc>().add(
       NumberVerificationSkipRequested(),
     );
@@ -107,7 +122,6 @@ class _PhoneNumberStepCardState extends State<_PhoneNumberStepCard> {
 
   @override
   Widget build(BuildContext context) {
-
     final textAfterRegistration = 'Abyś mogła/mógł kupować i sprzedawać kupony potrzebujemy od Ciebie numer telefonu w celach weryfikacji. \n\n Podaj go, a prześlemy Tobie SMSem kod. Numer telefonu zostanie przypisany do konta. ';
     final textDuringRegistration = 'Abyś mogła/mógł kupować i sprzedawać kupony potrzebujemy od Ciebie numer telefonu w celach weryfikacji. Możesz na razie pominąć ten krok.\n\n Podaj go, a prześlemy Tobie SMSem kod. Numer telefonu zostanie przypisany do konta. ';
 
@@ -153,10 +167,10 @@ class _PhoneNumberStepCardState extends State<_PhoneNumberStepCard> {
                   ),
                   Text(
                     widget.isDuringRegistration
-                     ? textDuringRegistration
-                     : textAfterRegistration,
+                        ? textDuringRegistration
+                        : textAfterRegistration,
                     textAlign: TextAlign.justify,
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: AppColors.textPrimary,
                       fontSize: 16,
                       fontFamily: 'Itim',
@@ -169,7 +183,6 @@ class _PhoneNumberStepCardState extends State<_PhoneNumberStepCard> {
                     iconOnLeft: false,
                     keyboardType: TextInputType.phone,
                     validator: phoneNumberValidator,
-                    //inputFormatters: [PolishPhoneInputFormatter()], 798447
                   ),
                   if (_errorMessage != null)
                     Text(
@@ -187,16 +200,12 @@ class _PhoneNumberStepCardState extends State<_PhoneNumberStepCard> {
                     children: [
                       CustomTextButton(
                         label: widget.isDuringRegistration ? "Pomiń" : "Anuluj",
-                        onTap: widget.isLoading
-                            ? () {}
-                            : _handleSkip,
+                        onTap: _handleSkip,
                         backgroundColor: AppColors.secondaryButton,
                       ),
                       CustomTextButton(
                         label: "Wyślij kod",
-                        onTap: widget.isLoading
-                            ? () {}
-                            : _handleSubmit,
+                        onTap: widget.isLoading ? () {} : _handleSubmit,
                         backgroundColor: AppColors.primaryButton,
                         isLoading: widget.isLoading,
                       ),
@@ -232,11 +241,11 @@ class _ConfirmationCodeStepState extends State<_ConfirmationCodeStep> {
   void _handleBack() {
     if (widget.isDuringRegistration) {
       context.read<NumberVerificationBloc>().add(
-        NumberVerificationFormShownDuringRegistration(),
+        NumberVerificationFormShownDuringRegistration(phoneNumber: (context.read<NumberVerificationBloc>().state as NumberSubmitSuccess).phoneNumber),
       );
     } else {
       context.read<NumberVerificationBloc>().add(
-        NumberVerificationFormShownAfterRegistration(),
+        NumberVerificationFormShownAfterRegistration(phoneNumber: (context.read<NumberVerificationBloc>().state as NumberSubmitSuccess).phoneNumber),
       );
     }
   }

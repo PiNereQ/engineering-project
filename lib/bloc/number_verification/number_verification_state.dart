@@ -11,8 +11,20 @@ sealed class NumberVerificationState extends Equatable {
 // Number verification
 class NumberVerificationInitial extends NumberVerificationState {}
 
-class NumberVerificationDuringRegistrationInitial extends NumberVerificationState {}
-class NumberVerificationAfterRegistrationInitial extends NumberVerificationState {}
+class NumberVerificationDuringRegistrationInitial extends NumberVerificationState {
+  final String? phoneNumber;
+  const NumberVerificationDuringRegistrationInitial({this.phoneNumber});
+
+  @override
+  List<Object?> get props => [phoneNumber];
+}
+class NumberVerificationAfterRegistrationInitial extends NumberVerificationState {
+  final String? phoneNumber;
+  const NumberVerificationAfterRegistrationInitial({this.phoneNumber});
+
+  @override
+  List<Object?> get props => [phoneNumber];
+}
 
 class NumberSubmitInProgress extends NumberVerificationState {}
 

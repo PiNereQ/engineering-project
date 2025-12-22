@@ -27,9 +27,21 @@ abstract class NumberVerificationEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-class NumberVerificationFormShownDuringRegistration extends NumberVerificationEvent {}
+class NumberVerificationFormShownDuringRegistration extends NumberVerificationEvent {
+  final String? phoneNumber;
+  NumberVerificationFormShownDuringRegistration({this.phoneNumber});
 
-class NumberVerificationFormShownAfterRegistration extends NumberVerificationEvent {}
+  @override
+  List<Object?> get props => [phoneNumber];
+}
+
+class NumberVerificationFormShownAfterRegistration extends NumberVerificationEvent {
+  final String? phoneNumber;
+  NumberVerificationFormShownAfterRegistration({this.phoneNumber});
+
+  @override
+  List<Object?> get props => [phoneNumber];
+}
 
 class NumberVerificationSkipRequested extends NumberVerificationEvent {}
 
