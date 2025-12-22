@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:proj_inz/core/theme.dart';
+import 'package:proj_inz/core/utils/utils.dart';
 import 'package:proj_inz/data/models/coupon_model.dart';
 import 'package:proj_inz/presentation/widgets/coupon_card.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_icon_button.dart';
@@ -286,7 +287,7 @@ class _UserTile extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      "Na Coupidynie od ${joinDate.day}.${joinDate.month}.${joinDate.year}",
+                      "Na Coupidynie od ${formatDate(joinDate.toLocal())}",
                       style: const TextStyle(
                         fontFamily: 'Itim',
                         fontSize: 14,

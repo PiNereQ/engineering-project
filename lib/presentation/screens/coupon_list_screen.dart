@@ -9,6 +9,7 @@ import 'package:proj_inz/bloc/coupon_list/coupon_list_bloc.dart';
 import 'package:proj_inz/bloc/search_shops_categories/search_shops_categories_bloc.dart';
 import 'package:proj_inz/bloc/search_shops_categories/search_shops_categories_event.dart';
 import 'package:proj_inz/core/theme.dart';
+import 'package:proj_inz/core/utils/text_formatters.dart';
 import 'package:proj_inz/presentation/screens/map_screen.dart';
 import 'package:proj_inz/presentation/screens/search_results_screen.dart';
 import 'package:proj_inz/data/repositories/shop_repository.dart';
@@ -19,8 +20,8 @@ import 'package:proj_inz/presentation/widgets/input/buttons/checkbox.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_icon_button.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_text_button.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/radio_button.dart';
+import 'package:proj_inz/presentation/widgets/input/text_fields/labeled_text_field.dart';
 import 'package:proj_inz/presentation/widgets/input/text_fields/search_bar.dart';
-import 'package:proj_inz/presentation/widgets/input/text_fields/custom_text_field.dart';
 
 // Local debugging flags
 bool stopCouponLoading = false; // Default to false
@@ -318,47 +319,60 @@ Widget build(BuildContext context) {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Expanded(
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            CustomTextButton.small(
-                              label: 'Filtruj',
-                              onTap: () => showDialog(
-                                context: context,
-                                barrierColor: AppColors.popupOverlay,
-                                builder: (dialogContext) => BlocProvider.value(
-                                  value: context.read<CouponListBloc>(),
-                                  child: const _CouponFilterDialog(),
-                                ),
-                              ).then((_) {
-                                if (context.mounted) {
-                                  context.read<CouponListBloc>().add(
-                                    LeaveCouponFilterPopUp(),
-                                  );
-                                }
-                              }),
-                              icon: const Icon(Icons.filter_alt),
-                            ),
-                            const SizedBox(width: 6),
-                            CustomTextButton.small(
-                              label: 'Sortuj',
-                              onTap: () => showDialog(
-                                context: context,
-                                barrierColor: AppColors.popupOverlay,
-                                builder: (dialogContext) => BlocProvider.value(
-                                  value: context.read<CouponListBloc>(),
-                                  child: const _CouponSortDialog(),
-                                ),
-                              ).then((_) {
-                                if (context.mounted) {
-                                  context.read<CouponListBloc>().add(
-                                    LeaveCouponSortPopUp(),
-                                  );
-                                }
-                              }),
-                              icon: const Icon(Icons.sort),
-                            ),
-                          ],
+                        child: Expanded(
+                          child: BlocBuilder<CouponListBloc, CouponListState>(
+                              builder: (context, state) {
+                              final bloc = context.read<CouponListBloc>();
+
+                              final hasFilters = bloc.hasActiveFilters;
+                              final hasOrdering = bloc.hasActiveOrdering;
+
+                              return Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  CustomTextButton.small(
+                                    label: 'Filtruj',
+                                    badgeNumber: hasFilters ? 1 : null,
+                                    icon: hasFilters ? null : const Icon(Icons.filter_alt),
+                                    onTap: () => showDialog(
+                                      context: context,
+                                      barrierColor: AppColors.popupOverlay,
+                                      builder: (dialogContext) => BlocProvider.value(
+                                        value: context.read<CouponListBloc>(),
+                                        child: const _CouponFilterDialog(),
+                                      ),
+                                    ).then((_) {
+                                      if (context.mounted) {
+                                        context.read<CouponListBloc>().add(
+                                          LeaveCouponFilterPopUp(),
+                                        );
+                                      }
+                                    }),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  CustomTextButton.small(
+                                    label: 'Sortuj',
+                                    badgeNumber: hasOrdering ? 1 : null,
+                                    icon: hasOrdering ? null : const Icon(Icons.sort),
+                                    onTap: () => showDialog(
+                                      context: context,
+                                      barrierColor: AppColors.popupOverlay,
+                                      builder: (dialogContext) => BlocProvider.value(
+                                        value: context.read<CouponListBloc>(),
+                                        child: const _CouponSortDialog(),
+                                      ),
+                                    ).then((_) {
+                                      if (context.mounted) {
+                                        context.read<CouponListBloc>().add(
+                                          LeaveCouponSortPopUp(),
+                                        );
+                                      }
+                                    }),
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
                         ),
                       ),
                       CustomTextButton.small(
@@ -522,12 +536,8 @@ class _CouponFilterDialogState extends State<_CouponFilterDialog> {
                               ],
                             ),
 
-                            const Divider(
-                              color: AppColors.textPrimary,
-                              thickness: 1,
-                              height: 1,
-                            ),
-                                            
+                            const SizedBox(height: 10), 
+
                             Column( // Cena
                               children: [
                                 const Align(
@@ -542,65 +552,97 @@ class _CouponFilterDialogState extends State<_CouponFilterDialog> {
                                       ),
                                   )
                                 ),
-                                Row(
+                                Wrap(
+                                  spacing: 16,
+                                  runSpacing: 16,
                                   children: [
-                                    Expanded(
-                                      child: CustomTextField(
-                                        label: 'od',
-                                        controller: minPriceController,
-                                      ),
+                                    LabeledTextField(
+                                      label: 'od',
+                                      placeholder: '0',
+                                      width: LabeledTextFieldWidth.half,
+                                      controller: minPriceController,
+                                      keyboardType: TextInputType.number,
+                                      inputFormatters: [PriceFormatter()],
+                                      suffix: const Text('zł'),
                                     ),
-                                    const SizedBox(width: 8),
-                                    const Text('-'),
-                                    const SizedBox(width: 8),
-                                    Expanded(
-                                      child: CustomTextField(
-                                        label: 'do',
-                                        controller: maxPriceController,
-                                      ),
+                                    LabeledTextField(
+                                      label: 'do',
+                                      placeholder: 'bez limitu',
+                                      width: LabeledTextFieldWidth.half,
+                                      controller: maxPriceController,
+                                      keyboardType: TextInputType.number,
+                                      inputFormatters: [PriceFormatter()],
+                                      suffix: const Text('zł'),
                                     ),
                                   ],
                                 ),
                               ],
                             ),
 
-                            const Divider(
-                              color: AppColors.textPrimary,
-                              thickness: 1,
-                              height: 1,
-                            ),
-                                            
+                            const SizedBox(height: 20),
+
                             Column( // Reputacja
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Align(
-                                  alignment: Alignment.centerLeft,
-                                  child: Text(
-                                      'Min. reputacja sprzedającego',
-                                      style: TextStyle(
-                                          color: AppColors.textPrimary,
-                                          fontSize: 20,
-                                          fontFamily: 'Itim',
-                                          fontWeight: FontWeight.w400,
-                                      ),
-                                  )
+                                const Text(
+                                  'Min. reputacja sprzedającego',
+                                  style: TextStyle(
+                                    color: AppColors.textPrimary,
+                                    fontSize: 20,
+                                    fontFamily: 'Itim',
+                                    fontWeight: FontWeight.w400,
+                                  ),
                                 ),
+                                const SizedBox(height: 8),
                                 Row(
                                   children: [
                                     Expanded(
                                       child: Slider(
                                         value: minReputation,
-                                        divisions: 1,
                                         min: 0,
                                         max: 100,
-                                        activeColor: Colors.lightGreen,
-                                        onChanged: (v) => setState(() => minReputation = v),
+                                        divisions: 20,
+                                        activeColor: AppColors.primaryButton,
+                                        inactiveColor: AppColors.secondaryButton,
+                                        label: minReputation.round().toString(),
+                                        onChanged: (v) {
+                                          setState(() {
+                                            minReputation = v;
+                                          });
+                                        },
                                       ),
                                     ),
-                                    Text(minReputation.round().toString()),
+                                    const SizedBox(width: 12),
+                                    Container(
+                                      width: 44,
+                                      alignment: Alignment.center,
+                                      padding: const EdgeInsets.symmetric(vertical: 6),
+                                      decoration: ShapeDecoration(
+                                        color: AppColors.surface,
+                                        shape: RoundedRectangleBorder(
+                                          side: const BorderSide(width: 2),
+                                          borderRadius: BorderRadius.circular(12),
+                                        ),
+                                        shadows: const [
+                                          BoxShadow(
+                                            color: AppColors.textPrimary,
+                                            blurRadius: 0,
+                                            offset: Offset(2, 2),
+                                          ),
+                                        ],
+                                      ),
+                                      child: Text(
+                                        minReputation.round().toString(),
+                                        style: const TextStyle(
+                                          fontFamily: 'Itim',
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                    ),
                                   ],
                                 ),
                               ],
-                            ),
+                            )
                           ],
                         ),
                       ),
@@ -628,8 +670,8 @@ class _CouponFilterDialogState extends State<_CouponFilterDialog> {
                                   ApplyCouponFilters(
                                     reductionIsFixed: reductionIsFixed,
                                     reductionIsPercentage: reductionIsPercentage,
-                                    minPrice: minPriceController.text.isEmpty ? null : double.tryParse(minPriceController.text),
-                                    maxPrice: maxPriceController.text.isEmpty ? null : double.tryParse(maxPriceController.text),
+                                    minPrice: minPriceController.text.isEmpty ? null : double.tryParse(minPriceController.text.replaceAll(',', '.'),),
+                                    maxPrice: maxPriceController.text.isEmpty ? null : double.tryParse(maxPriceController.text.replaceAll(',', '.')),
                                     minReputation: minReputation.toInt(),
                                   ),
                                 );

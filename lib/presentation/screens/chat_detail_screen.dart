@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:proj_inz/bloc/chat/unread/chat_unread_bloc.dart';
 import 'package:proj_inz/bloc/chat/unread/chat_unread_event.dart';
 import 'package:proj_inz/core/theme.dart';
+import 'package:proj_inz/core/utils/utils.dart';
 import 'package:proj_inz/data/models/conversation_model.dart';
 import 'package:proj_inz/presentation/screens/report_screen.dart';
 import 'package:proj_inz/presentation/widgets/chat_report_popup.dart';
@@ -740,9 +741,8 @@ class _ChatDetailViewState extends State<ChatDetailView> {
   }
 
   String _formatTime(DateTime time) {
-    final h = time.hour.toString().padLeft(2, '0');
-    final m = time.minute.toString().padLeft(2, '0');
-    return "$h:$m";
+    // Use helper to format time in local timezone
+    return formatTimeLocal(time);
   }
 }
 
