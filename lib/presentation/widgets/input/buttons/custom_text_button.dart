@@ -262,15 +262,15 @@ class _CustomTextButtonState extends State<CustomTextButton> {
                     ),
                   ),
 
-if (widget.badgeNumber != null)
-  Container(
-    width: 8,
-    height: 8,
-    decoration: const BoxDecoration(
-      color: AppColors.notificationDot,
-      shape: BoxShape.circle,
-    ),
-  ),
+              if (widget.badgeNumber != null)
+                Container(
+                  width: 8,
+                  height: 8,
+                  decoration: const BoxDecoration(
+                    color: AppColors.notificationDot,
+                    shape: BoxShape.circle,
+                  ),
+                ),
               ],
             ),
           ),
