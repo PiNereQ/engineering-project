@@ -200,7 +200,7 @@ class ChatRepository {
   /// Throws on API/network errors.
   Future<bool> hasUnreadMessages(String currentUserId) async {
     try {
-      final response = await _api.get('/chat/unread-summary');
+      final response = await _api.get('/chat/unread-summary', queryParameters: {"user-id": currentUserId});
       return (response as Map<String, dynamic>)['has_unread'] == 1 ? true : false;
     } catch (e) {
       if (kDebugMode) {

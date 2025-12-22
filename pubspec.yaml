@@ -16,6 +16,7 @@ dependencies:
   url_launcher: ^6.3.2
   icon_decoration: ^2.1.0
   shared_preferences: ^2.5.3
+  flutter_markdown: ^0.7.1
 
   # Bloc
   bloc: ^9.0.0
@@ -62,6 +63,7 @@ flutter:
     - assets/.env
     - assets/icons/ # to prevent Android crashes remember to ALWAYS use the full local path like this: 'assets/icons/<filename>' 
     - assets/logo/
+    - assets/legal/
   uses-material-design: true
   fonts:
     - family: Itim

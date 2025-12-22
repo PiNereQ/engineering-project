@@ -660,7 +660,7 @@ class _SellerDetails extends StatelessWidget {
                         showValue: true,
                       ),
                     Text(
-                      'Na Coupidynie od ${sellerJoinDate.day}.${sellerJoinDate.month}.${sellerJoinDate.year} r.',
+                      'Na Coupidynie od ${formatDate(sellerJoinDate.toLocal())}',
                       style: const TextStyle(
                         color: AppColors.textSecondary,
                         fontSize: 16,

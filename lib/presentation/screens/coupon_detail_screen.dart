@@ -59,10 +59,6 @@ class CouponDetailsScreen extends StatelessWidget {
                           Navigator.of(context).pop();
                         },
                       ),
-                      CustomIconButton(
-                        icon: SvgPicture.asset('assets/icons/share.svg'),
-                        onTap: () {},
-                      ),
                     ],
                   ),
                 ),
@@ -604,7 +600,7 @@ class _SellerDetails extends StatelessWidget {
                         showValue: true,
                       ),
                     Text(
-                      'Na Coupidynie od ${formatDate(sellerJoinDate)}',
+                      'Na Coupidynie od ${formatDate(sellerJoinDate.toLocal())}',
                       style: const TextStyle(
                         color: AppColors.textSecondary,
                         fontSize: 16,

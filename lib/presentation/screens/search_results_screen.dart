@@ -7,6 +7,7 @@ import 'package:proj_inz/bloc/search_shops_categories/search_shops_categories_st
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:proj_inz/presentation/screens/coupon_list_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_text_button.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_follow_button.dart';
 
@@ -245,7 +246,7 @@ class SearchResultsScreen extends StatelessWidget {
                                           builder: (_) => BlocProvider(
                                             create: (context) => CouponListBloc(
                                               context.read<CouponRepository>(),
-                                            )..add(FetchCoupons(shopId: item.id)),
+                                            )..add(FetchCoupons(shopId: item.id, userId: FirebaseAuth.instance.currentUser?.uid ?? '')),
                                             child: CouponListScreen(
                                               selectedShopId: item.id,
                                               searchShopName: item.name,

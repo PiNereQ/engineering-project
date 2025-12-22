@@ -13,7 +13,9 @@ class LabeledTextField extends StatefulWidget {
   final LabeledTextFieldWidth width;
   final TextAlign textAlign;
   final int maxLines;
+  final int? maxLength;
   final bool isPassword;
+  final bool enabled;
 
   final TextEditingController? controller;
   final TextInputType? keyboardType;
@@ -31,6 +33,7 @@ class LabeledTextField extends StatefulWidget {
     this.width = LabeledTextFieldWidth.full,
     this.textAlign = TextAlign.left,
     this.maxLines = 1,
+    this.maxLength,
     this.isPassword = false,
     this.controller,
     this.keyboardType,
@@ -38,6 +41,7 @@ class LabeledTextField extends StatefulWidget {
     this.onChanged,
     this.inputFormatters,
     this.suffix,
+    this.enabled = true,
   });
 
   @override
@@ -125,7 +129,9 @@ class _LabeledTextFieldState extends State<LabeledTextField> {
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 decoration: ShapeDecoration(
-                  color: AppColors.surface,
+                  color: widget.enabled
+                      ? AppColors.surface
+                      : AppColors.secondaryButton,
                   shape: RoundedRectangleBorder(
                     side: const BorderSide(width: 2),
                     borderRadius: BorderRadius.circular(16),
@@ -136,7 +142,7 @@ class _LabeledTextFieldState extends State<LabeledTextField> {
                       blurRadius: 0,
                       offset: Offset(4, 4),
                       spreadRadius: 0,
-                    )
+                    ),
                   ],
                 ),
                 child: Row(
@@ -144,6 +150,7 @@ class _LabeledTextFieldState extends State<LabeledTextField> {
                   children: [
                     Expanded(
                       child: TextFormField(
+                        enabled: widget.enabled,
                         inputFormatters: widget.inputFormatters,
                         maxLines: widget.maxLines,
                         decoration: InputDecoration(
@@ -156,9 +163,16 @@ class _LabeledTextFieldState extends State<LabeledTextField> {
                             fontSize: 12,
                             fontFamily: 'Itim',
                           ),
+                          hintStyle: TextStyle(
+                            color: widget.enabled
+                              ? AppColors.textSecondary
+                              : AppColors.textSecondary.withOpacity(0.6),
+                          ),
                         ),
-                        style: const TextStyle(
-                          color: AppColors.textPrimary,
+                        style: TextStyle(
+                          color: widget.enabled
+                              ? AppColors.textPrimary
+                              : AppColors.textSecondary,
                           fontSize: 18,
                           fontFamily: 'Itim',
                           fontWeight: FontWeight.w400,

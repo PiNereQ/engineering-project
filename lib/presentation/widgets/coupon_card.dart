@@ -41,6 +41,7 @@ class CouponCardHorizontal extends StatelessWidget {
     final bool worksOnline = coupon.worksOnline;
     final bool worksInStore = coupon.worksInStore;
     final DateTime? expiryDate = coupon.expiryDate;
+    final bool isSaved = coupon.isSaved ?? false;
 
     final reductionText =
         isInteger(reduction)
@@ -234,10 +235,12 @@ class CouponCardHorizontal extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.fromLTRB(4, 10, 16, 10),
             child: Center(
-              child:
-                  isBought
-                      ? const Icon(Icons.check_rounded, size: 36)
-                      : CustomFollowButton.small(onTap: () {}),
+              child: isBought
+              ? const Icon(Icons.check_rounded, size: 36)
+              : CustomFollowButton.small(
+                onTap: () {},
+                isPressed: isSaved
+              ),
             ),
           ),
         ],
