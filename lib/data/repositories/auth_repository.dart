@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:proj_inz/data/repositories/user_repository.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
@@ -125,9 +126,12 @@ class AuthRepository {
 
   Future<void> signOut() async {
     try {
+      // Delete FCM token
+      await FirebaseMessaging.instance.deleteToken();
+
       // Sign out from Firebase
       await _firebaseAuth.signOut();
-      
+
       // Delete token from secure storage
       await storage.delete(key: 'auth_token');
     } catch (e) {

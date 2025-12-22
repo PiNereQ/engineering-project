@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:proj_inz/bloc/coupon_list/coupon_list_bloc.dart';
 import 'package:proj_inz/bloc/navbar/navbar_bloc.dart';
@@ -10,6 +11,7 @@ import 'package:proj_inz/bloc/chat/unread/chat_unread_event.dart';
 import 'package:proj_inz/bloc/chat/list/chat_list_bloc.dart';
 import 'package:proj_inz/bloc/chat/list/chat_list_event.dart';
 import 'package:proj_inz/data/repositories/coupon_repository.dart';
+import 'package:proj_inz/data/repositories/user_repository.dart';
 import 'package:proj_inz/presentation/screens/chat_screen.dart';
 import 'package:proj_inz/presentation/screens/coupon_list_screen.dart';
 import 'package:proj_inz/presentation/screens/home_screen.dart';
@@ -17,6 +19,7 @@ import 'package:proj_inz/presentation/screens/phone_number_confirmation_screen.d
 import 'package:proj_inz/presentation/screens/profile_screen.dart';
 import 'package:proj_inz/core/theme.dart';
 import 'package:proj_inz/presentation/widgets/navbar/navbar.dart';
+import 'package:proj_inz/data/repositories/fcm_repository.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -26,15 +29,31 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
+  late final FcmRepository _fcmRepository;
+
+  Future<void> _requestPermission() async {
+    FirebaseMessaging messaging = FirebaseMessaging.instance;
+    NotificationSettings settings = await messaging.requestPermission(
+      alert: true,
+      badge: true,
+      sound: true,
+    );
+    debugPrint('Permission: ${settings.authorizationStatus}');
+  }
+
   @override
   void initState() {
     super.initState();
-
-    // late initialization to ensure context is available, load conversations, check unread messages
-    Future.microtask(() {
+    _fcmRepository = FcmRepository(userRepository: context.read<UserRepository>());
+    Future.microtask(() async {
       final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
-      context.read<ChatListBloc>().add(LoadBuyingConversations(userId: userId));
-      context.read<ChatUnreadBloc>().add(CheckUnreadStatus(userId: userId));
+      if (mounted) context.read<ChatListBloc>().add(LoadBuyingConversations(userId: userId));
+      if (mounted) context.read<ChatUnreadBloc>().add(CheckUnreadStatus(userId: userId));
+      if (userId.isNotEmpty) {
+        await _requestPermission();
+        await _fcmRepository.initFcmTokenManagement();
+        _fcmRepository.registerHandlers(context: context);
+      }
     });
   }
 
