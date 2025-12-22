@@ -26,7 +26,6 @@ class ChatRepository {
         '/chat/conversations',
         queryParameters: {
           'role': asBuyer ? 'buyer' : 'seller',
-          'user': userId,
         },
         useAuthToken: true,
       );
@@ -76,6 +75,7 @@ class ChatRepository {
           'buyerId': buyerId,
           'sellerId': sellerId,
         },
+        useAuthToken: true,
       );
       if (response == null) {
         return null;
@@ -113,7 +113,11 @@ class ChatRepository {
     };
 
     try {
-      final response = await _api.post('/chat/conversations', body: newConversation);
+      final response = await _api.post(
+        '/chat/conversations',
+         body: newConversation,
+         useAuthToken: true,
+         );
       return Conversation.fromJson(response as Map<String, dynamic>);
     } catch (e) {
       if (kDebugMode) debugPrint('Error creating conversation via API: $e');
@@ -130,7 +134,7 @@ class ChatRepository {
   /// Throws on API/network errors.
   Future<List<Message>> getMessages(String conversationId) async {
     try {
-      final response = await _api.get('/chat/conversations/$conversationId/messages');
+      final response = await _api.get('/chat/conversations/$conversationId/messages', useAuthToken: true);
 
       return (response as List).map((data) {
         return Message.fromJson(data as Map<String, dynamic>);
@@ -157,6 +161,7 @@ class ChatRepository {
         body: {
           'user_id': userId,
         },
+        useAuthToken: true,
       );
     } catch (e) {
       if (kDebugMode) {
@@ -184,7 +189,7 @@ class ChatRepository {
       "content": text
     };
     try {
-      await _api.post('/chat/conversations/$conversationId/messages', body: newMessage);
+      await _api.post('/chat/conversations/$conversationId/messages', body: newMessage, useAuthToken: true);
     } catch (e) {
       if (kDebugMode) {
         debugPrint('Error sending message to API: $e');
@@ -202,7 +207,7 @@ class ChatRepository {
   /// Throws on API/network errors.
   Future<bool> hasUnreadMessages(String currentUserId) async {
     try {
-      final response = await _api.get('/chat/unread-summary', queryParameters: {"user-id": currentUserId});
+      final response = await _api.get('/chat/unread-summary', queryParameters: {"user-id": currentUserId}, useAuthToken: true);
       return (response as Map<String, dynamic>)['has_unread'] == 1 ? true : false;
     } catch (e) {
       if (kDebugMode) {

@@ -13,21 +13,31 @@ class ApiClient {
   /// Constructs a [Uri] for the given [path] and optional [queryParameters].
   /// Ensures the path starts with '/'.
   /// Merges any existing query parameters in the path with those provided.
-  Uri _uri(String path, {Map<String, String>? queryParameters}) {
+  /// Automatically includes user_id if [useAuthToken] is true and Firebase user exists.
+  Uri _uri(String path, {Map<String, String>? queryParameters, bool useAuthToken = false}) {
     // Ensure path starts with '/'
     final p = path.startsWith('/') ? path : '/$path';
     final uri = Uri.parse('$baseUrl$p');
-    if (queryParameters != null) {
-      return uri.replace(queryParameters: {...uri.queryParameters, ...queryParameters});
+    
+    // Build merged query parameters
+    final mergedParams = {...uri.queryParameters, ...?queryParameters};
+    
+    // Add user_id if useAuthToken is true and Firebase user exists
+    if (useAuthToken) {
+      final firebaseUser = FirebaseAuth.instance.currentUser;
+      if (firebaseUser?.uid != null) {
+        mergedParams['user_id'] = firebaseUser!.uid;
+      }
     }
-    return uri;
+    debugPrint('Final URL params: $mergedParams');
+    return uri.replace(queryParameters: mergedParams.isNotEmpty ? mergedParams : null);
   }
 
   /// Sends a GET request to the given [path] with optional [queryParameters].
   /// Returns the decoded JSON response on success.
   /// Throws an [Exception] if the request fails.
   Future<dynamic> get(String path, {Map<String, String>? queryParameters, bool useAuthToken = false}) async {
-    final uri = _uri(path, queryParameters: queryParameters);
+    final uri = _uri(path, queryParameters: queryParameters, useAuthToken: useAuthToken);
 
     Map<String, String> headers = {};
     if (useAuthToken) {
@@ -57,7 +67,7 @@ class ApiClient {
   /// Returns the decoded JSON response on success.
   /// Throws an [Exception] if the request fails.
   Future<dynamic> post(String path, {Map<String, String>? queryParameters, Map<String, dynamic>? body, bool useAuthToken = false}) async {
-    final uri = _uri(path, queryParameters: queryParameters);
+    final uri = _uri(path, queryParameters: queryParameters, useAuthToken: useAuthToken);
 
     Map<String, String> headers = {'Content-Type': 'application/json'};
     if (useAuthToken) {
@@ -94,7 +104,7 @@ class ApiClient {
   /// Returns the decoded JSON response on success.
   /// Throws an [Exception] if the request fails.
   Future<dynamic> put(String path, {Map<String, String>? queryParameters, Map<String, dynamic>? body, bool useAuthToken = false}) async {
-    final uri = _uri(path, queryParameters: queryParameters);
+    final uri = _uri(path, queryParameters: queryParameters, useAuthToken: useAuthToken);
 
     Map<String, String> headers = {'Content-Type': 'application/json'};
     
@@ -129,7 +139,7 @@ class ApiClient {
   /// Returns the decoded JSON response on success.
   /// Throws an [Exception] if the request fails.
   Future<dynamic> patch(String path, {Map<String, String>? queryParameters, Map<String, dynamic>? body, bool useAuthToken = false}) async {
-    final uri = _uri(path, queryParameters: queryParameters);
+    final uri = _uri(path, queryParameters: queryParameters, useAuthToken: useAuthToken);
 
     Map<String, String> headers = {'Content-Type': 'application/json'};
     if (useAuthToken) {
@@ -164,7 +174,7 @@ class ApiClient {
   /// Returns the decoded JSON response on success.
   /// Throws an [Exception] if the request fails.
   Future<dynamic> delete(String path, {Map<String, String>? queryParameters, bool useAuthToken = false}) async {
-    final uri = _uri(path, queryParameters: queryParameters);
+    final uri = _uri(path, queryParameters: queryParameters, useAuthToken: useAuthToken);
     Map<String, String> headers = {};
     if (useAuthToken) {
       final user = FirebaseAuth.instance.currentUser;
