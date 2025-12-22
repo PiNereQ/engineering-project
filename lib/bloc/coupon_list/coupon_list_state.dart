@@ -100,3 +100,17 @@ class CouponListOrderingRead extends CouponListState {
   @override
   List<Object> get props => [ordering];
 }
+
+// to show if filters/ordering are active
+class CouponListMetaState extends CouponListState {
+  final bool hasFilters;
+  final bool hasOrdering;
+
+  const CouponListMetaState({
+    required this.hasFilters,
+    required this.hasOrdering,
+  });
+
+  @override
+  List<Object> get props => [hasFilters, hasOrdering];
+}
