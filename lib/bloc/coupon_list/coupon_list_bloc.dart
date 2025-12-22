@@ -48,6 +48,18 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
     on<LeaveCouponSortPopUp>(_onLeaveCouponSortPopUp);
   }
 
+  // helpers to check active filters and ordering
+  bool get hasActiveFilters =>
+      _reductionIsFixed != null ||
+      _reductionIsPercentage != null ||
+      _minPrice != null ||
+      _maxPrice != null ||
+      _minReputation != null;
+
+  bool get hasActiveOrdering =>
+      _ordering != Ordering.creationDateDesc;
+
+
   Future<void> _onFetchCoupons(FetchCoupons event, Emitter<CouponListState> emit) async {
     emit(CouponListLoadInProgress());
     _allCoupons.clear();
@@ -119,11 +131,24 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
   void _onApplyCouponFilters(ApplyCouponFilters event, Emitter<CouponListState> emit) {
     if (kDebugMode) debugPrint('Applied filters:\n\t%:${event.reductionIsFixed}\tzł:${event.reductionIsPercentage}\n\tminPrice:${event.minPrice}\tmaxPrice:${event.maxPrice}\n\trep:${event.minReputation}');
     emit(CouponListFilterApplyInProgress());
-    _reductionIsFixed = event.reductionIsFixed;
-    _reductionIsPercentage = event.reductionIsPercentage;
+    final isDefaultReduction =
+        (event.reductionIsFixed == true &&
+        event.reductionIsPercentage == true);
+
+    _reductionIsFixed =
+        isDefaultReduction ? null : event.reductionIsFixed;
+
+    _reductionIsPercentage =
+        isDefaultReduction ? null : event.reductionIsPercentage;
+
     _minPrice = event.minPrice;
     _maxPrice = event.maxPrice;
-    _minReputation = event.minReputation;
+    
+    _minReputation =
+        (event.minReputation == null || event.minReputation == 0)
+            ? null
+            : event.minReputation;
+
     emit(CouponListFilterApplySuccess(
       _reductionIsPercentage,
       _reductionIsFixed,
@@ -135,6 +160,11 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
     if (_userId != null) {
       add(FetchCoupons(userId: _userId!));
     }
+
+    emit(CouponListMetaState(
+      hasFilters: hasActiveFilters,
+      hasOrdering: hasActiveOrdering,
+    ));
   }
 
   void _onClearCouponFilters(ClearCouponFilters event, Emitter<CouponListState> emit) {
@@ -155,6 +185,11 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
     if (_userId != null) {
       add(FetchCoupons(userId: _userId!));
     }
+
+    emit(CouponListMetaState(
+      hasFilters: hasActiveFilters,
+      hasOrdering: hasActiveOrdering,
+    ));
   }
 
   void _onReadCouponFilters(ReadCouponFilters event, Emitter<CouponListState> emit) {
@@ -180,6 +215,11 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
     if (_userId != null) {
       add(FetchCoupons(userId: _userId!));
     }
+
+    emit(CouponListMetaState(
+      hasFilters: hasActiveFilters,
+      hasOrdering: hasActiveOrdering,
+    ));
   }
 
   void _onReadCouponOrdering(ReadCouponOrdering event, Emitter<CouponListState> emit) {

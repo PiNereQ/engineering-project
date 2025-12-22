@@ -262,28 +262,15 @@ class _CustomTextButtonState extends State<CustomTextButton> {
                     ),
                   ),
 
-                if (widget.badgeNumber != null)
-                  Container(
-                    decoration: ShapeDecoration(
-                      color: AppColors.notificationDot,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(1000),
-                      ),
-                    ),
-                    width: widget._iconSize,
-                    height: widget._iconSize,
-                    child: Center(
-                      child: Text(
-                        widget.badgeNumber.toString(),
-                        style: const TextStyle(
-                          color: AppColors.surface,
-                          fontSize: 10,
-                          fontFamily: 'Itim',
-                          fontWeight: FontWeight.w400,
-                        ),
-                      ),
-                    ),
-                  ),
+if (widget.badgeNumber != null)
+  Container(
+    width: 8,
+    height: 8,
+    decoration: const BoxDecoration(
+      color: AppColors.notificationDot,
+      shape: BoxShape.circle,
+    ),
+  ),
               ],
             ),
           ),

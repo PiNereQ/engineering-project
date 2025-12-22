@@ -318,47 +318,60 @@ Widget build(BuildContext context) {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Expanded(
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            CustomTextButton.small(
-                              label: 'Filtruj',
-                              onTap: () => showDialog(
-                                context: context,
-                                barrierColor: AppColors.popupOverlay,
-                                builder: (dialogContext) => BlocProvider.value(
-                                  value: context.read<CouponListBloc>(),
-                                  child: const _CouponFilterDialog(),
-                                ),
-                              ).then((_) {
-                                if (context.mounted) {
-                                  context.read<CouponListBloc>().add(
-                                    LeaveCouponFilterPopUp(),
-                                  );
-                                }
-                              }),
-                              icon: const Icon(Icons.filter_alt),
-                            ),
-                            const SizedBox(width: 6),
-                            CustomTextButton.small(
-                              label: 'Sortuj',
-                              onTap: () => showDialog(
-                                context: context,
-                                barrierColor: AppColors.popupOverlay,
-                                builder: (dialogContext) => BlocProvider.value(
-                                  value: context.read<CouponListBloc>(),
-                                  child: const _CouponSortDialog(),
-                                ),
-                              ).then((_) {
-                                if (context.mounted) {
-                                  context.read<CouponListBloc>().add(
-                                    LeaveCouponSortPopUp(),
-                                  );
-                                }
-                              }),
-                              icon: const Icon(Icons.sort),
-                            ),
-                          ],
+                        child: Expanded(
+                          child: BlocBuilder<CouponListBloc, CouponListState>(
+                              builder: (context, state) {
+                              final bloc = context.read<CouponListBloc>();
+
+                              final hasFilters = bloc.hasActiveFilters;
+                              final hasOrdering = bloc.hasActiveOrdering;
+
+                              return Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  CustomTextButton.small(
+                                    label: 'Filtruj',
+                                    badgeNumber: hasFilters ? 1 : null,
+                                    icon: hasFilters ? null : const Icon(Icons.filter_alt),
+                                    onTap: () => showDialog(
+                                      context: context,
+                                      barrierColor: AppColors.popupOverlay,
+                                      builder: (dialogContext) => BlocProvider.value(
+                                        value: context.read<CouponListBloc>(),
+                                        child: const _CouponFilterDialog(),
+                                      ),
+                                    ).then((_) {
+                                      if (context.mounted) {
+                                        context.read<CouponListBloc>().add(
+                                          LeaveCouponFilterPopUp(),
+                                        );
+                                      }
+                                    }),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  CustomTextButton.small(
+                                    label: 'Sortuj',
+                                    badgeNumber: hasOrdering ? 1 : null,
+                                    icon: hasOrdering ? null : const Icon(Icons.sort),
+                                    onTap: () => showDialog(
+                                      context: context,
+                                      barrierColor: AppColors.popupOverlay,
+                                      builder: (dialogContext) => BlocProvider.value(
+                                        value: context.read<CouponListBloc>(),
+                                        child: const _CouponSortDialog(),
+                                      ),
+                                    ).then((_) {
+                                      if (context.mounted) {
+                                        context.read<CouponListBloc>().add(
+                                          LeaveCouponSortPopUp(),
+                                        );
+                                      }
+                                    }),
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
                         ),
                       ),
                       CustomTextButton.small(
