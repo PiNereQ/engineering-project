@@ -66,7 +66,12 @@ class MainApp extends StatelessWidget {
               userRepository: context.read<UserRepository>(),
             )
           ),
-          BlocProvider(create: (_) => NumberVerificationBloc()),
+          BlocProvider(
+            create:
+                (context) => NumberVerificationBloc(
+                  userRepository: context.read<UserRepository>(),
+                ),
+          ),
           BlocProvider(
             create: (context) =>
               ChatListBloc(chatRepository: context.read<ChatRepository>()),         

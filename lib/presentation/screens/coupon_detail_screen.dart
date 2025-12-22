@@ -12,6 +12,8 @@ import 'package:proj_inz/data/models/coupon_model.dart';
 import 'package:proj_inz/data/repositories/chat_repository.dart';
 import 'package:proj_inz/data/repositories/coupon_repository.dart';
 import 'package:proj_inz/presentation/screens/bought_coupon_detail_screen.dart';
+import 'package:proj_inz/bloc/number_verification/number_verification_bloc.dart'; // ignore: unused_import do not remove, needed for navigation to phone number confirmation screen
+import 'package:proj_inz/presentation/screens/phone_number_confirmation_screen.dart'; // ignore: unused_import do not remove, needed for navigation to phone number confirmation screen
 import 'package:proj_inz/presentation/screens/chat_detail_screen.dart';
 import 'package:proj_inz/presentation/widgets/custom_snack_bar.dart';
 import 'package:proj_inz/presentation/widgets/dashed_separator.dart';
@@ -479,13 +481,33 @@ class _CouponDetails extends StatelessWidget {
                         if (kDebugMode) {
                           debugPrint('Buy button pressed for coupon: id=${coupon.id}');
                         }
-                        
-                        final buyerId = FirebaseAuth.instance.currentUser?.uid;
-                        if (buyerId == null) {
+                        final user = FirebaseAuth.instance.currentUser;
+                        if (user == null) {
                           showCustomSnackBar(context, 'Błąd: Użytkownik nie zalogowany');
                           return;
                         }
-                        
+                        final phone = user.phoneNumber ?? "";
+                        if (phone.isEmpty) {
+                          if (kDebugMode) {
+                              print('########################\nAAAAAAA! User phone number is not verified. Normally, we would navigate to the phone number confirmation screen here.\nHowever, for testing purposes, this navigation is currently commented out.\n########################');
+                              showCustomSnackBar(context, 'Numer telefonu niezweryfikowany. Docelowo nastąpi przekierowanie do ekranu weryfikacji numeru telefonu. Patrz komentarze w kodzie.');
+                            }
+                          // TODO: VERY IMPORTANT. uncomment before release
+                          // the code below opens the phone number confirmation screen if the user has not verified their phone number
+                          // for now this is commented out to facilitate testing without phone verification
+                          // await Navigator.push(
+                          //   context,
+                          //   MaterialPageRoute(
+                          //     builder: (context) => BlocProvider.value(
+                          //       value: context.read<NumberVerificationBloc>()..add(NumberVerificationFormShownAfterRegistration()),
+                          //       child: const PhoneNumberConfirmationScreen(),
+                          //     ),
+                          //   ),
+                          // );
+                          // // If phone number is still not verified, do not proceed
+                          // if ((FirebaseAuth.instance.currentUser?.phoneNumber ?? "").isEmpty) return;
+                        }
+                        final buyerId = user.uid;
                         context.read<PaymentBloc>().add(
                           StartPayment(
                             couponId: coupon.id,

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:proj_inz/bloc/number_verification/number_verification_bloc.dart';
 import 'package:proj_inz/core/theme.dart';
+import 'package:proj_inz/presentation/screens/phone_number_confirmation_screen.dart';
 import 'package:proj_inz/presentation/screens/legal_document_screen.dart';
 import 'package:proj_inz/presentation/widgets/dashed_separator.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_icon_button.dart';
@@ -23,12 +25,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   void initState() {
     super.initState();
+    _fetchProfile();
+  }
 
+  void _fetchProfile() {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
-
-    _profileFuture =
-        context.read<UserRepository>().getUserProfile(user.uid);
+    setState(() {
+      _profileFuture = context.read<UserRepository>().getUserProfile(user.uid);
+    });
   }
 
   @override
@@ -76,6 +81,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   }
 
                   final user = snapshot.data!;
+                  final bool hasPhoneNumber = FirebaseAuth.instance.currentUser!.phoneNumber!.isNotEmpty;
+                  print(FirebaseAuth.instance.currentUser?.phoneNumber);
 
                   return _SectionCard(
                     child: Column(
@@ -91,14 +98,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ),
                         _KeyValueRow(
                           label: 'Data dołączenia',
-                          value: user['joinDate'] != null
-                              ? user['joinDate'].toString().substring(0, 10)
+                          value: user['join_date'] != null
+                              ? user['join_date'].toString().substring(0, 10)
                               : '—',
                         ),
-                        const _KeyValueRow(
+                        _KeyValueRow(
                           label: 'Numer telefonu',
-                          value: 'Niepotwierdzony',
-                          trailing: _InlineAction(text: 'Potwierdź'),
+                          value: hasPhoneNumber ? 'Potwierdzony' : 'Niepotwierdzony',
+                          trailing: !hasPhoneNumber
+                              ? _InlineAction(
+                                  text: 'Potwierdź',
+                                  onTap: () async {
+                                    await Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder: (context) => BlocProvider<NumberVerificationBloc>.value(
+                                          value: context.read<NumberVerificationBloc>()..add(
+                                            NumberVerificationFormShownAfterRegistration(),
+                                          ),
+                                          child: const PhoneNumberConfirmationScreen(),
+                                        ),
+                                      ),
+                                    );
+                                    _fetchProfile();
+                                  },
+                                )
+                              : null,
                         ),
 
                         Padding(
@@ -308,17 +332,22 @@ class _KeyValueRow extends StatelessWidget {
 
 class _InlineAction extends StatelessWidget {
   final String text;
-  const _InlineAction({required this.text});
+  final VoidCallback? onTap;
+  const _InlineAction({required this.text, required this.onTap});
+  
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      text,
-      style: const TextStyle(
-        fontFamily: 'Itim',
-        fontSize: 16,
-        color: AppColors.primaryButton,
-      ),
+    return GestureDetector(
+      onTap: onTap,
+      child: Text(
+        text,
+        style: const TextStyle(
+          fontFamily: 'Itim',
+          fontSize: 16,
+          color: AppColors.primaryButton,
+        ),
+      )
     );
   }
 }
