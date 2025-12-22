@@ -1,7 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-
+import 'package:flutter/rendering.dart';
+import 'dart:ui' as ui;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -102,15 +103,33 @@ class _CouponListScreenContentState extends State<_CouponListScreenContent> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
-      body: RefreshIndicator(
-        onRefresh: () async {
-          context.read<CouponListBloc>().add(RefreshCoupons());
-        },
-        child: CustomScrollView(
-          controller: _scrollController,
-          physics: const AlwaysScrollableScrollPhysics(),
-          slivers: [
+      body: Stack(
+        children: [
+          // Light yellow background with icon grid
+          Container(
+            color: const Color(0xFFFFF1D1), // Light yellow
+            child: GridView.count(
+              crossAxisCount: 8,
+              childAspectRatio: 1.0,
+              physics: const NeverScrollableScrollPhysics(),
+              children: List.generate(
+                160, // 8 columns × 20 rows
+                (index) => Opacity(
+                  opacity: 0.15,
+                  child: Image.asset('assets/logo/coupidyn.png'),
+                ),
+              ),
+            ),
+          ),
+          // Content on top
+          RefreshIndicator(
+            onRefresh: () async {
+              context.read<CouponListBloc>().add(RefreshCoupons());
+            },
+            child: CustomScrollView(
+              controller: _scrollController,
+              physics: const AlwaysScrollableScrollPhysics(),
+              slivers: [
               SliverSafeArea(
               top: true,
               bottom: false,
@@ -181,6 +200,8 @@ class _CouponListScreenContentState extends State<_CouponListScreenContent> {
             ),
           ],
         ),
+          ),
+        ],
       ),
     );
   }

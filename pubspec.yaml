@@ -60,6 +60,7 @@ dev_dependencies:
 
 flutter:
   assets:
+    - assets/your_background_image.png
     - assets/.env
     - assets/icons/ # to prevent Android crashes remember to ALWAYS use the full local path like this: 'assets/icons/<filename>' 
     - assets/logo/
