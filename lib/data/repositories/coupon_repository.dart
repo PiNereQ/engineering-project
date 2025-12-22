@@ -38,7 +38,6 @@ class CouponRepository {
     try {
       final response = await _api.get(
         '/coupons/available',
-        queryParameters: {"user_id": userId},
         useAuthToken: true,
       );
       if (response is List) {
@@ -108,7 +107,6 @@ class CouponRepository {
     try {
       final response = await _api.get(
         '/coupons/owned',
-        queryParameters: {'user_id': userId},
         useAuthToken: true
       );
       if (response is List) {
@@ -155,10 +153,8 @@ class CouponRepository {
   /// Fetch owned coupon details by ID
   Future<Coupon> fetchOwnedCouponDetailsById(String id) async {
     try {
-      final userId = await userRepository.getCurrentUserId();
       final data = await _api.get(
         '/coupons/owned/$id',
-        queryParameters: {"user_id": userId},
         useAuthToken: true
       );
       final ownedCoupon = Coupon.boughtByMeFromJson(data as Map<String, dynamic>);
@@ -177,7 +173,6 @@ class CouponRepository {
     try {
       final response = await _api.get(
         '/coupons/listed',
-        queryParameters: {'user_id': userId},
         useAuthToken: true
       );
       if (response is List) {
@@ -221,7 +216,6 @@ class CouponRepository {
     try {
       final data = await _api.get(
         '/coupons/listed/$id',
-        queryParameters: {'user_id': userId},
         useAuthToken: true
       );
       final coupon = Coupon.listedByMeFromJson( data as Map<String, dynamic>);
@@ -240,7 +234,6 @@ class CouponRepository {
     try {
       final response = await _api.get(
         '/coupons/saved',
-        queryParameters: {'user_id': userId},
         useAuthToken: true
       );
       if (response is List) {
@@ -284,7 +277,6 @@ class CouponRepository {
     try {
       await _api.post(
         '/coupons/saved/$couponId',
-        queryParameters: {'user_id': userId},
         useAuthToken: true,
       );
     } catch (e) {
@@ -298,7 +290,6 @@ class CouponRepository {
     try {
       await _api.delete(
         '/coupons/saved/$couponId',
-        queryParameters: {'user_id': userId},
         useAuthToken: true,
       );
     } catch (e) {
@@ -312,12 +303,10 @@ class CouponRepository {
   /// Create new coupon offer via API (POST /coupons)
   Future<void> postCouponOffer(CouponOffer coupon) async {
     try {
-      final userId = await userRepository.getCurrentUserId();
       await _api.post(
         '/coupons',
         body: coupon.toJson(), 
         useAuthToken: true,
-        queryParameters: {"user_id": userId}
         );
     } catch (e) {
       if (kDebugMode) debugPrint('Error posting coupon: $e');
@@ -328,11 +317,9 @@ class CouponRepository {
   /// Deactivate listed coupon via API (DELETE /coupons/{couponId})
   Future<void> deactivateListedCoupon(String couponId) async {
     try {
-      final userId = await userRepository.getCurrentUserId();
       await _api.delete(
         '/coupons/$couponId', 
         useAuthToken: true,
-        queryParameters: {"user_id": userId}
         );
     } catch (e) {
       if (kDebugMode) debugPrint('Error in deactivateListedCoupon: $e');

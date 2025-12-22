@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart';
+ import 'package:flutter/foundation.dart';
 import 'package:proj_inz/data/models/shop_model.dart';
 import 'package:proj_inz/data/api/api_client.dart';
 
