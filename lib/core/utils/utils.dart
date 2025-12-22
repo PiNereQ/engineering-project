@@ -56,12 +56,21 @@ Color parseColor(String? hexColor) {
   }
 }
 
+
 /// Helper to format date to string "dd.mm.yyyy"
 String formatDate(DateTime date) {
   final day = date.day.toString().padLeft(2, '0');
   final month = date.month.toString().padLeft(2, '0');
   final year = date.year.toString();
   return '$day.$month.$year r.';
+}
+
+/// Helper to format time (hh:mm) in local timezone
+String formatTimeLocal(DateTime time) {
+  final local = time.toLocal();
+  final h = local.hour.toString().padLeft(2, '0');
+  final m = local.minute.toString().padLeft(2, '0');
+  return "$h:$m";
 }
 
 // Helper to format price from smallest currency unit to string with 2 decimals
