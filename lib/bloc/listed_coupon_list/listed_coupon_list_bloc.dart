@@ -13,7 +13,7 @@ class ListedCouponListBloc extends Bloc<ListedCouponListEvent, ListedCouponListS
   final CouponRepository couponRepository;
 
   List<Coupon> _allCoupons = [];
-  List<Coupon> _filtered = [];
+  // ...existing code...
 
   // filters
   bool _reductionIsPercentage = true;
@@ -80,21 +80,52 @@ List<({String id, String name})> get uniqueShops {
     _isFetching = true;
     emit(ListedCouponListLoadInProgress());
 
+    // Map ordering enum to backend sort string
+    String? sort;
+    switch (_ordering) {
+      case ListedCouponsOrdering.listingDateAsc:
+        sort = 'listing+asc';
+        break;
+      case ListedCouponsOrdering.listingDateDesc:
+        sort = 'listing+desc';
+        break;
+      case ListedCouponsOrdering.expiryDateAsc:
+        sort = 'expiry+asc';
+        break;
+      case ListedCouponsOrdering.expiryDateDesc:
+        sort = 'expiry+desc';
+        break;
+      case ListedCouponsOrdering.priceAsc:
+        sort = 'price+asc';
+        break;
+      case ListedCouponsOrdering.priceDesc:
+        sort = 'price+desc';
+        break;
+    }
+
     try {
       final result = await couponRepository.fetchListedCouponsPaginated(
-        _limit,
-        _lastOffset ?? 0,
-        _userId!,
+        limit: _limit,
+        offset: _lastOffset ?? 0,
+        userId: _userId!,
+        reductionIsPercentage: _reductionIsPercentage,
+        reductionIsFixed: _reductionIsFixed,
+        showActive: _showActive,
+        showSold: _showSold,
+        shopId: _shopId,
+        sort: sort,
       );
       final listedCoupons = result.coupons;
-      if (kDebugMode) print('Fetched \\${listedCoupons.length} listed coupons: \\${listedCoupons}');
+      if (kDebugMode) print('Fetched ${listedCoupons.length} listed coupons: ${listedCoupons}');
 
       _hasMore = listedCoupons.length == _limit;
       _allCoupons.addAll(listedCoupons);
       _lastOffset = result.lastOffset;
 
-      _applyAll();
-      emit(ListedCouponListLoadSuccess(coupons: _filtered, hasMore: _hasMore));
+      emit(ListedCouponListLoadSuccess(coupons: _allCoupons, hasMore: _hasMore));
+      if (_allCoupons.isEmpty) {
+        emit(ListedCouponListLoadEmpty());
+      }
     } catch (e) {
       emit(ListedCouponListLoadFailure(e.toString()));
     } finally {
@@ -116,10 +147,9 @@ List<({String id, String name})> get uniqueShops {
     _showActive = event.showActive;
     _showSold = event.showSold;
     _shopId = event.shopId;
-
-    _applyAll();
-
-    emit(ListedCouponListLoadSuccess(coupons: _filtered, hasMore: _hasMore));
+    if (_userId != null) {
+      add(FetchListedCoupons(userId: _userId!));
+    }
   }
 
   void _onClearFilters(ClearListedCouponFilters event, Emitter emit) {
@@ -128,9 +158,9 @@ List<({String id, String name})> get uniqueShops {
     _showActive = true;
     _showSold = true;
     _shopId = null;
-
-    _applyAll();
-    emit(ListedCouponListLoadSuccess(coupons: _filtered, hasMore: _hasMore));
+    if (_userId != null) {
+      add(FetchListedCoupons(userId: _userId!));
+    }
   }
 
   void _onReadFilters(ReadListedCouponFilters event, Emitter emit) {
@@ -145,58 +175,14 @@ List<({String id, String name})> get uniqueShops {
 
   void _onApplyOrdering(ApplyListedCouponOrdering event, Emitter emit) {
     _ordering = event.ordering;
-
-    _applyAll();
-    emit(ListedCouponListLoadSuccess(coupons: _filtered, hasMore: _hasMore));
+    if (_userId != null) {
+      add(FetchListedCoupons(userId: _userId!));
+    }
   }
 
   void _onReadOrdering(ReadListedCouponOrdering event, Emitter emit) {
     emit(ListedCouponOrderingRead(_ordering));
   }
 
-  // filtering and sorting
-  void _applyAll() {
-    _filtered = _allCoupons.where((c) {
-      if (!_reductionIsPercentage && c.reductionIsPercentage) return false;
-      if (!_reductionIsFixed && !c.reductionIsPercentage) return false;
-
-      if (!_showActive && !c.isSold) return false;
-      if (!_showSold && c.isSold) return false;
-
-      if (_shopId != null && c.shopId != _shopId) return false;
-
-      return true;
-    }).toList();
-
-    switch (_ordering) {
-      case ListedCouponsOrdering.listingDateDesc:
-        _filtered.sort((a, b) => b.listingDate.compareTo(a.listingDate));
-        break;
-      case ListedCouponsOrdering.listingDateAsc:
-        _filtered.sort((a, b) => a.listingDate.compareTo(b.listingDate));
-        break;
-      case ListedCouponsOrdering.expiryDateAsc:
-        _filtered.sort((a, b) {
-          if (a.expiryDate == null && b.expiryDate == null) return 0;
-          if (a.expiryDate == null) return -1;
-          if (b.expiryDate == null) return 1;
-          return a.expiryDate!.compareTo(b.expiryDate!);
-        });
-        break;
-      case ListedCouponsOrdering.expiryDateDesc:
-        _filtered.sort((a, b) {
-          if (a.expiryDate == null && b.expiryDate == null) return 0;
-          if (a.expiryDate == null) return -1;
-          if (b.expiryDate == null) return 1;
-          return b.expiryDate!.compareTo(a.expiryDate!);
-        });
-        break;
-      case ListedCouponsOrdering.priceAsc:
-        _filtered.sort((a, b) => a.price.compareTo(b.price));
-        break;
-      case ListedCouponsOrdering.priceDesc:
-        _filtered.sort((a, b) => b.price.compareTo(a.price));
-        break;
-    }
-  }
+  // ...existing code...
 }
