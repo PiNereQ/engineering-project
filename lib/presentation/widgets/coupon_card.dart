@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:icon_decoration/icon_decoration.dart';
 
 import 'package:proj_inz/core/utils/utils.dart';
 import 'package:proj_inz/data/models/coupon_model.dart';
@@ -46,24 +47,33 @@ class CouponCardHorizontal extends StatelessWidget {
     final reductionText =
         formatReduction(reduction.toDouble(), reductionIsPercentage);
 
-    final titleText = TextSpan(
-      text: 'Kupon -$reductionText\n',
+    final titleText = Text(
+        reductionIsPercentage
+            ? '-$reductionText'
+            : reductionText,
       style: const TextStyle(
         color: AppColors.textPrimary,
-        fontSize: 20,
+        fontSize: 22,
         fontFamily: 'Itim',
         fontWeight: FontWeight.w400,
+      ),
+      strutStyle: const StrutStyle(
         height: 1.0,
+        forceStrutHeight: true,
       ),
     );
 
-    final limitsText = TextSpan(
-      text: hasLimits ? 'z ograniczeniami' : 'na wszystko',
+    final limitsText = Text(
+      hasLimits ? 'z ograniczeniami' : 'na wszystko',
       style: const TextStyle(
         color: AppColors.textPrimary,
         fontSize: 14,
         fontFamily: 'Itim',
         fontWeight: FontWeight.w400,
+      ),
+      strutStyle: const StrutStyle(
+        height: 0.7,
+        forceStrutHeight: true,
       ),
     );
 
@@ -90,38 +100,38 @@ class CouponCardHorizontal extends StatelessWidget {
       ],
     );
 
-    final reputationText = TextSpan(
-      text: 'Reputacja: ${sellerReputation ?? 'Brak ocen'}',
+    final reputationText = Text(
+      sellerReputation != null ? 'Reputacja: $sellerReputation' : 'Brak ocen',
+      style: TextStyle(
+        color: sellerReputation != null ? AppColors.textPrimary : AppColors.textSecondary,
+        fontSize: 13,
+        fontFamily: 'Itim',
+        fontWeight: FontWeight.w400,
+      ),
+    );
+
+    final locationText = Text(
+      worksInStore && worksOnline
+          ? 'Stacjonarnie i online'
+          : worksOnline
+          ? 'Online'
+          : 'Stacjonarnie',
       style: const TextStyle(
         color: AppColors.textPrimary,
-        fontSize: 12,
+        fontSize: 13,
         fontFamily: 'Itim',
         fontWeight: FontWeight.w400,
         height: 1.0,
       ),
     );
 
-    final locationText = TextSpan(
-      text:
-          'Do wykorzystania ${worksInStore && worksOnline
-              ? 'stacjonarnie i online'
-              : worksOnline
-              ? 'w sklepach internetowych'
-              : 'w sklepach stacjonarnych'}',
+    final expiryDateText = Text(
+      expiryDate == null
+          ? 'Bez daty ważności'
+          : 'Do ${formatDate(expiryDate)}',
       style: const TextStyle(
         color: AppColors.textPrimary,
-        fontSize: 12,
-        fontFamily: 'Itim',
-        fontWeight: FontWeight.w400,
-        height: 1.0,
-      ),
-    );
-
-    final expiryDateText = TextSpan(
-      text: expiryDate == null ? 'Brak daty ważności' : formatDate(expiryDate),
-      style: const TextStyle(
-        color: AppColors.textPrimary,
-        fontSize: 12,
+        fontSize: 13,
         fontFamily: 'Itim',
         fontWeight: FontWeight.w400,
         height: 1.0,
@@ -165,62 +175,116 @@ class CouponCardHorizontal extends StatelessWidget {
                   ),
                 );
               },
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                spacing: 12,
-                children: [
-                  // Shop
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16.0, 10.0, 0.0, 10.0),
-                    child: Container(
-                      width: 110.0,
-                      height: 80.0,
-                      alignment: Alignment.center,
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      decoration: ShapeDecoration(
-                        color: shopBgColor,
-                        shape: RoundedRectangleBorder(
-                          side: const BorderSide(width: 2),
-                          borderRadius: BorderRadius.circular(8),
+              child: Container(
+                color: Colors.transparent, // To make the entire area tappable
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  spacing: 12,
+                  children: [
+                    // Shop
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16.0, 10.0, 0.0, 10.0),
+                      child: Container(
+                        width: 110.0,
+                        height: 80.0,
+                        alignment: Alignment.center,
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        decoration: ShapeDecoration(
+                          color: shopBgColor,
+                          shape: RoundedRectangleBorder(
+                            side: const BorderSide(width: 2),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
                         ),
-                      ),
-                      child: Text(
-                        shopName,
-                        style: TextStyle(
-                          color: shopNameColor,
-                          fontSize: 15,
-                          fontFamily: 'Roboto',
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                  ),
-                  // Details
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 10),
-                      child: SizedBox(
-                        width: 150,
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text.rich(
-                              TextSpan(children: [titleText, limitsText]),
-                            ),
-                            const SizedBox(height: 2.0),
-                            Text.rich(priceText),
-                            const SizedBox(height: 2.0),
-                            Text.rich(reputationText),
-                            Text.rich(locationText),
-                            Text.rich(expiryDateText),
-                          ],
+                        child: Text(
+                          shopName,
+                          style: TextStyle(
+                            color: shopNameColor,
+                            fontSize: 15,
+                            fontFamily: 'Roboto',
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ],
+                    // Details
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        child: SizedBox(
+                          width: 150,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                spacing: 4,
+                                children: [
+                                  Icon(Icons.local_offer_outlined, size: 20),
+                                  titleText,
+                                ],
+                              ),
+                              const SizedBox(height: 1.0),
+                              limitsText,
+                              const SizedBox(height: 2.0),
+                              Text.rich(priceText),
+                              const SizedBox(height: 2.0),
+                              Row(
+                                children: [
+                                  Icon(Icons.speed, size: 14),
+                                  SizedBox(width: 4),
+                                  reputationText,
+                                  SizedBox(width: 2),
+                                  sellerReputation != null && sellerReputation >= 75
+                                      ? DecoratedIcon(
+                                        decoration: IconDecoration(
+                                          border: IconBorder(width: 2.0),
+                                        ),
+                                        icon: const Icon(
+                                          Icons.star,
+                                          size: 13,
+                                          color: Colors.amber,
+                                        ),
+                                      )
+                                      : sellerReputation != null && sellerReputation < 50
+                                      ? DecoratedIcon(
+                                        decoration: IconDecoration(
+                                          border: IconBorder(width: 2.0),
+                                        ),
+                                        icon: const Icon(
+                                          Icons.warning,
+                                          size: 13,
+                                          color: AppColors.alertText,
+                                        ),
+                                      )
+                                      : const SizedBox.shrink(),
+                                ],
+                              ),
+                              const SizedBox(height: 1.0),
+                              Row(
+                                spacing: 4,
+                                children: [
+                                  Icon(Icons.location_on_outlined, size: 14),
+                                  Expanded(child: locationText),
+                                ],
+                              ),
+                              const SizedBox(height: 2.0),
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                spacing: 4,
+                                children: [
+                                  Icon(Icons.calendar_today, size: 14),
+                                  expiryDateText,
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -334,10 +398,10 @@ class CouponCardVertical extends StatelessWidget {
 
     final locationText = Text(
       worksInStore && worksOnline
-          ? 'stacjonarnie i online'
+          ? 'Stacjonarnie i online'
           : worksOnline
-          ? 'online'
-          : 'stacjonarnie',
+          ? 'Online'
+          : 'Stacjonarnie',
       style: const TextStyle(
         color: AppColors.textPrimary,
         fontSize: 12,
@@ -349,7 +413,7 @@ class CouponCardVertical extends StatelessWidget {
 
     final expiryDateText = Text(
       expiryDate == null
-          ? 'Brak daty ważności'
+          ? 'Bez daty ważn.'
           : formatDate(expiryDate),
       style: const TextStyle(
         color: AppColors.textPrimary,
@@ -436,7 +500,7 @@ class CouponCardVertical extends StatelessWidget {
                       Row(
                         spacing: 4,
                         children: [
-                          Icon(Icons.local_offer, size: 16,),
+                          Icon(Icons.local_offer_outlined, size: 16,),
                           titleText,
                         ],
                       ), 
@@ -458,7 +522,6 @@ class CouponCardVertical extends StatelessWidget {
                           ],
                         ),
                         Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
                           spacing: 4,
                           children: [
                             Icon(Icons.location_on_outlined, size: 12),
@@ -466,6 +529,7 @@ class CouponCardVertical extends StatelessWidget {
                           ],
                         ),
                         Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           spacing: 4,
                           children: [
                             Icon(Icons.calendar_today, size: 12,),

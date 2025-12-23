@@ -30,26 +30,33 @@ class ListedCouponCardHorizontal extends StatelessWidget {
     final reductionText =
         formatReduction(reduction.toDouble(), reductionIsPercentage);
 
-    final titleText = TextSpan(
-      text: reductionIsPercentage
-          ? "Kupon -$reductionText\n"
-          : "Kupon na $reductionText\n",
-      style: TextStyle(
-        color: isSold ? AppColors.textSecondary : AppColors.textPrimary,
-        fontSize: 20,
+    final titleText = Text(
+        reductionIsPercentage
+            ? '-$reductionText'
+            : reductionText,
+      style: const TextStyle(
+        color: AppColors.textPrimary,
+        fontSize: 22,
         fontFamily: 'Itim',
         fontWeight: FontWeight.w400,
+      ),
+      strutStyle: const StrutStyle(
         height: 1.0,
+        forceStrutHeight: true,
       ),
     );
 
-    final limitsText = TextSpan(
-      text: hasLimits ? 'z ograniczeniami' : 'na wszystko',
-      style: TextStyle(
-        color: isSold ? AppColors.textSecondary : AppColors.textPrimary,
+    final limitsText = Text(
+      hasLimits ? 'z ograniczeniami' : 'na wszystko',
+      style: const TextStyle(
+        color: AppColors.textPrimary,
         fontSize: 14,
         fontFamily: 'Itim',
         fontWeight: FontWeight.w400,
+      ),
+      strutStyle: const StrutStyle(
+        height: 0.7,
+        forceStrutHeight: true,
       ),
     );
 
@@ -66,8 +73,8 @@ class ListedCouponCardHorizontal extends StatelessWidget {
         ),
         TextSpan(
           text: "${formatPrice(price)} zł",
-          style: TextStyle(
-            color: isSold ? AppColors.textSecondary : AppColors.textPrimary,
+          style: const TextStyle(
+            color: AppColors.textPrimary,
             fontSize: 24,
             fontFamily: 'Itim',
             fontWeight: FontWeight.w400,
@@ -76,59 +83,59 @@ class ListedCouponCardHorizontal extends StatelessWidget {
       ],
     );
 
-    final expiryDateText = TextSpan(
-      text:
-      expiryDate == null ? 'brak daty ważności' : "ważny do ${formatDate(expiryDate)}",
-      style: TextStyle(
-        color: isSold ? AppColors.textSecondary : AppColors.textPrimary,
-        fontSize: 12,
+    final expiryDateText = Text(
+      expiryDate == null
+          ? 'Bez daty ważności'
+          : 'Do ${formatDate(expiryDate)}',
+      style: const TextStyle(
+        color: AppColors.textPrimary,
+        fontSize: 13,
         fontFamily: 'Itim',
+        fontWeight: FontWeight.w400,
         height: 1.0,
       ),
     );
 
-    final listingDateText = TextSpan(
-      text:
-          "wystawiono ${listingDate.day}.${listingDate.month}.${listingDate.year}r.",
+    final listingDateText = Text(
+      "Dodano ${formatDate(listingDate)}",
       style: TextStyle(
         color: AppColors.textSecondary,
-        fontSize: 12,
+        fontSize: 13,
         fontFamily: 'Itim',
         height: 1.0,
       ),
     );
 
-    return Stack(
-      children: [
-        Container(
-          decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(width: 2, color: AppColors.textPrimary),
-            boxShadow: const [
-              BoxShadow(
-                color: AppColors.textPrimary,
-                blurRadius: 0,
-                offset: Offset(4, 4),
-                spreadRadius: 0,
-              ),
-            ],
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ListedCouponDetailsScreen(couponId: couponId),
           ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            spacing: 12,
-            children: [
-              Expanded(
-                child: GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder:
-                            (context) => ListedCouponDetailsScreen(couponId: couponId)
-                      ),
-                    );
-                  },
+        );
+      },
+      child: Stack(
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(width: 2, color: AppColors.textPrimary),
+              boxShadow: const [
+                BoxShadow(
+                  color: AppColors.textPrimary,
+                  blurRadius: 0,
+                  offset: Offset(4, 4),
+                  spreadRadius: 0,
+                ),
+              ],
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              spacing: 12,
+              children: [
+                Expanded(
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     spacing: 12,
@@ -170,14 +177,34 @@ class ListedCouponCardHorizontal extends StatelessWidget {
                               mainAxisAlignment: MainAxisAlignment.start,
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text.rich(
-                                  TextSpan(children: [titleText, limitsText]),
+                                Row(
+                                  spacing: 4,
+                                  children: [
+                                    Icon(Icons.local_offer_outlined, size: 20),
+                                    titleText,
+                                  ],
                                 ),
+                                const SizedBox(height: 1.0),
+                                limitsText,
                                 const SizedBox(height: 2.0),
                                 Text.rich(priceText),
                                 const SizedBox(height: 2.0),
-                                Text.rich(listingDateText),
-                                Text.rich(expiryDateText),
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  spacing: 4,
+                                  children: [
+                                    Icon(Icons.calendar_today, size: 14),
+                                    expiryDateText,
+                                  ],
+                                ),
+                                const SizedBox(height: 2.0),
+                                Row(
+                                  spacing: 4,
+                                  children: [
+                                    Icon(Icons.volunteer_activism_outlined, size: 14),
+                                    Expanded(child: listingDateText),
+                                  ],
+                                ),
                               ],
                             ),
                           ),
@@ -186,38 +213,38 @@ class ListedCouponCardHorizontal extends StatelessWidget {
                     ],
                   ),
                 ),
-              ),
-              DashedSeparator.vertical(length: 146),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(4, 10, 16, 10),
-                child: Center(child: Icon(isSold ? Icons.done_all_rounded : Icons.store_rounded, size: 36)),
-              ),
-            ],
-          ),
-        ),
-        if (isSold)
-        Positioned(
-          bottom: 16,
-          right: 128,
-          child: Container(
-            decoration: BoxDecoration(
-              color: AppColors.surface.withValues(alpha: 0.7),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(width: 3, color: AppColors.notificationDot),
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            child: Text(
-              'Sprzedany',
-              style: TextStyle(
-                color: AppColors.notificationDot,
-                fontSize: 16,
-                fontFamily: 'Itim',
-                fontWeight: FontWeight.bold,
-              ),
+                DashedSeparator.vertical(length: 146),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(4, 10, 16, 10),
+                  child: Center(child: Icon(isSold ? Icons.done_all_rounded : Icons.store_rounded, size: 36)),
+                ),
+              ],
             ),
           ),
-        ),
-      ],
+          if (isSold)
+          Positioned(
+            bottom: 20,
+            left: 138,
+            child: Container(
+              decoration: BoxDecoration(
+                color: AppColors.surface.withValues(alpha: 0.7),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(width: 3, color: AppColors.notificationDot),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              child: Text(
+                'Sprzedany',
+                style: TextStyle(
+                  color: AppColors.notificationDot,
+                  fontSize: 16,
+                  fontFamily: 'Itim',
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
