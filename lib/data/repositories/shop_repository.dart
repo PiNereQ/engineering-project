@@ -1,4 +1,5 @@
  import 'package:flutter/foundation.dart';
+import 'package:proj_inz/core/utils/utils.dart';
 import 'package:proj_inz/data/models/shop_model.dart';
 import 'package:proj_inz/data/api/api_client.dart';
 
@@ -20,8 +21,8 @@ class ShopRepository {
       final shop = Shop(
         id: data['id'].toString(),
         name: data['name'] as String,
-        bgColor: _parseColor(data['bg_color']),
-        nameColor: _parseColor(data['name_color']),
+        bgColor: parseColor(data['bg_color']),
+        nameColor: parseColor(data['name_color']),
         categoryIds: [], // Categories are in separate relation, can be parsed from data['categories']
       );
 
@@ -43,8 +44,8 @@ class ShopRepository {
         return Shop(
           id: data['id'].toString(),
           name: data['name'] as String,
-          bgColor: _parseColor(data['bg_color']),
-          nameColor: _parseColor(data['name_color']),
+          bgColor: parseColor(data['bg_color']),
+          nameColor: parseColor(data['name_color']),
           categoryIds: [],
         );
       }).toList();
@@ -67,31 +68,23 @@ class ShopRepository {
     }
 
     try {
-      final allShops = await fetchAllShops();
-      final lowercaseQuery = query.toLowerCase();
+      final shops = await _api.get('/shops/search', queryParameters: {'query': query}).then((response) {
+        final List<dynamic> shopsData = response is List ? response : [];
+        return shopsData.map((data) {
+          return Shop(
+            id: data['id'].toString(),
+            name: data['name'] as String,
+            bgColor: parseColor(data['bg_color']),
+            nameColor: parseColor(data['name_color']),
+            categoryIds: [],
+          );
+        }).toList();
+      });
       
-      return allShops.where((shop) => 
-        shop.name.toLowerCase().contains(lowercaseQuery)
-      ).toList();
+      return shops;
     } catch (e) {
       if (kDebugMode) debugPrint('Error searching shops: $e');
       rethrow;
-    }
-  }
-
-  /// Parse color from hex string to int
-  int _parseColor(String? hexColor) {
-    if (hexColor == null || hexColor.isEmpty) return 0xFF000000;
-    
-    try {
-      String hex = hexColor.replaceAll('#', '');
-      if (hex.length == 6) {
-        hex = 'FF$hex'; // Add alpha if not present
-      }
-      return int.parse(hex, radix: 16);
-    } catch (e) {
-      if (kDebugMode) debugPrint('Error parsing color $hexColor: $e');
-      return 0xFF000000;
     }
   }
 

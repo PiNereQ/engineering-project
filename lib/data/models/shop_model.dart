@@ -1,10 +1,12 @@
+import 'dart:ui';
+
 import 'package:equatable/equatable.dart';
 
 class Shop extends Equatable {
   final String id;
   final String name;
-  final int bgColor;
-  final int nameColor;
+  final Color bgColor;
+  final Color nameColor;
   final List<String> categoryIds;
 
   const Shop({

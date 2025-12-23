@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'search_shops_categories_event.dart';
 import 'search_shops_categories_state.dart';
 import 'package:proj_inz/data/models/shop_model.dart';
+import 'package:proj_inz/data/models/category_model.dart';
 import 'package:proj_inz/data/repositories/shop_repository.dart';
 import 'package:proj_inz/data/repositories/category_repository.dart';
 
@@ -22,7 +23,8 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
       final shopsByName = await shopRepository.searchShopsByName(event.query);
 
       // szukanie wszystkich pasujacych kategorii prefixowo
-      final categories = await categoryRepository.searchCategoriesByName(event.query.toLowerCase());
+      //final categories = await categoryRepository.searchCategoriesByName(event.query.toLowerCase());
+      final categories = List<Category>.empty(); // Tymczasowo pusta lista kategorii
       final matchedCategories = categories;
 
       // pobieranie sklepow dla kazdej pasujacej kategorii i laczenie

@@ -183,11 +183,12 @@ class SearchResultsScreen extends StatelessWidget {
                       const SizedBox(height: 8),
 
                       ...shops.map((item) {
-                        final shopColor = Color(item.bgColor);
+                        final shopBgColor = item.bgColor;
+                        final shomNameColor = item.nameColor;
 
                         return Container(
                           width: double.infinity,
-                          height: 65,
+                          height: 70,
                           margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                           clipBehavior: Clip.antiAlias,
@@ -211,12 +212,12 @@ class SearchResultsScreen extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
                               Container(
-                                width: 110,
+                                width: 140,
                                 height: 45,
                                 padding: const EdgeInsets.symmetric(horizontal: 8),
                                 clipBehavior: Clip.antiAlias,
                                 decoration: ShapeDecoration(
-                                  color: shopColor,
+                                  color: shopBgColor,
                                   shape: RoundedRectangleBorder(
                                     side: const BorderSide(width: 2),
                                     borderRadius: BorderRadius.circular(8),
@@ -226,8 +227,8 @@ class SearchResultsScreen extends StatelessWidget {
                                   child: Text(
                                     item.name,
                                     textAlign: TextAlign.center,
-                                    style: const TextStyle(
-                                      color: AppColors.surface,
+                                    style: TextStyle(
+                                      color: shomNameColor,
                                       fontSize: 15,
                                       fontFamily: 'Roboto',
                                       fontWeight: FontWeight.w700,

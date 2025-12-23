@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart' hide Category;
+import 'package:proj_inz/core/utils/utils.dart';
 import 'package:proj_inz/data/models/category_model.dart';
 import 'package:proj_inz/data/models/shop_model.dart';
 import 'package:proj_inz/data/api/api_client.dart';
@@ -48,30 +49,14 @@ class CategoryRepository {
           .map((data) => Shop(
                 id: data['id'].toString(),
                 name: data['name'] as String,
-                bgColor: _parseColor(data['bg_color']),
-                nameColor: _parseColor(data['name_color']),
+                bgColor: parseColor(data['bg_color']),
+                nameColor: parseColor(data['name_color']),
                 categoryIds: [category.id],
               ))
           .toList();
     } catch (e) {
       if (kDebugMode) debugPrint('Error fetching shops for category ${category.name}: $e');
       rethrow;
-    }
-  }
-
-  /// Parse color from hex string to int
-  int _parseColor(String? hexColor) {
-    if (hexColor == null || hexColor.isEmpty) return 0xFF000000;
-    
-    try {
-      String hex = hexColor.replaceAll('#', '');
-      if (hex.length == 6) {
-        hex = 'FF$hex';
-      }
-      return int.parse(hex, radix: 16);
-    } catch (e) {
-      if (kDebugMode) debugPrint('Error parsing color $hexColor: $e');
-      return 0xFF000000;
     }
   }
 }
