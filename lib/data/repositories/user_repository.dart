@@ -60,7 +60,7 @@ class UserRepository {
   /// Get user profile by ID (GET /users/{id})
   Future<Map<String, dynamic>?> getUserProfile(String uid) async {
     try {
-      final data = await _api.get('/users/$uid');
+      final data = await _api.get('/users/$uid', useAuthToken: true);
       return data as Map<String, dynamic>;
     } catch (e) {
       if (kDebugMode) debugPrint('Error getting user profile: $e');
@@ -105,7 +105,7 @@ class UserRepository {
   Future<void> ensureUserExistsInApi(String uid, String email, String username) async {
     try {
       // Try to get user from API
-      await _api.get('/users/$uid');
+      await _api.get('/users/$uid', useAuthToken: true);
       if (kDebugMode) {
         debugPrint('User $uid already exists in API');
       }
@@ -126,7 +126,7 @@ class UserRepository {
   /// PATCH /users/:id/add_phone_number?phone_number=...
   Future<void> addPhoneNumberToUser({required String uid, required String phoneNumber}) async {
     try {
-      await _api.patch('/users/$uid/add-phone-number', body: {'phone_number': phoneNumber});
+      await _api.patch('/users/$uid/add-phone-number', body: {'phone_number': phoneNumber}, useAuthToken: true);
     } catch (e) {
       if (kDebugMode) debugPrint('Error adding phone number: $e');
       rethrow;

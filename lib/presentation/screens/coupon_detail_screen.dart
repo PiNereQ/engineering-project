@@ -22,6 +22,7 @@ import 'package:proj_inz/presentation/widgets/input/buttons/custom_follow_button
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_icon_button.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_text_button.dart';
 import 'package:proj_inz/presentation/widgets/reputation_bar.dart';
+import 'package:proj_inz/data/repositories/payment_repository.dart';
 
 class CouponDetailsScreen extends StatelessWidget {
   final Coupon coupon;
@@ -36,7 +37,9 @@ class CouponDetailsScreen extends StatelessWidget {
               (context) =>
                   CouponBloc.withCoupon(coupon),
         ),
-        BlocProvider(create: (_) => PaymentBloc()),
+        BlocProvider(create: (_) => PaymentBloc(
+          paymentRepository: PaymentRepository(),
+        )),
         BlocProvider(
           create: (context) => CouponListBloc(context.read<CouponRepository>()),
         ),
