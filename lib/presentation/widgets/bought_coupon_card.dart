@@ -32,27 +32,33 @@ class OwnedCouponCardHorizontal extends StatelessWidget {
     final reductionText =
         formatReduction(reduction.toDouble(), reductionIsPercentage);
 
-    final titleText = TextSpan(
-      text:
-      reductionIsPercentage
-        ? 'Kupon -$reductionText\n'
-        : 'Kupon na $reductionText\n',
-      style: TextStyle(
-        color: isUsed ? AppColors.textSecondary : AppColors.textPrimary,
-        fontSize: 20,
+    final titleText = Text(
+        reductionIsPercentage
+            ? '-$reductionText'
+            : reductionText,
+      style: const TextStyle(
+        color: AppColors.textPrimary,
+        fontSize: 22,
         fontFamily: 'Itim',
         fontWeight: FontWeight.w400,
+      ),
+      strutStyle: const StrutStyle(
         height: 1.0,
+        forceStrutHeight: true,
       ),
     );
 
-    final limitsText = TextSpan(
-      text: hasLimits ? 'z ograniczeniami' : 'na wszystko',
-      style: TextStyle(
-        color: isUsed ? AppColors.textSecondary : AppColors.textPrimary,
+    final limitsText = Text(
+      hasLimits ? 'z ograniczeniami' : 'na wszystko',
+      style: const TextStyle(
+        color: AppColors.textPrimary,
         fontSize: 14,
         fontFamily: 'Itim',
         fontWeight: FontWeight.w400,
+      ),
+      strutStyle: const StrutStyle(
+        height: 0.7,
+        forceStrutHeight: true,
       ),
     );
 
@@ -69,8 +75,8 @@ class OwnedCouponCardHorizontal extends StatelessWidget {
         ),
         TextSpan(
           text: "${formatPrice(price)} zł",
-          style: TextStyle(
-            color: isUsed ? AppColors.textSecondary : AppColors.textPrimary,
+          style: const TextStyle(
+            color: AppColors.textPrimary,
             fontSize: 24,
             fontFamily: 'Itim',
             fontWeight: FontWeight.w400,
@@ -79,64 +85,64 @@ class OwnedCouponCardHorizontal extends StatelessWidget {
       ],
     );
 
-    final locationText = TextSpan(
-      text:
-          'Do wykorzystania ${worksInStore && worksOnline
-              ? 'stacjonarnie i online'
-              : worksOnline
-              ? 'w sklepach internetowych'
-              : 'w sklepach stacjonarnych'}',
-      style: TextStyle(
-        color: isUsed ? AppColors.textSecondary : AppColors.textPrimary,
-        fontSize: 12,
+    final locationText = Text(
+      worksInStore && worksOnline
+          ? 'Stacjonarnie i online'
+          : worksOnline
+          ? 'Online'
+          : 'Stacjonarnie',
+      style: const TextStyle(
+        color: AppColors.textPrimary,
+        fontSize: 13,
         fontFamily: 'Itim',
         fontWeight: FontWeight.w400,
         height: 1.0,
       ),
     );
 
-    final expiryDateText = TextSpan(
-      text: expiryDate == null ? 'brak daty ważności' : formatDate(expiryDate),
-      style: TextStyle(
-        color: isUsed ? AppColors.textSecondary : AppColors.textPrimary,
-        fontSize: 12,
+    final expiryDateText = Text(
+      expiryDate == null
+          ? 'Bez daty ważności'
+          : 'Do ${formatDate(expiryDate)}',
+      style: const TextStyle(
+        color: AppColors.textPrimary,
+        fontSize: 13,
         fontFamily: 'Itim',
-        fontWeight: FontWeight.w400, 
+        fontWeight: FontWeight.w400,
         height: 1.0,
       ),
     );
 
-    return Stack(
-      children: [
-        Container(
-          decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(width: 2, color: AppColors.textPrimary),
-            boxShadow: const [
-              BoxShadow(
-                color: AppColors.textPrimary,
-                blurRadius: 0,
-                offset: Offset(4, 4),
-                spreadRadius: 0,
-              ),
-            ],
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => BoughtCouponDetailsScreen(couponId: couponId),
           ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            spacing: 12,
-            children: [
-              Expanded(
-                child: GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder:
-                            (context) => BoughtCouponDetailsScreen(couponId: couponId)
-                      ),
-                    );
-                  },
+        );
+      },
+      child: Stack(
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(width: 2, color: AppColors.textPrimary),
+              boxShadow: const [
+                BoxShadow(
+                  color: AppColors.textPrimary,
+                  blurRadius: 0,
+                  offset: Offset(4, 4),
+                  spreadRadius: 0,
+                ),
+              ],
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              spacing: 12,
+              children: [
+                Expanded(
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     spacing: 12,
@@ -178,14 +184,34 @@ class OwnedCouponCardHorizontal extends StatelessWidget {
                               mainAxisAlignment: MainAxisAlignment.start,
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text.rich(
-                                  TextSpan(children: [titleText, limitsText]),
+                                Row(
+                                  spacing: 4,
+                                  children: [
+                                    Icon(Icons.local_offer_outlined, size: 20),
+                                    titleText,
+                                  ],
                                 ),
+                                const SizedBox(height: 1.0),
+                                limitsText,
                                 const SizedBox(height: 2.0),
                                 Text.rich(priceText),
                                 const SizedBox(height: 2.0),
-                                Text.rich(locationText),
-                                Text.rich(expiryDateText),
+                                Row(
+                                  spacing: 4,
+                                  children: [
+                                    Icon(Icons.location_on_outlined, size: 14),
+                                    Expanded(child: locationText),
+                                  ],
+                                ),
+                                const SizedBox(height: 2.0),
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  spacing: 4,
+                                  children: [
+                                    Icon(Icons.calendar_today, size: 14),
+                                    expiryDateText,
+                                  ],
+                                ),
                               ],
                             ),
                           ),
@@ -194,38 +220,60 @@ class OwnedCouponCardHorizontal extends StatelessWidget {
                     ],
                   ),
                 ),
-              ),
-              DashedSeparator.vertical(length: 146),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(4, 10, 16, 10),
-                child: Center(child: Icon(isUsed ? Icons.done_all_rounded : Icons.check_rounded, size: 36)),
-              ),
-            ],
-          ),
-        ),
-        if (isUsed)
-        Positioned(
-          bottom: 16,
-          right: 128,
-          child: Container(
-            decoration: BoxDecoration(
-              color: AppColors.surface.withValues(alpha: 0.7),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(width: 3, color: AppColors.notificationDot),
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            child: Text(
-              'Wykorzystany',
-              style: TextStyle(
-                color: AppColors.notificationDot,
-                fontSize: 16,
-                fontFamily: 'Itim',
-                fontWeight: FontWeight.bold,
-              ),
+                DashedSeparator.vertical(length: 146),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(4, 10, 16, 10),
+                  child: Center(child: Icon(isUsed ? Icons.done_all_rounded : Icons.check_rounded, size: 36)),
+                ),
+              ],
             ),
           ),
-        ),
-      ],
+          if (expiryDate != null && expiryDate.isBefore(DateTime.now()) && !isUsed)
+          Positioned(
+            bottom: 22,
+            left: 138,
+            child: Container(
+              decoration: BoxDecoration(
+                color: AppColors.surface.withValues(alpha: 0.8),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(width: 3, color: AppColors.alertText),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              child: Text(
+                'Przeterminowany',
+                style: TextStyle(
+                  color: AppColors.alertText,
+                  fontSize: 16,
+                  fontFamily: 'Itim',
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+          if (isUsed)
+          Positioned(
+            bottom: 22,
+            left: 138,
+            child: Container(
+              decoration: BoxDecoration(
+                color: AppColors.surface.withValues(alpha: 0.8),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(width: 3, color: AppColors.notificationDot),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              child: Text(
+                'Wykorzystany',
+                style: TextStyle(
+                  color: AppColors.notificationDot,
+                  fontSize: 16,
+                  fontFamily: 'Itim',
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
