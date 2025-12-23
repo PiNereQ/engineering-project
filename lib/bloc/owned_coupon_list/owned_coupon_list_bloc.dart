@@ -104,11 +104,40 @@ class OwnedCouponListBloc extends Bloc<OwnedCouponListEvent, OwnedCouponListStat
     _isFetching = true;
     emit(OwnedCouponListLoadInProgress());
 
+    // Map ordering enum to backend sort string
+    String? sort;
+    switch (_ordering) {
+      case OwnedCouponsOrdering.purchaseDateAsc:
+        sort = 'purchase+asc';
+        break;
+      case OwnedCouponsOrdering.purchaseDateDesc:
+        sort = 'purchase+desc';
+        break;
+      case OwnedCouponsOrdering.expiryDateAsc:
+        sort = 'expiry+asc';
+        break;
+      case OwnedCouponsOrdering.expiryDateDesc:
+        sort = 'expiry+desc';
+        break;
+      case OwnedCouponsOrdering.priceAsc:
+        sort = 'price+asc';
+        break;
+      case OwnedCouponsOrdering.priceDesc:
+        sort = 'price+desc';
+        break;
+    }
+
     try {
       final result = await couponRepository.fetchOwnedCouponsPaginated(
-        limit,
-        _lastOffset ?? 0,
-        _userId!,
+        limit: limit,
+        offset: _lastOffset ?? 0,
+        userId: _userId!,
+        reductionIsPercentage: _reductionIsPercentage,
+        reductionIsFixed: _reductionIsFixed,
+        showUsed: _showUsed,
+        showUnused: _showUnused,
+        shopId: _shopId,
+        sort: sort,
       );
       final ownedCoupons = result.coupons;
       debugPrint('Fetched ${ownedCoupons.length} coupons: $ownedCoupons');
@@ -117,64 +146,11 @@ class OwnedCouponListBloc extends Bloc<OwnedCouponListEvent, OwnedCouponListStat
       _allCoupons.addAll(ownedCoupons);
       _lastOffset = result.lastOffset;
 
-      
       emit(OwnedCouponListLoadSuccess(coupons: _allCoupons, hasMore: _hasMore));
-      // apply filters
-      var filtered = _allCoupons.where((c) {
-        if (_reductionIsPercentage && !_reductionIsFixed) {
-          if (!c.reductionIsPercentage) return false;
-        }
-        else if (!_reductionIsPercentage && _reductionIsFixed) {
-          if (c.reductionIsPercentage) return false;
-        }
-        else if (!_reductionIsPercentage && !_reductionIsFixed) {
-          return false;
-        }
 
-        if (!_showUsed && c.isUsed!) return false;
-        if (!_showUnused && c.isUsed!) return false;
-
-        if (_shopId != null && c.shopId != _shopId) return false;
-
-        return true;
-      }).toList();
-
-      // apply ordering
-      filtered.sort((a, b) {
-        switch (_ordering) {
-          case OwnedCouponsOrdering.purchaseDateAsc:
-            return (a.purchaseDate ?? DateTime(0))
-                .compareTo(b.purchaseDate ?? DateTime(0));
-          case OwnedCouponsOrdering.purchaseDateDesc:
-            return (b.purchaseDate ?? DateTime(0))
-                .compareTo(a.purchaseDate ?? DateTime(0));
-          case OwnedCouponsOrdering.expiryDateAsc:
-            if (a.expiryDate == null && b.expiryDate == null) return 0;
-            if (a.expiryDate == null) return -1;
-            if (b.expiryDate == null) return 1;
-            return a.expiryDate!.compareTo(b.expiryDate!);
-          case OwnedCouponsOrdering.expiryDateDesc:
-            if (a.expiryDate == null && b.expiryDate == null) return 0;
-            if (a.expiryDate == null) return -1;
-            if (b.expiryDate == null) return 1;
-            return b.expiryDate!.compareTo(a.expiryDate!);
-          case OwnedCouponsOrdering.priceAsc:
-            return a.price.compareTo(b.price);
-          case OwnedCouponsOrdering.priceDesc:
-            return b.price.compareTo(a.price);
-        }
-      });
-
-      emit(OwnedCouponListLoadSuccess(coupons: filtered, hasMore: _hasMore));
-
-      if (filtered.isEmpty) {
+      if (_allCoupons.isEmpty) {
         emit(OwnedCouponListLoadEmpty());
       }
-
-
-      // if (_allCoupons.isEmpty) {
-      //   emit(OwnedCouponListLoadEmpty());
-      // }
     } catch (e) {
       if (kDebugMode) debugPrint(e.toString());
       emit(OwnedCouponListLoadFailure(message: e.toString()));

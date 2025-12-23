@@ -31,6 +31,7 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
   double? _minPrice; 
   double? _maxPrice; 
   int? _minReputation; 
+  String? _shopId;
 
   // sorting
   Ordering _ordering = Ordering.creationDateDesc;
@@ -66,6 +67,7 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
     _lastOffset = null;
     _hasMore = true;
     _userId = event.userId;
+    _shopId = event.shopId;
     add(FetchMoreCoupons());
   }
 
@@ -87,12 +89,47 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
     _isFetching = true;
     emit(CouponListLoadInProgress());
 
+    // Map Ordering enum to backend sort string
+    String? sort;
+    switch (_ordering) {
+      case Ordering.creationDateAsc:
+        sort = 'listing+asc';
+        break;
+      case Ordering.creationDateDesc:
+        sort = 'listing+desc';
+        break;
+      case Ordering.priceAsc:
+        sort = 'price+asc';
+        break;
+      case Ordering.priceDesc:
+        sort = 'price+desc';
+        break;
+      case Ordering.reputationAsc:
+        sort = 'rep+asc';
+        break;
+      case Ordering.reputationDesc:
+        sort = 'rep+desc';
+        break;
+      case Ordering.expiryDateAsc:
+        sort = 'expiry+asc';
+        break;
+      case Ordering.expiryDateDesc:
+        sort = 'expiry+desc';
+        break;
+    }
+
     try {
       final result = await couponRepository.fetchCouponsPaginated(
         limit: _limit,
         offset: _lastOffset ?? 0,
-        shopId: null, // No shop filter for main list
+        shopId: null,
         userId: _userId!,
+        reductionIsPercentage: _reductionIsPercentage,
+        reductionIsFixed: _reductionIsFixed,
+        minPrice: _minPrice,
+        maxPrice: _maxPrice,
+        minReputation: _minReputation,
+        sort: sort,
       );
       debugPrint('Fetched ${result.ownedCoupons.length} coupons with proper mapping');
 
@@ -100,11 +137,16 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
       _allCoupons.addAll(result.ownedCoupons);
       _lastOffset = result.lastOffset;
 
-      var successState = CouponListLoadSuccess(coupons: _allCoupons, hasMore: _hasMore);
+      // Restore client-side shop filtering
+      List<Coupon> filtered = _shopId != null
+          ? _allCoupons.where((c) => c.shopId == _shopId).toList()
+          : _allCoupons;
+
+      var successState = CouponListLoadSuccess(coupons: filtered, hasMore: _hasMore);
       _previousListState = successState;
       emit(successState);
 
-      if (_allCoupons.isEmpty) {
+      if (filtered.isEmpty) {
         var emptyState = CouponListLoadEmpty();
         _previousListState = emptyState;
         emit(emptyState);

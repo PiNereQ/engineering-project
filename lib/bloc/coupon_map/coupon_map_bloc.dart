@@ -81,9 +81,14 @@ class CouponMapBloc extends Bloc<CouponMapEvent, CouponMapState> {
 
     try {
       final coupons = await couponRepository.fetchThreeCouponsForShop(event.shopId.toString());
+      // Ensure client-side filtering by shopId and limit to 3
+      final filtered = coupons
+          .where((c) => c.shopId == event.shopId.toString())
+          .take(3)
+          .toList();
       emit(state.copyWith(
         status: CouponMapStatus.success,
-        selectedShopLocationCoupons: coupons,
+        selectedShopLocationCoupons: filtered,
       ));
     } catch (e) {
       emit(state.copyWith(
