@@ -33,6 +33,55 @@ class CouponRepository {
 
   // COUPON LIST METHODS ===========================
 
+  /// Fetch coupons from personalized feed with cursor-based pagination
+  Future<PaginatedCouponsResult> fetchCouponFeed({
+    required int limit,
+    String? cursor,
+    required String userId,
+  }) async {
+    try {
+      final queryParams = {
+        'limit': limit.toString(),
+        if (cursor != null) 'cursor': cursor,
+      }..removeWhere((k, v) => v == null);
+
+      final response = await _api.get(
+        '/coupons/feed',
+        queryParameters: queryParams,
+        useAuthToken: true,
+      );
+      
+      if (response is Map<String, dynamic>) {
+        final items = response['items'] as List?;
+        final nextCursor = response['nextCursor'] as String?;
+        
+        if (items != null) {
+          final coupons = await Future.wait(
+            items.map((data) async => Coupon.availableToMeFromJson(data)),
+          );
+          return PaginatedCouponsResult(
+            ownedCoupons: coupons.whereType<Coupon>().toList(),
+            lastOffset: nextCursor != null ? 1 : null, // Use cursor for pagination
+          );
+        }
+      } else if (response is List) {
+        // Fallback for legacy response format
+        final coupons = await Future.wait(
+          response.map((data) async => Coupon.availableToMeFromJson(data)),
+        );
+        return PaginatedCouponsResult(
+          ownedCoupons: coupons.whereType<Coupon>().toList(),
+          lastOffset: response.length < limit ? null : 1,
+        );
+      }
+      
+      return PaginatedCouponsResult(ownedCoupons: [], lastOffset: null);
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error in fetchCouponFeed: $e');
+      rethrow;
+    }
+  }
+
   /// Fetch coupons with pagination and filters (from active listings)
   Future<PaginatedCouponsResult> fetchCouponsPaginated({
     required int limit,
@@ -350,6 +399,25 @@ class CouponRepository {
       return result.ownedCoupons;
     } catch (e) {
       if (kDebugMode) debugPrint('Error in fetchThreeCouponsForShop: $e');
+      rethrow;
+    }
+  }
+
+
+  // RECOMENDATIONS BELOW
+
+  //Record a click
+  Future<void> recordCouponClick(String couponId) async {
+    print('Recording click for couponId: $couponId');
+    try {
+      final userId = await userRepository.getCurrentUserId();
+      await _api.post(
+        '/events/click',
+        body: {'couponId': couponId},
+        useAuthToken: true,
+      );
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error recording coupon click: $e');
       rethrow;
     }
   }
