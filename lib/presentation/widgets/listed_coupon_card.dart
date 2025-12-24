@@ -26,6 +26,13 @@ class ListedCouponCardHorizontal extends StatelessWidget {
     final expiryDate = coupon.expiryDate;
     final listingDate = coupon.listingDate;
     final isSold = coupon.isSold;
+    final now = DateTime.now();
+
+    final bool isExpired = expiryDate != null &&
+        now.isAfter(
+          DateTime(expiryDate.year, expiryDate.month, expiryDate.day, 23, 59, 59),
+        );
+
 
     final reductionText =
         formatReduction(reduction.toDouble(), reductionIsPercentage);
@@ -136,7 +143,9 @@ class ListedCouponCardHorizontal extends StatelessWidget {
                           alignment: Alignment.center,
                           padding: const EdgeInsets.symmetric(horizontal: 8),
                           decoration: ShapeDecoration(
-                              color: isSold ? AppColors.primaryButtonPressed : shopBgColor,
+                              color: (isExpired || isSold)
+                                ? AppColors.primaryButtonPressed
+                                : shopBgColor,
                             shape: RoundedRectangleBorder(
                               side: const BorderSide(width: 2),
                               borderRadius: BorderRadius.circular(8),
@@ -145,7 +154,9 @@ class ListedCouponCardHorizontal extends StatelessWidget {
                           child: Text(
                             shopName,
                             style: TextStyle(
-                              color: isSold ? AppColors.textSecondary : shopNameColor,
+                            color: (isExpired || isSold)
+                                ? AppColors.textSecondary
+                                : shopNameColor,
                               fontSize: 15,
                               fontFamily: 'Roboto',
                               fontWeight: FontWeight.w700,
@@ -230,12 +241,42 @@ class ListedCouponCardHorizontal extends StatelessWidget {
                 DashedSeparator.vertical(length: 146),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(4, 10, 16, 10),
-                  child: Center(child: Icon(isSold ? Icons.done_all_rounded : Icons.store_rounded, size: 36)),
+                  child: Center(child: Icon(
+                      isExpired
+                          ? Icons.event_busy
+                          : isSold
+                              ? Icons.done_all_rounded
+                              : Icons.store_rounded,
+                      size: 36,
+                    )
+                  ),
                 ),
               ],
             ),
           ),
-          if (isSold)
+          if (isExpired)
+          Positioned(
+            bottom: 20,
+            left: 138,
+            child: Container(
+              decoration: BoxDecoration(
+                color: AppColors.surface.withValues(alpha: 0.8),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(width: 3, color: AppColors.alertText),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              child: const Text(
+                'Przeterminowany',
+                style: TextStyle(
+                  color: AppColors.alertText,
+                  fontSize: 16,
+                  fontFamily: 'Itim',
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+          if (isSold && !isExpired)
           Positioned(
             bottom: 20,
             left: 138,

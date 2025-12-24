@@ -242,7 +242,19 @@ class OwnedCouponCardHorizontal extends StatelessWidget {
               ],
             ),
           ),
-          if (expiryDate != null && expiryDate.isBefore(DateTime.now()) && !isUsed)
+          if (expiryDate != null &&
+              DateTime.now().isAfter(
+                DateTime(
+                  expiryDate.year,
+                  expiryDate.month,
+                  expiryDate.day,
+                  23,
+                  59,
+                  59,
+                ),
+              ) &&
+              !isUsed
+              )
           Positioned(
             bottom: 22,
             left: 138,
