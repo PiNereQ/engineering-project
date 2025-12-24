@@ -200,7 +200,7 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
     ));
 
     if (_userId != null) {
-      add(FetchCoupons(userId: _userId!));
+      add(FetchCoupons(userId: _userId!, shopId: _shopId));
     }
 
     emit(CouponListMetaState(
@@ -225,7 +225,7 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
     ));
 
     if (_userId != null) {
-      add(FetchCoupons(userId: _userId!));
+      add(FetchCoupons(userId: _userId!, shopId: _shopId));
     }
 
     emit(CouponListMetaState(
