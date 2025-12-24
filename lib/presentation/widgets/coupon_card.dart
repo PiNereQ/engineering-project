@@ -43,7 +43,8 @@ class CouponCardHorizontal extends StatelessWidget {
     final bool worksInStore = coupon.worksInStore;
     final DateTime? expiryDate = coupon.expiryDate;
     final bool isSaved = coupon.isSaved ?? false;
-
+    final bool hasExpiryDate = expiryDate != null;
+    
     final reductionText =
         formatReduction(reduction.toDouble(), reductionIsPercentage);
 
@@ -125,18 +126,6 @@ class CouponCardHorizontal extends StatelessWidget {
       ),
     );
 
-    final expiryDateText = Text(
-      expiryDate == null
-          ? 'Bez daty ważności'
-          : 'Do ${formatDate(expiryDate)}',
-      style: const TextStyle(
-        color: AppColors.textPrimary,
-        fontSize: 13,
-        fontFamily: 'Itim',
-        fontWeight: FontWeight.w400,
-        height: 1.0,
-      ),
-    );
 
     return Container(
       decoration: ShapeDecoration(
@@ -272,10 +261,37 @@ class CouponCardHorizontal extends StatelessWidget {
                               const SizedBox(height: 2.0),
                               Row(
                                 crossAxisAlignment: CrossAxisAlignment.start,
-                                spacing: 4,
                                 children: [
-                                  Icon(Icons.calendar_today, size: 14),
-                                  expiryDateText,
+                                  const Icon(Icons.calendar_today, size: 14),
+                                  const SizedBox(width: 4),
+                                  Expanded(
+                                    child: LayoutBuilder(
+                                      builder: (context, constraints) {
+                                        final bool isTight = constraints.maxWidth < 110;
+
+                                        final String text = hasExpiryDate
+                                            ? 'Do ${formatDate(expiryDate)}'
+                                            : isTight
+                                                ? 'Bez daty ważn.'
+                                                : 'Bez daty ważności';
+
+                                        return Text(
+                                          text,
+                                          maxLines: 1,
+                                          overflow: hasExpiryDate
+                                              ? TextOverflow.ellipsis
+                                              : TextOverflow.visible,
+                                          style: const TextStyle(
+                                            color: AppColors.textPrimary,
+                                            fontSize: 13,
+                                            fontFamily: 'Itim',
+                                            fontWeight: FontWeight.w400,
+                                            height: 1.0,
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ),
                                 ],
                               ),
                             ],
