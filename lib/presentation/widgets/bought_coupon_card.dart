@@ -100,19 +100,6 @@ class OwnedCouponCardHorizontal extends StatelessWidget {
       ),
     );
 
-    final expiryDateText = Text(
-      expiryDate == null
-          ? 'Bez daty ważności'
-          : 'Do ${formatDate(expiryDate)}',
-      style: const TextStyle(
-        color: AppColors.textPrimary,
-        fontSize: 13,
-        fontFamily: 'Itim',
-        fontWeight: FontWeight.w400,
-        height: 1.0,
-      ),
-    );
-
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -209,7 +196,34 @@ class OwnedCouponCardHorizontal extends StatelessWidget {
                                   spacing: 4,
                                   children: [
                                     Icon(Icons.calendar_today, size: 14),
-                                    expiryDateText,
+                                    Expanded(
+                                      child: LayoutBuilder(
+                                        builder: (context, constraints) {
+                                          final bool isTight = constraints.maxWidth < 110;
+
+                                          final String text = expiryDate != null
+                                              ? 'Do ${formatDate(expiryDate)}'
+                                              : isTight
+                                                  ? 'Bez daty ważn.'
+                                                  : 'Bez daty ważności';
+
+                                          return Text(
+                                            text,
+                                            maxLines: 1,
+                                            overflow: expiryDate != null
+                                                ? TextOverflow.ellipsis
+                                                : TextOverflow.visible,
+                                            style: const TextStyle(
+                                              color: AppColors.textPrimary,
+                                              fontSize: 13,
+                                              fontFamily: 'Itim',
+                                              fontWeight: FontWeight.w400,
+                                              height: 1.0,
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ),
                                   ],
                                 ),
                               ],
