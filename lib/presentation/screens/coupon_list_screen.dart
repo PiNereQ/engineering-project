@@ -23,6 +23,7 @@ import 'package:proj_inz/presentation/widgets/input/buttons/custom_text_button.d
 import 'package:proj_inz/presentation/widgets/input/buttons/radio_button.dart';
 import 'package:proj_inz/presentation/widgets/input/text_fields/labeled_text_field.dart';
 import 'package:proj_inz/presentation/widgets/input/text_fields/search_bar.dart';
+import 'package:proj_inz/data/repositories/coupon_repository.dart';
 
 // Local debugging flags
 bool stopCouponLoading = false; // Default to false

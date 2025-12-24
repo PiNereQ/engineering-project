@@ -4,6 +4,7 @@ import 'package:icon_decoration/icon_decoration.dart';
 
 import 'package:proj_inz/core/utils/utils.dart';
 import 'package:proj_inz/data/models/coupon_model.dart';
+import 'package:proj_inz/data/repositories/coupon_repository.dart';
 import 'package:proj_inz/presentation/screens/bought_coupon_detail_screen.dart';
 import 'package:proj_inz/presentation/screens/coupon_detail_screen.dart';
 import 'package:proj_inz/presentation/widgets/dashed_separator.dart';
@@ -153,6 +154,8 @@ class CouponCardHorizontal extends StatelessWidget {
                 if (kDebugMode) {
                   print('Tapping coupon: id=${coupon.id}');
                 }
+                // Record the click
+                CouponRepository().recordCouponClick(coupon.id);
                 Navigator.push(
                   context,
                   MaterialPageRoute(
