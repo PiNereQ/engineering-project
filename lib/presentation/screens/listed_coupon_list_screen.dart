@@ -403,7 +403,7 @@ class _ListedFilterDialogState extends State<_ListedFilterDialog> {
                                 CustomCheckbox(
                                   selected: showSold,
                                   onTap: () => setState(() => showSold = !showSold),
-                                  label: 'sprzedany',
+                                  label: 'sprzedany/przeterminowany',
                                 ),
                               ],
                             ),
