@@ -31,7 +31,8 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
   double? _minPrice; 
   double? _maxPrice; 
   int? _minReputation; 
-  String? _shopId;
+  String? _shopOrCategoryId;
+  bool? _filterByShop; // true = shop, false = category, null = none
 
   // sorting
   Ordering _ordering = Ordering.creationDateDesc;
@@ -67,7 +68,8 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
     _lastOffset = null;
     _hasMore = true;
     _userId = event.userId;
-    _shopId = event.shopId;
+    _shopOrCategoryId = event.shopId;
+    _filterByShop = event.filterByShop;
     add(FetchMoreCoupons());
   }
 
@@ -122,7 +124,8 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
       final result = await couponRepository.fetchCouponsPaginated(
         limit: _limit,
         offset: _lastOffset ?? 0,
-        shopId: null,
+        shopOrCategoryId: _shopOrCategoryId,
+        filterByShop: _filterByShop,
         userId: _userId!,
         reductionIsPercentage: _reductionIsPercentage,
         reductionIsFixed: _reductionIsFixed,
@@ -137,16 +140,11 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
       _allCoupons.addAll(result.ownedCoupons);
       _lastOffset = result.lastOffset;
 
-      // Restore client-side shop filtering
-      List<Coupon> filtered = _shopId != null
-          ? _allCoupons.where((c) => c.shopId == _shopId).toList()
-          : _allCoupons;
-
-      var successState = CouponListLoadSuccess(coupons: filtered, hasMore: _hasMore);
+      var successState = CouponListLoadSuccess(coupons: _allCoupons, hasMore: _hasMore);
       _previousListState = successState;
       emit(successState);
 
-      if (filtered.isEmpty) {
+      if (_allCoupons.isEmpty) {
         var emptyState = CouponListLoadEmpty();
         _previousListState = emptyState;
         emit(emptyState);
@@ -200,7 +198,7 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
     ));
 
     if (_userId != null) {
-      add(FetchCoupons(userId: _userId!, shopId: _shopId));
+      add(FetchCoupons(userId: _userId!, shopId: _shopOrCategoryId));
     }
 
     emit(CouponListMetaState(
@@ -225,7 +223,7 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
     ));
 
     if (_userId != null) {
-      add(FetchCoupons(userId: _userId!, shopId: _shopId));
+      add(FetchCoupons(userId: _userId!, shopId: _shopOrCategoryId));
     }
 
     emit(CouponListMetaState(

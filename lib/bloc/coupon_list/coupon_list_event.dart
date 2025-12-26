@@ -10,12 +10,13 @@ sealed class CouponListEvent extends Equatable {
 
 class FetchCoupons extends CouponListEvent {
   final String? shopId;
+  final bool? filterByShop; // true = shop, false = category, null = none
   final String userId;
 
-  const FetchCoupons({this.shopId, required this.userId});
+  const FetchCoupons({this.shopId, this.filterByShop, required this.userId});
 
   @override
-  List<Object?> get props => [shopId, userId];
+  List<Object?> get props => [shopId, filterByShop, userId];
 }
 
 class FetchMoreCoupons extends CouponListEvent {}
