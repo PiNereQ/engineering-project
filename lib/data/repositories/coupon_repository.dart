@@ -34,53 +34,62 @@ class CouponRepository {
   // COUPON LIST METHODS ===========================
 
   /// Fetch coupons from personalized feed with cursor-based pagination
-  Future<PaginatedCouponsResult> fetchCouponFeed({
-    required int limit,
-    String? cursor,
-    required String userId,
-  }) async {
-    try {
-      final queryParams = {
-        'limit': limit.toString(),
-        if (cursor != null) 'cursor': cursor,
-      }..removeWhere((k, v) => v == null);
+  Future<Map<String, dynamic>> fetchCouponFeed({
+  required int limit,
+  String? cursor,
+  required String userId,
+}) async {
+  try {
+    final queryParams = {
+      'limit':  limit. toString(),
+      if (cursor != null) 'cursor': cursor,
+    }.. removeWhere((k, v) => v == null);
 
-      final response = await _api.get(
-        '/coupons/feed',
-        queryParameters: queryParams,
-        useAuthToken: true,
-      );
+    final response = await _api.get(
+      '/coupons/feed',
+      queryParameters: queryParams,
+      useAuthToken: true,
+    );
+    
+    if (response is Map<String, dynamic>) {
+      final items = response['items'] as List? ;
+      final nextCursor = response['cursor'] as String?;  // 🔥 Changed from 'nextCursor'
+      final hasMore = response['hasMore'] as bool?  ?? false;
       
-      if (response is Map<String, dynamic>) {
-        final items = response['items'] as List?;
-        final nextCursor = response['nextCursor'] as String?;
-        
-        if (items != null) {
-          final coupons = await Future.wait(
-            items.map((data) async => Coupon.availableToMeFromJson(data)),
-          );
-          return PaginatedCouponsResult(
-            ownedCoupons: coupons.whereType<Coupon>().toList(),
-            lastOffset: nextCursor != null ? 1 : null, // Use cursor for pagination
-          );
-        }
-      } else if (response is List) {
-        // Fallback for legacy response format
+      if (items != null) {
         final coupons = await Future.wait(
-          response.map((data) async => Coupon.availableToMeFromJson(data)),
+          items. map((data) async => Coupon.availableToMeFromJson(data)),
         );
-        return PaginatedCouponsResult(
-          ownedCoupons: coupons.whereType<Coupon>().toList(),
-          lastOffset: response.length < limit ? null : 1,
-        );
+        
+        // 🔥 Return properly structured map
+        return {
+          'items': coupons. whereType<Coupon>().toList(),
+          'cursor':  nextCursor,
+          'hasMore': hasMore,
+        };
       }
-      
-      return PaginatedCouponsResult(ownedCoupons: [], lastOffset: null);
-    } catch (e) {
-      if (kDebugMode) debugPrint('Error in fetchCouponFeed: $e');
-      rethrow;
+    } else if (response is List) {
+      // Fallback for legacy response format
+      final coupons = await Future.wait(
+        response.map((data) async => Coupon.availableToMeFromJson(data)),
+      );
+      return {
+        'items': coupons.whereType<Coupon>().toList(),
+        'cursor': null,
+        'hasMore': response.length >= limit,
+      };
     }
+    
+    return {
+      'items': <Coupon>[],
+      'cursor': null,
+      'hasMore': false,
+    };
+  } catch (e) {
+    if (kDebugMode) debugPrint('Error in fetchCouponFeed: $e');
+    rethrow;
   }
+}
 
   /// Fetch coupons with pagination and filters (from active listings)
   Future<PaginatedCouponsResult> fetchCouponsPaginated({
@@ -410,7 +419,7 @@ class CouponRepository {
   Future<void> recordCouponClick(String couponId) async {
     print('Recording click for couponId: $couponId');
     try {
-      final userId = await userRepository.getCurrentUserId();
+      //final userId = await userRepository.getCurrentUserId();
       await _api.post(
         '/events/click',
         body: {'couponId': couponId},
@@ -418,7 +427,7 @@ class CouponRepository {
       );
     } catch (e) {
       if (kDebugMode) debugPrint('Error recording coupon click: $e');
-      rethrow;
+      //rethrow;
     }
   }
 

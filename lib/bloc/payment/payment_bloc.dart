@@ -27,7 +27,7 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
         if (kDebugMode) {
           debugPrint('Payment intent created: $paymentIntentId');
         }
-
+debugPrint('Payment sheet presented with data: $paymentIntentData and couponId: ${event.couponId}, buyerId: ${event.buyerId}, sellerId: ${event.sellerId}, amount: ${event.amount}, isMultipleUse: ${event.isMultipleUse}');
         await Stripe.instance.initPaymentSheet(
           paymentSheetParameters: SetupPaymentSheetParameters(
             paymentIntentClientSecret: clientSecret,
