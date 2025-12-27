@@ -263,6 +263,7 @@ class ShopCard extends StatelessWidget {
                                 )..add(
                                   FetchCoupons(
                                     shopId: shop.id,
+                                    filterByShop: true,
                                     userId:
                                         FirebaseAuth
                                             .instance
@@ -344,7 +345,33 @@ class CategoryCard extends StatelessWidget {
               CustomTextButton.small(
                 label: 'Pokaż kupony',
                 onTap: () {
-                  // TODO: Implement category coupon navigation
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder:
+                          (_) => BlocProvider(
+                            create:
+                                (context) => CouponListBloc(
+                                  context.read<CouponRepository>(),
+                                )..add(
+                                  FetchCoupons(
+                                    categoryId: category.id,
+                                    filterByShop: false,
+                                    userId:
+                                        FirebaseAuth
+                                            .instance
+                                            .currentUser
+                                            ?.uid ??
+                                        '',
+                                  ),
+                                ),
+                            child: CouponListScreen(
+                              selectedCategoryId: category.id,
+                              searchCategoryName: category.name,
+                            ),
+                          ),
+                    ),
+                  );
                 },
               ),
               const SizedBox(width: 8),
