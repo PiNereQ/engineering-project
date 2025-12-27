@@ -9,18 +9,15 @@ class CategoryRepository {
 
   CategoryRepository({ApiClient? api}) : _api = api ?? ApiClient(baseUrl: 'http://49.13.155.21:8000');
 
-  /// Search categories by name (GET /categories and filter client-side)
+  /// Search categories by name (GET /shops/categories/search?query=)
   Future<List<Category>> searchCategoriesByName(String query) async {
     if (query.isEmpty) return [];
 
     try {
-      final response = await _api.get('/categories');
+      final response = await _api.get('/shops/categories/search', queryParameters: {'query': query});
       final List<dynamic> categoriesData = response is List ? response : [];
-      
-      final lowercaseQuery = query.toLowerCase();
-      
+            
       return categoriesData
-          .where((data) => (data['name'] as String).toLowerCase().contains(lowercaseQuery))
           .map((data) => Category(
                 id: data['id'].toString(),
                 name: data['name'] as String,
@@ -35,17 +32,10 @@ class CategoryRepository {
   /// Fetch shops by category (GET /shops and filter by category)
   Future<List<Shop>> fetchShopsByCategory(Category category) async {
     try {
-      final response = await _api.get('/shops');
+      final response = await _api.get('/shops/categories/${category.id}/shops');
       final List<dynamic> shopsData = response is List ? response : [];
       
-      // Filter shops that belong to this category
-      // Note: This assumes categories field in response contains category info
       return shopsData
-          .where((data) {
-            // Check if shop has this category
-            final categories = data['categories'] as String?;
-            return categories != null && categories.contains(category.name);
-          })
           .map((data) => Shop(
                 id: data['id'].toString(),
                 name: data['name'] as String,

@@ -61,7 +61,7 @@ class ShopRepository {
     }
   }
 
-  /// Search shops by name (client-side filtering for now)
+  /// Search shops by name (GET /shops/search?query=)
   Future<List<Shop>> searchShopsByName(String query) async {
     if (query.isEmpty) {
       return [];

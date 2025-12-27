@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:proj_inz/bloc/search_shops_categories/search_shops_categories_bloc.dart';
 import 'package:proj_inz/bloc/coupon_list/coupon_list_bloc.dart';
 import 'package:proj_inz/core/theme.dart';
+import 'package:proj_inz/data/models/category_model.dart';
+import 'package:proj_inz/data/models/shop_model.dart';
 import 'package:proj_inz/data/repositories/coupon_repository.dart';
 import 'package:proj_inz/bloc/search_shops_categories/search_shops_categories_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -158,22 +160,9 @@ class SearchResultsScreen extends StatelessWidget {
                                   ),
                                 ),
                                 const SizedBox(height: 8),
-                                Wrap(
-                                  spacing: 8,
-                                  runSpacing: 8,
+                                Column(
                                   children: categories.map((category) {
-                                    return Chip(
-                                      label: Text(
-                                        category.name,
-                                        style: const TextStyle(
-                                          fontFamily: 'Itim',
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w400,
-                                        ),
-                                      ),
-                                      backgroundColor: AppColors.secondaryButton,
-                                      side: const BorderSide(color: AppColors.textPrimary, width: 1),
-                                    );
+                                    return CategoryCard(category: category);
                                   }).toList(),
                                 ),
                               ],
@@ -183,91 +172,8 @@ class SearchResultsScreen extends StatelessWidget {
                       const SizedBox(height: 8),
 
                       ...shops.map((item) {
-                        final shopBgColor = item.bgColor;
-                        final shomNameColor = item.nameColor;
 
-                        return Container(
-                          width: double.infinity,
-                          height: 70,
-                          margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                          clipBehavior: Clip.antiAlias,
-                          decoration: ShapeDecoration(
-                            color: AppColors.surface,
-                            shape: RoundedRectangleBorder(
-                              side: const BorderSide(width: 2),
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            shadows: const [
-                              BoxShadow(
-                                color: AppColors.textPrimary,
-                                blurRadius: 0,
-                                offset: Offset(4, 4),
-                                spreadRadius: 0,
-                              ),
-                            ],
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Container(
-                                width: 140,
-                                height: 45,
-                                padding: const EdgeInsets.symmetric(horizontal: 8),
-                                clipBehavior: Clip.antiAlias,
-                                decoration: ShapeDecoration(
-                                  color: shopBgColor,
-                                  shape: RoundedRectangleBorder(
-                                    side: const BorderSide(width: 2),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                ),
-                                child: Center(
-                                  child: Text(
-                                    item.name,
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      color: shomNameColor,
-                                      fontSize: 15,
-                                      fontFamily: 'Roboto',
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              Row(
-                                children: [
-                                  CustomTextButton.small(
-                                    label: 'Pokaż kupony',
-                                    onTap: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (_) => BlocProvider(
-                                            create: (context) => CouponListBloc(
-                                              context.read<CouponRepository>(),
-                                            )..add(FetchCoupons(shopId: item.id, userId: FirebaseAuth.instance.currentUser?.uid ?? '')),
-                                            child: CouponListScreen(
-                                              selectedShopId: item.id,
-                                              searchShopName: item.name,
-                                            ),
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                    const SizedBox(width: 8),
-                                    CustomFollowButton.small(
-                                      onTap: () {
-                                        debugPrint("Clicked favorite for shop: ${item.name}");
-                                      },
-                                    ),
-                                  ],
-                                ),
-                            ],
-                          ),
-                        );
+                        return ShopCard(shop: item);
                       }),
                     ],
                   );
@@ -277,6 +183,178 @@ class SearchResultsScreen extends StatelessWidget {
                 return const Center(child: Text('Wpisz zapytanie'));
               },
             ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class ShopCard extends StatelessWidget {
+  final Shop shop;
+
+  const ShopCard({super.key, required this.shop});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      height: 70,
+      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      clipBehavior: Clip.antiAlias,
+      decoration: ShapeDecoration(
+        color: AppColors.surface,
+        shape: RoundedRectangleBorder(
+          side: const BorderSide(width: 2),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        shadows: const [
+          BoxShadow(
+            color: AppColors.textPrimary,
+            blurRadius: 0,
+            offset: Offset(4, 4),
+            spreadRadius: 0,
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Container(
+            width: 140,
+            height: 45,
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            clipBehavior: Clip.antiAlias,
+            decoration: ShapeDecoration(
+              color: shop.bgColor,
+              shape: RoundedRectangleBorder(
+                side: const BorderSide(width: 2),
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: Center(
+              child: Text(
+                shop.name,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: shop.nameColor,
+                  fontSize: 15,
+                  fontFamily: 'Roboto',
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ),
+          Row(
+            children: [
+              CustomTextButton.small(
+                label: 'Pokaż kupony',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder:
+                          (_) => BlocProvider(
+                            create:
+                                (context) => CouponListBloc(
+                                  context.read<CouponRepository>(),
+                                )..add(
+                                  FetchCoupons(
+                                    shopId: shop.id,
+                                    userId:
+                                        FirebaseAuth
+                                            .instance
+                                            .currentUser
+                                            ?.uid ??
+                                        '',
+                                  ),
+                                ),
+                            child: CouponListScreen(
+                              selectedShopId: shop.id,
+                              searchShopName: shop.name,
+                            ),
+                          ),
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(width: 8),
+              CustomFollowButton.small(
+                onTap: () {
+                  debugPrint("Clicked favorite for shop: ${shop.name}");
+                },
+                isHeart: true,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class CategoryCard extends StatelessWidget {
+  final Category category;
+
+  const CategoryCard({super.key, required this.category});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      height: 70,
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      clipBehavior: Clip.antiAlias,
+      decoration: ShapeDecoration(
+        color: AppColors.surface,
+        shape: RoundedRectangleBorder(
+          side: const BorderSide(width: 2),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        shadows: const [
+          BoxShadow(
+            color: AppColors.textPrimary,
+            blurRadius: 0,
+            offset: Offset(4, 4),
+            spreadRadius: 0,
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Center(
+            child: Text(
+              category.name,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: 16,
+                fontFamily: 'Itim',
+                fontWeight: FontWeight.w400,
+              ),
+            ),
+          ),
+          Row(
+            children: [
+              CustomTextButton.small(
+                label: 'Pokaż kupony',
+                onTap: () {
+                  // TODO: Implement category coupon navigation
+                },
+              ),
+              const SizedBox(width: 8),
+              CustomFollowButton.small(
+                onTap: () {
+                  debugPrint("Clicked favorite for category: ${category.name}");
+                },
+                isHeart: true,
+              ),
+            ],
           ),
         ],
       ),
