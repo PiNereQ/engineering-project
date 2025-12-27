@@ -24,7 +24,7 @@ class MapRepository {
       final List<dynamic> locationsData = response is List ? response : [];
       final locations = <ShopLocation>[];
       for (var loc in locationsData) {
-        print(loc);
+        if (kDebugMode) print(loc);
         locations.add(ShopLocation(
           shopLocationId: loc['id'].toString(),
           latLng: LatLng(

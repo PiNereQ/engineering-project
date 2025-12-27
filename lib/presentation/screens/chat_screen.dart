@@ -145,7 +145,7 @@ class _ChatScreenState extends State<ChatScreen> {
                         vertical: 8,
                       ),
                       itemCount: state.conversations.length + 1,
-                      separatorBuilder: (_, __) => const SizedBox(height: 12),
+                      separatorBuilder: (_, _) => const SizedBox(height: 12),
                       itemBuilder: (context, index) {
                         if (index == state.conversations.length) {
                           return const SizedBox(height: 80); // padding for navbar

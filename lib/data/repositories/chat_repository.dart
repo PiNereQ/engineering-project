@@ -21,7 +21,7 @@ class ChatRepository {
   /// Throws on API/network errors.
   Future<List<Conversation>> getConversations({required bool asBuyer, required String userId}) async {
     try {
-      print('Fetching conversations for userId: $userId asBuyer: $asBuyer');
+      if (kDebugMode) print('Fetching conversations for userId: $userId asBuyer: $asBuyer');
       final response = await _api.get(
         '/chat/conversations',
         queryParameters: {

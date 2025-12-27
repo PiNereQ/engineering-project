@@ -16,7 +16,7 @@ class CouponPreviewPopup extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Material(
-        color: Colors.black.withOpacity(0.25),
+        color: Colors.black.withValues(alpha: 0.25),
         child: Center(
           child: Dialog(
             backgroundColor: Colors.transparent,

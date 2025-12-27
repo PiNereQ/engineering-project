@@ -43,7 +43,7 @@ class CouponRepository {
       final queryParams = {
         'limit': limit.toString(),
         if (cursor != null) 'cursor': cursor,
-      }..removeWhere((k, v) => v == null);
+      };
 
       final response = await _api.get(
         '/coupons/feed',
@@ -109,7 +109,7 @@ class CouponRepository {
         if (maxPrice != null) 'max_price': maxPrice.toString(),
         if (minReputation != null) 'min_rep': minReputation.toString(),
         if (sort != null) 'sort': sort,
-      }..removeWhere((k, v) => v == null);
+      };
 
       final response = await _api.get(
         '/coupons/available',
@@ -170,7 +170,7 @@ class CouponRepository {
         if (showUnused != null && !showUsed!) 'used': 'no',
         if (shopId != null) 'shop_id': shopId,
         if (sort != null) 'sort': sort,
-      }..removeWhere((k, v) => v == null);
+      };
 
       final response = await _api.get(
         '/coupons/owned',
@@ -234,7 +234,7 @@ class CouponRepository {
         if (showSold != null && !showActive!) 'status': 'sold',
         if (shopId != null) 'shop_id': shopId,
         if (sort != null) 'sort': sort,
-      }..removeWhere((k, v) => v == null);
+      };
 
       final response = await _api.get(
         '/coupons/listed',
@@ -317,7 +317,7 @@ class CouponRepository {
         if (shopId != null) 'shop_id': shopId,
         if (sort != null) 'sort': sort,
         if (status != null) 'status': status,
-      }..removeWhere((k, v) => v == null);
+      };
 
       final response = await _api.get(
         '/coupons/listed',
@@ -411,7 +411,7 @@ class CouponRepository {
 
   //Record a click
   Future<void> recordCouponClick(String couponId) async {
-    print('Recording click for couponId: $couponId');
+    if(kDebugMode) print('Recording click for couponId: $couponId');
     try {
       final userId = await userRepository.getCurrentUserId();
       await _api.post(

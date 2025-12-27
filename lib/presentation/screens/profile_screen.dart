@@ -38,12 +38,6 @@ class ProfileScreen extends StatefulWidget {
 
     Future<void> _loadUserProfile() async {
       final userId = await _userRepository.getCurrentUserId();
-      if (userId == null) {
-        setState(() {
-          isLoadingProfile = false;
-        });
-        return;
-      }
 
       final profile = await _userRepository.getUserProfile(userId);
 

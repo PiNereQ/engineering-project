@@ -11,7 +11,6 @@ import 'package:proj_inz/bloc/coupon_add/coupon_add_bloc.dart';
 import 'package:proj_inz/core/theme.dart';
 import 'package:proj_inz/core/utils/text_formatters.dart';
 import 'package:proj_inz/data/models/coupon_offer_model.dart';
-import 'package:proj_inz/data/repositories/coupon_repository.dart';
 import 'package:proj_inz/data/repositories/user_repository.dart';
 import 'package:proj_inz/bloc/shop/shop_bloc.dart';
 import 'package:proj_inz/data/models/shop_model.dart';

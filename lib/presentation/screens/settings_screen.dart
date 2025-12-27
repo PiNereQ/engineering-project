@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -82,7 +83,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
                   final user = snapshot.data!;
                   final bool hasPhoneNumber = FirebaseAuth.instance.currentUser!.phoneNumber!.isNotEmpty;
-                  print(FirebaseAuth.instance.currentUser?.phoneNumber);
+                  if (kDebugMode) print(FirebaseAuth.instance.currentUser?.phoneNumber);
 
                   return _SectionCard(
                     child: Column(

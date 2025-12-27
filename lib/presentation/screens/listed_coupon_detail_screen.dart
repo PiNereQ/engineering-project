@@ -113,7 +113,7 @@ class _CouponDetails extends StatelessWidget {
     final bool worksOnline = coupon.worksOnline;
     final bool worksInStore = coupon.worksInStore;
     final DateTime? expiryDate = coupon.expiryDate;
-    final String? description = coupon.description;
+    final String description = coupon.description;
 
     final reductionText =
         formatReduction(reduction.toDouble(), reductionIsPercentage);
@@ -374,7 +374,7 @@ class _CouponDetails extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        (description == null || description == '') ? 'brak' : description,
+                        (description == '') ? 'brak' : description,
                         style: const TextStyle(
                           color: AppColors.textSecondary,
                           fontSize: 18,

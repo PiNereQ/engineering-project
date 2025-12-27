@@ -142,7 +142,7 @@ class _ReportScreenState extends State<ReportScreen> {
                           onTap: () => setState(() => selectedReason = reason),
                         ),
                       );
-                    }).toList(),
+                    }),
                     if (showMissingReasonTip)
                       const Padding(
                         padding: EdgeInsets.only(top: 8),
@@ -362,7 +362,7 @@ class _ReasonSelector extends StatelessWidget {
               groupValue: selected,
               onChanged: (v) => onChanged(r),
             );
-          }).toList(),
+          }),
         ],
       ),
     );

@@ -97,7 +97,8 @@ class _LabeledTextFieldState extends State<LabeledTextField> {
               const SizedBox(width: 8),
               Transform(
                 alignment: Alignment.center,
-                transform: Matrix4.rotationZ(widget.iconRotationRadians)..scale(-1.0, 1.0),
+                transform: Matrix4.rotationZ(widget.iconRotationRadians)
+                  ..multiply(Matrix4.diagonal3Values(-1.0, 1.0, 1.0)),
                 child: SvgPicture.asset(
                   'assets/icons/switch-access-shortcut-rounded.svg',
                   width: 18,
@@ -166,7 +167,7 @@ class _LabeledTextFieldState extends State<LabeledTextField> {
                           hintStyle: TextStyle(
                             color: widget.enabled
                               ? AppColors.textSecondary
-                              : AppColors.textSecondary.withOpacity(0.6),
+                              : AppColors.textSecondary.withValues(alpha: 0.6),
                           ),
                         ),
                         style: TextStyle(

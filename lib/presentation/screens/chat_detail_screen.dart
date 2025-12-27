@@ -625,7 +625,7 @@ class _ChatDetailViewState extends State<ChatDetailView> {
         if (_showPopup)
           Positioned.fill(
             child: Container(
-              color: Colors.black.withOpacity(0.25),
+              color: Colors.black.withValues(alpha: 0.25),
               child: ChatReportPopup(
                 onShowCoupon: () {
                   if (_coupon == null) return;
