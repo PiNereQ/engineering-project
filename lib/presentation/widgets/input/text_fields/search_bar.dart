@@ -37,22 +37,33 @@ class SearchBarWide extends StatelessWidget {
           )
         ],
       ),
-      child: TextField(
-        controller: controller,
-        style: TextStyle(
-          fontSize: fontSize,
-          fontFamily: 'Itim',
-          fontWeight: FontWeight.w400,
-          color: AppColors.textPrimary,
-        ),
-        decoration: InputDecoration(
-          hintText: hintText,
-          border: InputBorder.none,
-          isDense: true,
-          contentPadding: const EdgeInsets.symmetric(vertical: 5),
-        ),
-        onSubmitted: onSubmitted,
-        textInputAction: TextInputAction.search,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Expanded(
+            child: TextField(
+              controller: controller,
+              style: TextStyle(
+                fontSize: fontSize,
+                fontFamily: 'Itim',
+                fontWeight: FontWeight.w400,
+                color: AppColors.textSecondary,
+              ),
+              decoration: InputDecoration(
+                hintText: hintText,
+                border: InputBorder.none,
+                isDense: true,
+                contentPadding: const EdgeInsets.symmetric(vertical: 5),
+              ),
+              onSubmitted: onSubmitted,
+              textInputAction: TextInputAction.search,
+            ),
+          ),
+          Icon(
+            Icons.search,
+            color: AppColors.textPrimary,
+          ),
+        ],
       ),
     );
   }

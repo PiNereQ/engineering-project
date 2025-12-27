@@ -21,8 +21,9 @@ import 'package:proj_inz/presentation/widgets/dashed_separator.dart';
 import 'package:proj_inz/presentation/widgets/help/help_button.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_icon_button.dart';
 import 'package:proj_inz/presentation/screens/coupon_image_scan_screen.dart';
+import 'package:proj_inz/presentation/widgets/input/buttons/search_button.dart';
 import '../widgets/input/text_fields/labeled_text_field.dart';
-import '../widgets/input/search_dropdown_field.dart';
+import '../widgets/input/text_fields/search_bar.dart';
 import '../widgets/input/buttons/checkbox.dart';
 import '../widgets/input/buttons/radio_button.dart';
 import '../widgets/input/buttons/custom_text_button.dart';
@@ -50,6 +51,7 @@ class _AddScreenState extends State<AddScreen> {
 
   late DateTime _expiryDate;
   Shop? _selectedShop;
+  String? _shopSearchQuery;
   CouponType _selectedType = CouponType.percent;
   bool _hasExpiryDate = true;
   bool _inPhysicalStores = false;
@@ -85,7 +87,7 @@ class _AddScreenState extends State<AddScreen> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      
+
       builder: (context) {
         return SafeArea(
           child: Column(
@@ -138,6 +140,176 @@ class _AddScreenState extends State<AddScreen> {
 
   @override
   Widget build(BuildContext context) {
+    Future<void> showShopSearchDialog(BuildContext parentContext) async {
+      await showDialog(
+        context: context,
+        builder: (dialogContext) {
+          String? localQuery = _shopSearchQuery;
+          return BlocProvider(
+            create: (context) => ShopBloc(context.read<ShopRepository>()),
+            child: AlertDialog(
+              backgroundColor: AppColors.surface,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(24),
+                side: const BorderSide(width: 2, color: AppColors.textPrimary),
+              ),
+              title: Row(
+                spacing: 8,
+                children: [
+                  Expanded(
+                    child: Text(
+                      'Wyszukaj sklep',
+                      style: TextStyle(
+                        fontFamily: 'Itim',
+                        fontSize: 20,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                  ),
+                  CustomIconButton.small(
+                    icon: Icon(Icons.close),
+                    onTap: () {
+                      setState(() {
+                        _shopSearchQuery = null;
+                      });
+                      Navigator.of(dialogContext).pop();
+                    },
+                  ),
+                ]
+              ),
+              content: SizedBox(
+                width: 400,
+                child: BlocBuilder<ShopBloc, ShopState>(
+                  builder: (blocContext, state) {
+                    return Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      spacing: 8,
+                      children: [
+                        SearchBarWide(
+                          hintText: 'Wyszukaj sklep...',
+                          controller: TextEditingController(text: localQuery),
+                          onSubmitted: (query) {
+                            blocContext.read<ShopBloc>().add(
+                              SearchShopsByName(query),
+                            );
+                            setState(() {
+                              _shopSearchQuery = query;
+                            });
+                          },
+                        ),
+                        if (state is ShopLoading &&
+                            _shopSearchQuery != null &&
+                            _shopSearchQuery!.isNotEmpty)
+                          Center(
+                            child: const CircularProgressIndicator(
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                        if (state is ShopLoaded) Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                          child: Divider(
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                        if (state is ShopLoaded)
+                          if (state.shops.isEmpty)
+                            Center(
+                              child: Padding(
+                                padding: EdgeInsets.symmetric(vertical: 24),
+                                child: Text(
+                                  'Nie znaleziono sklepów.',
+                                  style: TextStyle(
+                                    fontFamily: 'Itim',
+                                    fontSize: 18,
+                                    color: AppColors.textSecondary,
+                                  ),
+                                ),
+                              ),
+                            )
+                          else
+                            SingleChildScrollView(
+                              child: Column(
+                                spacing: 8,
+                                children: [
+                                  ...[
+                                    ...state.shops.map(
+                                      (shop) => Container(
+                                        decoration: BoxDecoration(
+                                        color: AppColors.surface,
+                                        border: Border.all(
+                                          color:
+                                              _selectedShop?.id != shop.id
+                                                  ? AppColors.textPrimary
+                                                  : AppColors.textSecondary,
+                                          width: 2,
+                                        ),
+                                        borderRadius: BorderRadius.circular(
+                                          100,
+                                        ),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color:
+                                                _selectedShop?.id != shop.id
+                                                    ? AppColors.textPrimary
+                                                    : AppColors.textSecondary,
+                                            offset: const Offset(2, 2),
+                                            blurRadius: 0,
+                                            spreadRadius: 0,
+                                          ),
+                                        ],
+                                      ),
+                                      child: ListTile(
+                                        title: Text(
+                                          shop.name,
+                                          style: TextStyle(
+                                            fontFamily: 'Itim',
+                                            fontSize: 18,
+                                            color:
+                                                _selectedShop?.id != shop.id
+                                                    ? AppColors.textPrimary
+                                                    : AppColors.textSecondary,
+                                          ),
+                                        ),
+                                        trailing: Icon(
+                                          _selectedShop?.id == shop.id
+                                              ? Icons.check_circle_outline
+                                              : Icons.arrow_forward_outlined,
+                                          color:
+                                              _selectedShop?.id != shop.id
+                                                  ? AppColors.textPrimary
+                                                  : AppColors.textSecondary,
+                                        ),
+                                        onTap: () {
+                                          if (_selectedShop?.id != shop.id) {
+                                            setState(() {
+                                              _shopSearchQuery = null;
+                                              _selectedShop = shop;
+                                              _userMadeInput = true;
+                                            });
+                                            Navigator.of(dialogContext).pop();
+                                          }
+                                        },
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                              if (state is ShopError)
+                                const Text("Błąd podczas ładowania sklepów."),
+                                                        ],
+                                                      ),
+                            ),
+                      ],
+                    );
+                  },
+                ),
+              ),
+            ),
+          );
+        },
+      );
+    }
+
     backDialog() {
       return showDialog(
         context: context,
@@ -188,1089 +360,1148 @@ class _AddScreenState extends State<AddScreen> {
       );
     }
 
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider(
-          create: (context) => CouponAddBloc(context.read<CouponRepository>()),
-        ),
-        BlocProvider(
-          create:
-              (context) =>
-                  ShopBloc(context.read<ShopRepository>())..add(LoadShops()),
-        ),
-      ],
-      child: BlocListener<CouponAddBloc, CouponAddState>(
-        listener: (context, state) {
-          if (state is CouponAddSuccess) {
-            showDialog(
-              context: context,
-              builder:
-                  (context) => AlertDialog(
-                    backgroundColor: AppColors.surface,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(24),
-                      side: const BorderSide(
-                        width: 2,
-                        color: AppColors.textPrimary,
-                      ),
+    return BlocListener<CouponAddBloc, CouponAddState>(
+      listener: (context, state) {
+        if (state is CouponAddSuccess) {
+          showDialog(
+            context: context,
+            builder:
+                (context) => AlertDialog(
+                  backgroundColor: AppColors.surface,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(24),
+                    side: const BorderSide(
+                      width: 2,
+                      color: AppColors.textPrimary,
                     ),
-                    title: const Text(
-                      'Sukces',
-                      style: TextStyle(
-                        fontFamily: 'Itim',
-                        fontSize: 22,
-                        fontWeight: FontWeight.w400,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                    content: const Text(
-                      'Kupon został dodany.',
-                      style: TextStyle(
-                        fontFamily: 'Itim',
-                        fontSize: 16,
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                    actionsPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 12,
-                    ),
-                    actions: [
-                      CustomTextButton.primarySmall(
-                        label: 'OK',
-                        width: 100,
-                        onTap: () {
-                          Navigator.of(context).pop();
-                          Navigator.of(context).pop();
-                        },
-                      ),
-                    ],
                   ),
-            );
-          } else if (state is CouponAddFailure) {
-            _focusScopeNode.unfocus();
-            showCustomSnackBar(context, state.message);
-          }
-        },
-        child: Scaffold(
-          backgroundColor: AppColors.background,
-          body: SafeArea(
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                double maxWidth =
-                    constraints.maxWidth < 800 ? constraints.maxWidth : 800;
+                  title: const Text(
+                    'Sukces',
+                    style: TextStyle(
+                      fontFamily: 'Itim',
+                      fontSize: 22,
+                      fontWeight: FontWeight.w400,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  content: const Text(
+                    'Kupon został dodany.',
+                    style: TextStyle(
+                      fontFamily: 'Itim',
+                      fontSize: 16,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  actionsPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                  actions: [
+                    CustomTextButton.primarySmall(
+                      label: 'OK',
+                      width: 100,
+                      onTap: () {
+                        Navigator.of(context).pop();
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                  ],
+                ),
+          );
+        } else if (state is CouponAddFailure) {
+          _focusScopeNode.unfocus();
+          showCustomSnackBar(context, state.message);
+        }
+      },
+      child: Scaffold(
+        backgroundColor: AppColors.background,
+        body: SafeArea(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              double maxWidth =
+                  constraints.maxWidth < 800 ? constraints.maxWidth : 800;
 
-                return SingleChildScrollView(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      children: [
-                        SizedBox(
-                          width: double.infinity,
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              CustomIconButton(
-                                icon: SvgPicture.asset('assets/icons/back.svg'),
-                                onTap: () {
-                                  if (_userMadeInput) {
-                                    backDialog();
-                                  } else {
-                                    Navigator.of(context).pop();
-                                  }
-                                },
-                              ),
-                              HelpButton(title: "Pomoc - Dodawanie kuponu", body: _HelpBody())
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        Container(
-                          width: maxWidth,
-                          decoration: ShapeDecoration(
-                            color: AppColors.surface,
-                            shape: RoundedRectangleBorder(
-                              side: const BorderSide(
-                                width: 2,
-                                color: AppColors.textPrimary,
-                              ),
-                              borderRadius: BorderRadius.circular(24),
+              return SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      SizedBox(
+                        width: double.infinity,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            CustomIconButton(
+                              icon: SvgPicture.asset('assets/icons/back.svg'),
+                              onTap: () {
+                                if (_userMadeInput) {
+                                  backDialog();
+                                } else {
+                                  Navigator.of(context).pop();
+                                }
+                              },
                             ),
-                            shadows: const [
-                              BoxShadow(
-                                color: AppColors.textPrimary,
-                                blurRadius: 0,
-                                offset: Offset(4, 4),
-                                spreadRadius: 0,
-                              ),
-                            ],
+                            HelpButton(
+                              title: "Pomoc - Dodawanie kuponu",
+                              body: _HelpBody(),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Container(
+                        width: maxWidth,
+                        decoration: ShapeDecoration(
+                          color: AppColors.surface,
+                          shape: RoundedRectangleBorder(
+                            side: const BorderSide(
+                              width: 2,
+                              color: AppColors.textPrimary,
+                            ),
+                            borderRadius: BorderRadius.circular(24),
                           ),
-                          child: FocusScope(
-                            node: _focusScopeNode,
-                            child: Form(
-                              key: _formKey,
-                              child: Column(
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.all(24.0),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        // Tytul
-                                        const SizedBox(
-                                          width: 332,
-                                          child: Text(
-                                            'Dodaj kupon',
-                                            style: TextStyle(
-                                              color: AppColors.textPrimary,
-                                              fontSize: 24,
-                                              fontFamily: 'Itim',
-                                              fontWeight: FontWeight.w400,
+                          shadows: const [
+                            BoxShadow(
+                              color: AppColors.textPrimary,
+                              blurRadius: 0,
+                              offset: Offset(4, 4),
+                              spreadRadius: 0,
+                            ),
+                          ],
+                        ),
+                        child: FocusScope(
+                          node: _focusScopeNode,
+                          child: Form(
+                            key: _formKey,
+                            child: Column(
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.all(24.0),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      // Tytul
+                                      const SizedBox(
+                                        width: 332,
+                                        child: Text(
+                                          'Dodaj kupon',
+                                          style: TextStyle(
+                                            color: AppColors.textPrimary,
+                                            fontSize: 24,
+                                            fontFamily: 'Itim',
+                                            fontWeight: FontWeight.w400,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 18),
+                                      SearchButtonWide(
+                                        label:
+                                            _selectedShop == null
+                                                ? 'Wyszukaj sklep...'
+                                                : 'Zmień sklep',
+                                        onTap:
+                                            () => showShopSearchDialog(
+                                              context,
+                                            ),
+                                      ),
+                                        if (_selectedShop != null) ...[
+                                        const SizedBox(height: 12),
+                                        Padding(
+                                          padding: const EdgeInsets.only(
+                                            left: 8.0,
+                                          ),
+                                          child: RichText(
+                                            text: TextSpan(
+                                              text: 'Wybrany sklep: ',
+                                              style: const TextStyle(
+                                                fontFamily: 'Itim',
+                                                fontSize: 18,
+                                                color: AppColors.textPrimary,
+                                              ),
+                                              children: [
+                                                TextSpan(
+                                                  text: _selectedShop!.name,
+                                                  style: const TextStyle(
+                                                    fontStyle: FontStyle.italic,
+                                                    fontFamily: 'Itim',
+                                                    fontSize: 18,
+                                                    color: AppColors.textPrimary,
+                                                  ),
+                                                ),
+                                              ],
                                             ),
                                           ),
                                         ),
-                                        const SizedBox(height: 18),
+                                      ],
+                                      const SizedBox(height: 18),
+                                      // Cena i Data waznosci
+                                      Wrap(
+                                        spacing: 16,
+                                        runSpacing: 16,
+                                        children: [
+                                          LabeledTextField(
+                                            label: 'Cena',
+                                            placeholder: 'Wpisz cenę',
+                                            width: LabeledTextFieldWidth.half,
+                                            iconOnLeft: true,
+                                            controller: _priceController,
+                                            keyboardType: TextInputType.number,
+                                            inputFormatters: [PriceFormatter()],
+                                            suffix: Text('zł'),
+                                            validator: (val) {
+                                              if (val == null || val.isEmpty) {
+                                                return 'Wymagane';
+                                              }
 
-                                        // Wybierz sklep (search dropdown) TODO: Lista sklepow z bazy
-                                        BlocBuilder<ShopBloc, ShopState>(
-                                          builder: (context, state) {
-                                            if (state is ShopLoading) {
-                                              return const CircularProgressIndicator();
-                                            } else if (state is ShopLoaded) {
-                                              return SearchDropdownField(
-                                                options:
-                                                    state.shops
-                                                        .map((s) => s.name)
-                                                        .toList(),
-                                                selected: _selectedShop?.name,
-                                                onChanged: (val) {
-                                                  setState(() {
-                                                    _selectedShop = state.shops
-                                                        .firstWhere(
-                                                          (s) => s.name == val,
-                                                        );
-                                                    _userMadeInput = true;
-                                                  });
-                                                },
-                                                widthType:
-                                                    CustomComponentWidth.full,
-                                                placeholder: 'Wybierz sklep',
-                                                validator: (val) {
-                                                  if (val == null ||
-                                                      val.isEmpty) {
-                                                    return 'Wymagane';
-                                                  }
-                                                  return null;
-                                                },
+                                              final normalized = val.replaceAll(
+                                                ',',
+                                                '.',
                                               );
-                                            } else {
-                                              return const Text(
-                                                "Błąd podczas ładowania sklepów.",
+
+                                              if (double.tryParse(normalized) ==
+                                                  null) {
+                                                return 'Niepoprawna liczba';
+                                              }
+                                              // Check for at most 2 decimal places (grosze)
+                                              final parts = normalized.split(
+                                                '.',
                                               );
-                                            }
-                                          },
-                                        ),
-                                        const SizedBox(height: 18),
-                                        // Cena i Data waznosci
-                                        Wrap(
-                                          spacing: 16,
-                                          runSpacing: 16,
-                                          children: [
-                                            LabeledTextField(
-                                              label: 'Cena',
-                                              placeholder: 'Wpisz cenę',
-                                              width: LabeledTextFieldWidth.half,
-                                              iconOnLeft: true,
-                                              controller: _priceController,
-                                              keyboardType:
-                                                  TextInputType.number,
-                                              inputFormatters: [
-                                                PriceFormatter()
-                                              ],
-                                              suffix: Text('zł'),
-                                              validator: (val) {
-                                                if (val == null || val.isEmpty) {
-                                                  return 'Wymagane';
-                                                }
-
-                                                final normalized = val.replaceAll(',', '.');
-
-                                                if (double.tryParse(normalized) ==
-                                                    null) {
-                                                  return 'Niepoprawna liczba';
-                                                }
-                                                // Check for at most 2 decimal places (grosze)
-                                                final parts = normalized.split('.');
-                                                if (parts.length > 1 && parts[1].length > 2) {
-                                                  return 'Cena może mieć maksymalnie 2 miejsca po przecinku';
-                                                }
-                                                if (double.tryParse(normalized)! <= 2) {
-                                                  return 'Wpisz więcej niż 2';
-                                                }
-                                                return null;
-                                              },
-                                              onChanged: (val) {
-                                                setState(() {
-                                                  _userMadeInput = true;
-                                                });
-                                              },
-                                            ),
-                                            GestureDetector(
-                                              onTap: !_hasExpiryDate
-                                                  ? null
-                                                  : () async {
-                                                      DateTime now = DateTime.now();
-                                                      DateTime today = DateTime(now.year, now.month, now.day);
-
-                                                      DateTime? pickedDate = await showDatePicker(
-                                                        context: context,
-                                                        initialDate: today,
-                                                        firstDate: today,
-                                                        lastDate: DateTime(2100),
+                                              if (parts.length > 1 &&
+                                                  parts[1].length > 2) {
+                                                return 'Cena może mieć maksymalnie 2 miejsca po przecinku';
+                                              }
+                                              if (double.tryParse(
+                                                    normalized,
+                                                  )! <=
+                                                  2) {
+                                                return 'Wpisz więcej niż 2';
+                                              }
+                                              return null;
+                                            },
+                                            onChanged: (val) {
+                                              setState(() {
+                                                _userMadeInput = true;
+                                              });
+                                            },
+                                          ),
+                                          GestureDetector(
+                                            onTap:
+                                                !_hasExpiryDate
+                                                    ? null
+                                                    : () async {
+                                                      DateTime now =
+                                                          DateTime.now();
+                                                      DateTime today = DateTime(
+                                                        now.year,
+                                                        now.month,
+                                                        now.day,
                                                       );
+
+                                                      DateTime? pickedDate =
+                                                          await showDatePicker(
+                                                            context: context,
+                                                            initialDate: today,
+                                                            firstDate: today,
+                                                            lastDate: DateTime(
+                                                              2100,
+                                                            ),
+                                                          );
 
                                                       if (pickedDate != null) {
                                                         setState(() {
-                                                          _expiryDateController.text =
+                                                          _expiryDateController
+                                                                  .text =
                                                               "${pickedDate.day.toString().padLeft(2, '0')}-"
                                                               "${pickedDate.month.toString().padLeft(2, '0')}-"
                                                               "${pickedDate.year}";
-                                                          _expiryDate = pickedDate;
+                                                          _expiryDate =
+                                                              pickedDate;
                                                           _userMadeInput = true;
                                                         });
                                                       }
                                                     },
-                                              child: AbsorbPointer(
-                                                child: LabeledTextField(
-                                                  label: 'Data ważności',
-                                                  placeholder: 'DD-MM-RRRR',
-                                                  enabled: _hasExpiryDate,
-                                                  width:
-                                                      LabeledTextFieldWidth
-                                                          .half,
-                                                  iconOnLeft: false,
-                                                  controller:
-                                                      _expiryDateController,
-                                                  keyboardType:
-                                                      TextInputType.datetime,
-                                                  validator: (val) {
-                                                    if (val == null ||
-                                                        val.isEmpty && _hasExpiryDate) {
-                                                      return 'Wymagane';
-                                                    }
-                                                    return null;
-                                                  },
-                                                ),
+                                            child: AbsorbPointer(
+                                              child: LabeledTextField(
+                                                label: 'Data ważności',
+                                                placeholder: 'DD-MM-RRRR',
+                                                enabled: _hasExpiryDate,
+                                                width:
+                                                    LabeledTextFieldWidth.half,
+                                                iconOnLeft: false,
+                                                controller:
+                                                    _expiryDateController,
+                                                keyboardType:
+                                                    TextInputType.datetime,
+                                                validator: (val) {
+                                                  if (val == null ||
+                                                      val.isEmpty &&
+                                                          _hasExpiryDate) {
+                                                    return 'Wymagane';
+                                                  }
+                                                  return null;
+                                                },
                                               ),
                                             ),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 12),
-                                        CustomCheckbox(
-                                          label: 'Kupon nie ma daty ważności',
-                                          selected: !_hasExpiryDate,
-                                          onTap: () {
-                                            setState(() {
-                                              _hasExpiryDate = !_hasExpiryDate;
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 12),
+                                      CustomCheckbox(
+                                        label: 'Kupon nie ma daty ważności',
+                                        selected: !_hasExpiryDate,
+                                        onTap: () {
+                                          setState(() {
+                                            _hasExpiryDate = !_hasExpiryDate;
 
-                                              if (!_hasExpiryDate) {
-                                                _expiryDateController.clear();
-                                              }
-
-                                              _userMadeInput = true;
-                                            });
-                                          },
-                                        ),
-                                        const SizedBox(height: 18),
-
-                                        // Kod kuponu
-                                        LabeledTextField(
-                                          label: 'Kod kuponu',
-                                          placeholder: 'Wpisz kod kuponu',
-                                          width: LabeledTextFieldWidth.full,
-                                          iconOnLeft: true,
-                                          controller: _codeController,
-                                          maxLength: 50,
-                                          onChanged: (val) {
-                                            setState(() {
-                                              _userMadeInput = true;
-                                            });
-                                          },
-                                          validator: (val) {
-                                            if (val == null || val.trim().isEmpty) {
-                                              return 'Wymagane';
+                                            if (!_hasExpiryDate) {
+                                              _expiryDateController.clear();
                                             }
-                                            if (val.length > 50) {
-                                              return 'Kod może mieć maksymalnie 50 znaków';
-                                            }                                            
-                                            return null;
-                                          },
-                                        ),
-                                        const SizedBox(height: 18),
 
-                                        // Info i przycisk "Dodaj zdjecie"
-                                        Row(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.center,
-                                          children: [
-                                            Icon(
-                                              Icons.priority_high_rounded,
-                                              size: 24,
-                                              color: AppColors.textSecondary,
-                                            ),
-                                            const SizedBox(width: 12),
-                                            const Expanded(
-                                              child: Text(
-                                                'Możesz dodać zdjęcie, aby zeskanować z niego kod kuponu (w formie tekstu, kodu kreskowego lub kodu QR).',
-                                                style: TextStyle(
-                                                  color:
-                                                      AppColors.textSecondary,
-                                                  fontSize: 14,
-                                                  fontFamily: 'Itim',
-                                                  fontWeight: FontWeight.w400,
-                                                ),
-                                                maxLines: 3,
-                                                overflow: TextOverflow.ellipsis,
+                                            _userMadeInput = true;
+                                          });
+                                        },
+                                      ),
+                                      const SizedBox(height: 18),
+
+                                      // Kod kuponu
+                                      LabeledTextField(
+                                        label: 'Kod kuponu',
+                                        placeholder: 'Wpisz kod kuponu',
+                                        width: LabeledTextFieldWidth.full,
+                                        iconOnLeft: true,
+                                        controller: _codeController,
+                                        maxLength: 50,
+                                        onChanged: (val) {
+                                          setState(() {
+                                            _userMadeInput = true;
+                                          });
+                                        },
+                                        validator: (val) {
+                                          if (val == null ||
+                                              val.trim().isEmpty) {
+                                            return 'Wymagane';
+                                          }
+                                          if (val.length > 50) {
+                                            return 'Kod może mieć maksymalnie 50 znaków';
+                                          }
+                                          return null;
+                                        },
+                                      ),
+                                      const SizedBox(height: 18),
+
+                                      // Info i przycisk "Dodaj zdjecie"
+                                      Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: [
+                                          Icon(
+                                            Icons.priority_high_rounded,
+                                            size: 24,
+                                            color: AppColors.textSecondary,
+                                          ),
+                                          const SizedBox(width: 12),
+                                          const Expanded(
+                                            child: Text(
+                                              'Możesz dodać zdjęcie, aby zeskanować z niego kod kuponu (w formie tekstu, kodu kreskowego lub kodu QR).',
+                                              style: TextStyle(
+                                                color: AppColors.textSecondary,
+                                                fontSize: 14,
+                                                fontFamily: 'Itim',
+                                                fontWeight: FontWeight.w400,
                                               ),
+                                              maxLines: 3,
+                                              overflow: TextOverflow.ellipsis,
                                             ),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 8),
-                                        LayoutBuilder(
-                                          builder: (context, c) {
-                                            final w = c.maxWidth;
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 8),
+                                      LayoutBuilder(
+                                        builder: (context, c) {
+                                          final w = c.maxWidth;
 
-                                            final twoButtons = _couponImage != null;
+                                          final twoButtons =
+                                              _couponImage != null;
 
-                                            final outerExtra = twoButtons ? 8.0 : 4.0;
+                                          final outerExtra =
+                                              twoButtons ? 8.0 : 4.0;
 
-                                            final spacing = 10.0;
+                                          final spacing = 10.0;
 
-                                            final buttonWidth = twoButtons
-                                                ? (w - spacing - outerExtra) / 2
-                                                : 160.0;
+                                          final buttonWidth =
+                                              twoButtons
+                                                  ? (w - spacing - outerExtra) /
+                                                      2
+                                                  : 160.0;
 
-                                            return Row(
-                                              mainAxisAlignment: MainAxisAlignment.center,
-                                              children: [
-                                                CustomTextButton.primary(
+                                          return Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              CustomTextButton.primary(
+                                                height: 52,
+                                                width: buttonWidth,
+                                                label:
+                                                    _couponImage == null
+                                                        ? 'Dodaj zdjęcie'
+                                                        : 'Zmień zdjęcie',
+                                                onTap:
+                                                    _showImageSourceActionSheet,
+                                              ),
+                                              if (twoButtons) ...[
+                                                SizedBox(width: spacing),
+                                                CustomTextButton(
                                                   height: 52,
                                                   width: buttonWidth,
-                                                  label: _couponImage == null ? 'Dodaj zdjęcie' : 'Zmień zdjęcie',
-                                                  onTap: _showImageSourceActionSheet,
+                                                  label: 'Usuń zdjęcie',
+                                                  onTap:
+                                                      () => setState(() {
+                                                        _couponImage = null;
+                                                      }),
                                                 ),
-                                                if (twoButtons) ...[
-                                                  SizedBox(width: spacing),
-                                                  CustomTextButton(
-                                                    height: 52,
-                                                    width: buttonWidth,
-                                                    label: 'Usuń zdjęcie',
-                                                    onTap: () => setState(() {
-                                                      _couponImage = null;
-                                                    }),
+                                              ],
+                                            ],
+                                          );
+                                        },
+                                      ),
+                                      const SizedBox(height: 8),
+                                      if (_couponImage != null)
+                                        Center(
+                                          child: GestureDetector(
+                                            child: Container(
+                                              decoration: BoxDecoration(
+                                                border: Border.all(
+                                                  color: AppColors.textPrimary,
+                                                  width: 2,
+                                                ),
+                                                borderRadius:
+                                                    BorderRadius.circular(12),
+                                                boxShadow: [
+                                                  BoxShadow(
+                                                    color:
+                                                        AppColors.textPrimary,
+                                                    offset: const Offset(4, 4),
+                                                    blurRadius: 0,
+                                                    spreadRadius: 0,
                                                   ),
                                                 ],
-                                              ],
-                                            );
-                                          },
-                                        ),
-                                        const SizedBox(height: 8),
-                                        if (_couponImage != null)
-                                          Center(
-                                            child: GestureDetector(
-                                              child: Container(
-                                                decoration: BoxDecoration(
-                                                  border: Border.all(
-                                                    color: AppColors.textPrimary,
-                                                    width: 2,
-                                                  ),
-                                                  borderRadius: BorderRadius.circular(12),
-                                                  boxShadow: [
-                                                    BoxShadow(
-                                                      color: AppColors.textPrimary,
-                                                      offset: const Offset(4, 4),
-                                                      blurRadius: 0,
-                                                      spreadRadius: 0,
+                                              ),
+                                              child: ClipRRect(
+                                                borderRadius:
+                                                    BorderRadius.circular(12),
+                                                child: Stack(
+                                                  alignment:
+                                                      Alignment.bottomRight,
+                                                  children: [
+                                                    Image.file(
+                                                      File(_couponImage!.path),
+                                                      height: 120,
+                                                      width: 120,
+                                                      fit: BoxFit.cover,
+                                                    ),
+                                                    Padding(
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                            4.0,
+                                                          ),
+                                                      child: DecoratedIcon(
+                                                        decoration:
+                                                            IconDecoration(
+                                                              border: IconBorder(
+                                                                color:
+                                                                    Colors
+                                                                        .black,
+                                                                width: 3,
+                                                              ),
+                                                            ),
+                                                        icon: Icon(
+                                                          Icons.qr_code_scanner,
+                                                          color: Colors.white,
+                                                          size: 24,
+                                                        ),
+                                                      ),
                                                     ),
                                                   ],
                                                 ),
-                                                child: ClipRRect(
-                                                  borderRadius:
-                                                      BorderRadius.circular(12),
-                                                  child: Stack(
-                                                    alignment: Alignment.bottomRight,
-                                                    children: [
-                                                      Image.file(
-                                                        File(_couponImage!.path),
-                                                        height: 120,
-                                                        width: 120,
-                                                        fit: BoxFit.cover,
-                                                      ),
-                                                      Padding(
-                                                        padding: const EdgeInsets.all(4.0),
-                                                        child: DecoratedIcon(
-                                                          decoration: IconDecoration(
-                                                            border: IconBorder(
-                                                              color: Colors.black,
-                                                              width: 3,
-                                                            ),
-                                                          ),
-                                                          icon: Icon(
-                                                            Icons.qr_code_scanner,
-                                                            color: Colors.white,
-                                                            size: 24,
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
+                                              ),
+                                            ),
+                                            onTap: () async {
+                                              if (_couponImage == null) {
+                                                return;
+                                              }
+
+                                              final scannedValue =
+                                                  await Navigator.of(
+                                                    context,
+                                                  ).push<String>(
+                                                    MaterialPageRoute(
+                                                      builder:
+                                                          (context) =>
+                                                              CouponImageScanScreen(
+                                                                imagePath:
+                                                                    _couponImage!
+                                                                        .path,
+                                                              ),
+                                                    ),
+                                                  );
+
+                                              if (scannedValue != null &&
+                                                  scannedValue
+                                                      .trim()
+                                                      .isNotEmpty) {
+                                                final trimmed =
+                                                    scannedValue.trim();
+
+                                                setState(() {
+                                                  _codeController.text =
+                                                      trimmed.length > 50
+                                                          ? trimmed.substring(
+                                                            0,
+                                                            50,
+                                                          )
+                                                          : trimmed;
+                                                  _userMadeInput = true;
+                                                });
+                                              }
+                                            },
+                                          ),
+                                        ),
+                                      const SizedBox(height: 18),
+
+                                      // Typ kuponu (radiobuttony) - stan zmienia textfield, TODO: bloc event
+                                      const Text(
+                                        'Typ kuponu',
+                                        style: TextStyle(
+                                          color: AppColors.textPrimary,
+                                          fontSize: 18,
+                                          fontFamily: 'Itim',
+                                          fontWeight: FontWeight.w400,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 12),
+
+                                      Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Expanded(
+                                            flex: 1,
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                CustomRadioButton(
+                                                  label: 'rabat -%',
+                                                  selected:
+                                                      _selectedType ==
+                                                      CouponType.percent,
+                                                  onTap: () {
+                                                    setState(() {
+                                                      _reductionController
+                                                          .text = '';
+                                                      _selectedType =
+                                                          CouponType.percent;
+                                                      _userMadeInput = true;
+                                                    });
+                                                  },
                                                 ),
-                                              ),
-                                              onTap: () async {
-                                                if (_couponImage == null) {
-                                                  return;
-                                                }
-
-                                                final scannedValue =
-                                                    await Navigator.of(
-                                                      context,
-                                                    ).push<String>(
-                                                      MaterialPageRoute(
-                                                        builder:
-                                                            (context) =>
-                                                                CouponImageScanScreen(
-                                                                  imagePath:
-                                                                      _couponImage!
-                                                                          .path,
-                                                                ),
-                                                      ),
-                                                    );
-
-                                                if (scannedValue != null &&
-                                                    scannedValue.trim().isNotEmpty) {
-                                                  final trimmed = scannedValue.trim();
-
-                                                  setState(() {
-                                                    _codeController.text =
-                                                        trimmed.length > 50
-                                                            ? trimmed.substring(0, 50)
-                                                            : trimmed;
-                                                    _userMadeInput = true;
-                                                  });
-                                                }
-                                              },
-                                            ),
-                                          ),
-                                        const SizedBox(height: 18),
-
-                                        // Typ kuponu (radiobuttony) - stan zmienia textfield, TODO: bloc event
-                                        const Text(
-                                          'Typ kuponu',
-                                          style: TextStyle(
-                                            color: AppColors.textPrimary,
-                                            fontSize: 18,
-                                            fontFamily: 'Itim',
-                                            fontWeight: FontWeight.w400,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 12),
-
-                                        Row(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Expanded(
-                                              flex: 1,
-                                              child: Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  CustomRadioButton(
-                                                    label: 'rabat -%',
-                                                    selected:
-                                                        _selectedType ==
-                                                        CouponType.percent,
-                                                    onTap: () {
-                                                      setState(() {
-                                                        _reductionController.text = '';
-                                                        _selectedType =
-                                                            CouponType.percent;
-                                                        _userMadeInput = true;
-                                                      });
-                                                    },
-                                                  ),
-                                                  const SizedBox(height: 12),
-                                                  CustomRadioButton(
-                                                    label: 'rabat -zł',
-                                                    selected:
-                                                        _selectedType ==
-                                                        CouponType.fixed,
-                                                    onTap: () {
-                                                      setState(() {
-                                                        _reductionController.text = '';
-                                                        _selectedType =
-                                                            CouponType.fixed;
-                                                        _userMadeInput = true;
-                                                      });
-                                                    },
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                            const SizedBox(width: 20),
-                                            Expanded(
-                                              flex: 1,
-                                              child:
-                                                  _selectedType ==
-                                                          CouponType.percent
-                                                      ? LabeledTextField(
-                                                        label: 'Procent rabatu',
-                                                        width:
-                                                            LabeledTextFieldWidth
-                                                                .full,
-                                                        textAlign:
-                                                            TextAlign.right,
-                                                        controller:
-                                                            _reductionController,
-                                                        inputFormatters: [
-                                                          PercentFormatter()
-                                                        ],
-                                                        suffix: Text('%'),
-                                                        keyboardType:
-                                                            TextInputType
-                                                                .number,
-                                                        onChanged: (val) {
-                                                          setState(() {
-                                                            _userMadeInput =
-                                                                true;
-                                                          });
-                                                        },
-                                                        validator: (val) {
-                                                          if (val == null ||
-                                                              val.isEmpty) {
-                                                            return 'Wymagane';
-                                                          }
-
-                                                          final normalized = val.replaceAll(',', '.');
-
-                                                          if (double.tryParse(
-                                                                normalized,
-                                                              ) ==
-                                                              null) {
-                                                            return 'Niepoprawna liczba';
-                                                          }
-                                                          if (double.tryParse(
-                                                                normalized,
-                                                              )! <=
-                                                              0) {
-                                                            return 'Wpisz więcej niż 0';
-                                                          }
-                                                          if (double.tryParse(
-                                                                normalized,
-                                                              )! >
-                                                              100) {
-                                                            return 'Wpisz conajwyżej 100';
-                                                          }
-                                                          return null;
-                                                        },
-                                                      )
-                                                      : LabeledTextField(
-                                                        label: 'Kwota rabatu',
-                                                        width:
-                                                            LabeledTextFieldWidth
-                                                                .full,
-                                                        textAlign:
-                                                            TextAlign.right,
-                                                        controller:
-                                                            _reductionController,
-                                                        inputFormatters: [
-                                                          PriceFormatter()
-                                                        ],
-                                                        suffix: Text('zł'),
-                                                        keyboardType:
-                                                            TextInputType
-                                                                .number,
-                                                        onChanged: (val) {
-                                                          setState(() {
-                                                            _userMadeInput =
-                                                                true;
-                                                          });
-                                                        },
-                                                        validator: (val) {
-                                                          if (val == null ||
-                                                              val.isEmpty) {
-                                                            return 'Wymagane';
-                                                          }
-
-                                                          final normalized = val.replaceAll(',', '.');
-
-                                                          if (double.tryParse(
-                                                                normalized,
-                                                              ) ==
-                                                              null) {
-                                                            return 'Niepoprawna liczba';
-                                                          }
-                                                          if (double.tryParse(
-                                                                normalized,
-                                                              )! <=
-                                                              0) {
-                                                            return 'Wpisz więcej niż 0';
-                                                          }
-                                                          return null;
-                                                        },
-                                                      ),
-                                            ),
-                                          ],
-                                        ),
-                                        // Czy wielokrotnego uzytku
-                                        const SizedBox(height: 24),
-                                        const Text(
-                                          'Czy kupon jest wielokrotnego użytku?',
-                                          style: TextStyle(
-                                            color: AppColors.textPrimary,
-                                            fontSize: 18,
-                                            fontFamily: 'Itim',
-                                            fontWeight: FontWeight.w400,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 12),
-                                        Row(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          spacing: 20,
-                                          children: [
-                                            CustomRadioButton(
-                                              label: 'tak',
-                                              selected:
-                                                  _isMultipleUse == true,
-                                              onTap: () {
-                                                setState(() {
-                                                  _isMultipleUse = true;
-                                                  _userMadeInput = true;
-                                                });
-                                              },
-                                            ),
-                                            const SizedBox(height: 4),
-                                            CustomRadioButton(
-                                              label: 'nie',
-                                              selected:
-                                                  _isMultipleUse == false,
-                                              onTap: () {
-                                                setState(() {
-                                                  _isMultipleUse = false;
-                                                  _userMadeInput = true;
-                                                });
-                                              },
-                                            ),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 12),
-                                        Row(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.center,
-                                          children: [
-                                            Icon(
-                                              Icons.priority_high_rounded,
-                                              size: 24,
-                                              color: AppColors.textSecondary,
-                                            ),
-                                            const SizedBox(width: 12),
-                                            const Expanded(
-                                              child: Text(
-                                                'Zaznacz "tak" tylko wtedy, gdy masz pewność, że kupon może być użyty wielokrotnie. Spowoduje to, że będzie mógł być kupiony wielokrotnie przez różnych użytkowników.',
-                                                style: TextStyle(
-                                                  color:
-                                                      AppColors.textSecondary,
-                                                  fontSize: 14,
-                                                  fontFamily: 'Itim',
-                                                  fontWeight: FontWeight.w400,
+                                                const SizedBox(height: 12),
+                                                CustomRadioButton(
+                                                  label: 'rabat -zł',
+                                                  selected:
+                                                      _selectedType ==
+                                                      CouponType.fixed,
+                                                  onTap: () {
+                                                    setState(() {
+                                                      _reductionController
+                                                          .text = '';
+                                                      _selectedType =
+                                                          CouponType.fixed;
+                                                      _userMadeInput = true;
+                                                    });
+                                                  },
                                                 ),
-                                              ),
+                                              ],
                                             ),
-                                          ],
-                                        ),
-                                        // Do wykorzystania w... (checkboxy)
-                                        const SizedBox(height: 24),
-                                        const Text(
-                                          'Do wykorzystania w:',
-                                          style: TextStyle(
-                                            color: AppColors.textPrimary,
-                                            fontSize: 18,
-                                            fontFamily: 'Itim',
-                                            fontWeight: FontWeight.w400,
                                           ),
-                                        ),
-                                        const SizedBox(height: 12),
+                                          const SizedBox(width: 20),
+                                          Expanded(
+                                            flex: 1,
+                                            child:
+                                                _selectedType ==
+                                                        CouponType.percent
+                                                    ? LabeledTextField(
+                                                      label: 'Procent rabatu',
+                                                      width:
+                                                          LabeledTextFieldWidth
+                                                              .full,
+                                                      textAlign:
+                                                          TextAlign.right,
+                                                      controller:
+                                                          _reductionController,
+                                                      inputFormatters: [
+                                                        PercentFormatter(),
+                                                      ],
+                                                      suffix: Text('%'),
+                                                      keyboardType:
+                                                          TextInputType.number,
+                                                      onChanged: (val) {
+                                                        setState(() {
+                                                          _userMadeInput = true;
+                                                        });
+                                                      },
+                                                      validator: (val) {
+                                                        if (val == null ||
+                                                            val.isEmpty) {
+                                                          return 'Wymagane';
+                                                        }
 
-                                        Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            CustomCheckbox(
-                                              label: 'w sklepach stacjonarnych',
-                                              selected: _inPhysicalStores,
-                                              onTap: () {
-                                                setState(() {
-                                                  _inPhysicalStores =
-                                                      !_inPhysicalStores;
-                                                  _userMadeInput = true;
-                                                });
-                                                setState(() {
-                                                  _showUsageLocationTip =
-                                                      _inPhysicalStores ==
-                                                          false &&
-                                                      _inOnlineStore == false;
-                                                });
-                                              },
-                                            ),
-                                            const SizedBox(height: 12),
-                                            CustomCheckbox(
-                                              label: 'w sklepie internetowym',
-                                              selected: _inOnlineStore,
-                                              onTap: () {
-                                                setState(() {
-                                                  _inOnlineStore =
-                                                      !_inOnlineStore;
-                                                  _userMadeInput = true;
-                                                });
-                                                setState(() {
-                                                  _showUsageLocationTip =
-                                                      _inPhysicalStores ==
-                                                          false &&
-                                                      _inOnlineStore == false;
-                                                });
-                                              },
-                                            ),
-                                          ],
-                                        ),
+                                                        final normalized = val
+                                                            .replaceAll(
+                                                              ',',
+                                                              '.',
+                                                            );
 
-                                        if (_showUsageLocationTip)
-                                          const Padding(
-                                            padding: EdgeInsets.only(top: 8.0),
+                                                        if (double.tryParse(
+                                                              normalized,
+                                                            ) ==
+                                                            null) {
+                                                          return 'Niepoprawna liczba';
+                                                        }
+                                                        if (double.tryParse(
+                                                              normalized,
+                                                            )! <=
+                                                            0) {
+                                                          return 'Wpisz więcej niż 0';
+                                                        }
+                                                        if (double.tryParse(
+                                                              normalized,
+                                                            )! >
+                                                            100) {
+                                                          return 'Wpisz conajwyżej 100';
+                                                        }
+                                                        return null;
+                                                      },
+                                                    )
+                                                    : LabeledTextField(
+                                                      label: 'Kwota rabatu',
+                                                      width:
+                                                          LabeledTextFieldWidth
+                                                              .full,
+                                                      textAlign:
+                                                          TextAlign.right,
+                                                      controller:
+                                                          _reductionController,
+                                                      inputFormatters: [
+                                                        PriceFormatter(),
+                                                      ],
+                                                      suffix: Text('zł'),
+                                                      keyboardType:
+                                                          TextInputType.number,
+                                                      onChanged: (val) {
+                                                        setState(() {
+                                                          _userMadeInput = true;
+                                                        });
+                                                      },
+                                                      validator: (val) {
+                                                        if (val == null ||
+                                                            val.isEmpty) {
+                                                          return 'Wymagane';
+                                                        }
+
+                                                        final normalized = val
+                                                            .replaceAll(
+                                                              ',',
+                                                              '.',
+                                                            );
+
+                                                        if (double.tryParse(
+                                                              normalized,
+                                                            ) ==
+                                                            null) {
+                                                          return 'Niepoprawna liczba';
+                                                        }
+                                                        if (double.tryParse(
+                                                              normalized,
+                                                            )! <=
+                                                            0) {
+                                                          return 'Wpisz więcej niż 0';
+                                                        }
+                                                        return null;
+                                                      },
+                                                    ),
+                                          ),
+                                        ],
+                                      ),
+                                      // Czy wielokrotnego uzytku
+                                      const SizedBox(height: 24),
+                                      const Text(
+                                        'Czy kupon jest wielokrotnego użytku?',
+                                        style: TextStyle(
+                                          color: AppColors.textPrimary,
+                                          fontSize: 18,
+                                          fontFamily: 'Itim',
+                                          fontWeight: FontWeight.w400,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 12),
+                                      Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        spacing: 20,
+                                        children: [
+                                          CustomRadioButton(
+                                            label: 'tak',
+                                            selected: _isMultipleUse == true,
+                                            onTap: () {
+                                              setState(() {
+                                                _isMultipleUse = true;
+                                                _userMadeInput = true;
+                                              });
+                                            },
+                                          ),
+                                          const SizedBox(height: 4),
+                                          CustomRadioButton(
+                                            label: 'nie',
+                                            selected: _isMultipleUse == false,
+                                            onTap: () {
+                                              setState(() {
+                                                _isMultipleUse = false;
+                                                _userMadeInput = true;
+                                              });
+                                            },
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 12),
+                                      Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: [
+                                          Icon(
+                                            Icons.priority_high_rounded,
+                                            size: 24,
+                                            color: AppColors.textSecondary,
+                                          ),
+                                          const SizedBox(width: 12),
+                                          const Expanded(
                                             child: Text(
-                                              'Zaznacz przynajmniej jedną opcję.',
+                                              'Zaznacz "tak" tylko wtedy, gdy masz pewność, że kupon może być użyty wielokrotnie. Spowoduje to, że będzie mógł być kupiony wielokrotnie przez różnych użytkowników.',
                                               style: TextStyle(
-                                                color: AppColors.alertText,
+                                                color: AppColors.textSecondary,
                                                 fontSize: 14,
                                                 fontFamily: 'Itim',
                                                 fontWeight: FontWeight.w400,
                                               ),
                                             ),
                                           ),
+                                        ],
+                                      ),
+                                      // Do wykorzystania w... (checkboxy)
+                                      const SizedBox(height: 24),
+                                      const Text(
+                                        'Do wykorzystania w:',
+                                        style: TextStyle(
+                                          color: AppColors.textPrimary,
+                                          fontSize: 18,
+                                          fontFamily: 'Itim',
+                                          fontWeight: FontWeight.w400,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 12),
 
-                                        const SizedBox(height: 24),
-
-                                        // 8. Czy kupon ma ograniczenia (radiobuttony)
-                                        const Text(
-                                          'Czy Twój kupon ma ograniczenia?',
-                                          style: TextStyle(
-                                            color: AppColors.textPrimary,
-                                            fontSize: 18,
-                                            fontFamily: 'Itim',
-                                            fontWeight: FontWeight.w400,
+                                      Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          CustomCheckbox(
+                                            label: 'w sklepach stacjonarnych',
+                                            selected: _inPhysicalStores,
+                                            onTap: () {
+                                              setState(() {
+                                                _inPhysicalStores =
+                                                    !_inPhysicalStores;
+                                                _userMadeInput = true;
+                                              });
+                                              setState(() {
+                                                _showUsageLocationTip =
+                                                    _inPhysicalStores ==
+                                                        false &&
+                                                    _inOnlineStore == false;
+                                              });
+                                            },
                                           ),
-                                        ),
-                                        const SizedBox(height: 4),
+                                          const SizedBox(height: 12),
+                                          CustomCheckbox(
+                                            label: 'w sklepie internetowym',
+                                            selected: _inOnlineStore,
+                                            onTap: () {
+                                              setState(() {
+                                                _inOnlineStore =
+                                                    !_inOnlineStore;
+                                                _userMadeInput = true;
+                                              });
+                                              setState(() {
+                                                _showUsageLocationTip =
+                                                    _inPhysicalStores ==
+                                                        false &&
+                                                    _inOnlineStore == false;
+                                              });
+                                            },
+                                          ),
+                                        ],
+                                      ),
 
-                                        Row(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          spacing: 20,
-                                          children: [
-                                            CustomRadioButton(
-                                              label: 'tak',
-                                              selected:
-                                                  _hasRestrictions == true,
-                                              onTap: () {
-                                                setState(() {
-                                                  _hasRestrictions = true;
-                                                  _userMadeInput = true;
-                                                });
-                                              },
-                                            ),
-                                            const SizedBox(height: 12),
-                                            CustomRadioButton(
-                                              label: 'nie',
-                                              selected:
-                                                  _hasRestrictions == false,
-                                              onTap: () {
-                                                setState(() {
-                                                  _hasRestrictions = false;
-                                                  _userMadeInput = true;
-                                                });
-                                              },
-                                            ),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 12),
-                                        Row(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.center,
-                                          children: [
-                                            Icon(
-                                              Icons.priority_high_rounded,
-                                              size: 24,
-                                              color: AppColors.textSecondary,
-                                            ),
-                                            const SizedBox(width: 12),
-                                            const Expanded(
-                                              child: Text(
-                                                'Jeśli Twój kupon posiada ograniczenia tj. wyłączone produkty/kategorie z promocji - wypisz je w opisie!',
-                                                style: TextStyle(
-                                                  color:
-                                                      AppColors.textSecondary,
-                                                  fontSize: 14,
-                                                  fontFamily: 'Itim',
-                                                  fontWeight: FontWeight.w400,
-                                                ),
-                                                maxLines: 3,
-                                                overflow: TextOverflow.ellipsis,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 18),
-
-                                        // 9. opis
-                                        LabeledTextField(
-                                          label: 'Opis',
-                                          placeholder:
-                                              'Np. kupon nie obejmuje produktów z kategorii Elektronika...',
-                                          width: LabeledTextFieldWidth.full,
-                                          maxLines: 6,
-                                          maxLength: 255,
-                                          textAlign: TextAlign.left,
-                                          controller: _descriptionController,
-                                          onChanged: (val) {
-                                            setState(() {
-                                              _userMadeInput = true;
-                                            });
-                                          },
-                                          validator: (val) {
-                                              if (val == null ||
-                                                  val.trim().isEmpty && _hasRestrictions) {
-                                                return 'Wpisz opis ograniczeń';
-                                              }
-                                              if (val.length > 255) {
-                                                return 'Opis może mieć maksymalnie 255 znaków';
-                                              }                                            
-                                              return null;
-                                          },
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  // separator
-                                  DashedSeparator(),
-                                  Padding(
-                                    padding: const EdgeInsets.only(
-                                      top: 18.0,
-                                      left: 24.0,
-                                      right: 24.0,
-                                      bottom: 24.0,
-                                    ),
-                                    child: Column(
-                                      children: [
-                                        if (_showMissingValuesTip) ...[
-                                          const Text(
-                                            'Uzupełnij brakujące pola, aby móc dodać kupon.',
-                                            textAlign: TextAlign.center,
+                                      if (_showUsageLocationTip)
+                                        const Padding(
+                                          padding: EdgeInsets.only(top: 8.0),
+                                          child: Text(
+                                            'Zaznacz przynajmniej jedną opcję.',
                                             style: TextStyle(
                                               color: AppColors.alertText,
-                                              fontSize: 16,
+                                              fontSize: 14,
                                               fontFamily: 'Itim',
                                               fontWeight: FontWeight.w400,
                                             ),
                                           ),
-                                          const SizedBox(height: 12),
-                                        ],
-                                        // 11. Przycisk dodaj
-                                        CustomTextButton.primary(
-                                          height: 56,
-                                          width: double.infinity,
-                                          label: 'Dodaj',
-                                          onTap: () async {
-                                            FocusScope.of(context).unfocus();
-
-                                            if (_formKey.currentState
-                                                    ?.validate() ??
-                                                false) {
-                                              if (!_inPhysicalStores &&
-                                                  !_inOnlineStore) {
-                                                setState(() {
-                                                  _showUsageLocationTip = true;
-                                                });
-                                                return;
-                                              }
-                                              // Get current user ID
-                                              final firebaseUser = FirebaseAuth.instance.currentUser;
-                                              if (firebaseUser == null) {
-                                                setState(() {
-                                                  _showMissingValuesTip = true;
-                                                });
-                                                return;
-                                              }
-
-                                              // Ensure user exists in API database
-                                              final userRepo = context.read<UserRepository>();
-                                              try {
-                                                await userRepo.ensureUserExistsInApi(
-                                                  firebaseUser.uid,
-                                                  firebaseUser.email ?? '',
-                                                  firebaseUser.displayName ?? 'User',
-                                                );
-                                              } catch (e) {
-                                                if (mounted) {
-                                                  showCustomSnackBar(context, 'Błąd synchronizacji użytkownika: $e');
-                                                }
-                                                return;
-                                              }
-
-                                              // Format expiry date as YYYY-MM-DD or null
-                                              String? expiryDateStr;
-                                              if (_hasExpiryDate && _expiryDateController.text.isNotEmpty) {
-                                                expiryDateStr = "${_expiryDate.year}-${_expiryDate.month.toString().padLeft(2, '0')}-${_expiryDate.day.toString().padLeft(2, '0')}";
-                                              }
-
-                                              final normalizedPrice = _priceController.text.replaceAll(',', '.');
-
-                                              double priceDouble = double.tryParse(normalizedPrice) ?? 0;
-                                              int priceInSmallestUnit = (priceDouble * 100).toInt();
-
-                                              final normalizedDiscount = _reductionController.text.replaceAll(',', '.');
-
-                                              final offer = CouponOffer(
-                                                description: _descriptionController.text.trim(),
-                                                discount:
-                                                    double.tryParse(
-                                                      normalizedDiscount,
-                                                    ) ??
-                                                    0,
-                                                isDiscountPercentage:
-                                                    _selectedType ==
-                                                    CouponType.percent,
-                                                price: priceInSmallestUnit,
-                                                code: _codeController.text,
-                                                hasLimits: _hasRestrictions,
-                                                worksOnline: _inOnlineStore,
-                                                worksInStore: _inPhysicalStores,
-                                                expiryDate: expiryDateStr,
-                                                shopId: int.tryParse(_selectedShop?.id ?? '0') ?? 0,
-                                                ownerId: firebaseUser.uid,
-                                                isActive: true,
-                                                isMultipleUse: _isMultipleUse,
-                                              );
-
-                                              final confirmed = await showDialog<
-                                                bool
-                                              >(
-                                                context: context,
-                                                builder:
-                                                    (context) => AlertDialog(
-                                                      backgroundColor:
-                                                          AppColors.surface,
-                                                      shape: RoundedRectangleBorder(
-                                                        borderRadius:
-                                                            BorderRadius.circular(
-                                                              24,
-                                                            ),
-                                                        side: const BorderSide(
-                                                          width: 2,
-                                                          color:
-                                                              AppColors
-                                                                  .textPrimary,
-                                                        ),
-                                                      ),
-                                                      title: const Text(
-                                                        'Potwierdzenie',
-                                                        style: TextStyle(
-                                                          fontFamily: 'Itim',
-                                                          fontSize: 22,
-                                                          fontWeight:
-                                                              FontWeight.w400,
-                                                          color:
-                                                              AppColors
-                                                                  .textPrimary,
-                                                        ),
-                                                      ),
-                                                      content: const Text(
-                                                        'Czy na pewno chcesz dodać ten kupon?',
-                                                        style: TextStyle(
-                                                          fontFamily: 'Itim',
-                                                          fontSize: 16,
-                                                          color:
-                                                              AppColors
-                                                                  .textSecondary,
-                                                        ),
-                                                      ),
-                                                      actionsPadding:
-                                                          const EdgeInsets.symmetric(
-                                                            horizontal: 16,
-                                                            vertical: 12,
-                                                          ),
-                                                      actions: [
-                                                        CustomTextButton.small(
-                                                          label: 'Anuluj',
-                                                          width: 100,
-                                                          onTap:
-                                                              () =>
-                                                                  Navigator.of(
-                                                                    context,
-                                                                  ).pop(false),
-                                                        ),
-                                                        CustomTextButton.primarySmall(
-                                                          label: 'Dodaj',
-                                                          width: 100,
-                                                          onTap:
-                                                              () =>
-                                                                  Navigator.of(
-                                                                    context,
-                                                                  ).pop(true),
-                                                        ),
-                                                      ],
-                                                    ),
-                                              );
-
-                                              if (confirmed == true) {
-                                                context
-                                                    .read<CouponAddBloc>()
-                                                    .add(AddCouponOffer(offer));
-                                              }
-                                            } else {
-                                              setState(() {
-                                                _showMissingValuesTip = true;
-                                              });
-                                            }
-                                          },
                                         ),
-                                        const SizedBox(height: 12),
-                                        Text(
-                                          'Dodając kupon, akceptujesz postanowienia regulaminu.',
+
+                                      const SizedBox(height: 24),
+
+                                      // 8. Czy kupon ma ograniczenia (radiobuttony)
+                                      const Text(
+                                        'Czy Twój kupon ma ograniczenia?',
+                                        style: TextStyle(
+                                          color: AppColors.textPrimary,
+                                          fontSize: 18,
+                                          fontFamily: 'Itim',
+                                          fontWeight: FontWeight.w400,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+
+                                      Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        spacing: 20,
+                                        children: [
+                                          CustomRadioButton(
+                                            label: 'tak',
+                                            selected: _hasRestrictions == true,
+                                            onTap: () {
+                                              setState(() {
+                                                _hasRestrictions = true;
+                                                _userMadeInput = true;
+                                              });
+                                            },
+                                          ),
+                                          const SizedBox(height: 12),
+                                          CustomRadioButton(
+                                            label: 'nie',
+                                            selected: _hasRestrictions == false,
+                                            onTap: () {
+                                              setState(() {
+                                                _hasRestrictions = false;
+                                                _userMadeInput = true;
+                                              });
+                                            },
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 12),
+                                      Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: [
+                                          Icon(
+                                            Icons.priority_high_rounded,
+                                            size: 24,
+                                            color: AppColors.textSecondary,
+                                          ),
+                                          const SizedBox(width: 12),
+                                          const Expanded(
+                                            child: Text(
+                                              'Jeśli Twój kupon posiada ograniczenia tj. wyłączone produkty/kategorie z promocji - wypisz je w opisie!',
+                                              style: TextStyle(
+                                                color: AppColors.textSecondary,
+                                                fontSize: 14,
+                                                fontFamily: 'Itim',
+                                                fontWeight: FontWeight.w400,
+                                              ),
+                                              maxLines: 3,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 18),
+
+                                      // 9. opis
+                                      LabeledTextField(
+                                        label: 'Opis',
+                                        placeholder:
+                                            'Np. kupon nie obejmuje produktów z kategorii Elektronika...',
+                                        width: LabeledTextFieldWidth.full,
+                                        maxLines: 6,
+                                        maxLength: 255,
+                                        textAlign: TextAlign.left,
+                                        controller: _descriptionController,
+                                        onChanged: (val) {
+                                          setState(() {
+                                            _userMadeInput = true;
+                                          });
+                                        },
+                                        validator: (val) {
+                                          if (val == null ||
+                                              val.trim().isEmpty &&
+                                                  _hasRestrictions) {
+                                            return 'Wpisz opis ograniczeń';
+                                          }
+                                          if (val.length > 255) {
+                                            return 'Opis może mieć maksymalnie 255 znaków';
+                                          }
+                                          return null;
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                // separator
+                                DashedSeparator(),
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                    top: 18.0,
+                                    left: 24.0,
+                                    right: 24.0,
+                                    bottom: 24.0,
+                                  ),
+                                  child: Column(
+                                    children: [
+                                      if (_showMissingValuesTip) ...[
+                                        const Text(
+                                          'Uzupełnij brakujące pola, aby móc dodać kupon.',
                                           textAlign: TextAlign.center,
                                           style: TextStyle(
-                                            color: AppColors.textPrimary,
-                                            fontSize: 14,
+                                            color: AppColors.alertText,
+                                            fontSize: 16,
                                             fontFamily: 'Itim',
                                             fontWeight: FontWeight.w400,
                                           ),
                                         ),
+                                        const SizedBox(height: 12),
                                       ],
-                                    ),
+                                      // 11. Przycisk dodaj
+                                      CustomTextButton.primary(
+                                        height: 56,
+                                        width: double.infinity,
+                                        label: 'Dodaj',
+                                        onTap: () async {
+                                          FocusScope.of(context).unfocus();
+
+                                          if (_formKey.currentState
+                                                  ?.validate() ??
+                                              false) {
+                                            if (!_inPhysicalStores &&
+                                                !_inOnlineStore) {
+                                              setState(() {
+                                                _showUsageLocationTip = true;
+                                              });
+                                              return;
+                                            }
+                                            // Get current user ID
+                                            final firebaseUser =
+                                                FirebaseAuth
+                                                    .instance
+                                                    .currentUser;
+                                            if (firebaseUser == null) {
+                                              setState(() {
+                                                _showMissingValuesTip = true;
+                                              });
+                                              return;
+                                            }
+
+                                            // Ensure user exists in API database
+                                            final userRepo =
+                                                context.read<UserRepository>();
+                                            try {
+                                              await userRepo
+                                                  .ensureUserExistsInApi(
+                                                    firebaseUser.uid,
+                                                    firebaseUser.email ?? '',
+                                                    firebaseUser.displayName ??
+                                                        'User',
+                                                  );
+                                            } catch (e) {
+                                              if (mounted) {
+                                                showCustomSnackBar(
+                                                  context,
+                                                  'Błąd synchronizacji użytkownika: $e',
+                                                );
+                                              }
+                                              return;
+                                            }
+
+                                            // Format expiry date as YYYY-MM-DD or null
+                                            String? expiryDateStr;
+                                            if (_hasExpiryDate &&
+                                                _expiryDateController
+                                                    .text
+                                                    .isNotEmpty) {
+                                              expiryDateStr =
+                                                  "${_expiryDate.year}-${_expiryDate.month.toString().padLeft(2, '0')}-${_expiryDate.day.toString().padLeft(2, '0')}";
+                                            }
+
+                                            final normalizedPrice =
+                                                _priceController.text
+                                                    .replaceAll(',', '.');
+
+                                            double priceDouble =
+                                                double.tryParse(
+                                                  normalizedPrice,
+                                                ) ??
+                                                0;
+                                            int priceInSmallestUnit =
+                                                (priceDouble * 100).toInt();
+
+                                            final normalizedDiscount =
+                                                _reductionController.text
+                                                    .replaceAll(',', '.');
+
+                                            final offer = CouponOffer(
+                                              description:
+                                                  _descriptionController.text
+                                                      .trim(),
+                                              discount:
+                                                  double.tryParse(
+                                                    normalizedDiscount,
+                                                  ) ??
+                                                  0,
+                                              isDiscountPercentage:
+                                                  _selectedType ==
+                                                  CouponType.percent,
+                                              price: priceInSmallestUnit,
+                                              code: _codeController.text,
+                                              hasLimits: _hasRestrictions,
+                                              worksOnline: _inOnlineStore,
+                                              worksInStore: _inPhysicalStores,
+                                              expiryDate: expiryDateStr,
+                                              shopId:
+                                                  int.tryParse(
+                                                    _selectedShop?.id ?? '0',
+                                                  ) ??
+                                                  0,
+                                              ownerId: firebaseUser.uid,
+                                              isActive: true,
+                                              isMultipleUse: _isMultipleUse,
+                                            );
+
+                                            final confirmed = await showDialog<
+                                              bool
+                                            >(
+                                              context: context,
+                                              builder:
+                                                  (context) => AlertDialog(
+                                                    backgroundColor:
+                                                        AppColors.surface,
+                                                    shape: RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            24,
+                                                          ),
+                                                      side: const BorderSide(
+                                                        width: 2,
+                                                        color:
+                                                            AppColors
+                                                                .textPrimary,
+                                                      ),
+                                                    ),
+                                                    title: const Text(
+                                                      'Potwierdzenie',
+                                                      style: TextStyle(
+                                                        fontFamily: 'Itim',
+                                                        fontSize: 22,
+                                                        fontWeight:
+                                                            FontWeight.w400,
+                                                        color:
+                                                            AppColors
+                                                                .textPrimary,
+                                                      ),
+                                                    ),
+                                                    content: const Text(
+                                                      'Czy na pewno chcesz dodać ten kupon?',
+                                                      style: TextStyle(
+                                                        fontFamily: 'Itim',
+                                                        fontSize: 16,
+                                                        color:
+                                                            AppColors
+                                                                .textSecondary,
+                                                      ),
+                                                    ),
+                                                    actionsPadding:
+                                                        const EdgeInsets.symmetric(
+                                                          horizontal: 16,
+                                                          vertical: 12,
+                                                        ),
+                                                    actions: [
+                                                      CustomTextButton.small(
+                                                        label: 'Anuluj',
+                                                        width: 100,
+                                                        onTap:
+                                                            () => Navigator.of(
+                                                              context,
+                                                            ).pop(false),
+                                                      ),
+                                                      CustomTextButton.primarySmall(
+                                                        label: 'Dodaj',
+                                                        width: 100,
+                                                        onTap:
+                                                            () => Navigator.of(
+                                                              context,
+                                                            ).pop(true),
+                                                      ),
+                                                    ],
+                                                  ),
+                                            );
+
+                                            if (confirmed == true) {
+                                              context.read<CouponAddBloc>().add(
+                                                AddCouponOffer(offer),
+                                              );
+                                            }
+                                          } else {
+                                            setState(() {
+                                              _showMissingValuesTip = true;
+                                            });
+                                          }
+                                        },
+                                      ),
+                                      const SizedBox(height: 12),
+                                      Text(
+                                        'Dodając kupon, akceptujesz postanowienia regulaminu.',
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          color: AppColors.textPrimary,
+                                          fontSize: 14,
+                                          fontFamily: 'Itim',
+                                          fontWeight: FontWeight.w400,
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                );
-              },
-            ),
+                ),
+              );
+            },
           ),
         ),
       ),

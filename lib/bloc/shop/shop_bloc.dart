@@ -19,5 +19,15 @@ class ShopBloc extends Bloc<ShopEvent, ShopState> {
         emit(ShopError("Nie udało się załadować sklepów."));
       }
     });
+
+    on<SearchShopsByName>((event, emit) async {
+      emit(ShopLoading());
+      try {
+        final shops = await shopRepository.searchShopsByName(event.query);
+        emit(ShopLoaded(shops));
+      } catch (_) {
+        emit(ShopError("Nie udało się wyszukać sklepów."));
+      }
+    });
   }
 }

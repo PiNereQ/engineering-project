@@ -2,13 +2,17 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:proj_inz/bloc/coupon_add/coupon_add_bloc.dart';
 import 'package:proj_inz/bloc/navbar/navbar_bloc.dart';
 import 'package:proj_inz/bloc/navbar/navbar_event.dart';
 import 'package:proj_inz/bloc/navbar/navbar_state.dart';
 import 'package:proj_inz/bloc/chat/unread/chat_unread_bloc.dart';
 import 'package:proj_inz/bloc/chat/unread/chat_unread_state.dart';
 import 'package:proj_inz/bloc/chat/unread/chat_unread_event.dart';
+import 'package:proj_inz/bloc/shop/shop_bloc.dart';
 import 'package:proj_inz/core/theme.dart';
+import 'package:proj_inz/data/repositories/coupon_repository.dart';
+import 'package:proj_inz/data/repositories/shop_repository.dart';
 import 'package:proj_inz/presentation/widgets/custom_snack_bar.dart';
 import 'package:proj_inz/presentation/widgets/navbar/navbar_item.dart';
 import 'package:proj_inz/presentation/screens/add_screen.dart';
@@ -93,11 +97,28 @@ class Navbar extends StatelessWidget {
                             // if ((FirebaseAuth.instance.currentUser?.phoneNumber ?? "").isEmpty) return;
                           }
                           Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const AddScreen(),
-                            ),
-                          );
+                          context,
+                          MaterialPageRoute(
+                            builder:
+                                (context) => MultiBlocProvider(
+                                  providers: [
+                                    BlocProvider(
+                                      create:
+                                          (context) => CouponAddBloc(
+                                            context.read<CouponRepository>(),
+                                          ),
+                                    ),
+                                    BlocProvider(
+                                      create:
+                                          (context) => ShopBloc(
+                                            context.read<ShopRepository>(),
+                                          ),
+                                    ),
+                                  ],
+                                  child: const AddScreen(),
+                                ),
+                          ),
+                        );
                         },
                     ),
                     NavbarItem(
