@@ -32,8 +32,9 @@ class CouponMapSearchExecuted extends CouponMapEvent {
 class CouponMapLocationSelected extends CouponMapEvent {
   final String shopLocationId;
   final String shopId;
+  final String? shopName;
 
-  const CouponMapLocationSelected({required this.shopLocationId, required this.shopId});
+  const CouponMapLocationSelected({required this.shopLocationId, required this.shopId, this.shopName});
 
   @override
   List<Object> get props => [shopLocationId, shopId];

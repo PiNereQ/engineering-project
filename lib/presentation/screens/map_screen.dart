@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:ui';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -8,7 +9,9 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_animations/flutter_map_animations.dart';
 import 'package:flutter_map_cache/flutter_map_cache.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:proj_inz/bloc/coupon_list/coupon_list_bloc.dart';
 import 'package:proj_inz/data/models/shop_location_model.dart';
+import 'package:proj_inz/presentation/screens/coupon_list_screen.dart';
 import 'package:proj_inz/presentation/widgets/coupon_card.dart';
 
 import 'package:url_launcher/url_launcher.dart';
@@ -731,6 +734,7 @@ class _MapScreenViewState extends State<_MapScreenView>
                             CouponMapLocationSelected(
                               shopLocationId: location.shopLocationId,
                               shopId: location.shopId,
+                              shopName: location.shopName,
                             ),
                           );
                         },
@@ -1191,7 +1195,24 @@ class _MapScreenViewState extends State<_MapScreenView>
                                 CustomTextButton(
                                   label: 'Pokaż więcej',
                                   onTap:
-                                      () {}, // TODO: coupon list screen redirect
+                                      () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder:
+                                                (_) => BlocProvider(
+                                                  create:
+                                                      (context) => CouponListBloc(
+                                                        context.read<CouponRepository>(),
+                                                      )..add(FetchCoupons(userId: FirebaseAuth.instance.currentUser!.uid, shopId: state.selectedShopId)),
+                                                  child: CouponListScreen(
+                                                    selectedShopId: state.selectedShopId,
+                                                    searchShopName: state.selectedShopName,
+                                                  ),
+                                                ),
+                                          ),
+                                        );
+                                      },
                                 ),
                               ],
                             ),

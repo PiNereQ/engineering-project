@@ -75,20 +75,17 @@ class CouponMapBloc extends Bloc<CouponMapEvent, CouponMapState> {
   ) async {
     emit(state.copyWith(
       selectedShopLocationId: event.shopLocationId,
+      selectedShopId: event.shopId.toString(),
+      selectedShopName: event.shopName,
       selectedShopLocationCoupons: const [],
       status: CouponMapStatus.loading,
     ));
 
     try {
-      final coupons = await couponRepository.fetchThreeCouponsForShop(event.shopId.toString());
-      // Ensure client-side filtering by shopId and limit to 3
-      final filtered = coupons
-          .where((c) => c.shopId == event.shopId.toString())
-          .take(3)
-          .toList();
+      final coupons = await couponRepository.fetchExampleCouponsForShop(event.shopId.toString());
       emit(state.copyWith(
         status: CouponMapStatus.success,
-        selectedShopLocationCoupons: filtered,
+        selectedShopLocationCoupons: coupons,
       ));
     } catch (e) {
       emit(state.copyWith(
@@ -102,6 +99,10 @@ class CouponMapBloc extends Bloc<CouponMapEvent, CouponMapState> {
     CouponMapLocationCleared event,
     Emitter<CouponMapState> emit,
   ) {
-    emit(state.copyWith(selectedShopLocationId: null));
+    emit(state.copyWith(
+      selectedShopLocationId: null,
+      selectedShopId: null,
+      selectedShopName: null,
+    ));
   }
 }
