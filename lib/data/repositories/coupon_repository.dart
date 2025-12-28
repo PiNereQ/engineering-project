@@ -397,13 +397,13 @@ class CouponRepository {
     }
   }
 
-  /// Fetch three coupons for a specific shop
-  Future<List<Coupon>> fetchThreeCouponsForShop(String shopId) async {
+  /// Fetch example coupons for a specific shop in map screen
+  Future<List<Coupon>> fetchExampleCouponsForShop(String shopId) async {
     try {
-      final result = await fetchCouponsPaginated(limit: 3, shopId: shopId, userId: await userRepository.getCurrentUserId());
+      final result = await fetchCouponsPaginated(limit: 5, shopId: shopId, userId: await userRepository.getCurrentUserId());
       return result.ownedCoupons;
     } catch (e) {
-      if (kDebugMode) debugPrint('Error in fetchThreeCouponsForShop: $e');
+      if (kDebugMode) debugPrint('Error in fetchExampleCouponsForShop: $e');
       rethrow;
     }
   }
