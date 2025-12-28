@@ -94,7 +94,7 @@ class _CouponListScreenContentState extends State<_CouponListScreenContent> {
     // Only fetch if the state is initial (not loaded yet) and debug flag is off
     if (state is CouponListInitial && !stopCouponLoading) {
       final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
-      bloc.add(FetchCoupons(shopId: widget.selectedShopId, userId: userId));
+      bloc.add(FetchCoupons(shopId: widget.selectedShopId, categoryId: widget.selectedCategoryId, userId: userId));
     }
   }
 
