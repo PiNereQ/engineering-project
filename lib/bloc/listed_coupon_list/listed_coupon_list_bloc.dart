@@ -7,7 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:proj_inz/data/repositories/coupon_repository.dart';
 
 class ListedCouponListBloc extends Bloc<ListedCouponListEvent, ListedCouponListState> {
-  int? _lastOffset;
+  Map<String, dynamic>? _cursor;
   bool _isFetching = false;
   String? _userId;
   final CouponRepository couponRepository;
@@ -57,7 +57,7 @@ class ListedCouponListBloc extends Bloc<ListedCouponListEvent, ListedCouponListS
   Future<void> _onFetch(FetchListedCoupons event, Emitter emit) async {
     emit(ListedCouponListLoadInProgress());
     _allCoupons.clear();
-    _lastOffset = null;
+    _cursor = null;
     _hasMore = true;
     _userId = event.userId;
     add(FetchMoreListedCoupons());
@@ -79,7 +79,7 @@ class ListedCouponListBloc extends Bloc<ListedCouponListEvent, ListedCouponListS
     }
 
     _isFetching = true;
-    emit(ListedCouponListLoadInProgress());
+    emit(ListedCouponListLoadInProgress(coupons: List.from(_allCoupons)));
 
     // Map ordering enum to backend sort string
     String? sort;
@@ -107,7 +107,7 @@ class ListedCouponListBloc extends Bloc<ListedCouponListEvent, ListedCouponListS
     try {
       final result = await couponRepository.fetchListedCouponsPaginated(
         limit: _limit,
-        offset: _lastOffset ?? 0,
+        cursor: _cursor,
         userId: _userId!,
         reductionIsPercentage: _reductionIsPercentage,
         reductionIsFixed: _reductionIsFixed,
@@ -119,9 +119,9 @@ class ListedCouponListBloc extends Bloc<ListedCouponListEvent, ListedCouponListS
       final listedCoupons = result.coupons;
       if (kDebugMode) print('Fetched ${listedCoupons.length} listed coupons: $listedCoupons');
 
-      _hasMore = listedCoupons.length == _limit;
+      _hasMore = result.cursor != null;
       _allCoupons.addAll(listedCoupons);
-      _lastOffset = result.lastOffset;
+      _cursor = result.cursor;
 
       emit(ListedCouponListLoadSuccess(coupons: _allCoupons, hasMore: _hasMore));
       if (_allCoupons.isEmpty) {
