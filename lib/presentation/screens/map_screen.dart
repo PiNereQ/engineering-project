@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:math' as math;
 import 'dart:ui';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -160,128 +162,6 @@ class _MapScreenViewState extends State<_MapScreenView>
         _stopLocationUpdates();
       }
     }
-  }
-
-  Future<void> _showCacheManagementDialog() async {
-    final mapCacheBloc = context.read<MapCacheBloc>();
-    mapCacheBloc.add(MapCacheStatusRequested());
-
-    await showDialog(
-      context: context,
-      builder:
-          (dialogContext) => BlocProvider.value(
-            value: mapCacheBloc,
-            child: BlocBuilder<MapCacheBloc, MapCacheState>(
-              builder: (context, state) {
-                return AlertDialog(
-                  backgroundColor: AppColors.surface,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(24),
-                    side: const BorderSide(width: 2, color: AppColors.textPrimary),
-                  ),
-                  title: const Text(
-                    'Zarządzanie cache\'em mapy',
-                    style: TextStyle(
-                      fontFamily: 'Itim',
-                      fontSize: 22,
-                      fontWeight: FontWeight.w400,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                  content: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (state is MapCacheGetStatusSuccess) ...[
-                        Text(
-                          'Rozmiar cache: ${state.cacheSizeFormatted}',
-                          style: const TextStyle(
-                            fontFamily: 'Itim',
-                            fontSize: 16,
-                            color: AppColors.textSecondary,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Liczba kafelków: ${state.tilesCount}',
-                          style: const TextStyle(
-                            fontFamily: 'Itim',
-                            fontSize: 16,
-                            color: AppColors.textSecondary,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                      ] else if (state is MapCacheGetStatusInProgress) ...[
-                        const Center(child: CircularProgressIndicator()),
-                        const SizedBox(height: 16),
-                      ] else if (state is MapCacheGetStatusError) ...[
-                        Text(
-                          'Błąd: ${state.errorMessage}',
-                          style: const TextStyle(
-                            fontFamily: 'Itim',
-                            fontSize: 16,
-                            color: AppColors.alertText,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                      ],
-                      const Text(
-                        'Czy chcesz wyczyścić cache mapy?',
-                        style: TextStyle(
-                          fontFamily: 'Itim',
-                          fontSize: 16,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                  actionsPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
-                  actions: [
-                    CustomTextButton.small(
-                      label: 'Anuluj',
-                      width: 100,
-                      onTap: () => Navigator.of(context).pop(),
-                    ),
-                    BlocConsumer<MapCacheBloc, MapCacheState>(
-                      listener: (context, state) {
-                        if (state is MapCacheClearSuccess) {
-                          Navigator.of(context).pop();
-                          showCustomSnackBar(
-                            context,
-                            'Cache został wyczyszczony',
-                          );
-                        } else if (state is MapCacheClearError) {
-                          showCustomSnackBar(
-                            context,
-                            'Błąd podczas czyszczenia cache: ${state.errorMessage}',
-                          );
-                        }
-                      },
-                      builder: (context, state) {
-                        return CustomTextButton.small(
-                          label:
-                              state is MapCacheClearInProgress
-                                  ? 'Czyszczenie...'
-                                  : 'Wyczyść',
-                          width: 120,
-                          onTap:
-                              state is MapCacheClearInProgress
-                                  ? () {}
-                                  : () => context.read<MapCacheBloc>().add(
-                                    MapCacheClearRequested(),
-                                  ),
-                        );
-                      },
-                    ),
-                  ],
-                );
-              },
-            ),
-          ),
-    );
   }
 
   Future<void> _showLocationPermissionDialog() async {
@@ -634,11 +514,19 @@ class _MapScreenViewState extends State<_MapScreenView>
         const clusteringMaxZoom = 17;
         final bool enableClustering = zoomLevelInt < clusteringMaxZoom;
 
+        // Scale cell size with zoom level - larger cells when zoomed out
+        final double baseCellSize = 60.0;
+        final double zoomFactor = math.max(1.0, (18.0 - zoomLevelInt));
+        final double scaledCellSize = baseCellSize * zoomFactor;
+        if (kDebugMode) {
+          debugPrint('Zoom level: $currentZoom, Zoom factor: $zoomFactor, Cell size: $scaledCellSize');
+        }
+
         final clusteredLocations = enableClustering
             ? clusterItems<ShopLocation>(
                 state.locations,
                 zoom: zoomLevelInt,
-                cellSizePx: 60,
+                cellSizePx: scaledCellSize,
                 toLatLng: (loc) => loc.latLng,
               )
             : state.locations
