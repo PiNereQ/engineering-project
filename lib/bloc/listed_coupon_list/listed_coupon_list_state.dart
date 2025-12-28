@@ -10,7 +10,14 @@ abstract class ListedCouponListState extends Equatable {
 
 class ListedCouponListInitial extends ListedCouponListState {}
 
-class ListedCouponListLoadInProgress extends ListedCouponListState {}
+class ListedCouponListLoadInProgress extends ListedCouponListState {
+  final List<Coupon> coupons;
+
+  ListedCouponListLoadInProgress({this.coupons = const []});
+
+  @override
+  List<Object?> get props => [coupons];
+}
 
 class ListedCouponListLoadSuccess extends ListedCouponListState {
   final List<Coupon> coupons;

@@ -9,7 +9,14 @@ sealed class OwnedCouponListState extends Equatable {
 
 final class OwnedCouponListInitial extends OwnedCouponListState {}
 
-final class OwnedCouponListLoadInProgress extends OwnedCouponListState {}
+final class OwnedCouponListLoadInProgress extends OwnedCouponListState {
+  final List<Coupon> coupons;
+
+  const OwnedCouponListLoadInProgress({this.coupons = const []});
+
+  @override
+  List<Object> get props => [coupons];
+}
 
 class OwnedCouponListLoadSuccess extends OwnedCouponListState {
   final List<Coupon> coupons;

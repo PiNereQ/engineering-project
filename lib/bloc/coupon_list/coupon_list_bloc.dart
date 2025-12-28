@@ -17,7 +17,7 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
   final CouponRepository couponRepository;
   CouponListState _previousListState = CouponListInitial();
 
-  final int _limit = 5;
+  final int _limit = 20;
   
   final List<Coupon> _allCoupons = [];
   Map<String, dynamic>? _cursor;
