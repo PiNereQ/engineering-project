@@ -17,10 +17,10 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
   final CouponRepository couponRepository;
   CouponListState _previousListState = CouponListInitial();
 
-  final int _limit = 50;
+  final int _limit = 5;
   
   final List<Coupon> _allCoupons = [];
-  int? _lastOffset;
+  Map<String, dynamic>? _cursor;
   bool _hasMore = true;
   bool _isFetching = false;
   String? _userId;
@@ -64,9 +64,9 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
 
   Future<void> _onFetchCoupons(FetchCoupons event, Emitter<CouponListState> emit) async {
     if (kDebugMode) debugPrint('Fetching coupons for user: ${event.userId}, shop: ${event.shopId}, category: ${event.categoryId}');
-    emit(CouponListLoadInProgress());
+    emit(const CouponListLoadInProgress());
     _allCoupons.clear();
-    _lastOffset = null;
+    _cursor = null;
     _hasMore = true;
     _userId = event.userId;
     _shopId = event.shopId;
@@ -90,7 +90,7 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
     }
 
     _isFetching = true;
-    emit(CouponListLoadInProgress());
+    emit(CouponListLoadInProgress(coupons: List.from(_allCoupons)));
 
     // Map Ordering enum to backend sort string
     String? sort;
@@ -124,7 +124,7 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
     try {
       final result = await couponRepository.fetchCouponsPaginated(
         limit: _limit,
-        offset: _lastOffset ?? 0,
+        cursor: _cursor,
         shopId: _shopId,
         categoryId: _categoryId,
         userId: _userId!,
@@ -135,11 +135,17 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
         minReputation: _minReputation,
         sort: sort,
       );
-      debugPrint('Fetched ${result.ownedCoupons.length} coupons with proper mapping');
+      if (kDebugMode) print('Fetched ${result.ownedCoupons.length} coupons with proper mapping');
 
-      _hasMore = result.lastOffset != null;
+      _hasMore = result.cursor != null;
       _allCoupons.addAll(result.ownedCoupons);
-      _lastOffset = result.lastOffset;
+      _cursor = result.cursor;
+
+      if (kDebugMode) {
+        print('Total coupons loaded: ${_allCoupons.length}');
+        print('Has more: $_hasMore');
+        print('Next cursor: $_cursor');
+      }
 
       var successState = CouponListLoadSuccess(coupons: _allCoupons, hasMore: _hasMore);
       _previousListState = successState;
@@ -162,7 +168,6 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
 
   Future<void> _onRefreshCoupons(RefreshCoupons event, Emitter<CouponListState> emit) async {
     _allCoupons.clear();
-    _lastOffset = null;
     _hasMore = true;
     if (_userId != null) {
       add(FetchCoupons(userId: _userId!));

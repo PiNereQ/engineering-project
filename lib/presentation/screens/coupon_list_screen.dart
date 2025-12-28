@@ -77,7 +77,8 @@ class _CouponListScreenContentState extends State<_CouponListScreenContent> {
     super.initState();
     _scrollController.addListener(() {
       if (_scrollController.position.pixels >=
-          _scrollController.position.maxScrollExtent - 150) {
+          _scrollController.position.maxScrollExtent - 150
+          && context.read<CouponListBloc>().state is! CouponListLoadInProgress) {
         debugPrint('Ładuj wincyj!');
         if (mounted) {
           context.read<CouponListBloc>().add(FetchMoreCoupons());
@@ -142,9 +143,33 @@ class _CouponListScreenContentState extends State<_CouponListScreenContent> {
             BlocBuilder<CouponListBloc, CouponListState>(
               builder: (context, state) {
                 if (state is CouponListLoadInProgress) {
-                  return const SliverFillRemaining(
-                    child: Center(child: CircularProgressIndicator()),
-                  );
+                  if (state.coupons.isEmpty) {
+                    return const SliverFillRemaining(
+                      child: Center(child: CircularProgressIndicator(color: AppColors.textPrimary,)),
+                    );
+                  } else {
+                    return SliverPadding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      sliver: SliverList(
+                        delegate: SliverChildBuilderDelegate(
+                          (context, index) {
+                            if (index == state.coupons.length) {
+                              return const Padding(
+                                padding: EdgeInsets.all(16.0),
+                                child: Center(child: CircularProgressIndicator(color: AppColors.textPrimary,)),
+                              );
+                            }
+                            final coupon = state.coupons[index];
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 16.0),
+                              child: CouponCardHorizontal(coupon: coupon),
+                            );
+                          },
+                          childCount: state.coupons.length + 1,
+                        ),
+                      ),
+                    );
+                  }
                 } else if (state is CouponListLoadSuccess) {
                   return SliverPadding(
                     padding: const EdgeInsets.symmetric(horizontal: 24),
