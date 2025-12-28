@@ -13,6 +13,7 @@ import 'package:proj_inz/bloc/coupon_list/coupon_list_bloc.dart';
 import 'package:proj_inz/data/models/shop_location_model.dart';
 import 'package:proj_inz/presentation/screens/coupon_list_screen.dart';
 import 'package:proj_inz/presentation/widgets/coupon_card.dart';
+import 'package:proj_inz/presentation/widgets/help/help_button.dart';
 
 import 'package:url_launcher/url_launcher.dart';
 import 'package:app_settings/app_settings.dart';
@@ -990,10 +991,17 @@ class _MapScreenViewState extends State<_MapScreenView>
                           Navigator.of(context).pop();
                         },
                       ),
-                      CustomIconButton(
-                  icon: Icon(Icons.archive_outlined),
-                  onTap: _showCacheManagementDialog,
-                ),
+                        HelpButton(
+                          title: "Mapa",
+                          body: Text(
+                            "Na tej mapie możesz znaleźć sklepy z dostępnymi kuponami. \n\n• Użyj przycisku lokalizacji, aby pokazać swoją aktualną pozycję na mapie. \n\n• Przybliż mapę, aby móc wyszukać sklepy w danym obszarze. \n\n• Kliknij na znacznik sklepu, aby zobaczyć dostępne kupony w tym sklepie.",
+                            style: const TextStyle(
+                              fontFamily: 'Itim',
+                              fontSize: 16,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                        ),
                     ],
                   ),
                 ),
