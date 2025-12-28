@@ -31,8 +31,8 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
   double? _minPrice; 
   double? _maxPrice; 
   int? _minReputation; 
-  String? _shopOrCategoryId;
-  bool? _filterByShop; // true = shop, false = category, null = none
+  String? _shopId;
+  String? _categoryId;
 
   // sorting
   Ordering _ordering = Ordering.creationDateDesc;
@@ -63,13 +63,14 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
 
 
   Future<void> _onFetchCoupons(FetchCoupons event, Emitter<CouponListState> emit) async {
+    if (kDebugMode) debugPrint('Fetching coupons for user: ${event.userId}, shop: ${event.shopId}, category: ${event.categoryId}');
     emit(CouponListLoadInProgress());
     _allCoupons.clear();
     _lastOffset = null;
     _hasMore = true;
     _userId = event.userId;
-    _shopOrCategoryId = event.shopId;
-    _filterByShop = event.filterByShop;
+    _shopId = event.shopId;
+    _categoryId = event.categoryId;
     add(FetchMoreCoupons());
   }
 
@@ -124,8 +125,8 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
       final result = await couponRepository.fetchCouponsPaginated(
         limit: _limit,
         offset: _lastOffset ?? 0,
-        shopOrCategoryId: _shopOrCategoryId,
-        filterByShop: _filterByShop,
+        shopId: _shopId,
+        categoryId: _categoryId,
         userId: _userId!,
         reductionIsPercentage: _reductionIsPercentage,
         reductionIsFixed: _reductionIsFixed,
@@ -198,7 +199,7 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
     ));
 
     if (_userId != null) {
-      add(FetchCoupons(userId: _userId!, shopId: _shopOrCategoryId));
+      add(FetchCoupons(userId: _userId!, shopId: _shopId, categoryId: _categoryId));
     }
 
     emit(CouponListMetaState(
@@ -223,7 +224,7 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
     ));
 
     if (_userId != null) {
-      add(FetchCoupons(userId: _userId!, shopId: _shopOrCategoryId));
+      add(FetchCoupons(userId: _userId!, shopId: _shopId));
     }
 
     emit(CouponListMetaState(

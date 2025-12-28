@@ -86,8 +86,8 @@ class CouponRepository {
   Future<PaginatedCouponsResult> fetchCouponsPaginated({
     required int limit,
     int offset = 0,
-    String? shopOrCategoryId,
-    bool? filterByShop,
+    String? shopId,
+    String? categoryId,
     required String userId,
     bool? reductionIsPercentage,
     bool? reductionIsFixed,
@@ -96,13 +96,12 @@ class CouponRepository {
     int? minReputation,
     String? sort, // e.g. "price+asc"
   }) async {
-    filterByShop = true;
     try {
       final queryParams = {
         'limit': limit.toString(),
         'offset': offset.toString(),
-        if (shopOrCategoryId != null && filterByShop == true) 'shop_id': shopOrCategoryId,
-        if (shopOrCategoryId != null && filterByShop == false) 'category_id': shopOrCategoryId,
+        if (shopId != null) 'shop_id': shopId,
+        if (categoryId != null && shopId == null) 'category_id': categoryId,
         if (reductionIsPercentage != null && !reductionIsFixed!) 'type': 'percent',
         if (reductionIsFixed != null && !reductionIsPercentage!) 'type': 'flat',
         if (minPrice != null) 'min_price': minPrice.toString(),
@@ -398,7 +397,7 @@ class CouponRepository {
   /// Fetch three coupons for a specific shop
   Future<List<Coupon>> fetchThreeCouponsForShop(String shopId) async {
     try {
-      final result = await fetchCouponsPaginated(limit: 3, shopOrCategoryId: shopId, userId: await userRepository.getCurrentUserId());
+      final result = await fetchCouponsPaginated(limit: 3, shopId: shopId, userId: await userRepository.getCurrentUserId());
       return result.ownedCoupons;
     } catch (e) {
       if (kDebugMode) debugPrint('Error in fetchThreeCouponsForShop: $e');
