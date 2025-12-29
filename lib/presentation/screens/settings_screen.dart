@@ -82,7 +82,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   }
 
                   final user = snapshot.data!;
-                  final bool hasPhoneNumber = FirebaseAuth.instance.currentUser!.phoneNumber!.isNotEmpty;
+                  final bool hasPhoneNumber = FirebaseAuth.instance.currentUser!.phoneNumber?.isNotEmpty ?? false;
                   if (kDebugMode) print(FirebaseAuth.instance.currentUser?.phoneNumber);
 
                   return _SectionCard(
