@@ -180,7 +180,13 @@ class _CouponDetails extends StatelessWidget {
     final String description = coupon.description;
     final String code = coupon.code!; 
     final bool isUsed = coupon.isUsed!;
-    
+
+    final now = DateTime.now();
+    final bool isExpired = expiryDate != null &&
+        now.isAfter(
+          DateTime(expiryDate.year, expiryDate.month, expiryDate.day, 23, 59, 59),
+        );
+        
     final reductionText =
         formatReduction(reduction.toDouble(), reductionIsPercentage);
 
@@ -290,7 +296,7 @@ class _CouponDetails extends StatelessWidget {
                   alignment: Alignment.center,
                   padding: const EdgeInsets.symmetric(horizontal: 8),
                   decoration: ShapeDecoration(
-                    color: coupon.isUsed! ? AppColors.primaryButtonPressed : shopBgColor,
+                    color: (isUsed || isExpired) ? AppColors.primaryButtonPressed : shopBgColor,
                     shape: RoundedRectangleBorder(
                       side: const BorderSide(width: 2),
                       borderRadius: BorderRadius.circular(8),
@@ -301,7 +307,7 @@ class _CouponDetails extends StatelessWidget {
                     child: Text(
                       shopName,
                       style: TextStyle(
-                        color: coupon.isUsed! ? AppColors.textSecondary : shopNameColor,
+                        color: (isUsed || isExpired) ? AppColors.textSecondary : shopNameColor,
                         fontSize: 30,
                         fontFamily: 'Roboto',
                         fontWeight: FontWeight.w700,
@@ -459,7 +465,7 @@ class _CouponDetails extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               spacing: 12,
               children: [
                 CustomTextButton(

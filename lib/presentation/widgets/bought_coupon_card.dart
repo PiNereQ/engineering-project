@@ -27,7 +27,13 @@ class OwnedCouponCardHorizontal extends StatelessWidget {
     final bool worksOnline = coupon.worksOnline;
     final bool worksInStore = coupon.worksInStore;
     final DateTime? expiryDate = coupon.expiryDate;
-    final bool isUsed = coupon.isUsed!;
+    final bool isUsed = coupon.isUsed!; 
+    final now = DateTime.now();
+
+    final bool isExpired = expiryDate != null &&
+        now.isAfter(
+          DateTime(expiryDate.year, expiryDate.month, expiryDate.day, 23, 59, 59),
+        );
 
     final reductionText =
         formatReduction(reduction.toDouble(), reductionIsPercentage);
@@ -143,7 +149,9 @@ class OwnedCouponCardHorizontal extends StatelessWidget {
                           alignment: Alignment.center,
                           padding: const EdgeInsets.symmetric(horizontal: 8),
                           decoration: ShapeDecoration(
-                              color: isUsed ? AppColors.primaryButtonPressed : shopBgColor,
+                            color: (isUsed || isExpired)
+                                ? AppColors.primaryButtonPressed
+                                : shopBgColor,
                             shape: RoundedRectangleBorder(
                               side: const BorderSide(width: 2),
                               borderRadius: BorderRadius.circular(8),
@@ -152,7 +160,9 @@ class OwnedCouponCardHorizontal extends StatelessWidget {
                           child: Text(
                             shopName,
                             style: TextStyle(
-                              color: isUsed ? AppColors.textSecondary : shopNameColor,
+                              color: (isUsed || isExpired)
+                                  ? AppColors.textSecondary
+                                  : shopNameColor,
                               fontSize: 15,
                               fontFamily: 'Roboto',
                               fontWeight: FontWeight.w700,
@@ -237,24 +247,21 @@ class OwnedCouponCardHorizontal extends StatelessWidget {
                 DashedSeparator.vertical(length: 146),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(4, 10, 16, 10),
-                  child: Center(child: Icon(isUsed ? Icons.done_all_rounded : Icons.check_rounded, size: 36)),
+                  child: Center(
+                    child: Icon(
+                      isExpired
+                          ? Icons.event_busy
+                          : isUsed
+                              ? Icons.done_all_rounded
+                              : Icons.check_rounded,
+                      size: 36,
+                    )
+                  ),
                 ),
               ],
             ),
           ),
-          if (expiryDate != null &&
-              DateTime.now().isAfter(
-                DateTime(
-                  expiryDate.year,
-                  expiryDate.month,
-                  expiryDate.day,
-                  23,
-                  59,
-                  59,
-                ),
-              ) &&
-              !isUsed
-              )
+          if (isExpired && !isUsed)
           Positioned(
             bottom: 22,
             left: 138,
