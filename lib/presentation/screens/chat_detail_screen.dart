@@ -11,6 +11,7 @@ import 'package:proj_inz/presentation/screens/report_screen.dart';
 import 'package:proj_inz/presentation/widgets/chat_report_popup.dart';
 import 'package:proj_inz/presentation/widgets/coupon_preview_popup.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_icon_button.dart';
+import 'package:proj_inz/presentation/widgets/input/buttons/custom_text_button.dart';
 import 'package:proj_inz/presentation/widgets/reputation_bar.dart';
 import '../widgets/chat_bubble.dart';
 
@@ -26,6 +27,7 @@ class ChatHeader extends StatelessWidget {
   final String username;
   final int reputation;
   final String joinDate;
+  final bool isCouponDeleted;
   final VoidCallback onBack;
   final VoidCallback onReport;
 
@@ -35,6 +37,7 @@ class ChatHeader extends StatelessWidget {
     required this.username,
     required this.reputation,
     required this.joinDate,
+    required this.isCouponDeleted,
     required this.onBack,
     required this.onReport,
   });
@@ -82,6 +85,25 @@ class ChatHeader extends StatelessWidget {
                         height: 1.2,
                       ),
                     ),
+                    if (isCouponDeleted)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 6),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: AppColors.alertButton,
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: const Text(
+                            'Usunięty kupon',
+                            style: TextStyle(
+                              fontFamily: 'Itim',
+                              fontSize: 13,
+                              color: AppColors.alertText,
+                            ),
+                          ),
+                        ),
+                      ),
                   ],
                 ),
               ),
@@ -408,17 +430,17 @@ class ChatDetailScreen extends StatelessWidget {
 Widget build(BuildContext context) {
   final couponRepo = context.read<CouponRepository>();
 
-  return FutureBuilder<Coupon>(
+  return FutureBuilder<Coupon?>(
     future: couponRepo.fetchCouponDetailsById(couponId),
     builder: (context, snapshot) {
-      if (!snapshot.hasData) {
+      if (snapshot.connectionState == ConnectionState.waiting) {
         return const Scaffold(
           backgroundColor: AppColors.background,
           body: Center(child: CircularProgressIndicator()),
         );
       }
 
-      final loadedCoupon = snapshot.data!;
+      final loadedCoupon = snapshot.data;
 
       return BlocProvider(
         create: (_) => ChatDetailBloc(
@@ -465,6 +487,7 @@ class _ChatDetailViewState extends State<ChatDetailView> {
   Coupon? _coupon;
   late final TextEditingController _controller;
   bool _showPopup = false;
+  bool get _isCouponDeleted => _coupon == null;
 
   String buildJoinDate(Coupon? c) {
     if (c == null || c.sellerJoinDate == null) return "—";
@@ -510,19 +533,21 @@ class _ChatDetailViewState extends State<ChatDetailView> {
           backgroundColor: AppColors.background,
 
           appBar: PreferredSize(
-            preferredSize: const Size.fromHeight(180),
+            preferredSize: Size.fromHeight(_isCouponDeleted ? 200 : 180),
             child: ChatHeader(
-              couponTitle: formatChatCouponTitle(
-                reduction: _conversation != null
-                    ? _conversation!.couponDiscount
-                    : widget.relatedCoupon!.reduction,
-                isPercentage: _conversation != null
-                    ? _conversation!.couponDiscountIsPercentage
-                    : widget.relatedCoupon!.reductionIsPercentage,
-                shopName: _conversation != null
-                    ? _conversation!.couponShopName
-                    : widget.relatedCoupon!.shopName,
-              ),
+              couponTitle: _conversation != null
+                  ? formatChatCouponTitle(
+                      reduction: _conversation!.couponDiscount,
+                      isPercentage: _conversation!.couponDiscountIsPercentage,
+                      shopName: _conversation!.couponShopName,
+                    )
+                  : widget.relatedCoupon != null
+                      ? formatChatCouponTitle(
+                          reduction: widget.relatedCoupon!.reduction,
+                          isPercentage: widget.relatedCoupon!.reductionIsPercentage,
+                          shopName: widget.relatedCoupon!.shopName,
+                        )
+                      : 'Usunięty kupon',
 
               username: _conversation != null
                   ? _getOtherUsername()
@@ -536,6 +561,7 @@ class _ChatDetailViewState extends State<ChatDetailView> {
                   ? "01.06.2025" // TODO backend
                   : buildJoinDate(widget.relatedCoupon),
 
+              isCouponDeleted: _isCouponDeleted,
               onBack: () => Navigator.pop(context),
               onReport: () => setState(() => _showPopup = true),
             ),
@@ -627,20 +653,26 @@ class _ChatDetailViewState extends State<ChatDetailView> {
             child: Container(
               color: Colors.black.withValues(alpha: 0.25),
               child: ChatReportPopup(
-                onShowCoupon: () {
-                  if (_coupon == null) return;
+              onShowCoupon: () {
+                setState(() => _showPopup = false);
 
-                  setState(() => _showPopup = false);
-
+                if (_coupon == null) {
                   showDialog(
                     context: context,
-                    barrierDismissible: true,
-                    builder: (_) => CouponPreviewPopup(
-                      coupon: _coupon!,
-                      onClose: () => Navigator.of(context).pop(),
-                    ),
+                    builder: (_) => const _DeletedCouponDialog(),
                   );
-                },            
+                  return;
+                }
+
+                showDialog(
+                  context: context,
+                  barrierDismissible: true,
+                  builder: (_) => CouponPreviewPopup(
+                    coupon: _coupon!,
+                    onClose: () => Navigator.of(context).pop(),
+                  ),
+                );
+              },           
                 onReport: () {
                   final currentUser = FirebaseAuth.instance.currentUser!.uid;
 
@@ -741,5 +773,44 @@ class _ChatDetailViewState extends State<ChatDetailView> {
   String _formatTime(DateTime time) {
     // Use helper to format time in local timezone
     return formatTimeLocal(time);
+  }
+}
+
+class _DeletedCouponDialog extends StatelessWidget {
+  const _DeletedCouponDialog();
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      backgroundColor: AppColors.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(24),
+        side: const BorderSide(width: 2, color: AppColors.textPrimary),
+      ),
+      title: const Text(
+        'Kupon niedostępny',
+        style: TextStyle(
+          fontFamily: 'Itim',
+          fontSize: 22,
+          color: AppColors.textPrimary,
+        ),
+      ),
+      content: const Text(
+        'Ten kupon został usunięty i nie jest już dostępny.',
+        style: TextStyle(
+          fontFamily: 'Itim',
+          fontSize: 16,
+          color: AppColors.textSecondary,
+        ),
+      ),
+      actionsPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      actions: [
+        CustomTextButton.primarySmall(
+          label: 'OK',
+          width: 100,
+          onTap: () => Navigator.pop(context),
+        ),
+      ],
+    );
   }
 }

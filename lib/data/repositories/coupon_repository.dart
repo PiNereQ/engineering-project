@@ -135,14 +135,17 @@ class CouponRepository {
   }
 
   /// Fetch coupon details by ID
-  Future<Coupon> fetchCouponDetailsById(String id) async {
+  Future<Coupon?> fetchCouponDetailsById(String id) async {
     try {
       final data = await _api.get('/coupons/available/$id', useAuthToken: true);
-      final coupon = Coupon.availableToMeFromJson(data as Map<String, dynamic>);
-
-      return coupon;
+      return Coupon.availableToMeFromJson(data as Map<String, dynamic>);
     } catch (e) {
-      if (kDebugMode) debugPrint('Error in fetchCouponDetailsById: $e');
+      if (e.toString().contains('404')) {
+        if (kDebugMode) {
+          debugPrint('Coupon $id not found (probably deleted)');
+        }
+        return null;
+      }
       rethrow;
     }
   }
