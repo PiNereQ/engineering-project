@@ -397,6 +397,21 @@ class CouponRepository {
     }
   }
 
+  Future<void> markOwnedCouponAsUsed(String couponId) async {
+    try {
+      await _api.post(
+        '/coupons/owned/$couponId/use',
+        queryParameters: {'user_id': await userRepository.getCurrentUserId()},
+        body: {},
+        useAuthToken: true,
+      );
+      
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error in markOwnedCouponAsUsed: $e');
+      rethrow;
+    }
+  }
+
   /// Fetch example coupons for a specific shop in map screen
   Future<List<Coupon>> fetchExampleCouponsForShop(String shopId) async {
     try {

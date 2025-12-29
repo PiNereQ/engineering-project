@@ -35,3 +35,23 @@ class OwnedCouponLoadFailure extends OwnedCouponState {
   @override
   List<Object> get props => [message];
 }
+
+class OwnedCouponMarkAsUsedInProgress extends OwnedCouponState {}
+
+class OwnedCouponMarkAsUsedSuccess extends OwnedCouponState {
+  final Coupon coupon;
+
+  const OwnedCouponMarkAsUsedSuccess({required this.coupon});
+
+  @override
+  List<Object> get props => [coupon];
+}
+
+class OwnedCouponMarkAsUsedFailure extends OwnedCouponState {
+  final String message;
+
+  const OwnedCouponMarkAsUsedFailure({required this.message});
+
+  @override
+  List<Object> get props => [message];
+}

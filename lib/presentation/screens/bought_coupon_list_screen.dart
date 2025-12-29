@@ -120,7 +120,6 @@ class _BoughtCouponListScreenState extends State<BoughtCouponListScreen> {
               return const SizedBox(height: 86); // padding for navbar
             }
             Coupon coupon = state.coupons[index];
-            if (index == 1) coupon = coupon.copyWith(isUsed: true); // for demo purposes
             return Padding(
               padding: const EdgeInsets.only(bottom: 16.0),
               child: OwnedCouponCardHorizontal(coupon: coupon),
