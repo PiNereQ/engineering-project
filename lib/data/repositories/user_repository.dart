@@ -163,6 +163,7 @@ class UserRepository {
     try {
       await _api.patch(
         '/users/$userId/disable',
+        body: {},
         useAuthToken: true,
       );
     } catch (e) {
