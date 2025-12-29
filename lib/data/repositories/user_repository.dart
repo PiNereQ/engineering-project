@@ -157,4 +157,17 @@ class UserRepository {
       rethrow;
     }
   }
+
+  /// PATCH /users/{id}/disable
+  Future<void> disableAccount(String userId) async {
+    try {
+      await _api.patch(
+        '/users/$userId/disable',
+        useAuthToken: true,
+      );
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error disabling account: $e');
+      rethrow;
+    }
+  }
 }

@@ -6,6 +6,7 @@ import 'package:proj_inz/bloc/number_verification/number_verification_bloc.dart'
 import 'package:proj_inz/core/theme.dart';
 import 'package:proj_inz/presentation/screens/phone_number_confirmation_screen.dart';
 import 'package:proj_inz/presentation/screens/legal_document_screen.dart';
+import 'package:proj_inz/presentation/screens/sign_in_screen.dart';
 import 'package:proj_inz/presentation/widgets/dashed_separator.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_icon_button.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_switch.dart';
@@ -483,7 +484,125 @@ class _DeleteAccountDialog extends StatelessWidget {
           width: 100,
           onTap: () {
             Navigator.pop(context);
-            // TODO backend
+
+            showDialog(
+              context: context,
+              builder: (_) => const _ConfirmDeleteWithPasswordDialog(),
+            );
+          },
+        ),
+      ],
+    );
+  }
+}
+
+class _ConfirmDeleteWithPasswordDialog extends StatefulWidget {
+  const _ConfirmDeleteWithPasswordDialog();
+
+  @override
+  State<_ConfirmDeleteWithPasswordDialog> createState() =>
+      _ConfirmDeleteWithPasswordDialogState();
+}
+
+class _ConfirmDeleteWithPasswordDialogState
+    extends State<_ConfirmDeleteWithPasswordDialog> {
+  final _passwordController = TextEditingController();
+  bool _isLoading = false;
+  String? _error;
+
+  Future<void> _confirmDelete() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
+    try {
+      final user = FirebaseAuth.instance.currentUser!;
+      final email = user.email!;
+
+      final credential = EmailAuthProvider.credential(
+        email: email,
+        password: _passwordController.text,
+      );
+      await user.reauthenticateWithCredential(credential);
+
+      await context.read<UserRepository>().disableAccount(user.uid);
+
+      await FirebaseAuth.instance.signOut();
+
+      if (!mounted) return;
+
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => SignInScreen()),
+        (_) => false,
+      );
+    } on FirebaseAuthException catch (_) {
+      setState(() {
+        _error = 'Nieprawidłowe hasło';
+      });
+    } catch (_) {
+      setState(() {
+        _error = 'Nie udało się usunąć konta';
+      });
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      backgroundColor: AppColors.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(24),
+        side: const BorderSide(width: 2, color: AppColors.textPrimary),
+      ),
+      title: const Text(
+        'Potwierdź usunięcie konta',
+        style: TextStyle(
+          fontFamily: 'Itim',
+          fontSize: 22,
+          color: AppColors.textPrimary,
+        ),
+      ),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Text(
+            'Wpisz hasło, aby potwierdzić usunięcie konta.\n'
+            'Ta operacja jest nieodwracalna.',
+            style: TextStyle(
+              fontFamily: 'Itim',
+              fontSize: 16,
+              color: AppColors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _passwordController,
+            obscureText: true,
+            decoration: InputDecoration(
+              labelText: 'Hasło',
+              errorText: _error,
+            ),
+          ),
+        ],
+      ),
+      actionsPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      actions: [
+        CustomTextButton.small(
+          label: 'Anuluj',
+          width: 100,
+          onTap: () => Navigator.of(context).pop(),
+        ),
+        CustomTextButton.primarySmall(
+          label: _isLoading ? '...' : 'Usuń konto',
+          width: 120,
+          onTap: () {
+            if (_isLoading) return;
+            _confirmDelete();
           },
         ),
       ],
