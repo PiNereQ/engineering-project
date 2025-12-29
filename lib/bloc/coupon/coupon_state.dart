@@ -35,3 +35,7 @@ class CouponLoadFailure extends CouponState {
   @override
   List<Object> get props => [message];
 }
+
+class CouponDeleted extends CouponState {
+  const CouponDeleted();
+}
