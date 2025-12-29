@@ -15,6 +15,7 @@ import 'package:proj_inz/data/repositories/user_repository.dart';
 import 'package:proj_inz/bloc/shop/shop_bloc.dart';
 import 'package:proj_inz/data/models/shop_model.dart';
 import 'package:proj_inz/data/repositories/shop_repository.dart';
+import 'package:proj_inz/presentation/screens/legal_document_screen.dart';
 import 'package:proj_inz/presentation/widgets/custom_snack_bar.dart';
 import 'package:proj_inz/presentation/widgets/dashed_separator.dart';
 import 'package:proj_inz/presentation/widgets/help/help_button.dart';
@@ -1478,15 +1479,56 @@ class _AddScreenState extends State<AddScreen> {
                                         },
                                       ),
                                       const SizedBox(height: 12),
-                                      Text(
-                                        'Dodając kupon, akceptujesz postanowienia regulaminu.',
-                                        textAlign: TextAlign.center,
-                                        style: TextStyle(
-                                          color: AppColors.textPrimary,
-                                          fontSize: 14,
-                                          fontFamily: 'Itim',
-                                          fontWeight: FontWeight.w400,
-                                        ),
+                                      Wrap(
+                                        alignment: WrapAlignment.center,
+                                        spacing: 4,
+                                        runSpacing: 2,
+                                        children: [
+                                          const Text(
+                                            'Dodając kupon, akceptujesz',
+                                            style: TextStyle(
+                                              color: AppColors.textPrimary,
+                                              fontSize: 14,
+                                              fontFamily: 'Itim',
+                                            ),
+                                          ),
+                                          _FooterLink(
+                                            label: 'regulamin',
+                                            onTap: () {
+                                              Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (_) => const LegalDocumentScreen(
+                                                    title: 'Regulamin',
+                                                    assetPath: 'assets/legal/regulamin.md',
+                                                  ),
+                                                ),
+                                              );
+                                            },
+                                          ),
+                                          const Text(
+                                            'oraz',
+                                            style: TextStyle(
+                                              color: AppColors.textPrimary,
+                                              fontSize: 14,
+                                              fontFamily: 'Itim',
+                                            ),
+                                          ),
+                                          _FooterLink(
+                                            label: 'politykę prywatności.',
+                                            onTap: () {
+                                              Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (_) => const LegalDocumentScreen(
+                                                    title: 'Polityka prywatności',
+                                                    assetPath: 'assets/legal/polityka_prywatnosci.md',
+                                                  ),
+                                                ),
+                                              );
+                                            },
+                                          ),
+                                        ],
                                       ),
                                     ],
                                   ),
@@ -1527,6 +1569,33 @@ class _HelpBody extends StatelessWidget {
 9. Po uzupełnieniu wszystkich wymaganych pól, kliknij przycisk "Dodaj", aby dodać kupon do systemu.''',
         style: TextStyle(fontFamily: 'Itim', fontSize: 18),
         textAlign: TextAlign.justify,
+      ),
+    );
+  }
+}
+
+class _FooterLink extends StatelessWidget {
+  final String label;
+  final VoidCallback onTap;
+
+  const _FooterLink({
+    required this.label,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Text(
+        label,
+        style: const TextStyle(
+          color: AppColors.textPrimary,
+          fontSize: 14,
+          fontFamily: 'Itim',
+          fontWeight: FontWeight.w400,
+          decoration: TextDecoration.underline,
+        ),
       ),
     );
   }
