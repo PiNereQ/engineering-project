@@ -26,7 +26,7 @@ class _SignInScreenState extends State<SignInScreen> {
       resizeToAvoidBottomInset: true,
       body: BlocConsumer<AuthBloc, AuthState>(
         listener: (context, state) {
-          if (state is AuthSignInSuccess) {
+          if (state is AuthSignInSuccess || state is AuthAuthenticated) {
             showCustomSnackBar(context, "Zalogowano pomyślnie!");
             Navigator.of(context).pushAndRemoveUntil(
               MaterialPageRoute(builder: (context) => const MainScreen()),

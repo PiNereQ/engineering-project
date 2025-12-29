@@ -6,20 +6,21 @@ import 'package:proj_inz/data/repositories/user_repository.dart';
 
 class PaginatedCouponsResult {
   final List<Coupon> ownedCoupons;
+  final Map<String, dynamic>? cursor;
   final int? lastOffset;
-  PaginatedCouponsResult({required this.ownedCoupons, this.lastOffset});
+  PaginatedCouponsResult({required this.ownedCoupons, this.cursor, this.lastOffset});
 }
 
 class PaginatedOwnedCouponsResult {
   final List<Coupon> coupons;
-  final int? lastOffset;
-  PaginatedOwnedCouponsResult({required this.coupons, this.lastOffset});
+  final Map<String, dynamic>? cursor;
+  PaginatedOwnedCouponsResult({required this.coupons, this.cursor});
 }
 
 class PaginatedListedCouponsResult {
   final List<Coupon> coupons;
-  final int? lastOffset;
-  PaginatedListedCouponsResult({required this.coupons, this.lastOffset});
+  final Map<String, dynamic>? cursor;
+  PaginatedListedCouponsResult({required this.coupons, this.cursor});
 }
 
 class CouponRepository {
@@ -34,16 +35,16 @@ class CouponRepository {
   // COUPON LIST METHODS ===========================
 
   /// Fetch coupons from personalized feed with cursor-based pagination
-  Future<Map<String, dynamic>> fetchCouponFeed({
-  required int limit,
-  String? cursor,
-  required String userId,
-}) async {
-  try {
-    final queryParams = {
-      'limit':  limit. toString(),
-      if (cursor != null) 'cursor': cursor,
-    }.. removeWhere((k, v) => v == null);
+  Future<PaginatedCouponsResult> fetchCouponFeed({
+    required int limit,
+    String? cursor,
+    required String userId,
+  }) async {
+    try {
+      final queryParams = {
+        'limit': limit.toString(),
+        if (cursor != null) 'cursor': cursor,
+      };
 
     final response = await _api.get(
       '/coupons/feed',
@@ -94,8 +95,9 @@ class CouponRepository {
   /// Fetch coupons with pagination and filters (from active listings)
   Future<PaginatedCouponsResult> fetchCouponsPaginated({
     required int limit,
-    int offset = 0,
+    Map<String, dynamic>? cursor,
     String? shopId,
+    String? categoryId,
     required String userId,
     bool? reductionIsPercentage,
     bool? reductionIsFixed,
@@ -105,33 +107,36 @@ class CouponRepository {
     String? sort, // e.g. "price+asc"
   }) async {
     try {
-      final queryParams = {
+      final Map<String, String> queryParams = {
         'limit': limit.toString(),
-        'offset': offset.toString(),
+        if (cursor != null) 'cursor_value': cursor['value']!.toString(),
+        if (cursor != null) 'cursor_id': cursor['id']!.toString(),
         if (shopId != null) 'shop_id': shopId,
+        if (categoryId != null && shopId == null) 'category_id': categoryId,
         if (reductionIsPercentage != null && !reductionIsFixed!) 'type': 'percent',
         if (reductionIsFixed != null && !reductionIsPercentage!) 'type': 'flat',
         if (minPrice != null) 'min_price': minPrice.toString(),
         if (maxPrice != null) 'max_price': maxPrice.toString(),
         if (minReputation != null) 'min_rep': minReputation.toString(),
         if (sort != null) 'sort': sort,
-      }..removeWhere((k, v) => v == null);
+      };
 
       final response = await _api.get(
         '/coupons/available',
         queryParameters: queryParams,
         useAuthToken: true,
       );
-      if (response is List) {
-        final coupons = await Future.wait(
-          response.map((data) async => Coupon.availableToMeFromJson(data)),
-        );
+      
+      if (kDebugMode) print('Response from fetchCouponsPaginated: ${response['data']}');
+      if (response['data'] is List) {
+        final coupons = response['data'].map((data) => Coupon.availableToMeFromJson(data));
+        final cur = response['nextCursor'] != null ? Map<String, dynamic>.from(response['nextCursor']) : null;
         return PaginatedCouponsResult(
           ownedCoupons: coupons.whereType<Coupon>().toList(),
-          lastOffset: response.length < limit ? null : offset + limit,
+          cursor: cur,
         );
       }
-      return PaginatedCouponsResult(ownedCoupons: [], lastOffset: null);
+      return PaginatedCouponsResult(ownedCoupons: [], cursor: null);
     } catch (e) {
       if (kDebugMode) debugPrint('Error in fetchCouponsPaginated: $e');
       rethrow;
@@ -139,14 +144,17 @@ class CouponRepository {
   }
 
   /// Fetch coupon details by ID
-  Future<Coupon> fetchCouponDetailsById(String id) async {
+  Future<Coupon?> fetchCouponDetailsById(String id) async {
     try {
       final data = await _api.get('/coupons/available/$id', useAuthToken: true);
-      final coupon = Coupon.availableToMeFromJson(data as Map<String, dynamic>);
-
-      return coupon;
+      return Coupon.availableToMeFromJson(data as Map<String, dynamic>);
     } catch (e) {
-      if (kDebugMode) debugPrint('Error in fetchCouponDetailsById: $e');
+      if (e.toString().contains('404')) {
+        if (kDebugMode) {
+          debugPrint('Coupon $id not found (probably deleted)');
+        }
+        return null;
+      }
       rethrow;
     }
   }
@@ -156,7 +164,7 @@ class CouponRepository {
   /// Fetch user's owned coupons (bought coupons) with pagination and filters
   Future<PaginatedOwnedCouponsResult> fetchOwnedCouponsPaginated({
     required int limit,
-    int offset = 0,
+    Map<String, dynamic>? cursor,
     required String userId,
     bool? reductionIsPercentage,
     bool? reductionIsFixed,
@@ -166,9 +174,10 @@ class CouponRepository {
     String? sort,
   }) async {
     try {
-      final queryParams = {
+      final Map<String, String> queryParams = {
         'limit': limit.toString(),
-        'offset': offset.toString(),
+        if (cursor != null) 'cursor_value': cursor['value']!.toString(),
+        if (cursor != null) 'cursor_id': cursor['id']!.toString(),
         'owner_id': userId,
         if (reductionIsPercentage != null && !reductionIsFixed!) 'type': 'percent',
         if (reductionIsFixed != null && !reductionIsPercentage!) 'type': 'flat',
@@ -176,23 +185,22 @@ class CouponRepository {
         if (showUnused != null && !showUsed!) 'used': 'no',
         if (shopId != null) 'shop_id': shopId,
         if (sort != null) 'sort': sort,
-      }..removeWhere((k, v) => v == null);
+      };
 
       final response = await _api.get(
         '/coupons/owned',
         queryParameters: queryParams,
         useAuthToken: true,
       );
-      if (response is List) {
-        final coupons = await Future.wait(
-          response.map((data) async => Coupon.boughtByMeFromJson(data)),
-        );
+      if (response['data'] is List) {
+        final coupons = response['data'].map((data) => Coupon.boughtByMeFromJson(data));
+        final cur = response['nextCursor'] != null ? Map<String, dynamic>.from(response['nextCursor']) : null;
         return PaginatedOwnedCouponsResult(
           coupons: coupons.whereType<Coupon>().toList(),
-          lastOffset: response.length < limit ? null : offset + limit,
+          cursor: cur,
         );
       }
-      return PaginatedOwnedCouponsResult(coupons: [], lastOffset: null);
+      return PaginatedOwnedCouponsResult(coupons: [], cursor: null);
     } catch (e) {
       if (kDebugMode) debugPrint('Error in fetchOwnedCouponsPaginated: $e');
       rethrow;
@@ -220,7 +228,7 @@ class CouponRepository {
   /// Fetch listed coupons with pagination and filters (GET /coupons/listed)
   Future<PaginatedListedCouponsResult> fetchListedCouponsPaginated({
     required int limit,
-    int offset = 0,
+    Map<String, dynamic>? cursor,
     required String userId,
     bool? reductionIsPercentage,
     bool? reductionIsFixed,
@@ -230,9 +238,10 @@ class CouponRepository {
     String? sort,
   }) async {
     try {
-      final queryParams = {
+      final Map<String, String> queryParams = {
         'limit': limit.toString(),
-        'offset': offset.toString(),
+        if (cursor != null) 'cursor_value': cursor['value']!.toString(),
+        if (cursor != null) 'cursor_id': cursor['id']!.toString(),
         'seller_id': userId,
         if (reductionIsPercentage != null && !reductionIsFixed!) 'type': 'percent',
         if (reductionIsFixed != null && !reductionIsPercentage!) 'type': 'flat',
@@ -240,23 +249,22 @@ class CouponRepository {
         if (showSold != null && !showActive!) 'status': 'sold',
         if (shopId != null) 'shop_id': shopId,
         if (sort != null) 'sort': sort,
-      }..removeWhere((k, v) => v == null);
+      };
 
       final response = await _api.get(
         '/coupons/listed',
         queryParameters: queryParams,
         useAuthToken: true,
       );
-      if (response is List) {
-        final coupons = await Future.wait(
-          response.map((data) async => Coupon.listedByMeFromJson(data)),
-        );
+      if (response['data'] is List) {
+        final coupons = response['data'].map((data) => Coupon.listedByMeFromJson(data));
+        final cur = response['nextCursor'] != null ? Map<String, dynamic>.from(response['nextCursor']) : null;
         return PaginatedListedCouponsResult(
           coupons: coupons.whereType<Coupon>().toList(),
-          lastOffset: response.length < limit ? null : offset + limit,
+          cursor: cur,
         );
       }
-      return PaginatedListedCouponsResult(coupons: [], lastOffset: null);
+      return PaginatedListedCouponsResult(coupons: [], cursor: null);
     } catch (e) {
       if (kDebugMode) debugPrint('Error in fetchListedCouponsPaginated: $e');
       rethrow;
@@ -301,7 +309,7 @@ class CouponRepository {
   /// Fetch saved coupons with pagination and filters (GET /coupons/listed)
   Future<PaginatedListedCouponsResult> fetchSavedCouponsPaginated({
     required int limit,
-    int offset = 0,
+    Map<String, dynamic>? cursor,
     required String userId,
     bool? reductionIsPercentage,
     bool? reductionIsFixed,
@@ -312,9 +320,10 @@ class CouponRepository {
     String? status,
   }) async {
     try {
-      final queryParams = {
+      final Map<String, String> queryParams = {
         'limit': limit.toString(),
-        'offset': offset.toString(),
+        if (cursor != null) 'cursor_value': cursor['value']!.toString(),
+        if (cursor != null) 'cursor_id': cursor['id']!.toString(),
         'seller_id': userId,
         if (reductionIsPercentage != null && reductionIsPercentage) 'type': 'percent',
         if (reductionIsFixed != null && reductionIsFixed) 'type': 'flat',
@@ -323,23 +332,22 @@ class CouponRepository {
         if (shopId != null) 'shop_id': shopId,
         if (sort != null) 'sort': sort,
         if (status != null) 'status': status,
-      }..removeWhere((k, v) => v == null);
+      };
 
       final response = await _api.get(
         '/coupons/listed',
         queryParameters: queryParams,
         useAuthToken: true,
       );
-      if (response is List) {
-        final coupons = await Future.wait(
-          response.map((data) async => Coupon.listedByMeFromJson(data)),
-        );
+      if (response['data'] is List) {
+        final coupons = response['data'].map((data) => Coupon.listedByMeFromJson(data));
+        final cur = response['nextCursor'] != null ? Map<String, dynamic>.from(response['nextCursor']) : null;
         return PaginatedListedCouponsResult(
           coupons: coupons.whereType<Coupon>().toList(),
-          lastOffset: response.length < limit ? null : offset + limit,
+          cursor: cur,
         );
       }
-      return PaginatedListedCouponsResult(coupons: [], lastOffset: null);
+      return PaginatedListedCouponsResult(coupons: [], cursor: null);
     } catch (e) {
       if (kDebugMode) debugPrint('Error in fetchSavedCouponsPaginated: $e');
       rethrow;
@@ -401,13 +409,28 @@ class CouponRepository {
     }
   }
 
-  /// Fetch three coupons for a specific shop
-  Future<List<Coupon>> fetchThreeCouponsForShop(String shopId) async {
+  Future<void> markOwnedCouponAsUsed(String couponId) async {
     try {
-      final result = await fetchCouponsPaginated(limit: 3, shopId: shopId, userId: await userRepository.getCurrentUserId());
+      await _api.post(
+        '/coupons/owned/$couponId/use',
+        queryParameters: {'user_id': await userRepository.getCurrentUserId()},
+        body: {},
+        useAuthToken: true,
+      );
+      
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error in markOwnedCouponAsUsed: $e');
+      rethrow;
+    }
+  }
+
+  /// Fetch example coupons for a specific shop in map screen
+  Future<List<Coupon>> fetchExampleCouponsForShop(String shopId) async {
+    try {
+      final result = await fetchCouponsPaginated(limit: 5, shopId: shopId, userId: await userRepository.getCurrentUserId());
       return result.ownedCoupons;
     } catch (e) {
-      if (kDebugMode) debugPrint('Error in fetchThreeCouponsForShop: $e');
+      if (kDebugMode) debugPrint('Error in fetchExampleCouponsForShop: $e');
       rethrow;
     }
   }
@@ -417,7 +440,7 @@ class CouponRepository {
 
   //Record a click
   Future<void> recordCouponClick(String couponId) async {
-    print('Recording click for couponId: $couponId');
+    if(kDebugMode) print('Recording click for couponId: $couponId');
     try {
       //final userId = await userRepository.getCurrentUserId();
       await _api.post(

@@ -20,7 +20,7 @@ class ConversationTile extends StatelessWidget {
     if (text.length <= maxChars) return text;
 
     // clipping long messages
-    return text.substring(0, maxChars).trimRight() + '...';
+    return '${text.substring(0, maxChars).trimRight()}...';
   }
 
   @override

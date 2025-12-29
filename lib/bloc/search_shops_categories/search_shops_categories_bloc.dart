@@ -21,9 +21,7 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
     try {
       final shopsByName = await shopRepository.searchShopsByName(event.query);
 
-      // szukanie wszystkich pasujacych kategorii prefixowo
-      final categories = await categoryRepository.searchCategoriesByName(event.query.toLowerCase());
-      final matchedCategories = categories;
+      final categories = await categoryRepository.searchCategoriesByName(event.query);
 
       // pobieranie sklepow dla kazdej pasujacej kategorii i laczenie
       List<Shop> shopsByCategory = [];
@@ -45,7 +43,7 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
       // nowy stan z rozdzielonymi danymi
       emit(SearchLoaded(
         matchedShops: allShopsMap.values.toList(),
-        matchedCategories: matchedCategories,
+        matchedCategories: categories,
       ));
     } catch (e) {
       emit(SearchError('Failed to search: ${e.toString()}'));

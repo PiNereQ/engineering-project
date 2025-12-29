@@ -17,6 +17,8 @@ class CouponMapState extends Equatable {
   final bool showSearchButton;
   final bool showZoomTip;
   final String? selectedShopLocationId;
+  final String? selectedShopId;
+  final String? selectedShopName;
 
   const CouponMapState({
     this.status = CouponMapStatus.initial,
@@ -26,6 +28,8 @@ class CouponMapState extends Equatable {
     this.showSearchButton = false,
     this.showZoomTip = true,
     this.selectedShopLocationId,
+    this.selectedShopId,
+    this.selectedShopName,
   });
 
   CouponMapState copyWith({
@@ -36,6 +40,8 @@ class CouponMapState extends Equatable {
     bool? showSearchButton,
     bool? showZoomTip,
     Object? selectedShopLocationId = _noChange,
+    Object? selectedShopId = _noChange,
+    Object? selectedShopName = _noChange,
   }) {
     return CouponMapState(
       status: status ?? this.status,
@@ -50,6 +56,14 @@ class CouponMapState extends Equatable {
           identical(selectedShopLocationId, _noChange)
               ? this.selectedShopLocationId
               : selectedShopLocationId as String?,
+      selectedShopId:
+          identical(selectedShopId, _noChange)
+              ? this.selectedShopId
+              : selectedShopId as String?,
+      selectedShopName:
+          identical(selectedShopName, _noChange)
+              ? this.selectedShopName
+              : selectedShopName as String?,
     );
   }
   
@@ -62,5 +76,7 @@ class CouponMapState extends Equatable {
     showSearchButton,
     showZoomTip,
     selectedShopLocationId,
+    selectedShopId,
+    selectedShopName,
   ];
 }

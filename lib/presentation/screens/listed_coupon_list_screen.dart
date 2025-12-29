@@ -82,9 +82,33 @@ class _ListedCouponListScreenState extends State<ListedCouponListScreen> {
 
   Widget _listContent(ListedCouponListState state) {
     if (state is ListedCouponListLoadInProgress) {
-      return const SliverFillRemaining(
-        child: Center(child: CircularProgressIndicator()),
-      );
+      if (state.coupons.isEmpty) {
+        return const SliverFillRemaining(
+          child: Center(child: CircularProgressIndicator(color: AppColors.textPrimary,)),
+        );
+      } else {
+        return SliverPadding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          sliver: SliverList(
+            delegate: SliverChildBuilderDelegate(
+              (context, index) {
+                if (index == state.coupons.length) {
+                  return const Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: Center(child: CircularProgressIndicator(color: AppColors.textPrimary,)),
+                  );
+                }
+                final coupon = state.coupons[index];
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: ListedCouponCardHorizontal(coupon: coupon),
+                );
+              },
+              childCount: state.coupons.length + 1,
+            ),
+          ),
+        );
+      }
     }
 
     if (state is ListedCouponListLoadEmpty) {
@@ -143,13 +167,16 @@ class _ListedCouponListScreenState extends State<ListedCouponListScreen> {
         sliver: SliverList(
           delegate: SliverChildBuilderDelegate(
             (context, index) {
+              if (index == state.coupons.length) {
+                return const SizedBox(height: 86); // padding for navbar
+              }
               final coupon = state.coupons[index];
               return Padding(
                 padding: const EdgeInsets.only(bottom: 16),
                 child: ListedCouponCardHorizontal(coupon: coupon),
               );
             },
-            childCount: state.coupons.length,
+            childCount: state.coupons.length + 1,
           ),
         ),
       );

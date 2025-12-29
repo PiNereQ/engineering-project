@@ -20,6 +20,12 @@ class CouponBloc extends Bloc<CouponEvent, CouponState> {
 
       try {
         final coupon = await couponRepository.fetchCouponDetailsById(couponId);
+
+        if (coupon == null) {
+          emit(const CouponDeleted());
+          return;
+        }
+
         emit(CouponLoadSuccess(coupon: coupon));
       } catch (e) {
         emit(CouponLoadFailure(message: e.toString()));

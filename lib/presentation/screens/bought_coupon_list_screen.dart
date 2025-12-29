@@ -83,21 +83,48 @@ class _BoughtCouponListScreenState extends State<BoughtCouponListScreen> {
 
   Widget _listContent(OwnedCouponListState state) {
     if (state is OwnedCouponListLoadInProgress) {
-      return const SliverFillRemaining(
-        child: Center(child: CircularProgressIndicator()),
-      );
+      if (state.coupons.isEmpty) {
+        return const SliverFillRemaining(
+          child: Center(child: CircularProgressIndicator(color: AppColors.textPrimary,)),
+        );
+      } else {
+        return SliverPadding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          sliver: SliverList(
+            delegate: SliverChildBuilderDelegate(
+              (context, index) {
+                if (index == state.coupons.length) {
+                  return const Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: Center(child: CircularProgressIndicator(color: AppColors.textPrimary,)),
+                  );
+                }
+                Coupon coupon = state.coupons[index];
+                if (index == 1) coupon = coupon.copyWith(isUsed: true); // for demo purposes
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 16.0),
+                  child: OwnedCouponCardHorizontal(coupon: coupon),
+                );
+              },
+              childCount: state.coupons.length + 1,
+            ),
+          ),
+        );
+      }
     } else if (state is OwnedCouponListLoadSuccess) {
       return SliverPadding(
         padding: const EdgeInsets.symmetric(horizontal: 24),
         sliver: SliverList(
           delegate: SliverChildBuilderDelegate((context, index) {
+            if (index == state.coupons.length) {
+              return const SizedBox(height: 86); // padding for navbar
+            }
             Coupon coupon = state.coupons[index];
-            if (index == 1) coupon = coupon.copyWith(isUsed: true); // for demo purposes
             return Padding(
               padding: const EdgeInsets.only(bottom: 16.0),
               child: OwnedCouponCardHorizontal(coupon: coupon),
             );
-          }, childCount: state.coupons.length),
+          }, childCount: state.coupons.length + 1),
         ),
       );
     } else if (state is OwnedCouponListLoadEmpty) {

@@ -5,24 +5,28 @@ class CustomFollowButton extends StatefulWidget {
   final double _size;
   final VoidCallback onTap;
   final bool isPressed;
+  final bool isHeart;
 
   const CustomFollowButton._({
     super.key,
     required double size,
     required this.onTap,
     required this.isPressed,
+    required this.isHeart,
   }) : _size = size;
 
   factory CustomFollowButton({
     Key? key,
     required VoidCallback onTap,
     bool isPressed = false,
+    bool isHeart = false,
   }) {
     return CustomFollowButton._(
       key: key,
       onTap: onTap,
       size: 48,
       isPressed: isPressed,
+      isHeart: isHeart,
     );
   }
 
@@ -30,19 +34,20 @@ class CustomFollowButton extends StatefulWidget {
     Key? key,
     required VoidCallback onTap,
     bool isPressed = false,
+    bool isHeart = false,
   }) {
     return CustomFollowButton._(
       key: key,
       onTap: onTap,
       size: 36,
       isPressed: isPressed,
+      isHeart: isHeart,
     );
   }
 
   @override
   State<CustomFollowButton> createState() => _CustomFollowButtonState();
 }
-
 
 class _CustomFollowButtonState extends State<CustomFollowButton> {
   late bool _isPressed;
@@ -94,20 +99,20 @@ class _CustomFollowButtonState extends State<CustomFollowButton> {
             ),
             child: Center(
               child: widget._size == 48
-                ? Icon(
-                    Icons.bookmark,
-                    color: _isPressed ? AppColors.surface : AppColors.notificationDot,
-                  )
-                : SizedBox(
-                  width: 18,
-                  height: 18,
-                  child: FittedBox(
-                    child: Icon(
-                        Icons.bookmark,
-                        color: _isPressed ? AppColors.surface : AppColors.notificationDot,
+                  ? Icon(
+                      widget.isHeart ? Icons.favorite : Icons.bookmark,
+                      color: _isPressed ? AppColors.surface : AppColors.notificationDot,
+                    )
+                  : SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: FittedBox(
+                        child: Icon(
+                          widget.isHeart ? Icons.favorite : Icons.bookmark,
+                          color: _isPressed ? AppColors.surface : AppColors.notificationDot,
+                        ),
                       ),
-                  ),
-                )
+                    ),
             ),
           ),
         ),

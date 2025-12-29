@@ -18,13 +18,13 @@ class MapRepository {
           'south': bounds.south.toString(),
           'north': bounds.north.toString(),
           'west': bounds.west.toString(),
-          'east': bounds.east.toString(),
+          'east': bounds.east.toString(),  
         },
       );
       final List<dynamic> locationsData = response is List ? response : [];
       final locations = <ShopLocation>[];
       for (var loc in locationsData) {
-        print(loc);
+        if (kDebugMode) print(loc);
         locations.add(ShopLocation(
           shopLocationId: loc['id'].toString(),
           latLng: LatLng(

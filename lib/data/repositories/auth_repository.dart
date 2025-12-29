@@ -105,6 +105,8 @@ class AuthRepository {
       return token;
     } on FirebaseAuthException catch(e) {
       switch (e.code) {
+        case 'user-disabled':
+          throw 'To konto zostało dezaktywowane. Logowanie nie jest możliwe.';        
         case 'invalid-email':
           throw 'Podany adres e-mail jest nieprawidłowy.';
         case 'too-many-requests':
@@ -117,7 +119,7 @@ class AuthRepository {
         case 'wrong-password':
           throw 'Podane dane logowania są nieprawidłowe.';
         default:
-          throw 'Błąd logowania: ${e.message}';
+          throw 'Nie udało się zalogować. Spróbuj ponownie.';
       }
     } catch (e) {
       throw 'Błąd logowania: $e';

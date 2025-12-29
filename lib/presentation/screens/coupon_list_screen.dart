@@ -1,8 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'dart:ui' as ui;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -23,7 +21,6 @@ import 'package:proj_inz/presentation/widgets/input/buttons/custom_text_button.d
 import 'package:proj_inz/presentation/widgets/input/buttons/radio_button.dart';
 import 'package:proj_inz/presentation/widgets/input/text_fields/labeled_text_field.dart';
 import 'package:proj_inz/presentation/widgets/input/text_fields/search_bar.dart';
-import 'package:proj_inz/data/repositories/coupon_repository.dart';
 
 // Local debugging flags
 bool stopCouponLoading = false; // Default to false
@@ -31,7 +28,9 @@ bool stopCouponLoading = false; // Default to false
 class CouponListScreen extends StatelessWidget {
   final String? selectedShopId;
   final String? searchShopName;
-  const CouponListScreen({super.key, this.selectedShopId, this.searchShopName});
+  final String? selectedCategoryId;
+  final String? searchCategoryName;
+  const CouponListScreen({super.key, this.selectedShopId, this.searchShopName, this.selectedCategoryId, this.searchCategoryName});
 
   @override
   Widget build(BuildContext context) {
@@ -50,6 +49,8 @@ class CouponListScreen extends StatelessWidget {
       child: _CouponListScreenContent(
         selectedShopId: selectedShopId,
         searchShopName: searchShopName,
+        selectedCategoryId: selectedCategoryId,
+        searchCategoryName: searchCategoryName,
       ),
     );
   }
@@ -59,7 +60,9 @@ class CouponListScreen extends StatelessWidget {
 class _CouponListScreenContent extends StatefulWidget {
   final String? selectedShopId;
   final String? searchShopName;
-  const _CouponListScreenContent({this.selectedShopId, this.searchShopName});
+  final String? selectedCategoryId;
+  final String? searchCategoryName;
+  const _CouponListScreenContent({this.selectedShopId, this.searchShopName, this.selectedCategoryId, this.searchCategoryName});
 
   @override
   State<_CouponListScreenContent> createState() =>
@@ -74,7 +77,8 @@ class _CouponListScreenContentState extends State<_CouponListScreenContent> {
     super.initState();
     _scrollController.addListener(() {
       if (_scrollController.position.pixels >=
-          _scrollController.position.maxScrollExtent - 150) {
+          _scrollController.position.maxScrollExtent - 150
+          && context.read<CouponListBloc>().state is! CouponListLoadInProgress) {
         debugPrint('Ładuj wincyj!');
         if (mounted) {
           context.read<CouponListBloc>().add(FetchMoreCoupons());
@@ -91,7 +95,7 @@ class _CouponListScreenContentState extends State<_CouponListScreenContent> {
     // Only fetch if the state is initial (not loaded yet) and debug flag is off
     if (state is CouponListInitial && !stopCouponLoading) {
       final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
-      bloc.add(FetchCoupons(shopId: widget.selectedShopId, userId: userId));
+      bloc.add(FetchCoupons(shopId: widget.selectedShopId, categoryId: widget.selectedCategoryId, userId: userId));
     }
   }
 
@@ -134,14 +138,38 @@ class _CouponListScreenContentState extends State<_CouponListScreenContent> {
               SliverSafeArea(
               top: true,
               bottom: false,
-              sliver: _Toolbar(searchShopName: widget.searchShopName),
+              sliver: _Toolbar(searchShopName: widget.searchShopName, searchCategoryName: widget.searchCategoryName,),
             ),
             BlocBuilder<CouponListBloc, CouponListState>(
               builder: (context, state) {
                 if (state is CouponListLoadInProgress) {
-                  return const SliverFillRemaining(
-                    child: Center(child: CircularProgressIndicator()),
-                  );
+                  if (state.coupons.isEmpty) {
+                    return const SliverFillRemaining(
+                      child: Center(child: CircularProgressIndicator(color: AppColors.textPrimary,)),
+                    );
+                  } else {
+                    return SliverPadding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      sliver: SliverList(
+                        delegate: SliverChildBuilderDelegate(
+                          (context, index) {
+                            if (index == state.coupons.length) {
+                              return const Padding(
+                                padding: EdgeInsets.all(16.0),
+                                child: Center(child: CircularProgressIndicator(color: AppColors.textPrimary,)),
+                              );
+                            }
+                            final coupon = state.coupons[index];
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 16.0),
+                              child: CouponCardHorizontal(coupon: coupon),
+                            );
+                          },
+                          childCount: state.coupons.length + 1,
+                        ),
+                      ),
+                    );
+                  }
                 } else if (state is CouponListLoadSuccess) {
                   return SliverPadding(
                     padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -210,8 +238,9 @@ class _CouponListScreenContentState extends State<_CouponListScreenContent> {
 
 class _Toolbar extends StatelessWidget {
   final String? searchShopName;
+  final String? searchCategoryName;
 
-  const _Toolbar({this.searchShopName});
+  const _Toolbar({this.searchShopName, this.searchCategoryName});
 
 @override
 Widget build(BuildContext context) {
@@ -255,7 +284,7 @@ Widget build(BuildContext context) {
               spacing: 16,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (searchShopName != null)
+                if (searchShopName != null || searchCategoryName != null)
                   Row(
                     children: [
                       // przycisk wstecz
@@ -288,7 +317,7 @@ Widget build(BuildContext context) {
                         ),
                       ),
                       const SizedBox(width: 16),
-                      // "wyszukiwanie dla sklepu: <nazwa>"
+                      // "wyszukiwanie dla sklepu: <nazwa>" lub "wyszukiwanie dla kategorii: <nazwa>"
                       Expanded(
                         child: Container(
                           padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
@@ -307,15 +336,25 @@ Widget build(BuildContext context) {
                               )
                             ],
                           ),
-                          child: Text(
-                            'Wyniki dla sklepu: $searchShopName',
-                            style: const TextStyle(
-                              color: AppColors.textPrimary,
-                              fontSize: 18,
-                              fontFamily: 'Itim',
-                              fontWeight: FontWeight.w400,
-                            ),
-                          ),
+                          child: (searchShopName != null)
+                            ? Text(
+                                'Wyniki dla sklepu: $searchShopName',
+                                style: const TextStyle(
+                                  color: AppColors.textPrimary,
+                                  fontSize: 18,
+                                  fontFamily: 'Itim',
+                                  fontWeight: FontWeight.w400,
+                                ),
+                              )
+                            : Text(
+                                'Wyniki dla kategorii: $searchCategoryName',
+                                style: const TextStyle(
+                                  color: AppColors.textPrimary,
+                                  fontSize: 18,
+                                  fontFamily: 'Itim',
+                                  fontWeight: FontWeight.w400,
+                                ),
+                              ),
                         ),
                       ),
                     ],
@@ -326,7 +365,6 @@ Widget build(BuildContext context) {
                     onSubmitted: (query) {
                       final searchBloc = context.read<SearchBloc>();
                       searchBloc.add(SearchQuerySubmitted(query));
-                  
                       Navigator.of(context).push(
                         MaterialPageRoute(
                           builder: (context) => BlocProvider.value(

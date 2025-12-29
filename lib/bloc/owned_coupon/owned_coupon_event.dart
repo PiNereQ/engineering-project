@@ -8,3 +8,5 @@ sealed class OwnedCouponEvent extends Equatable {
 }
 
 class FetchCouponDetails extends OwnedCouponEvent {}
+
+class MarkCouponAsUsed extends OwnedCouponEvent {}

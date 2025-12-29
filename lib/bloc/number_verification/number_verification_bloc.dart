@@ -14,16 +14,16 @@ class NumberVerificationBloc extends Bloc<NumberVerificationEvent, NumberVerific
   NumberVerificationBloc({required this.userRepository}) : super(NumberVerificationInitial()) {
       // Timer for resend cooldown
       Duration resendCooldown = const Duration(seconds: 30);
-      DateTime? _lastResendTime;
+      DateTime? lastResendTime;
 
         on<ResendCodeRequested>((event, emit) async {
           if (kDebugMode) print('[NumberVerificationBloc] ResendCodeRequested for ${event.phoneNumber}');
           // Prevent resending if cooldown not passed
-          if (_lastResendTime != null && DateTime.now().difference(_lastResendTime!) < resendCooldown) {
+          if (lastResendTime != null && DateTime.now().difference(lastResendTime!) < resendCooldown) {
             if (kDebugMode) print('[NumberVerificationBloc] Resend attempted before cooldown.');
             return;
           }
-          _lastResendTime = DateTime.now();
+          lastResendTime = DateTime.now();
           //emit(NumberSubmitInProgress());
           try {
             await FirebaseAuth.instance.verifyPhoneNumber(

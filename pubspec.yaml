@@ -1,5 +1,5 @@
 name: proj_inz
-description: "A new Flutter project."
+description: "Flutter app for engineering project Coupidyn"
 publish_to: 'none'
 version: 0.1.0
 
@@ -17,6 +17,12 @@ dependencies:
   icon_decoration: ^2.1.0
   shared_preferences: ^2.5.3
   flutter_markdown: ^0.7.1
+  app_settings: ^6.1.1
+  path_provider: ^2.1.4
+  path: ^1.9.0
+  image_picker: ^1.1.2
+  qr_flutter: ^4.1.0
+  flutter_launcher_icons: ^0.13.1
 
   # Bloc
   bloc: ^9.0.0
@@ -29,7 +35,6 @@ dependencies:
 
   # Auth
   google_sign_in: ^7.2.0
-  qr_flutter: ^4.1.0
   flutter_secure_storage: ^8.0.0
 
   # Stripe
@@ -48,10 +53,6 @@ dependencies:
   http_cache_file_store: ^2.0.0
   latlong2: ^0.9.1
   geolocator: ^14.0.2
-  app_settings: ^6.1.1
-  path_provider: ^2.1.4
-  path: ^1.9.0
-  image_picker: ^1.1.2
   
 
 dev_dependencies:
@@ -75,3 +76,10 @@ flutter:
       fonts:
         - asset: assets/fonts/roboto_mono/RobotoMono-VariableFont_wght.ttf
 
+# to generate icons from assets run `dart run flutter_launcher_icons`
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: assets/app_icon/app_icon.png
+  adaptive_icon_foreground: assets/app_icon/app_icon.png
+  adaptive_icon_background: "#FFF1D1"

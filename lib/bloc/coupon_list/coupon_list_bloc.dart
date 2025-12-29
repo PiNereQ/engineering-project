@@ -17,11 +17,10 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
   final CouponRepository couponRepository;
   CouponListState _previousListState = CouponListInitial();
 
-  final int _limit = 50;
+  final int _limit = 20;
   
   final List<Coupon> _allCoupons = [];
-  int? _lastOffset;
-  String? _cursor;
+  Map<String, dynamic>? _cursor;
   bool _hasMore = true;
   bool _isFetching = false;
   String? _userId;
@@ -33,6 +32,7 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
   double? _maxPrice; 
   int? _minReputation; 
   String? _shopId;
+  String? _categoryId;
 
   // sorting
   Ordering _ordering = Ordering.creationDateDesc;
@@ -63,13 +63,15 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
 
 
   Future<void> _onFetchCoupons(FetchCoupons event, Emitter<CouponListState> emit) async {
-    emit(CouponListLoadInProgress());
+    if (kDebugMode) debugPrint('Fetching coupons for user: ${event.userId}, shop: ${event.shopId}, category: ${event.categoryId}');
+    emit(const CouponListLoadInProgress());
     _allCoupons.clear();
-    _lastOffset = null;
+    _cursor = null;
     _cursor = null;
     _hasMore = true;
     _userId = event.userId;
     _shopId = event.shopId;
+    _categoryId = event.categoryId;
     add(FetchMoreCoupons());
   }
 
@@ -178,45 +180,85 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
     return;
   }
 
-  _isFetching = true;
-  emit(CouponListLoadInProgress());
+    _isFetching = true;
+    emit(CouponListLoadInProgress(coupons: List.from(_allCoupons)));
 
-  try {
-    // 🔥 USE FEED INSTEAD OF AVAILABLE
-    final result = await couponRepository.fetchCouponFeed(
-      userId: _userId!,
-      limit: _limit,
-      cursor: _cursor, // You'll need to add this variable
-    );
-
-    final newCoupons = result['items'] as List<Coupon>;
-    _allCoupons.addAll(newCoupons);
-    _cursor = result['cursor']; // Store cursor for next page
-    _hasMore = result['hasMore'] as bool;
-
-    if (_allCoupons.isEmpty) {
-      emit(CouponListLoadEmpty());
-    } else {
-      emit(CouponListLoadSuccess(
-        coupons: List.from(_allCoupons),
-        hasMore: _hasMore,
-      ));
+    // Map Ordering enum to backend sort string
+    String? sort;
+    switch (_ordering) {
+      case Ordering.creationDateAsc:
+        sort = 'listing+asc';
+        break;
+      case Ordering.creationDateDesc:
+        sort = 'listing+desc';
+        break;
+      case Ordering.priceAsc:
+        sort = 'price+asc';
+        break;
+      case Ordering.priceDesc:
+        sort = 'price+desc';
+        break;
+      case Ordering.reputationAsc:
+        sort = 'rep+asc';
+        break;
+      case Ordering.reputationDesc:
+        sort = 'rep+desc';
+        break;
+      case Ordering.expiryDateAsc:
+        sort = 'expiry+asc';
+        break;
+      case Ordering.expiryDateDesc:
+        sort = 'expiry+desc';
+        break;
     }
-    
-    _previousListState = state;
-  } catch (e) {
-    if (kDebugMode) debugPrint(e.toString());
-    var failureState = CouponListLoadFailure(message: e.toString());
-    _previousListState = failureState;
-    emit(failureState);
-  } finally {
-    _isFetching = false;
+
+    try {
+      final result = await couponRepository.fetchCouponsPaginated(
+        limit: _limit,
+        cursor: _cursor,
+        shopId: _shopId,
+        categoryId: _categoryId,
+        userId: _userId!,
+        reductionIsPercentage: _reductionIsPercentage,
+        reductionIsFixed: _reductionIsFixed,
+        minPrice: _minPrice,
+        maxPrice: _maxPrice,
+        minReputation: _minReputation,
+        sort: sort,
+      );
+      if (kDebugMode) print('Fetched ${result.ownedCoupons.length} coupons with proper mapping');
+
+      _hasMore = result.cursor != null;
+      _allCoupons.addAll(result.ownedCoupons);
+      _cursor = result.cursor;
+
+      if (kDebugMode) {
+        print('Total coupons loaded: ${_allCoupons.length}');
+        print('Has more: $_hasMore');
+        print('Next cursor: $_cursor');
+      }
+
+      var successState = CouponListLoadSuccess(coupons: _allCoupons, hasMore: _hasMore);
+      _previousListState = successState;
+      emit(successState);
+
+      if (_allCoupons.isEmpty) {
+        var emptyState = CouponListLoadEmpty();
+        _previousListState = emptyState;
+        emit(emptyState);
+      }
+    } catch (e) {
+      if (kDebugMode) debugPrint(e.toString());
+      var failureState = CouponListLoadFailure(message: e.toString());
+      _previousListState = failureState;
+      emit(failureState);
+    } finally {
+      _isFetching = false;
+    }
   }
-}
 
   Future<void> _onRefreshCoupons(RefreshCoupons event, Emitter<CouponListState> emit) async {
     _allCoupons.clear();
-    _lastOffset = null;
     _cursor = null;
     _hasMore = true;
     if (_userId != null) {
@@ -254,7 +296,7 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
     ));
 
     if (_userId != null) {
-      add(FetchCoupons(userId: _userId!));
+      add(FetchCoupons(userId: _userId!, shopId: _shopId, categoryId: _categoryId));
     }
 
     emit(CouponListMetaState(
@@ -279,7 +321,7 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
     ));
 
     if (_userId != null) {
-      add(FetchCoupons(userId: _userId!));
+      add(FetchCoupons(userId: _userId!, shopId: _shopId));
     }
 
     emit(CouponListMetaState(

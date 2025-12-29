@@ -38,10 +38,10 @@ OwnedCouponsOrdering _ordering = OwnedCouponsOrdering.purchaseDateDesc;
 
 class OwnedCouponListBloc extends Bloc<OwnedCouponListEvent, OwnedCouponListState> {
   final CouponRepository couponRepository;
-  final int limit = 50;
+  final int limit = 20;
   
   final List<Coupon> _allCoupons = [];
-  int? _lastOffset;
+  Map<String, dynamic>? _cursor;
   bool _hasMore = true;
   bool _isFetching = false;
   String? _userId;
@@ -80,7 +80,7 @@ class OwnedCouponListBloc extends Bloc<OwnedCouponListEvent, OwnedCouponListStat
     Future<void> _onFetchCoupons(FetchCoupons event, Emitter<OwnedCouponListState> emit) async {
     emit(OwnedCouponListLoadInProgress());
     _allCoupons.clear();
-    _lastOffset = null;
+    _cursor = null;
     _hasMore = true;
     _userId = event.userId;
     add(FetchMoreCoupons());
@@ -102,7 +102,7 @@ class OwnedCouponListBloc extends Bloc<OwnedCouponListEvent, OwnedCouponListStat
     }
 
     _isFetching = true;
-    emit(OwnedCouponListLoadInProgress());
+    emit(OwnedCouponListLoadInProgress(coupons: List.from(_allCoupons)));
 
     // Map ordering enum to backend sort string
     String? sort;
@@ -130,7 +130,7 @@ class OwnedCouponListBloc extends Bloc<OwnedCouponListEvent, OwnedCouponListStat
     try {
       final result = await couponRepository.fetchOwnedCouponsPaginated(
         limit: limit,
-        offset: _lastOffset ?? 0,
+        cursor: _cursor,
         userId: _userId!,
         reductionIsPercentage: _reductionIsPercentage,
         reductionIsFixed: _reductionIsFixed,
@@ -142,9 +142,9 @@ class OwnedCouponListBloc extends Bloc<OwnedCouponListEvent, OwnedCouponListStat
       final ownedCoupons = result.coupons;
       debugPrint('Fetched ${ownedCoupons.length} coupons: $ownedCoupons');
 
-      _hasMore = ownedCoupons.length == limit;
+      _hasMore = result.cursor != null;
       _allCoupons.addAll(ownedCoupons);
-      _lastOffset = result.lastOffset;
+      _cursor = result.cursor;
 
       emit(OwnedCouponListLoadSuccess(coupons: _allCoupons, hasMore: _hasMore));
 
@@ -162,7 +162,7 @@ class OwnedCouponListBloc extends Bloc<OwnedCouponListEvent, OwnedCouponListStat
   Future<void> _onRefreshCoupons(RefreshCoupons event, Emitter<OwnedCouponListState> emit) async {
     emit(OwnedCouponListLoadInProgress());
     _allCoupons.clear();
-    _lastOffset = null;
+    _cursor = null;
     _hasMore = true;
     if (_userId != null) {
       add(FetchCoupons(userId: _userId!));

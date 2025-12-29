@@ -5,7 +5,7 @@ class SearchButtonWide extends StatelessWidget {
   final double width;
   final double fontSize;
   final String label;
-  final VoidCallback onTap;
+  final GestureTapCallback onTap;
 
   const SearchButtonWide({
     super.key,
@@ -37,14 +37,21 @@ class SearchButtonWide extends StatelessWidget {
           ],
         ),
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: AppColors.textPrimary,
-            fontSize: fontSize,
-            fontFamily: 'Itim',
-            fontWeight: FontWeight.w400,
-          ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                label,
+                style: TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: fontSize,
+                  fontFamily: 'Itim',
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+            ),
+            Icon(Icons.search, color: AppColors.textPrimary),
+          ],
         ),
       ),
     );

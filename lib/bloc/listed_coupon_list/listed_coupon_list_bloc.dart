@@ -7,12 +7,12 @@ import 'package:flutter/foundation.dart';
 import 'package:proj_inz/data/repositories/coupon_repository.dart';
 
 class ListedCouponListBloc extends Bloc<ListedCouponListEvent, ListedCouponListState> {
-  int? _lastOffset;
+  Map<String, dynamic>? _cursor;
   bool _isFetching = false;
   String? _userId;
   final CouponRepository couponRepository;
 
-  List<Coupon> _allCoupons = [];
+  final List<Coupon> _allCoupons = [];
   // ...existing code...
 
   // filters
@@ -22,22 +22,23 @@ class ListedCouponListBloc extends Bloc<ListedCouponListEvent, ListedCouponListS
   bool _showSold = true;
   String? _shopId;
 
+
   ListedCouponsOrdering _ordering = ListedCouponsOrdering.listingDateDesc;
 
-  int _limit = 20;
+  final int _limit = 20;
   bool _hasMore = true;
 
-List<({String id, String name})> get uniqueShops {
-  final map = <String, String>{};
+  List<({String id, String name})> get uniqueShops {
+    final map = <String, String>{};
 
-  for (final c in _allCoupons) {
-    map[c.shopId] = c.shopName;
+    for (final c in _allCoupons) {
+      map[c.shopId] = c.shopName;
+    }
+
+    return map.entries
+        .map((e) => (id: e.key, name: e.value))
+        .toList();
   }
-
-  return map.entries
-      .map((e) => (id: e.key, name: e.value))
-      .toList();
-}
 
   ListedCouponListBloc(this.couponRepository) : super(ListedCouponListInitial()) {
     on<FetchListedCoupons>(_onFetch);
@@ -56,7 +57,7 @@ List<({String id, String name})> get uniqueShops {
   Future<void> _onFetch(FetchListedCoupons event, Emitter emit) async {
     emit(ListedCouponListLoadInProgress());
     _allCoupons.clear();
-    _lastOffset = null;
+    _cursor = null;
     _hasMore = true;
     _userId = event.userId;
     add(FetchMoreListedCoupons());
@@ -78,7 +79,7 @@ List<({String id, String name})> get uniqueShops {
     }
 
     _isFetching = true;
-    emit(ListedCouponListLoadInProgress());
+    emit(ListedCouponListLoadInProgress(coupons: List.from(_allCoupons)));
 
     // Map ordering enum to backend sort string
     String? sort;
@@ -106,7 +107,7 @@ List<({String id, String name})> get uniqueShops {
     try {
       final result = await couponRepository.fetchListedCouponsPaginated(
         limit: _limit,
-        offset: _lastOffset ?? 0,
+        cursor: _cursor,
         userId: _userId!,
         reductionIsPercentage: _reductionIsPercentage,
         reductionIsFixed: _reductionIsFixed,
@@ -116,11 +117,11 @@ List<({String id, String name})> get uniqueShops {
         sort: sort,
       );
       final listedCoupons = result.coupons;
-      if (kDebugMode) print('Fetched ${listedCoupons.length} listed coupons: ${listedCoupons}');
+      if (kDebugMode) print('Fetched ${listedCoupons.length} listed coupons: $listedCoupons');
 
-      _hasMore = listedCoupons.length == _limit;
+      _hasMore = result.cursor != null;
       _allCoupons.addAll(listedCoupons);
-      _lastOffset = result.lastOffset;
+      _cursor = result.cursor;
 
       emit(ListedCouponListLoadSuccess(coupons: _allCoupons, hasMore: _hasMore));
       if (_allCoupons.isEmpty) {
@@ -183,6 +184,4 @@ List<({String id, String name})> get uniqueShops {
   void _onReadOrdering(ReadListedCouponOrdering event, Emitter emit) {
     emit(ListedCouponOrderingRead(_ordering));
   }
-
-  // ...existing code...
 }
