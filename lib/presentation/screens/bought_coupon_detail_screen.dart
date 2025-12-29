@@ -15,7 +15,6 @@ import 'package:proj_inz/presentation/widgets/custom_snack_bar.dart';
 import 'package:proj_inz/presentation/widgets/dashed_separator.dart';
 import 'package:proj_inz/presentation/widgets/error_card.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_icon_button.dart';
-import 'package:proj_inz/presentation/widgets/input/buttons/custom_switch.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_text_button.dart';
 import 'package:proj_inz/presentation/widgets/reputation_bar.dart';
 import 'package:qr_flutter/qr_flutter.dart';
@@ -59,7 +58,13 @@ class BoughtCouponDetailsScreen extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 16,),
-                        BlocBuilder<OwnedCouponBloc, OwnedCouponState>(
+                        BlocListener<OwnedCouponBloc, OwnedCouponState>(
+                          listener: (context, state) {
+                            if (state is OwnedCouponMarkAsUsedFailure) {
+                              showCustomSnackBar(context, 'Podczas oznaczania kuponu jako wykorzystanego wystąpił błąd.');
+                            }
+                          },
+                          child: BlocBuilder<OwnedCouponBloc, OwnedCouponState>(
                           builder: (context, state) {
                             if (state is OwnedCouponLoadInProgress) {
                               return const Center(child: CircularProgressIndicator());
@@ -131,8 +136,13 @@ class BoughtCouponDetailsScreen extends StatelessWidget {
                                 ),
                               );
                             }
+                            else if (state is OwnedCouponMarkAsUsedInProgress) {
+                              // Show loading while marking as used
+                              return const Center(child: CircularProgressIndicator());
+                            }
                             return const SizedBox();
                           }
+                        ),
                         ),
                       ],
                     ),
@@ -169,6 +179,7 @@ class _CouponDetails extends StatelessWidget {
     final DateTime? expiryDate = coupon.expiryDate;
     final String description = coupon.description;
     final String code = coupon.code!; 
+    final bool isUsed = coupon.isUsed!;
     
     final reductionText =
         formatReduction(reduction.toDouble(), reductionIsPercentage);
@@ -453,24 +464,23 @@ class _CouponDetails extends StatelessWidget {
               children: [
                 CustomTextButton(
                   label: 'Wyświetl kod kuponu',
+                  icon: Icon(Icons.qr_code_rounded),
                   onTap: () => _showCodeDialog(context, code),
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  spacing: 8,
-                  children: [
-                    CustomSwitch(value: coupon.isUsed!, onChanged: (_) {}, ), // TODO: implement change of state
-                    Text(
-                      'kupon wykorzystany',
-                      style: TextStyle(
-                        color: AppColors.textPrimary,
-                        fontSize: 20,
-                        fontFamily: 'Itim',
-                        fontWeight: FontWeight.w400,
-                        height: 0.75,
-                      ),
+                isUsed
+                ? Text(
+                    'Ten kupon został już wykorzystany.',
+                    style: TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 16,
+                      fontFamily: 'Itim',
+                      fontWeight: FontWeight.w400,
                     ),
-                  ],
+                  )
+                : CustomTextButton(
+                  label: "Oznacz jako wykorzystany",
+                  icon: Icon(Icons.check_circle_outline_rounded),
+                  onTap: () => _showMarkAsUsedDialog(context),
                 ),
               ],
             ),
@@ -556,6 +566,77 @@ class _CouponDetails extends StatelessWidget {
           ),
         );
       }
+    );
+  }
+
+  Future _showMarkAsUsedDialog(BuildContext context) {
+    final bloc = context.read<OwnedCouponBloc>();
+
+    return showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          child: Container(
+            decoration: ShapeDecoration(
+              color: AppColors.surface,
+              shape: RoundedRectangleBorder(
+                side: const BorderSide(width: 2),
+                borderRadius: BorderRadius.circular(24),
+              ),
+              shadows: const [
+                BoxShadow(
+                  color: AppColors.textPrimary,
+                  blurRadius: 0,
+                  offset: Offset(4, 4),
+                  spreadRadius: 0,
+                ),
+              ],
+            ),
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'Ta akcja jest nieodwracalna. Gdy oznaczysz kupon jako wykorzystany poprosimy Cię o ocenę sprzedającego.',
+                  style: TextStyle(
+                    color: AppColors.textPrimary,
+                    fontFamily: 'Itim',
+                    fontSize: 16,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  mainAxisSize: MainAxisSize.max,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    CustomTextButton(
+                      label: 'Anuluj',
+                      onTap: () => Navigator.of(context).pop(),
+                    ),
+                    CustomTextButton(
+                      label: 'OK',
+                      icon:
+                          bloc.state is OwnedCouponMarkAsUsedInProgress
+                              ? const CircularProgressIndicator(
+                                color: AppColors.textPrimary,
+                              )
+                              : null,
+                      onTap: () {
+                        if (bloc.state is! OwnedCouponMarkAsUsedInProgress) {
+                          bloc.add(MarkCouponAsUsed());
+                          Navigator.of(context).pop();
+                        }
+                      },
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }
