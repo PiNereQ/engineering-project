@@ -1268,7 +1268,27 @@ class _AddScreenState extends State<AddScreen> {
                                         ),
                                         const SizedBox(height: 12),
                                       ],
+                                      const SizedBox(height: 12),
+                                      Row(
+                                        crossAxisAlignment: CrossAxisAlignment.center,
+                                        children: [
+                                          const SizedBox(width: 8),
+                                          Expanded(
+                                            child: Text(
+                                              'Prowizja serwisu wynosi 5% wartości sprzedanego kuponu. '
+                                              'Kwota prowizji zostanie automatycznie potrącona przy sprzedaży.',
+                                              textAlign: TextAlign.justify,
+                                              style: const TextStyle(
+                                                fontFamily: 'Itim',
+                                                fontSize: 14,
+                                                color: AppColors.textSecondary,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                       // 11. Przycisk dodaj
+                                      const SizedBox(height: 12),
                                       CustomTextButton.primary(
                                         height: 56,
                                         width: double.infinity,
