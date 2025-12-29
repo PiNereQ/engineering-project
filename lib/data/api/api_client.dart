@@ -69,7 +69,8 @@ class ApiClient {
   Future<dynamic> post(String path, {Map<String, String>? queryParameters, Map<String, dynamic>? body, bool useAuthToken = false}) async {
     final uri = _uri(path, queryParameters: queryParameters, useAuthToken: useAuthToken);
 
-    Map<String, String> headers = {'Content-Type': 'application/json'};
+    Map<String, String> headers = {};
+    if (body != null && body.isNotEmpty) headers['Content-Type'] = 'application/json';
     if (useAuthToken) {
       final user = FirebaseAuth.instance.currentUser;
       final token = await user?.getIdToken();
@@ -106,7 +107,8 @@ class ApiClient {
   Future<dynamic> put(String path, {Map<String, String>? queryParameters, Map<String, dynamic>? body, bool useAuthToken = false}) async {
     final uri = _uri(path, queryParameters: queryParameters, useAuthToken: useAuthToken);
 
-    Map<String, String> headers = {'Content-Type': 'application/json'};
+    Map<String, String> headers = {};
+    if (body != null && body.isNotEmpty) headers['Content-Type'] = 'application/json';
     
     if (useAuthToken) {
       final user = FirebaseAuth.instance.currentUser;
@@ -141,7 +143,8 @@ class ApiClient {
   Future<dynamic> patch(String path, {Map<String, String>? queryParameters, Map<String, dynamic>? body, bool useAuthToken = false}) async {
     final uri = _uri(path, queryParameters: queryParameters, useAuthToken: useAuthToken);
 
-    Map<String, String> headers = {'Content-Type': 'application/json'};
+    Map<String, String> headers = {};
+    if (body != null && body.isNotEmpty) headers['Content-Type'] = 'application/json';
     if (useAuthToken) {
       final user = FirebaseAuth.instance.currentUser;
       final token = await user?.getIdToken();
