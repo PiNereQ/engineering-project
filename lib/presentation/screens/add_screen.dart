@@ -37,6 +37,9 @@ class AddScreen extends StatefulWidget {
   State<AddScreen> createState() => _AddScreenState();
 }
 
+const double _dialogWidth = 360;
+const double _dialogMinHeight = 80;
+
 class _AddScreenState extends State<AddScreen> {
   final _formKey = GlobalKey<FormState>();
 
@@ -65,7 +68,7 @@ class _AddScreenState extends State<AddScreen> {
   bool _userMadeInput = false;
   bool _showMissingValuesTip = false;
   bool _showUsageLocationTip = false;
-
+  
   Future<void> _pickImage(ImageSource source) async {
     try {
       final XFile? image = await _imagePicker.pickImage(source: source);
@@ -365,48 +368,20 @@ class _AddScreenState extends State<AddScreen> {
         if (state is CouponAddSuccess) {
           showDialog(
             context: context,
-            builder:
-                (context) => AlertDialog(
-                  backgroundColor: AppColors.surface,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(24),
-                    side: const BorderSide(
-                      width: 2,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                  title: const Text(
-                    'Sukces',
-                    style: TextStyle(
-                      fontFamily: 'Itim',
-                      fontSize: 22,
-                      fontWeight: FontWeight.w400,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                  content: const Text(
-                    'Kupon został dodany.',
-                    style: TextStyle(
-                      fontFamily: 'Itim',
-                      fontSize: 16,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                  actionsPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
-                  actions: [
-                    CustomTextButton.primarySmall(
-                      label: 'OK',
-                      width: 100,
-                      onTap: () {
-                        Navigator.of(context).pop();
-                        Navigator.of(context).pop();
-                      },
-                    ),
-                  ],
+            builder: (_) => appDialog(
+              title: 'Sukces',
+              content: 'Kupon został dodany.',
+              actions: [
+                CustomTextButton.primarySmall(
+                  label: 'OK',
+                  width: 100,
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    Navigator.of(context).pop();
+                  },
                 ),
+              ],
+            ),
           );
         } else if (state is CouponAddFailure) {
           _focusScopeNode.unfocus();
@@ -1398,72 +1373,25 @@ class _AddScreenState extends State<AddScreen> {
                                               isMultipleUse: _isMultipleUse,
                                             );
 
-                                            final confirmed = await showDialog<
-                                              bool
-                                            >(
+                                            final confirmed = await showDialog<bool>(
                                               context: context,
-                                              builder:
-                                                  (context) => AlertDialog(
-                                                    backgroundColor:
-                                                        AppColors.surface,
-                                                    shape: RoundedRectangleBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                            24,
-                                                          ),
-                                                      side: const BorderSide(
-                                                        width: 2,
-                                                        color:
-                                                            AppColors
-                                                                .textPrimary,
-                                                      ),
-                                                    ),
-                                                    title: const Text(
-                                                      'Potwierdzenie',
-                                                      style: TextStyle(
-                                                        fontFamily: 'Itim',
-                                                        fontSize: 22,
-                                                        fontWeight:
-                                                            FontWeight.w400,
-                                                        color:
-                                                            AppColors
-                                                                .textPrimary,
-                                                      ),
-                                                    ),
-                                                    content: const Text(
-                                                      'Czy na pewno chcesz dodać ten kupon?',
-                                                      style: TextStyle(
-                                                        fontFamily: 'Itim',
-                                                        fontSize: 16,
-                                                        color:
-                                                            AppColors
-                                                                .textSecondary,
-                                                      ),
-                                                    ),
-                                                    actionsPadding:
-                                                        const EdgeInsets.symmetric(
-                                                          horizontal: 16,
-                                                          vertical: 12,
-                                                        ),
-                                                    actions: [
-                                                      CustomTextButton.small(
-                                                        label: 'Anuluj',
-                                                        width: 100,
-                                                        onTap:
-                                                            () => Navigator.of(
-                                                              context,
-                                                            ).pop(false),
-                                                      ),
-                                                      CustomTextButton.primarySmall(
-                                                        label: 'Dodaj',
-                                                        width: 100,
-                                                        onTap:
-                                                            () => Navigator.of(
-                                                              context,
-                                                            ).pop(true),
-                                                      ),
-                                                    ],
+                                              builder: (_) => appDialog(
+                                                title: 'Potwierdzenie',
+                                                content: 'Czy na pewno chcesz dodać ten kupon?',
+                                                actions: [
+                                                  CustomTextButton.small(
+                                                    label: 'Anuluj',
+                                                    width: 100,
+                                                    onTap: () => Navigator.of(context).pop(false),
                                                   ),
+                                                  const SizedBox(width: 8),
+                                                  CustomTextButton.primarySmall(
+                                                    label: 'Dodaj',
+                                                    width: 100,
+                                                    onTap: () => Navigator.of(context).pop(true),
+                                                  ),
+                                                ],
+                                              ),
                                             );
 
                                             if (confirmed == true) {
@@ -1599,4 +1527,63 @@ class _FooterLink extends StatelessWidget {
       ),
     );
   }
+}
+
+Widget appDialog({
+  required String title,
+  required String content,
+  required List<Widget> actions,
+}) {
+  return Dialog(
+    backgroundColor: AppColors.surface,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(24),
+      side: const BorderSide(width: 2, color: AppColors.textPrimary),
+    ),
+    child: SizedBox(
+      width: _dialogWidth,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(24, 20, 24, 16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                title,
+                textAlign: TextAlign.left,
+                style: const TextStyle(
+                  fontFamily: 'Itim',
+                  fontSize: 22,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              height: _dialogMinHeight,
+              width: double.infinity,
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  content,
+                  textAlign: TextAlign.left,
+                  style: const TextStyle(
+                    fontFamily: 'Itim',
+                    fontSize: 16,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: actions,
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
 }
