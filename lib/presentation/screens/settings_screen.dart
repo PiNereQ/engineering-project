@@ -13,6 +13,7 @@ import 'package:proj_inz/presentation/widgets/input/buttons/custom_switch.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_text_button.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:proj_inz/data/repositories/user_repository.dart';
+import 'package:proj_inz/presentation/widgets/input/text_fields/labeled_text_field.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -553,59 +554,97 @@ class _ConfirmDeleteWithPasswordDialogState
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      backgroundColor: AppColors.surface,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(24),
-        side: const BorderSide(width: 2, color: AppColors.textPrimary),
-      ),
-      title: const Text(
-        'Potwierdź usunięcie konta',
-        style: TextStyle(
-          fontFamily: 'Itim',
-          fontSize: 22,
-          color: AppColors.textPrimary,
-        ),
-      ),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Text(
-            'Wpisz hasło, aby potwierdzić usunięcie konta.\n'
-            'Ta operacja jest nieodwracalna.',
-            style: TextStyle(
-              fontFamily: 'Itim',
-              fontSize: 16,
-              color: AppColors.textSecondary,
-            ),
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+      child: Container(
+        width: double.infinity,
+        decoration: ShapeDecoration(
+          color: AppColors.surface,
+          shape: RoundedRectangleBorder(
+            side: const BorderSide(width: 2, color: AppColors.textPrimary),
+            borderRadius: BorderRadius.circular(24),
           ),
-          const SizedBox(height: 16),
-          TextField(
-            controller: _passwordController,
-            obscureText: true,
-            decoration: InputDecoration(
-              labelText: 'Hasło',
-              errorText: _error,
+          shadows: const [
+            BoxShadow(
+              color: AppColors.textPrimary,
+              blurRadius: 0,
+              offset: Offset(4, 4),
+              spreadRadius: 0,
             ),
-          ),
-        ],
+          ],
+        ),
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const Text(
+              'Potwierdź usunięcie konta',
+              style: TextStyle(
+                fontFamily: 'Itim',
+                fontSize: 22,
+                color: AppColors.textPrimary,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'Wpisz hasło, aby potwierdzić usunięcie konta.\n'
+              'Ta operacja jest nieodwracalna.',
+              style: TextStyle(
+                fontFamily: 'Itim',
+                fontSize: 16,
+                color: AppColors.textSecondary,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+
+            LabeledTextField(
+              label: 'Hasło',
+              controller: _passwordController,
+              isPassword: true,
+            ),
+
+            if (_error != null) ...[
+              const SizedBox(height: 10),
+              Text(
+                _error!,
+                style: const TextStyle(
+                  color: AppColors.alertText,
+                  fontSize: 14,
+                  fontFamily: 'Itim',
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+
+            const SizedBox(height: 20),
+
+            Row(
+              children: [
+                Expanded(
+                  child: CustomTextButton.small(
+                    label: 'Anuluj',
+                    onTap: () => Navigator.of(context).pop(),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: CustomTextButton.primarySmall(
+                    label: _isLoading ? '...' : 'Usuń konto',
+                    onTap: () {
+                      if (_isLoading) return;
+                      _confirmDelete();
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
-      actionsPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      actions: [
-        CustomTextButton.small(
-          label: 'Anuluj',
-          width: 100,
-          onTap: () => Navigator.of(context).pop(),
-        ),
-        CustomTextButton.primarySmall(
-          label: _isLoading ? '...' : 'Usuń konto',
-          width: 120,
-          onTap: () {
-            if (_isLoading) return;
-            _confirmDelete();
-          },
-        ),
-      ],
     );
   }
 }
