@@ -43,10 +43,9 @@ class CustomCheckbox extends StatelessWidget {
                   ],
                 ),
                 child: selected
-                    ? const Center(
-                        child: Icon(
-                          Icons.check,
-                          size: 16,
+                    ? CustomPaint(
+                        size: const Size(24, 24),
+                        painter: CheckMarkPainter(
                           color: AppColors.checkIcon,
                         ),
                       )
@@ -68,4 +67,31 @@ class CustomCheckbox extends StatelessWidget {
       ),
     );
   }
+}
+
+class CheckMarkPainter extends CustomPainter {
+  final Color color;
+
+  CheckMarkPainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3.5
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    final path = Path();
+
+    path.moveTo(size.width * 0.18, size.height * 0.55);
+    path.lineTo(size.width * 0.42, size.height * 0.75);
+    path.lineTo(size.width * 0.82, size.height * 0.25);
+
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
