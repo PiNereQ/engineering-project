@@ -10,74 +10,37 @@ part 'saved_coupon_list_state.dart';
 class SavedCouponListBloc
     extends Bloc<SavedCouponListEvent, SavedCouponListState> {
   final CouponRepository couponRepository;
-  final int limit = 20;
-
-  final List<Coupon> _allCoupons = [];
-  Map<String, dynamic>? _cursor;
-  bool _hasMore = true;
-  bool _isFetching = false;
-  String? _userId;
 
   SavedCouponListBloc(this.couponRepository)
       : super(SavedCouponListInitial()) {
-    on<FetchSavedCoupons>(_onFetchCoupons);
-    on<FetchMoreSavedCoupons>(_onFetchMoreCoupons);
-    on<RefreshSavedCoupons>(_onRefreshCoupons);
+    on<FetchSavedCoupons>(_onFetchSavedCoupons);
+    on<RefreshSavedCoupons>(_onRefreshSavedCoupons);
   }
 
-  Future<void> _onFetchCoupons(
+  Future<void> _onFetchSavedCoupons(
     FetchSavedCoupons event,
     Emitter<SavedCouponListState> emit,
   ) async {
-    emit(const SavedCouponListLoadInProgress());
-    _allCoupons.clear();
-    _cursor = null;
-    _hasMore = true;
-    _userId = event.userId;
-    add(FetchMoreSavedCoupons());
-  }
-
-  Future<void> _onFetchMoreCoupons(
-    FetchMoreSavedCoupons event,
-    Emitter<SavedCouponListState> emit,
-  ) async {
-    if (_isFetching || !_hasMore || _userId == null) return;
-
-    _isFetching = true;
-    emit(SavedCouponListLoadInProgress(coupons: List.from(_allCoupons)));
+    emit(SavedCouponListLoadInProgress());
 
     try {
-      final result = await couponRepository.fetchSavedCouponsPaginated(
-        limit: limit,
-        cursor: _cursor,
-        userId: _userId!,
-      );
+      final coupons = await couponRepository.fetchSavedCouponsFromApi(event.userId);
 
-      _allCoupons.addAll(result.coupons);
-      _cursor = result.cursor;
-      _hasMore = result.cursor != null;
-
-      if (_allCoupons.isEmpty) {
+      if (coupons.isEmpty) {
         emit(SavedCouponListLoadEmpty());
       } else {
-        emit(SavedCouponListLoadSuccess(
-          coupons: List.from(_allCoupons),
-          hasMore: _hasMore,
-        ));
+        emit(SavedCouponListLoadSuccess(coupons: coupons));
       }
     } catch (e) {
       if (kDebugMode) debugPrint(e.toString());
       emit(SavedCouponListLoadFailure(message: e.toString()));
-    } finally {
-      _isFetching = false;
     }
   }
 
-  Future<void> _onRefreshCoupons(
+  Future<void> _onRefreshSavedCoupons(
     RefreshSavedCoupons event,
     Emitter<SavedCouponListState> emit,
   ) async {
-    if (_userId == null) return;
-    add(FetchSavedCoupons(userId: _userId!));
+    add(FetchSavedCoupons(userId: event.userId));
   }
 }

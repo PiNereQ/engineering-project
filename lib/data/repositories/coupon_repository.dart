@@ -281,15 +281,18 @@ class CouponRepository {
   // SAVED COUPON METHODS =======================
 
   /// Fetch user's saved coupons (GET /coupons/saved?seller_id={userId})
-  Future<List<Map<String, dynamic>>> fetchSavedCouponsFromApi(String userId) async {
+  Future<List<Coupon>> fetchSavedCouponsFromApi(String userId) async {
     try {
       final response = await _api.get(
         '/coupons/saved',
         useAuthToken: true
       );
-      if (response is List) {
-        return response.cast<Map<String, dynamic>>();
-      }
+    if (response is List) {
+      return response
+          .map((e) => Coupon.availableToMeFromJson(e))
+          .whereType<Coupon>()
+          .toList();
+    }
       return [];
     } catch (e) {
       if (kDebugMode) debugPrint('Error fetching saved coupons from API: $e');

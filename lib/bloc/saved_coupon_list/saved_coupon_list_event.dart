@@ -15,6 +15,10 @@ class FetchSavedCoupons extends SavedCouponListEvent {
   List<Object> get props => [userId];
 }
 
-class FetchMoreSavedCoupons extends SavedCouponListEvent {}
+class RefreshSavedCoupons extends SavedCouponListEvent {
+  final String userId;
+  const RefreshSavedCoupons({required this.userId});
 
-class RefreshSavedCoupons extends SavedCouponListEvent {}
+  @override
+  List<Object> get props => [userId];
+}

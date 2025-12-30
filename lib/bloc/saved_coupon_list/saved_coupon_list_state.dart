@@ -9,31 +9,22 @@ sealed class SavedCouponListState extends Equatable {
 
 class SavedCouponListInitial extends SavedCouponListState {}
 
-class SavedCouponListLoadInProgress extends SavedCouponListState {
-  final List<Coupon> coupons;
-  const SavedCouponListLoadInProgress({this.coupons = const []});
-
-  @override
-  List<Object?> get props => [coupons];
-}
+class SavedCouponListLoadInProgress extends SavedCouponListState {}
 
 class SavedCouponListLoadSuccess extends SavedCouponListState {
   final List<Coupon> coupons;
-  final bool hasMore;
 
-  const SavedCouponListLoadSuccess({
-    required this.coupons,
-    required this.hasMore,
-  });
+  const SavedCouponListLoadSuccess({required this.coupons});
 
   @override
-  List<Object?> get props => [coupons, hasMore];
+  List<Object?> get props => [coupons];
 }
 
 class SavedCouponListLoadEmpty extends SavedCouponListState {}
 
 class SavedCouponListLoadFailure extends SavedCouponListState {
   final String message;
+
   const SavedCouponListLoadFailure({required this.message});
 
   @override
