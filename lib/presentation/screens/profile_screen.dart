@@ -11,6 +11,7 @@ import 'package:proj_inz/data/repositories/wallet_repository.dart';
 import 'package:proj_inz/presentation/screens/bought_coupon_list_screen.dart';
 import 'package:proj_inz/presentation/screens/debug_screen.dart';
 import 'package:proj_inz/presentation/screens/listed_coupon_list_screen.dart';
+import 'package:proj_inz/presentation/screens/saved_coupon_list_screen.dart';
 import 'package:proj_inz/presentation/screens/settings_screen.dart';
 import 'package:proj_inz/presentation/screens/sign_in_screen.dart';
 import 'package:proj_inz/presentation/widgets/custom_snack_bar.dart';
@@ -334,7 +335,15 @@ Widget build(BuildContext context) {
                     CustomTextButton(
                       width: double.infinity,
                       label: 'Zapisane',
-                      onTap: () {},
+                      onTap: () {
+                        Navigator.push(
+                          context, 
+                          MaterialPageRoute(
+                            builder: (_) => 
+                              const SavedCouponListScreen()
+                          )
+                        );
+                      },
                     ),
                   ],
                 ),

@@ -11,7 +11,7 @@ import 'package:proj_inz/presentation/widgets/dashed_separator.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_follow_button.dart';
 import 'package:proj_inz/core/theme.dart';
 
-class CouponCardHorizontal extends StatelessWidget {
+class CouponCardHorizontal extends StatefulWidget {
   final Coupon coupon;
   final bool isBought;
 
@@ -30,7 +30,23 @@ class CouponCardHorizontal extends StatelessWidget {
   }
 
   @override
+  State<CouponCardHorizontal> createState() => _CouponCardHorizontalState();
+}
+
+class _CouponCardHorizontalState extends State<CouponCardHorizontal> {
+  late bool isSaved;
+  final CouponRepository _repo = CouponRepository();
+
+  @override
+  void initState() {
+    super.initState();
+    isSaved = widget.coupon.isSaved ?? false;
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final coupon = widget.coupon;
+
     final String couponId = coupon.id;
     final num reduction = coupon.reduction;
     final bool reductionIsPercentage = coupon.reductionIsPercentage;
@@ -43,7 +59,6 @@ class CouponCardHorizontal extends StatelessWidget {
     final bool worksOnline = coupon.worksOnline;
     final bool worksInStore = coupon.worksInStore;
     final DateTime? expiryDate = coupon.expiryDate;
-    final bool isSaved = coupon.isSaved ?? false;
     final bool hasExpiryDate = expiryDate != null;
     
     final reductionText =
@@ -160,8 +175,8 @@ class CouponCardHorizontal extends StatelessWidget {
                   context,
                   MaterialPageRoute(
                     builder:
-                        (context) =>
-                            isBought
+                        (_) =>
+                            widget.isBought
                                 ? BoughtCouponDetailsScreen(couponId: couponId)
                                 : CouponDetailsScreen(coupon: coupon),
                   ),
@@ -311,12 +326,35 @@ class CouponCardHorizontal extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.fromLTRB(4, 10, 16, 10),
             child: Center(
-              child: isBought
+              child: widget.isBought
               ? const Icon(Icons.check_rounded, size: 36)
-              : CustomFollowButton.small(
-                onTap: () {},
-                isPressed: isSaved
-              ),
+                : CustomFollowButton.small(
+                  isPressed: isSaved,
+                  onTap: () async {
+                    try {
+                      if (isSaved) {
+                        await _repo.removeCouponFromSaved(
+                          couponId: coupon.id,
+                          userId: '',
+                        );
+                      } else {
+                        await _repo.addCouponToSaved(
+                          couponId: coupon.id,
+                          userId: '',
+                        );
+                      }
+
+                      if (!mounted) return;
+                      setState(() {
+                        isSaved = !isSaved;
+                      });
+                    } catch (e) {
+                      if (kDebugMode) {
+                        debugPrint('Save coupon error: $e');
+                      }
+                    }
+                  },
+                )
             ),
           ),
         ],

@@ -280,7 +280,7 @@ class CouponRepository {
 
   // SAVED COUPON METHODS =======================
 
-  /// Fetch user's listed coupons (GET /coupons/listed?seller_id={userId})
+  /// Fetch user's saved coupons (GET /coupons/saved?seller_id={userId})
   Future<List<Map<String, dynamic>>> fetchSavedCouponsFromApi(String userId) async {
     try {
       final response = await _api.get(
@@ -297,7 +297,7 @@ class CouponRepository {
     }
   }
 
-  /// Fetch saved coupons with pagination and filters (GET /coupons/listed)
+  /// Fetch saved coupons with pagination and filters (GET /coupons/saved)
   Future<PaginatedListedCouponsResult> fetchSavedCouponsPaginated({
     required int limit,
     Map<String, dynamic>? cursor,
@@ -315,7 +315,6 @@ class CouponRepository {
         'limit': limit.toString(),
         if (cursor != null) 'cursor_value': cursor['value']!.toString(),
         if (cursor != null) 'cursor_id': cursor['id']!.toString(),
-        'seller_id': userId,
         if (reductionIsPercentage != null && reductionIsPercentage) 'type': 'percent',
         if (reductionIsFixed != null && reductionIsFixed) 'type': 'flat',
         if (showActive != null && showActive) 'status': 'active',
@@ -326,7 +325,7 @@ class CouponRepository {
       };
 
       final response = await _api.get(
-        '/coupons/listed',
+        '/coupons/saved',
         queryParameters: queryParams,
         useAuthToken: true,
       );
@@ -367,7 +366,7 @@ class CouponRepository {
       );
     } catch (e) {
       if (kDebugMode) debugPrint('Error removing coupon from saved: $e');
-      rethrow;
+      // NIE rethrow - 404 / empty body traktujemy jako OK
     }
   }
   
