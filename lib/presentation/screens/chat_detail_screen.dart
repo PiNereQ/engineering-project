@@ -971,6 +971,128 @@ class _SystemMessageCardState extends State<SystemMessageCard> {
           ]
         );
       }
+    } else if (widget.msg.text == 'rating_request_for_seller') {
+      if (widget.ratingExists == true) {
+        contents = Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text(
+              "Kupujący skorzystał z Twojego kuponu!",
+              style: const TextStyle(
+                fontFamily: 'Itim',
+                fontSize: 20,
+                color: AppColors.textPrimary,
+                fontWeight: FontWeight.bold
+              ),
+            ),
+            SizedBox(height: 8),
+            Text(
+              "Już oceniłeś kupującego. Dziękujemy za pomoc innym użytkownikom!",
+              style: const TextStyle(
+                fontFamily: 'Itim',
+                fontSize: 18,
+                color: AppColors.textPrimary,
+              ),
+              textAlign: TextAlign.justify,
+            ),
+            SizedBox(height: 12),
+            Text(
+              "To jest wiadomość systemowa.\nNie odpowiadaj na nią.",
+              style: const TextStyle(
+                fontFamily: 'Itim',
+                fontSize: 14,
+                color: AppColors.textSecondary,
+                fontStyle: FontStyle.italic,
+              ),
+              textAlign: TextAlign.center,
+            )
+          ]
+        );
+      } else {
+        contents = Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text(
+              "Kupujący skorzystał z Twojego kuponu!",
+              style: const TextStyle(
+                fontFamily: 'Itim',
+                fontSize: 20,
+                color: AppColors.textPrimary,
+                fontWeight: FontWeight.bold
+              ),
+            ),
+            SizedBox(height: 8),
+            Text(
+              "Nie zapomnij ocenić kupującego, aby pomóc innym użytkownikom.",
+              style: const TextStyle(
+                fontFamily: 'Itim',
+                fontSize: 18,
+                color: AppColors.textPrimary,
+              ),
+              textAlign: TextAlign.justify,
+            ),
+            SizedBox(height: 12),
+            StarRating(
+              startRating: 0,
+              onRatingChanged: (rating) {
+                setState(() {
+                  _ratingStars = rating;
+                });
+              },
+            ),
+            if (_errorText != null) ...[
+              SizedBox(height: 8),
+              Text(
+                _errorText!,
+                style: const TextStyle(
+                  fontFamily: 'Itim',
+                  fontSize: 14,
+                  color: AppColors.alertText,
+                ),
+              ),
+            ],
+            SizedBox(height: 8),
+            CustomTextButton(
+              label: "Oceń", 
+              onTap: () {
+                setState(() {
+                  _errorText = null;
+                });
+                if (_ratingStars > 0) {
+                  final ratedUserId = widget.buyerId;
+                  final ratingUserId = widget.currentUserId;
+                  final ratedUserIsSeller = false;
+                  final ratingValue = _calculateRatingValue(_ratingStars);
+                  context.read<ChatDetailBloc>().add(SubmitRating(
+                    conversationId: widget.conversationId,
+                    ratedUserId: ratedUserId,
+                    ratingUserId: ratingUserId,
+                    ratedUserIsSeller: ratedUserIsSeller,
+                    ratingStars: _ratingStars,
+                    ratingValue: ratingValue,
+                    ratingComment: _ratingComment,
+                  ));
+                } else {
+                  setState(() {
+                    _errorText = "Wybierz od 1 do 5 gwiazdek.";
+                  });
+                }
+              },
+            ),
+            SizedBox(height: 12),
+            Text(
+              "To jest wiadomość systemowa.\nNie odpowiadaj na nią.",
+              style: const TextStyle(
+                fontFamily: 'Itim',
+                fontSize: 14,
+                color: AppColors.textSecondary,
+                fontStyle: FontStyle.italic,
+              ),
+              textAlign: TextAlign.center,
+            )
+          ]
+        );
+      }
     } else {
       return SizedBox.shrink();
     }
