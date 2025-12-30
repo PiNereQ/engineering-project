@@ -27,6 +27,37 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   debugPrint('BG message: ${message.messageId}');
 }
 
+/// Register FCM event handlers (foreground, background, cold start)
+void registerFCMHandlers({required BuildContext context}) async {
+  // Foreground message handler
+  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    // TODO: Implement behavior for foreground messages, e.g., show a dialog or in-app notification
+    final title = message.notification?.title ?? 'Nowa wiadomość';
+    final body = message.notification?.body ?? '';
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('$title: $body')),
+      );
+    }
+  });
+
+  // Notification tap handler (background)
+  FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+    final data = message.data;
+    // TODO: Implement navigation based on payload
+    debugPrint('Notification tapped. Data: $data');
+  });
+
+  // Cold start (terminated app)
+  FirebaseMessaging.instance.getInitialMessage().then((initialMessage) {
+    if (initialMessage != null) {
+      final data = initialMessage.data;
+      // TODO: Implement navigation based on payload
+      debugPrint('Cold start notification. Data: $data');
+    }
+  });
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -61,6 +92,8 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    registerFCMHandlers(context: context);
+
     return MultiRepositoryProvider(
       providers: [
         RepositoryProvider(create: (_) => AuthRepository()),

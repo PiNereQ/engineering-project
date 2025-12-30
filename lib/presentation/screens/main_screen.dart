@@ -52,7 +52,6 @@ class _MainScreenState extends State<MainScreen> {
       if (userId.isNotEmpty) {
         await _requestPermission();
         await _fcmRepository.initFcmTokenManagement();
-        if (mounted) _fcmRepository.registerHandlers(context: context);
       }
     });
   }
