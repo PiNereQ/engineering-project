@@ -12,20 +12,32 @@ class ChatDetailLoading extends ChatDetailState {}
 
 class ChatDetailLoaded extends ChatDetailState {
   final List<Message> messages;
+  final bool? ratingExists;
 
-  const ChatDetailLoaded(this.messages);
+  const ChatDetailLoaded(this.messages, {this.ratingExists});
 
   @override
-  List<Object?> get props => [messages];
+  List<Object?> get props => [messages, ratingExists];
 }
 
 class ChatDetailSending extends ChatDetailState {
   final List<Message> messages;
+  final bool? ratingExists;
 
-  const ChatDetailSending(this.messages);
+  const ChatDetailSending(this.messages, {this.ratingExists});
 
   @override
-  List<Object?> get props => [messages];
+  List<Object?> get props => [messages, ratingExists];
+}
+
+class ChatDetailSubmittingRating extends ChatDetailState {
+  final List<Message> messages;
+  final bool? ratingExists;
+
+  const ChatDetailSubmittingRating(this.messages, {this.ratingExists});
+
+  @override
+  List<Object?> get props => [messages, ratingExists];
 }
 
 class ChatDetailError extends ChatDetailState {

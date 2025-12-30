@@ -7,6 +7,7 @@ import 'package:proj_inz/bloc/chat/unread/chat_unread_event.dart';
 import 'package:proj_inz/core/theme.dart';
 import 'package:proj_inz/core/utils/utils.dart';
 import 'package:proj_inz/data/models/conversation_model.dart';
+import 'package:proj_inz/data/models/message_model.dart';
 import 'package:proj_inz/data/repositories/user_repository.dart';
 import 'package:proj_inz/presentation/screens/report_screen.dart';
 import 'package:proj_inz/presentation/widgets/chat_report_popup.dart';
@@ -14,6 +15,7 @@ import 'package:proj_inz/presentation/widgets/coupon_preview_popup.dart';
 import 'package:proj_inz/presentation/widgets/custom_snack_bar.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_icon_button.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_text_button.dart';
+import 'package:proj_inz/presentation/widgets/input/star_rating.dart';
 import 'package:proj_inz/presentation/widgets/reputation_bar.dart';
 import '../widgets/chat_bubble.dart';
 
@@ -328,9 +330,33 @@ class ChatDetailScreen extends StatelessWidget {
 @override
 Widget build(BuildContext context) {
   final couponRepo = context.read<CouponRepository>();
+  final currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
+
+  // Determine which fetch method to use based on user role and coupon status
+  Future<Coupon?> fetchCoupon() {
+    final isBuyer = currentUserId == buyerId;
+    final isSeller = currentUserId == sellerId;
+
+    if (isBuyer) {
+      // Buyer logic
+      if (initialConversation?.isCouponSold == true) {
+        // Fetch owned coupon
+        return couponRepo.fetchOwnedCouponDetailsById(couponId);
+      } else {
+        // Fetch available coupon
+        return couponRepo.fetchCouponDetailsById(couponId);
+      }
+    } else if (isSeller) {
+      // Seller logic - always fetch listed coupon
+      return couponRepo.fetchListedCouponDetailsById(couponId, currentUserId);
+    } else {
+      // Fallback - fetch available coupon
+      return couponRepo.fetchCouponDetailsById(couponId);
+    }
+  }
 
   return FutureBuilder<Coupon?>(
-    future: couponRepo.fetchCouponDetailsById(couponId),
+    future: fetchCoupon(),
     builder: (context, snapshot) {
       if (snapshot.connectionState == ConnectionState.waiting) {
         return const Scaffold(
@@ -436,7 +462,7 @@ class _ChatDetailViewState extends State<ChatDetailView> {
       context.read<ChatUnreadBloc>().add(CheckUnreadStatus(userId: userId));
 
       context.read<ChatDetailBloc>().add(
-        LoadMessages(_conversation!.id),
+        LoadMessages(_conversation!.id, raterId: widget.buyerId),
       );
     }
   }
@@ -558,8 +584,11 @@ class _ChatDetailViewState extends State<ChatDetailView> {
                         return const Center(child: CircularProgressIndicator());
                       }
 
-                      if (state is ChatDetailLoaded) {
-                        if (state.messages.isEmpty) {
+                      if (state is ChatDetailLoaded || state is ChatDetailSubmittingRating) {
+                        final messages = (state as dynamic).messages as List<Message>;
+                        final ratingExists = (state as dynamic).ratingExists as bool?;
+
+                        if (messages.isEmpty) {
                           return const Center(
                             child: Text(
                               "Brak wiadomości. Napisz coś jako pierwszy!",
@@ -571,20 +600,34 @@ class _ChatDetailViewState extends State<ChatDetailView> {
                           );
                         }
 
+                        final conversationId = _conversation!.id;
+
                         return ListView.builder(
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                          itemCount: state.messages.length,
+                          itemCount: messages.length,
                           itemBuilder: (context, index) {
-                            final msg = state.messages[index];
-                            final currentUserId = FirebaseAuth.instance.currentUser?.uid;
+                            final msg = messages[index];
+                            final currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
                             final isMine = msg.senderId == currentUserId;
-
-                            return ChatBubble(
+                            if (msg.type == 'user') {
+                              return ChatBubble(
                               text: msg.text,
                               time: _formatTime(msg.timestamp),
                               isMine: isMine,
                               isUnread: !msg.isRead,
                             );
+                            }
+                            if (msg.type == 'system') {
+                              return SystemMessageCard(
+                                msg: msg, 
+                                ratingExists: ratingExists,
+                                conversationId: conversationId,
+                                buyerId: widget.buyerId,
+                                sellerId: widget.sellerId,
+                                currentUserId: currentUserId,
+                              );
+                            }
+                            return const SizedBox();
                           },
                         );
                       }
@@ -770,6 +813,325 @@ class _ChatDetailViewState extends State<ChatDetailView> {
   String _formatTime(DateTime time) {
     // Use helper to format time in local timezone
     return formatTimeLocal(time);
+  }
+}
+
+class SystemMessageCard extends StatefulWidget {
+  const SystemMessageCard({
+    super.key,
+    required this.msg,
+    this.ratingExists,
+    required this.conversationId,
+    required this.buyerId,
+    required this.sellerId,
+    required this.currentUserId,
+  });
+
+  final Message msg;
+  final bool? ratingExists;
+  final String conversationId;
+  final String buyerId;
+  final String sellerId;
+  final String currentUserId;
+
+  @override
+  State<SystemMessageCard> createState() => _SystemMessageCardState();
+}
+
+class _SystemMessageCardState extends State<SystemMessageCard> {
+  int _ratingStars = 0;
+  String? _ratingComment;
+  String? _errorText;
+
+  @override
+  Widget build(BuildContext context) {
+    Widget? contents;
+    if (widget.msg.text == 'rating_request_for_buyer') {
+      if (widget.ratingExists == true) {
+        contents = Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text(
+              "Dziękujemy za użycie kuponu!",
+              style: const TextStyle(
+                fontFamily: 'Itim',
+                fontSize: 20,
+                color: AppColors.textPrimary,
+                fontWeight: FontWeight.bold
+              ),
+            ),
+            SizedBox(height: 8),
+            Text(
+              "Już oceniłeś sprzedającego. Dziękujemy za pomoc innym użytkownikom!",
+              style: const TextStyle(
+                fontFamily: 'Itim',
+                fontSize: 18,
+                color: AppColors.textPrimary,
+              ),
+              textAlign: TextAlign.justify,
+            ),
+            SizedBox(height: 12),
+            Text(
+              "To jest wiadomość systemowa.\nNie odpowiadaj na nią.",
+              style: const TextStyle(
+                fontFamily: 'Itim',
+                fontSize: 14,
+                color: AppColors.textSecondary,
+                fontStyle: FontStyle.italic,
+              ),
+              textAlign: TextAlign.center,
+            )
+          ]
+        );
+      } else {
+        contents = Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text(
+              "Dziękujemy za użycie kuponu!",
+              style: const TextStyle(
+                fontFamily: 'Itim',
+                fontSize: 20,
+                color: AppColors.textPrimary,
+                fontWeight: FontWeight.bold
+              ),
+            ),
+            SizedBox(height: 8),
+            Text(
+              "Nie zapomnij ocenić sprzedającego, aby pomóc innym użytkownikom.",
+              style: const TextStyle(
+                fontFamily: 'Itim',
+                fontSize: 18,
+                color: AppColors.textPrimary,
+              ),
+              textAlign: TextAlign.justify,
+            ),
+            SizedBox(height: 12),
+            StarRating(
+              startRating: 0,
+              onRatingChanged: (rating) {
+                setState(() {
+                  _ratingStars = rating;
+                });
+              },
+            ),
+            if (_errorText != null) ...[
+              SizedBox(height: 8),
+              Text(
+                _errorText!,
+                style: const TextStyle(
+                  fontFamily: 'Itim',
+                  fontSize: 14,
+                  color: AppColors.alertText,
+                ),
+              ),
+            ],
+            SizedBox(height: 8),
+            CustomTextButton(
+              label: "Oceń", 
+              onTap: () {
+                setState(() {
+                  _errorText = null;
+                });
+                if (_ratingStars > 0) {
+                  final ratedUserId = widget.sellerId;
+                  final ratingUserId = widget.currentUserId;
+                  final ratedUserIsSeller = true;
+                  final ratingValue = _calculateRatingValue(_ratingStars);
+                  context.read<ChatDetailBloc>().add(SubmitRating(
+                    conversationId: widget.conversationId,
+                    ratedUserId: ratedUserId,
+                    ratingUserId: ratingUserId,
+                    ratedUserIsSeller: ratedUserIsSeller,
+                    ratingStars: _ratingStars,
+                    ratingValue: ratingValue,
+                    ratingComment: _ratingComment,
+                  ));
+                } else {
+                  setState(() {
+                    _errorText = "Wybierz od 1 do 5 gwiazdek.";
+                  });
+                }
+              },
+            ),
+            SizedBox(height: 12),
+            Text(
+              "To jest wiadomość systemowa.\nNie odpowiadaj na nią.",
+              style: const TextStyle(
+                fontFamily: 'Itim',
+                fontSize: 14,
+                color: AppColors.textSecondary,
+                fontStyle: FontStyle.italic,
+              ),
+              textAlign: TextAlign.center,
+            )
+          ]
+        );
+      }
+    } else if (widget.msg.text == 'rating_request_for_seller') {
+      if (widget.ratingExists == true) {
+        contents = Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text(
+              "Kupujący skorzystał z Twojego kuponu!",
+              style: const TextStyle(
+                fontFamily: 'Itim',
+                fontSize: 20,
+                color: AppColors.textPrimary,
+                fontWeight: FontWeight.bold
+              ),
+            ),
+            SizedBox(height: 8),
+            Text(
+              "Już oceniłeś kupującego. Dziękujemy za pomoc innym użytkownikom!",
+              style: const TextStyle(
+                fontFamily: 'Itim',
+                fontSize: 18,
+                color: AppColors.textPrimary,
+              ),
+              textAlign: TextAlign.justify,
+            ),
+            SizedBox(height: 12),
+            Text(
+              "To jest wiadomość systemowa.\nNie odpowiadaj na nią.",
+              style: const TextStyle(
+                fontFamily: 'Itim',
+                fontSize: 14,
+                color: AppColors.textSecondary,
+                fontStyle: FontStyle.italic,
+              ),
+              textAlign: TextAlign.center,
+            )
+          ]
+        );
+      } else {
+        contents = Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text(
+              "Kupujący skorzystał z Twojego kuponu!",
+              style: const TextStyle(
+                fontFamily: 'Itim',
+                fontSize: 20,
+                color: AppColors.textPrimary,
+                fontWeight: FontWeight.bold
+              ),
+            ),
+            SizedBox(height: 8),
+            Text(
+              "Nie zapomnij ocenić kupującego, aby pomóc innym użytkownikom.",
+              style: const TextStyle(
+                fontFamily: 'Itim',
+                fontSize: 18,
+                color: AppColors.textPrimary,
+              ),
+              textAlign: TextAlign.justify,
+            ),
+            SizedBox(height: 12),
+            StarRating(
+              startRating: 0,
+              onRatingChanged: (rating) {
+                setState(() {
+                  _ratingStars = rating;
+                });
+              },
+            ),
+            if (_errorText != null) ...[
+              SizedBox(height: 8),
+              Text(
+                _errorText!,
+                style: const TextStyle(
+                  fontFamily: 'Itim',
+                  fontSize: 14,
+                  color: AppColors.alertText,
+                ),
+              ),
+            ],
+            SizedBox(height: 8),
+            CustomTextButton(
+              label: "Oceń", 
+              onTap: () {
+                setState(() {
+                  _errorText = null;
+                });
+                if (_ratingStars > 0) {
+                  final ratedUserId = widget.buyerId;
+                  final ratingUserId = widget.currentUserId;
+                  final ratedUserIsSeller = false;
+                  final ratingValue = _calculateRatingValue(_ratingStars);
+                  context.read<ChatDetailBloc>().add(SubmitRating(
+                    conversationId: widget.conversationId,
+                    ratedUserId: ratedUserId,
+                    ratingUserId: ratingUserId,
+                    ratedUserIsSeller: ratedUserIsSeller,
+                    ratingStars: _ratingStars,
+                    ratingValue: ratingValue,
+                    ratingComment: _ratingComment,
+                  ));
+                } else {
+                  setState(() {
+                    _errorText = "Wybierz od 1 do 5 gwiazdek.";
+                  });
+                }
+              },
+            ),
+            SizedBox(height: 12),
+            Text(
+              "To jest wiadomość systemowa.\nNie odpowiadaj na nią.",
+              style: const TextStyle(
+                fontFamily: 'Itim',
+                fontSize: 14,
+                color: AppColors.textSecondary,
+                fontStyle: FontStyle.italic,
+              ),
+              textAlign: TextAlign.center,
+            )
+          ]
+        );
+      }
+    } else {
+      return SizedBox.shrink();
+    }
+    
+
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.all(Radius.circular(16)),
+        border: Border.all(color: AppColors.textPrimary, width: 2),
+        boxShadow: const [
+          BoxShadow(
+            color: AppColors.textPrimary,
+            offset: Offset(4, 4),
+            blurRadius: 0,
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+        child: contents
+      ),
+    );
+  }
+}
+
+_calculateRatingValue(int stars) {
+  // Convert stars (1-5) to rating value (0-100)
+  // Leaving this as a switch in case of future changes
+  switch (stars) {
+    case 1:
+      return 0;
+    case 2:
+      return 25;
+    case 3:
+      return 50;
+    case 4:
+      return 75;
+    case 5:
+      return 100;
+    default:
+      return 0;
   }
 }
 
