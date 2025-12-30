@@ -12,6 +12,7 @@ class Conversation extends Equatable {
   final String buyerUsername;
   final String sellerUsername;
   final String lastMessage;
+  final String lastMessageType; // 'user' or 'system'
   final DateTime lastMessageTime;
   final bool isReadByBuyer;
   final bool isReadBySeller;
@@ -31,6 +32,7 @@ class Conversation extends Equatable {
     required this.buyerUsername,
     required this.sellerUsername,
     required this.lastMessage,
+    required this.lastMessageType,
     required this.lastMessageTime,
     required this.isReadByBuyer,
     required this.isReadBySeller,
@@ -47,6 +49,7 @@ class Conversation extends Equatable {
         buyerId,
         sellerId,
         lastMessage,
+        lastMessageType,
         lastMessageTime,
         isReadByBuyer,
         isReadBySeller,
@@ -66,6 +69,7 @@ class Conversation extends Equatable {
       buyerUsername: json['buyer_username'] as String,
       sellerUsername: json['seller_username'] as String,
       lastMessage: (json['latest_message'] ?? '') as String,
+      lastMessageType: (json['latest_message_type'] ?? 'user') as String,
       lastMessageTime: (json['latest_message_timestamp'] != null && (json['latest_message_timestamp'] as String).isNotEmpty)
         ? DateTime.parse(json['latest_message_timestamp'] as String)
         : DateTime.fromMillisecondsSinceEpoch(0),
@@ -86,6 +90,7 @@ class Conversation extends Equatable {
       'buyer_username': buyerUsername,
       'seller_username': sellerUsername,
       'latest_message': lastMessage,
+      'latest_message_type': lastMessageType,
       'latest_message_time': lastMessageTime.toIso8601String(),
 
       'is_read_by_buyer': isReadByBuyer,
@@ -106,8 +111,8 @@ class Conversation extends Equatable {
     String? sellerId,
     String? buyerUsername,
     String? sellerUsername,
-    String? couponTitle,
     String? lastMessage,
+    String? lastMessageType,
     DateTime? lastMessageTime,
     bool? isReadByBuyer,
     bool? isReadBySeller,
@@ -125,6 +130,7 @@ class Conversation extends Equatable {
       buyerUsername: buyerUsername ?? this.buyerUsername,
       sellerUsername: sellerUsername ?? this.sellerUsername,
       lastMessage: lastMessage ?? this.lastMessage,
+      lastMessageType: lastMessageType ?? this.lastMessageType,
       lastMessageTime: lastMessageTime ?? this.lastMessageTime,
 
       isReadByBuyer: isReadByBuyer ?? this.isReadByBuyer,

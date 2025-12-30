@@ -6,6 +6,7 @@ class ConversationTile extends StatelessWidget {
   final String username;
   final String title;
   final String message;
+  final String messageType;
   final bool isRead;
   final bool? isCouponSold;
 
@@ -14,6 +15,7 @@ class ConversationTile extends StatelessWidget {
     required this.username,
     required this.title,
     required this.message,
+    required this.messageType,
     required this.isRead,
     this.isCouponSold,
   });
@@ -21,10 +23,14 @@ class ConversationTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     String messageText = "";
-    if (message == "rating_request_for_buyer") {
-      messageText = "Coupidyn: Oceń sprzedającego!";
-    } else if (message == "rating_request_for_seller") {
-      messageText = "Coupidyn: Oceń kupującego!";
+    if (messageType == "system") {
+      if (message == "rating_request_for_buyer") {
+        messageText = "Coupidyn: Oceń sprzedającego!";
+      } else if (message == "rating_request_for_seller") {
+        messageText = "Coupidyn: Oceń kupującego!";
+      } else {
+        messageText = "Coupidyn: $message";
+      }
     } else {
       messageText = message;
     }
