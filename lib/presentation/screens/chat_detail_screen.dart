@@ -813,8 +813,25 @@ class _ChatDetailViewState extends State<ChatDetailView> {
   }
 
   String _formatTime(DateTime time) {
-    // Use helper to format time in local timezone
-    return formatTimeLocal(time);
+    final localTime = time.toLocal();
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final yesterday = today.subtract(const Duration(days: 1));
+    final dayBeforeYesterday = yesterday.subtract(const Duration(days: 1));
+    final messageDate = DateTime(localTime.year, localTime.month, localTime.day);
+    final timeStr = formatTimeLocal(localTime);
+
+    if (messageDate == today) {
+      return timeStr;
+    } else if (messageDate == yesterday) {
+      return "wczoraj, $timeStr";
+    } else if (messageDate == dayBeforeYesterday) {
+      return "przedwczoraj, $timeStr";
+    } else if (localTime.year == now.year) {
+      return "${localTime.day.toString().padLeft(2, '0')}.${localTime.month.toString().padLeft(2, '0')}., $timeStr";
+    } else {
+      return "${localTime.day.toString().padLeft(2, '0')}.${localTime.month.toString().padLeft(2, '0')}.${localTime.year} r., $timeStr";
+    }
   }
 }
 
