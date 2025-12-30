@@ -244,6 +244,10 @@ class _Toolbar extends StatelessWidget {
 
 @override
 Widget build(BuildContext context) {
+
+  final bool hasSearchHeader =
+    searchShopName != null || searchCategoryName != null;
+
   return SliverAppBar(
     automaticallyImplyLeading: false, // automatyczna strzalka wstecz dla ekranow z navigator.push
     floating: true,
@@ -341,7 +345,7 @@ Widget build(BuildContext context) {
                                 'Wyniki dla sklepu: $searchShopName',
                                 style: const TextStyle(
                                   color: AppColors.textPrimary,
-                                  fontSize: 18,
+                                  fontSize: 16,
                                   fontFamily: 'Itim',
                                   fontWeight: FontWeight.w400,
                                 ),
@@ -350,7 +354,7 @@ Widget build(BuildContext context) {
                                 'Wyniki dla kategorii: $searchCategoryName',
                                 style: const TextStyle(
                                   color: AppColors.textPrimary,
-                                  fontSize: 18,
+                                  fontSize: 16,
                                   fontFamily: 'Itim',
                                   fontWeight: FontWeight.w400,
                                 ),
@@ -452,7 +456,9 @@ Widget build(BuildContext context) {
           ),
         ],
     ),
-    toolbarHeight: searchShopName != null ? 194 : 174,
+
+    toolbarHeight: hasSearchHeader ? 200 : 174,
+
   );
 }
 }

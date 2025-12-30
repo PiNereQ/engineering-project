@@ -18,7 +18,7 @@ class MapRepository {
           'south': bounds.south.toString(),
           'north': bounds.north.toString(),
           'west': bounds.west.toString(),
-          'east': bounds.east.toString(),
+          'east': bounds.east.toString(),  
         },
       );
       final List<dynamic> locationsData = response is List ? response : [];

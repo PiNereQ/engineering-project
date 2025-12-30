@@ -3,6 +3,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:proj_inz/core/theme.dart';
 import 'package:proj_inz/core/utils/utils.dart';
 import 'package:proj_inz/data/models/coupon_model.dart';
+import 'package:proj_inz/data/repositories/user_repository.dart';
 import 'package:proj_inz/presentation/widgets/coupon_card.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_icon_button.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_text_button.dart';
@@ -11,17 +12,12 @@ import 'package:proj_inz/presentation/widgets/reputation_bar.dart';
 class ReportScreen extends StatefulWidget {
   final String reportedUserId;
   final String reportedUsername;
-  final int reportedUserReputation;
-  final DateTime reportedUserJoinDate;
-
   final Coupon? reportedCoupon;
 
   const ReportScreen({
     super.key,
     required this.reportedUserId,
     required this.reportedUsername,
-    required this.reportedUserReputation,
-    required this.reportedUserJoinDate,
     this.reportedCoupon,
   });
 
@@ -30,33 +26,40 @@ class ReportScreen extends StatefulWidget {
 }
 
 class _ReportScreenState extends State<ReportScreen> {
+  Future<Map<String, dynamic>?>? _userFuture;
+
   String? selectedReason;
   final TextEditingController descriptionController = TextEditingController();
   bool showMissingReasonTip = false;
+  
+  @override
+  void initState() {
+    super.initState();
+
+    _userFuture = UserRepository().getUserProfile(widget.reportedUserId);
+
+  }
 
   @override
   Widget build(BuildContext context) {
     final isCouponReport = widget.reportedCoupon != null;
 
-    final reasons = isCouponReport
-        ? [
-            "Kod kuponu jest nieprawidłowy",
-            "Termin ważności kuponu minął",
-            "Kupon ma ograniczenia, których nie było w opisie",
-            "Zdjęcie kuponu jest nieczytelne",
-            "Nieodpowiednia nazwa użytkownika sprzedającego",
-            "Nieodpowiedni obraz profilu sprzedającego",
-            "Inne",
-          ]
-        : [
-            "Spam",
-            "Próba oszustwa",
-            "Nękanie, groźby lub obraza",
-            "Nieodpowiednie treści",
-            "Nieodpowiednia nazwa użytkownika",
-            "Nieodpowiedni obraz profilu",
-            "Inne",
-          ];
+    final reasons = const [
+      // kupon
+      "Kod kuponu jest nieprawidłowy",
+      "Termin ważności kuponu minął",
+      "Kupon ma ograniczenia, których nie było w opisie",
+
+      // sprzedający
+      "Próba oszustwa",
+      "Spam",
+      "Nękanie, groźby lub obraza",
+      "Nieodpowiednie treści",
+      "Nieodpowiednia nazwa użytkownika sprzedającego",
+
+      // fallback
+      "Inne",
+    ];
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -83,10 +86,40 @@ class _ReportScreenState extends State<ReportScreen> {
               const SizedBox(height: 16),
 
               // user tile
-              _UserTile(
-                username: widget.reportedUsername,
-                reputation: widget.reportedUserReputation,
-                joinDate: widget.reportedUserJoinDate,
+              FutureBuilder<Map<String, dynamic>?>(
+                future: _userFuture,
+                builder: (context, snap) {
+                  if (snap.connectionState == ConnectionState.waiting) {
+                    return const Padding(
+                      padding: EdgeInsets.all(16),
+                      child: CircularProgressIndicator(),
+                    );
+                  }
+
+                  if (!snap.hasData || snap.data == null) {
+                    return const Text(
+                      "Nie udało się załadować danych użytkownika",
+                      style: TextStyle(
+                        fontFamily: 'Itim',
+                        color: AppColors.alertText,
+                      ),
+                    );
+                  }
+
+                  final data = snap.data!;
+                  final int? reputation = data['reputation'] as int?;
+                  final createdAtRaw = data['created_at'];
+
+                  final joinDate = createdAtRaw == null
+                      ? DateTime.now()
+                      : DateTime.parse(createdAtRaw).toLocal();
+
+                  return _UserTile(
+                    username: widget.reportedUsername,
+                    reputation: reputation,
+                    joinDate: joinDate,
+                  );
+                },
               ),
 
               const SizedBox(height: 16),
@@ -225,7 +258,7 @@ class _CouponTile extends StatelessWidget {
 
 class _UserTile extends StatelessWidget {
   final String username;
-  final int reputation;
+  final int? reputation;
   final DateTime joinDate;
 
   const _UserTile({
@@ -279,12 +312,23 @@ class _UserTile extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 4),
-                    ReputationBar(
-                      value: reputation,
-                      maxWidth: 120,
-                      height: 8,
-                      showValue: true,
-                    ),
+                    if (reputation == null) ...[
+                      const Text(
+                        "Brak ocen",
+                        style: TextStyle(
+                          fontFamily: 'Itim',
+                          fontSize: 14,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ] else ...[
+                      ReputationBar(
+                        value: reputation!,
+                        maxWidth: 120,
+                        height: 8,
+                        showValue: true,
+                      ),
+                    ],
                     const SizedBox(height: 4),
                     Text(
                       "Na Coupidynie od ${formatDate(joinDate.toLocal())}",

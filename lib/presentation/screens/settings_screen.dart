@@ -167,17 +167,60 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
               // blokady
               const _SectionTitle(
-                text: 'Blokady',
+                text: 'Zablokowani użytkownicy',
                 icon: Icons.block_rounded,
               ),
+
               _SectionCard(
-                child: const Text(
-                  'Nie masz zablokowanych użytkowników.',
-                  style: TextStyle(
-                    fontFamily: 'Itim',
-                    fontSize: 16,
-                    color: AppColors.textSecondary,
-                  ),
+                child: FutureBuilder<List<Map<String, dynamic>>>(
+                  future: context.read<UserRepository>()
+                      .getBlockedUsers(FirebaseAuth.instance.currentUser!.uid),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+
+                    if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                      return const Text(
+                        'Nie masz zablokowanych użytkowników.',
+                        style: TextStyle(
+                          fontFamily: 'Itim',
+                          fontSize: 16,
+                          color: AppColors.textSecondary,
+                        ),
+                      );
+                    }
+
+                    final blocked = snapshot.data!;
+
+                    return Column(
+                      spacing: 12,
+                      children: blocked.map((u) {
+                        final userId = u['id'] as String;
+                        final username = u['username'] as String? ?? 'Użytkownik';
+
+                        return _BlockedUserRow(
+                          username: username,
+                          onUnblock: () async {
+                            final confirmed = await showUnblockConfirmDialog(
+                              context,
+                              username,
+                            );
+
+                            if (confirmed != true) return;
+
+                            await context.read<UserRepository>().unblockUser(
+                              userId: FirebaseAuth.instance.currentUser!.uid,
+                              blockedUserId: userId,
+                            );
+
+                            if (!context.mounted) return;
+                            setState(() {});
+                          },
+                        );
+                      }).toList(),
+                    );
+                  },
                 ),
               ),
 
@@ -647,4 +690,80 @@ class _ConfirmDeleteWithPasswordDialogState
       ),
     );
   }
+}
+
+class _BlockedUserRow extends StatelessWidget {
+  final String username;
+  final VoidCallback onUnblock;
+
+  const _BlockedUserRow({
+    required this.username,
+    required this.onUnblock,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: Text(
+            username,
+            style: const TextStyle(
+              fontFamily: 'Itim',
+              fontSize: 18,
+              color: AppColors.textPrimary,
+            ),
+          ),
+        ),
+
+        CustomTextButton.small(
+          label: 'Odblokuj',
+          onTap: onUnblock,
+        ),
+      ],
+    );
+  }
+}
+
+Future<bool?> showUnblockConfirmDialog(
+  BuildContext context,
+  String username,
+) {
+  return showDialog<bool>(
+    context: context,
+    builder: (_) => AlertDialog(
+      backgroundColor: AppColors.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(24),
+        side: const BorderSide(width: 2, color: AppColors.textPrimary),
+      ),
+      title: const Text(
+        'Odblokować użytkownika?',
+        style: TextStyle(
+          fontFamily: 'Itim',
+          fontSize: 22,
+          color: AppColors.textPrimary,
+        ),
+      ),
+      content: Text(
+        'Użytkownik $username będzie mógł ponownie wysyłać do Ciebie wiadomości.',
+        style: const TextStyle(
+          fontFamily: 'Itim',
+          fontSize: 16,
+          color: AppColors.textSecondary,
+        ),
+      ),
+      actionsPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      actions: [
+        CustomTextButton.small(
+          label: 'Anuluj',
+          onTap: () => Navigator.pop(context, false),
+        ),
+        CustomTextButton.primarySmall(
+          label: 'Odblokuj',
+          onTap: () => Navigator.pop(context, true),
+        ),
+      ],
+    ),
+  );
 }

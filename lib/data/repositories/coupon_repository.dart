@@ -35,7 +35,7 @@ class CouponRepository {
   // COUPON LIST METHODS ===========================
 
   /// Fetch coupons from personalized feed with cursor-based pagination
-  Future<PaginatedCouponsResult> fetchCouponFeed({
+    Future<PaginatedCouponsResult> fetchCouponFeed({
     required int limit,
     String? cursor,
     required String userId,
@@ -44,7 +44,7 @@ class CouponRepository {
       final queryParams = {
         'limit': limit.toString(),
         if (cursor != null) 'cursor': cursor,
-      };
+      }..removeWhere((k, v) => v == null);
 
       final response = await _api.get(
         '/coupons/feed',
@@ -433,7 +433,7 @@ class CouponRepository {
   Future<void> recordCouponClick(String couponId) async {
     if(kDebugMode) print('Recording click for couponId: $couponId');
     try {
-      final userId = await userRepository.getCurrentUserId();
+      //final userId = await userRepository.getCurrentUserId();
       await _api.post(
         '/events/click',
         body: {'couponId': couponId},
@@ -441,7 +441,7 @@ class CouponRepository {
       );
     } catch (e) {
       if (kDebugMode) debugPrint('Error recording coupon click: $e');
-      rethrow;
+      //rethrow;
     }
   }
 
