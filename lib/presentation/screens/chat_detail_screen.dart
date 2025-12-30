@@ -500,7 +500,11 @@ class _ChatDetailViewState extends State<ChatDetailView> {
            ".${d.year}";
   }
 
-  bool _isBlocked = false;
+  bool _blockedByMe = false;
+  bool _blockedMe = false;
+
+  bool get _isChatBlocked => _blockedByMe || _blockedMe;
+
 
   @override
   void initState() {
@@ -532,31 +536,21 @@ class _ChatDetailViewState extends State<ChatDetailView> {
 
     final repo = context.read<UserRepository>();
 
-    bool blockedByMe = false;
-    bool blockedMe = false;
+    final blockedByMe = await repo.isBlocking(
+      userId: currentUserId,
+      otherUserId: otherUserId,
+    );
 
-    try {
-      blockedByMe = await repo.isBlocked(
-        userId: currentUserId,
-        otherUserId: otherUserId,
-      );
-    } catch (_) {
-      blockedByMe = false;
-    }
-
-    try {
-      blockedMe = await repo.isBlocked(
-        userId: otherUserId,
-        otherUserId: currentUserId,
-      );
-    } catch (_) {
-      blockedMe = false;
-    }
+    final blockedMe = await repo.isBlockedBy(
+      userId: currentUserId,
+      otherUserId: otherUserId,
+    );
 
     if (!mounted) return;
 
     setState(() {
-      _isBlocked = blockedByMe || blockedMe;
+      _blockedByMe = blockedByMe;
+      _blockedMe = blockedMe;
     });
   }
 
@@ -681,7 +675,7 @@ class _ChatDetailViewState extends State<ChatDetailView> {
                 ),
               ),
 
-            if (_isBlocked)
+            if (_isChatBlocked)
               Container(
                 padding: const EdgeInsets.all(16),
                 child: const Text(
@@ -764,11 +758,9 @@ class _ChatDetailViewState extends State<ChatDetailView> {
                   );
                 },
                 onBlock: () async {
-                  if (_isBlocked) {
-                    showCustomSnackBar(
-                      context,
-                      'Ten użytkownik jest już zablokowany',
-                    );
+                  if (_blockedByMe) {
+                    setState(() => _showPopup = false);
+                    showCustomSnackBar(context, 'Ten użytkownik jest już zablokowany');
                     return;
                   }
 
@@ -791,18 +783,12 @@ class _ChatDetailViewState extends State<ChatDetailView> {
                     if (!mounted) return;
 
                     setState(() {
-                      _isBlocked = true;
+                      _blockedByMe = true;
                     });
 
-                    showCustomSnackBar(
-                      context,
-                      'Użytkownik został zablokowany',
-                    );
+                    showCustomSnackBar(context, 'Użytkownik został zablokowany');
                   } catch (e) {
-                    showCustomSnackBar(
-                      context,
-                      'Błąd podczas blokowania użytkownika',
-                    );
+                    showCustomSnackBar(context, 'Błąd podczas blokowania użytkownika');
                   }
                 },
                 onClose: () {
@@ -817,13 +803,10 @@ class _ChatDetailViewState extends State<ChatDetailView> {
 
 
   Future<void> _handleSendMessage() async {
-    if (_isBlocked) {
-      showCustomSnackBar(
-        context,
-        'Nie możesz wysyłać wiadomości do tego użytkownika',
-      );
-      return;
-    }
+  if (_isChatBlocked) {
+    showCustomSnackBar(context, 'Nie możesz wysyłać wiadomości do tego użytkownika');
+    return;
+  }
 
     final text = _controller.text.trim();
     if (text.isEmpty) return;

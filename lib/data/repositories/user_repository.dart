@@ -205,16 +205,30 @@ class UserRepository {
     return (resp as List).cast<Map<String, dynamic>>();
   }
 
-  /// GET /users/:uid/blocks/:blocked_uid
-  Future<bool> isBlocked({
+  /// GET /users/:uid/blocks/blocking/:blocked_uid
+  Future<bool> isBlocking({
     required String userId,
     required String otherUserId,
   }) async {
     final resp = await _api.get(
-      '/users/$userId/blocks/$otherUserId',
+      '/users/$userId/blocks/blocking/$otherUserId',
       useAuthToken: true,
     );
 
     return resp is Map && resp['is_blocked'] == true;
   }
+
+  /// GET /users/:uid/blocks/blocked-by/:blocking_uid
+  Future<bool> isBlockedBy({
+    required String userId,
+    required String otherUserId,
+  }) async {
+    final resp = await _api.get(
+      '/users/$userId/blocks/blocked-by/$otherUserId',
+      useAuthToken: true,
+    );
+
+    return resp is Map && resp['is_blocked'] == true;
+  }
+
 }
