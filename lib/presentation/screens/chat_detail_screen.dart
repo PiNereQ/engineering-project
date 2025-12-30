@@ -462,7 +462,7 @@ class _ChatDetailViewState extends State<ChatDetailView> {
       context.read<ChatUnreadBloc>().add(CheckUnreadStatus(userId: userId));
 
       context.read<ChatDetailBloc>().add(
-        LoadMessages(_conversation!.id, raterId: widget.buyerId),
+        LoadMessages(_conversation!.id, userId, raterId: widget.buyerId),
       );
     }
   }
@@ -790,7 +790,7 @@ class _ChatDetailViewState extends State<ChatDetailView> {
     );
 
     context.read<ChatDetailBloc>().add(
-      LoadMessages(convId),
+      LoadMessages(convId, currentUserId),
     );
 
     _controller.clear();

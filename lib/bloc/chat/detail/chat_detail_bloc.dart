@@ -25,7 +25,7 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
       final messages = await chatRepository.getMessages(event.conversationId);
 
       bool? ratingExists;
-      if (event.raterId != null) {
+      if (event.raterId != null && event.currentUserId == event.raterId) {
         ratingExists = await chatRepository.checkIfRatingByBuyerExists(
           event.raterId!,
           event.conversationId,
