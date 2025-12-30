@@ -49,7 +49,7 @@ class ChatHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.only(top: 40, left: 16, right: 16, bottom: 12),
+      padding: const EdgeInsets.only(top: 12, left: 16, right: 16, bottom: 12),
       color: AppColors.background,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -462,7 +462,7 @@ class _ChatDetailViewState extends State<ChatDetailView> {
       context.read<ChatUnreadBloc>().add(CheckUnreadStatus(userId: userId));
 
       context.read<ChatDetailBloc>().add(
-        LoadMessages(_conversation!.id, raterId: widget.buyerId),
+        LoadMessages(_conversation!.id, userId, raterId: widget.buyerId),
       );
     }
   }
@@ -504,159 +504,161 @@ class _ChatDetailViewState extends State<ChatDetailView> {
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        Scaffold(
-          backgroundColor: AppColors.background,
-
-          appBar: PreferredSize(
-            preferredSize: Size.fromHeight(_isCouponDeleted ? 200 : 180),
-              child: FutureBuilder<Map<String, dynamic>?>(
-                future: _otherProfileFuture,
-                builder: (context, snap) {
-                  final otherRep = snap.data?['reputation'] as int?;
-                  final otherJoinRaw = snap.data?['created_at'];
-                  final otherJoinDate = otherJoinRaw == null
-                      ? "-"
-                      : formatDate(DateTime.parse(otherJoinRaw).toLocal());
-
-                  return ChatHeader(
-                    couponTitle: _conversation != null
-                        ? formatChatCouponTitle(
-                            reduction: _conversation!.couponDiscount,
-                            isPercentage: _conversation!.couponDiscountIsPercentage,
-                            shopName: _conversation!.couponShopName,
-                          )
-                        : widget.relatedCoupon != null
-                            ? formatChatCouponTitle(
-                                reduction: widget.relatedCoupon!.reduction,
-                                isPercentage: widget.relatedCoupon!.reductionIsPercentage,
-                                shopName: widget.relatedCoupon!.shopName,
-                              )
-                            : 'Usunięty kupon',
-
-                    username: _conversation != null
-                        ? _getOtherUsername()
-                        : widget.relatedCoupon?.sellerUsername ?? "Sprzedający",
-
-                    reputation: otherRep,
-
-                    joinDate: otherJoinDate,
-
-                    isCouponDeleted: _isCouponDeleted,
-                    onBack: () => Navigator.pop(context),
-                    onReport: () => setState(() => _showPopup = true),
-                  );
-                },
-              ),
-          ),
-
-          body: Column(
-            children: [
-              // big container
-              Expanded(
-                child: ChatMessagesContainer(
-                  child: BlocBuilder<ChatDetailBloc, ChatDetailState>(
-                    builder: (context, state) {
-                      if (_conversation == null) {
-                        return const Center(
-                          child: Text(
-                            "Zapytaj o ten kupon, wysyłając pierwszą wiadomość!",
-                            style: TextStyle(fontFamily: 'Itim', fontSize: 16),
-                            textAlign: TextAlign.center,
-                          ),
-                        );
-                      }
-
-                      if (state is ChatDetailError) {
-                        return Center(
-                          child: Text(
-                            "Błąd ładowania wiadomości: ${state.message}",
-                            style: const TextStyle(
-                              fontFamily: 'Itim',
-                              fontSize: 16,
-                              color: AppColors.textSecondary,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        );
-                      }
-
-                      if (state is ChatDetailLoading) {
-                        return const Center(child: CircularProgressIndicator());
-                      }
-
-                      if (state is ChatDetailLoaded || state is ChatDetailSubmittingRating) {
-                        final messages = (state as dynamic).messages as List<Message>;
-                        final ratingExists = (state as dynamic).ratingExists as bool?;
-
-                        if (messages.isEmpty) {
+        SafeArea(
+          child: Scaffold(
+            backgroundColor: AppColors.background,
+          
+            appBar: PreferredSize(
+              preferredSize: Size.fromHeight(_isCouponDeleted ? 200 : 180),
+                child: FutureBuilder<Map<String, dynamic>?>(
+                  future: _otherProfileFuture,
+                  builder: (context, snap) {
+                    final otherRep = snap.data?['reputation'] as int?;
+                    final otherJoinRaw = snap.data?['created_at'];
+                    final otherJoinDate = otherJoinRaw == null
+                        ? "-"
+                        : formatDate(DateTime.parse(otherJoinRaw).toLocal());
+          
+                    return ChatHeader(
+                      couponTitle: _conversation != null
+                          ? formatChatCouponTitle(
+                              reduction: _conversation!.couponDiscount,
+                              isPercentage: _conversation!.couponDiscountIsPercentage,
+                              shopName: _conversation!.couponShopName,
+                            )
+                          : widget.relatedCoupon != null
+                              ? formatChatCouponTitle(
+                                  reduction: widget.relatedCoupon!.reduction,
+                                  isPercentage: widget.relatedCoupon!.reductionIsPercentage,
+                                  shopName: widget.relatedCoupon!.shopName,
+                                )
+                              : 'Usunięty kupon',
+          
+                      username: _conversation != null
+                          ? _getOtherUsername()
+                          : widget.relatedCoupon?.sellerUsername ?? "Sprzedający",
+          
+                      reputation: otherRep,
+          
+                      joinDate: otherJoinDate,
+          
+                      isCouponDeleted: _isCouponDeleted,
+                      onBack: () => Navigator.pop(context),
+                      onReport: () => setState(() => _showPopup = true),
+                    );
+                  },
+                ),
+            ),
+          
+            body: Column(
+              children: [
+                // big container
+                Expanded(
+                  child: ChatMessagesContainer(
+                    child: BlocBuilder<ChatDetailBloc, ChatDetailState>(
+                      builder: (context, state) {
+                        if (_conversation == null) {
                           return const Center(
                             child: Text(
-                              "Brak wiadomości. Napisz coś jako pierwszy!",
-                              style: TextStyle(
-                                fontFamily: 'Itim',
-                                fontSize: 16,
-                              ),
+                              "Zapytaj o ten kupon, wysyłając pierwszą wiadomość!",
+                              style: TextStyle(fontFamily: 'Itim', fontSize: 16),
+                              textAlign: TextAlign.center,
                             ),
                           );
                         }
-
-                        final conversationId = _conversation!.id;
-
-                        return ListView.builder(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                          itemCount: messages.length,
-                          itemBuilder: (context, index) {
-                            final msg = messages[index];
-                            final currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
-                            final isMine = msg.senderId == currentUserId;
-                            if (msg.type == 'user') {
-                              return ChatBubble(
-                              text: msg.text,
-                              time: _formatTime(msg.timestamp),
-                              isMine: isMine,
-                              isUnread: !msg.isRead,
+          
+                        if (state is ChatDetailError) {
+                          return Center(
+                            child: Text(
+                              "Błąd ładowania wiadomości: ${state.message}",
+                              style: const TextStyle(
+                                fontFamily: 'Itim',
+                                fontSize: 16,
+                                color: AppColors.textSecondary,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          );
+                        }
+          
+                        if (state is ChatDetailLoading) {
+                          return const Center(child: CircularProgressIndicator());
+                        }
+          
+                        if (state is ChatDetailLoaded || state is ChatDetailSubmittingRating) {
+                          final messages = (state as dynamic).messages as List<Message>;
+                          final ratingExists = (state as dynamic).ratingExists as bool?;
+          
+                          if (messages.isEmpty) {
+                            return const Center(
+                              child: Text(
+                                "Brak wiadomości. Napisz coś jako pierwszy!",
+                                style: TextStyle(
+                                  fontFamily: 'Itim',
+                                  fontSize: 16,
+                                ),
+                              ),
                             );
-                            }
-                            if (msg.type == 'system') {
-                              return SystemMessageCard(
-                                msg: msg, 
-                                ratingExists: ratingExists,
-                                conversationId: conversationId,
-                                buyerId: widget.buyerId,
-                                sellerId: widget.sellerId,
-                                currentUserId: currentUserId,
+                          }
+          
+                          final conversationId = _conversation!.id;
+          
+                          return ListView.builder(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            itemCount: messages.length,
+                            itemBuilder: (context, index) {
+                              final msg = messages[index];
+                              final currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
+                              final isMine = msg.senderId == currentUserId;
+                              if (msg.type == 'user') {
+                                return ChatBubble(
+                                text: msg.text,
+                                time: _formatTime(msg.timestamp),
+                                isMine: isMine,
+                                isUnread: !msg.isRead,
                               );
-                            }
-                            return const SizedBox();
-                          },
-                        );
-                      }
-
-                      return const SizedBox();
-                    },
+                              }
+                              if (msg.type == 'system') {
+                                return SystemMessageCard(
+                                  msg: msg, 
+                                  ratingExists: ratingExists,
+                                  conversationId: conversationId,
+                                  buyerId: widget.buyerId,
+                                  sellerId: widget.sellerId,
+                                  currentUserId: currentUserId,
+                                );
+                              }
+                              return const SizedBox();
+                            },
+                          );
+                        }
+          
+                        return const SizedBox();
+                      },
+                    ),
                   ),
                 ),
-              ),
-
-            if (_isChatBlocked)
-              Container(
-                padding: const EdgeInsets.all(16),
-                child: const Text(
-                  'Nie możesz wysyłać wiadomości do tego użytkownika.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontFamily: 'Itim',
-                    fontSize: 16,
-                    color: AppColors.textSecondary,
+          
+              if (_isChatBlocked)
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  child: const Text(
+                    'Nie możesz wysyłać wiadomości do tego użytkownika.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontFamily: 'Itim',
+                      fontSize: 16,
+                      color: AppColors.textSecondary,
+                    ),
                   ),
+                )
+              else
+                ChatInputBar(
+                  controller: _controller,
+                  onSend: _handleSendMessage,
                 ),
-              )
-            else
-              ChatInputBar(
-                controller: _controller,
-                onSend: _handleSendMessage,
-              ),
-            ],
+              ],
+            ),
           ),
         ),
 
@@ -790,7 +792,7 @@ class _ChatDetailViewState extends State<ChatDetailView> {
     );
 
     context.read<ChatDetailBloc>().add(
-      LoadMessages(convId),
+      LoadMessages(convId, currentUserId),
     );
 
     _controller.clear();
@@ -811,8 +813,25 @@ class _ChatDetailViewState extends State<ChatDetailView> {
   }
 
   String _formatTime(DateTime time) {
-    // Use helper to format time in local timezone
-    return formatTimeLocal(time);
+    final localTime = time.toLocal();
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final yesterday = today.subtract(const Duration(days: 1));
+    final dayBeforeYesterday = yesterday.subtract(const Duration(days: 1));
+    final messageDate = DateTime(localTime.year, localTime.month, localTime.day);
+    final timeStr = formatTimeLocal(localTime);
+
+    if (messageDate == today) {
+      return timeStr;
+    } else if (messageDate == yesterday) {
+      return "wczoraj, $timeStr";
+    } else if (messageDate == dayBeforeYesterday) {
+      return "przedwczoraj, $timeStr";
+    } else if (localTime.year == now.year) {
+      return "${localTime.day.toString().padLeft(2, '0')}.${localTime.month.toString().padLeft(2, '0')}., $timeStr";
+    } else {
+      return "${localTime.day.toString().padLeft(2, '0')}.${localTime.month.toString().padLeft(2, '0')}.${localTime.year} r., $timeStr";
+    }
   }
 }
 

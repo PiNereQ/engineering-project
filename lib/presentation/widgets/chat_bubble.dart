@@ -57,7 +57,7 @@ class ChatBubble extends StatelessWidget {
                   width: 2,
                   color: AppColors.textPrimary,
                 ),
-                borderRadius: BorderRadius.circular(16), // FULL ROUND
+                borderRadius: BorderRadius.circular(16),
               ),
               shadows: const [
                 BoxShadow(
@@ -69,11 +69,12 @@ class ChatBubble extends StatelessWidget {
             ),
             child: Text(
               text,
-              textAlign: isMine ? TextAlign.right : TextAlign.left,
+              textAlign: TextAlign.left,
               style: TextStyle(
                 fontFamily: 'Itim',
                 fontSize: 18,
                 color: bubbleTextColor,
+                height: 1.2
               ),
             ),
           ),
