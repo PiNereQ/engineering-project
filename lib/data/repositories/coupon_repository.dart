@@ -289,7 +289,7 @@ class CouponRepository {
       );
     if (response is List) {
       return response
-          .map((e) => Coupon.availableToMeFromJson(e))
+          .map((e) => Coupon.availableToMeFromJson(e)?.copyWith(isSaved: true))
           .whereType<Coupon>()
           .toList();
     }
