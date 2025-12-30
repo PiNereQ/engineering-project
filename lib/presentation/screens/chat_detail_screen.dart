@@ -7,6 +7,7 @@ import 'package:proj_inz/bloc/chat/unread/chat_unread_event.dart';
 import 'package:proj_inz/core/theme.dart';
 import 'package:proj_inz/core/utils/utils.dart';
 import 'package:proj_inz/data/models/conversation_model.dart';
+import 'package:proj_inz/data/repositories/user_repository.dart';
 import 'package:proj_inz/presentation/screens/report_screen.dart';
 import 'package:proj_inz/presentation/widgets/chat_report_popup.dart';
 import 'package:proj_inz/presentation/widgets/coupon_preview_popup.dart';
@@ -25,7 +26,7 @@ import 'package:proj_inz/data/repositories/coupon_repository.dart';
 class ChatHeader extends StatelessWidget {
   final String couponTitle;
   final String username;
-  final int reputation;
+  final int? reputation;
   final String joinDate;
   final bool isCouponDeleted;
   final VoidCallback onBack;
@@ -159,12 +160,25 @@ class ChatHeader extends StatelessWidget {
                   const SizedBox(height: 4),
 
                   // reputation
-                  ReputationBar(
-                    value: reputation,
-                    maxWidth: 120,
-                    height: 8,
-                    showValue: true,
-                  ),
+                  if (reputation == null) ...[
+                    const Text(
+                      'Brak ocen',
+                      style: TextStyle(
+                        fontFamily: 'Itim',
+                        fontSize: 14,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                  ] else ...[
+                    ReputationBar(
+                      value: reputation!,
+                      maxWidth: 120,
+                      height: 8,
+                      showValue: true,
+                    ),
+                    const SizedBox(height: 2),
+                  ],
 
                   const SizedBox(height: 4),
 
@@ -180,122 +194,6 @@ class ChatHeader extends StatelessWidget {
               ),
             ],
           )
-        ],
-      ),
-    );
-  }
-}
-
-class ChatUserInfo extends StatelessWidget {
-  final String username;
-  final int reputation;
-  final String joinDate;
-
-  const ChatUserInfo({
-    super.key,
-    required this.username,
-    required this.reputation,
-    required this.joinDate,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-      child: Row(
-        children: [
-          // avatar
-          Container(
-            width: 54,
-            height: 54,
-            decoration: ShapeDecoration(
-              color: AppColors.surface,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(100),
-                side: const BorderSide(width: 2, color: AppColors.textPrimary),
-              ),
-              shadows: const [
-                BoxShadow(
-                  color: AppColors.textPrimary,
-                  offset: Offset(3, 3),
-                  blurRadius: 0,
-                ),
-              ],
-            ),
-            child: const Icon(Icons.person, size: 30),
-          ),
-
-          const SizedBox(width: 12),
-
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                username,
-                style: const TextStyle(
-                  fontFamily: 'Itim',
-                  fontSize: 18,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-              const SizedBox(height: 4),
-
-              // reputation
-              SizedBox(
-                width: 120,
-                child: ReputationBar(
-                  value: reputation,
-                  maxWidth: 120,
-                  height: 8,
-                ),
-              ),
-
-              Row(
-                children: [
-                  Container(
-                    width: 120,
-                    height: 8,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(6),
-                      color: Colors.grey.shade300,
-                    ),
-                    child: FractionallySizedBox(
-                      alignment: Alignment.centerLeft,
-                      widthFactor: (reputation / 100).clamp(0.0, 1.0),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(6),
-                          color: Colors.green,
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(width: 6),
-
-                  Text(
-                    reputation.toString(),
-                    style: const TextStyle(
-                      fontFamily: 'Itim',
-                      fontSize: 14,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 2),
-
-              Text(
-                "Na Coupidynie od $joinDate",
-                style: const TextStyle(
-                  fontFamily: 'Itim',
-                  fontSize: 14,
-                  color: AppColors.textSecondary,
-                ),
-              ),
-            ],
-          ),
         ],
       ),
     );
@@ -488,6 +386,7 @@ class _ChatDetailViewState extends State<ChatDetailView> {
   late final TextEditingController _controller;
   bool _showPopup = false;
   bool get _isCouponDeleted => _coupon == null;
+  Future<Map<String, dynamic>?>? _otherProfileFuture;
 
   String buildJoinDate(Coupon? c) {
     if (c == null || c.sellerJoinDate == null) return "—";
@@ -497,6 +396,20 @@ class _ChatDetailViewState extends State<ChatDetailView> {
            ".${d.month.toString().padLeft(2,'0')}"
            ".${d.year}";
   }
+  
+  void _loadOtherUserProfile() {
+    final currentUserId = FirebaseAuth.instance.currentUser?.uid;
+    if (currentUserId == null) return;
+
+    final otherUserId =
+        widget.buyerId == currentUserId ? widget.sellerId : widget.buyerId;
+
+    final userRepo = context.read<UserRepository>();
+
+    setState(() {
+      _otherProfileFuture = userRepo.getUserProfile(otherUserId);
+    });
+  }
 
   @override
   void initState() {
@@ -504,6 +417,7 @@ class _ChatDetailViewState extends State<ChatDetailView> {
     _controller = TextEditingController();
     _conversation = widget.initialConversation;
     _coupon = widget.relatedCoupon;
+    _loadOtherUserProfile();
 
     if (_conversation != null) {
       final repo = context.read<ChatRepository>();
@@ -534,37 +448,44 @@ class _ChatDetailViewState extends State<ChatDetailView> {
 
           appBar: PreferredSize(
             preferredSize: Size.fromHeight(_isCouponDeleted ? 200 : 180),
-            child: ChatHeader(
-              couponTitle: _conversation != null
-                  ? formatChatCouponTitle(
-                      reduction: _conversation!.couponDiscount,
-                      isPercentage: _conversation!.couponDiscountIsPercentage,
-                      shopName: _conversation!.couponShopName,
-                    )
-                  : widget.relatedCoupon != null
-                      ? formatChatCouponTitle(
-                          reduction: widget.relatedCoupon!.reduction,
-                          isPercentage: widget.relatedCoupon!.reductionIsPercentage,
-                          shopName: widget.relatedCoupon!.shopName,
-                        )
-                      : 'Usunięty kupon',
+              child: FutureBuilder<Map<String, dynamic>?>(
+                future: _otherProfileFuture,
+                builder: (context, snap) {
+                  final otherRep = snap.data?['reputation'] as int?;
+                  final otherJoinRaw = snap.data?['created_at'];
+                  final otherJoinDate = otherJoinRaw == null
+                      ? "-"
+                      : formatDate(DateTime.parse(otherJoinRaw).toLocal());
 
-              username: _conversation != null
-                  ? _getOtherUsername()
-                  : widget.relatedCoupon?.sellerUsername ?? "Sprzedający",
+                  return ChatHeader(
+                    couponTitle: _conversation != null
+                        ? formatChatCouponTitle(
+                            reduction: _conversation!.couponDiscount,
+                            isPercentage: _conversation!.couponDiscountIsPercentage,
+                            shopName: _conversation!.couponShopName,
+                          )
+                        : widget.relatedCoupon != null
+                            ? formatChatCouponTitle(
+                                reduction: widget.relatedCoupon!.reduction,
+                                isPercentage: widget.relatedCoupon!.reductionIsPercentage,
+                                shopName: widget.relatedCoupon!.shopName,
+                              )
+                            : 'Usunięty kupon',
 
-              reputation: _conversation != null
-                  ? 50 // TODO backend
-                  : widget.relatedCoupon?.sellerReputation ?? 0,
+                    username: _conversation != null
+                        ? _getOtherUsername()
+                        : widget.relatedCoupon?.sellerUsername ?? "Sprzedający",
 
-              joinDate: _conversation != null
-                  ? "01.06.2025" // TODO backend
-                  : buildJoinDate(widget.relatedCoupon),
+                    reputation: otherRep,
 
-              isCouponDeleted: _isCouponDeleted,
-              onBack: () => Navigator.pop(context),
-              onReport: () => setState(() => _showPopup = true),
-            ),
+                    joinDate: otherJoinDate,
+
+                    isCouponDeleted: _isCouponDeleted,
+                    onBack: () => Navigator.pop(context),
+                    onReport: () => setState(() => _showPopup = true),
+                  );
+                },
+              ),
           ),
 
           body: Column(
@@ -687,23 +608,13 @@ class _ChatDetailViewState extends State<ChatDetailView> {
                     MaterialPageRoute(
                       builder: (_) => ReportScreen(
                         reportedUserId: otherUserId,
-                        reportedUsername: _conversation != null
-                            ? _getOtherUsername()
-                            : widget.relatedCoupon?.sellerUsername ?? "Użytkownik",
-
-                        reportedUserReputation: _conversation != null
-                            ? 50 // TODO backend
-                            : widget.relatedCoupon?.sellerReputation ?? 0,
-
-                        reportedUserJoinDate: _conversation != null
-                            ? DateTime(2025, 6, 1) // TODO backend
-                            : widget.relatedCoupon?.sellerJoinDate ?? DateTime.now(),
-                        reportedCoupon: 
-                            _coupon != null && FirebaseAuth.instance.currentUser!.uid != _coupon!.sellerId
+                        reportedUsername: _getOtherUsername(),
+                        reportedCoupon:
+                            _coupon != null &&
+                                    FirebaseAuth.instance.currentUser!.uid != _coupon!.sellerId
                                 ? _coupon
                                 : null,
-
-                      ),
+                      )
                     ),
                   );
                 },
@@ -739,6 +650,8 @@ class _ChatDetailViewState extends State<ChatDetailView> {
       setState(() {
         _conversation = conv;
       });
+
+      _loadOtherUserProfile();
     }
 
     final convId = _conversation!.id;

@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -25,37 +26,25 @@ class ProfileScreen extends StatefulWidget {
 }
 
   class _ProfileScreenState extends State<ProfileScreen> {
-    int? reputation;
-    String? username;
+    late Future<Map<String, dynamic>?> _profileFuture;
+
     int? walletBalance;
     bool isLoadingWallet = true;
 
     late final WalletRepository _walletRepository;
 
-    bool isLoadingProfile = true;
-
-    late final UserRepository _userRepository;
-
     @override
     void initState() {
       super.initState();
-      _userRepository = context.read<UserRepository>();
       _walletRepository = WalletRepository();
-      _loadUserProfile();
+
+      final userRepo = context.read<UserRepository>();
+      final userId = FirebaseAuth.instance.currentUser!.uid;
+
+      _profileFuture = userRepo.getUserProfile(userId);
       _loadWalletBalance();
     }
 
-    Future<void> _loadUserProfile() async {
-      final userId = await _userRepository.getCurrentUserId();
-
-      final profile = await _userRepository.getUserProfile(userId);
-
-      setState(() {
-        reputation = profile?['reputation'] ?? 0;
-        username = profile?['username'] ?? 'User';
-        isLoadingProfile = false;
-      });
-    }
 
     Future<void> _loadWalletBalance() async {
       try {
@@ -111,15 +100,42 @@ Widget build(BuildContext context) {
                         height: 100,
                       ),
                     ),
-                    Text(
-                      isLoadingProfile
-                          ? 'Cześć!'
-                          : 'Cześć, ${username ?? ''}',
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontFamily: 'Itim',
-                        fontWeight: FontWeight.w400,
-                      ),
+                    FutureBuilder<Map<String, dynamic>?>(
+                      future: _profileFuture,
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState == ConnectionState.waiting) {
+                          return const Text(
+                            'Cześć!',
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontFamily: 'Itim',
+                              fontWeight: FontWeight.w400,
+                            ),
+                          );
+                        }
+
+                        if (!snapshot.hasData) {
+                          return const Text(
+                            'Cześć!',
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontFamily: 'Itim',
+                              fontWeight: FontWeight.w400,
+                            ),
+                          );
+                        }
+
+                        final username = snapshot.data!['username'];
+
+                        return Text(
+                          'Cześć, ${username ?? ''}',
+                          style: const TextStyle(
+                            fontSize: 24,
+                            fontFamily: 'Itim',
+                            fontWeight: FontWeight.w400,
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ),
@@ -141,14 +157,52 @@ Widget build(BuildContext context) {
                         ),
                       ],
                     ),
-                    if (isLoadingProfile)
-                      const CircularProgressIndicator()
-                    else
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: ReputationBar(
-                        value: reputation ?? 0,
-                      ),
+                    FutureBuilder<Map<String, dynamic>?>(
+                      future: _profileFuture,
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState == ConnectionState.waiting) {
+                          return const CircularProgressIndicator();
+                        }
+
+                        if (!snapshot.hasData) {
+                          return const Text(
+                            'Nie udało się załadować reputacji',
+                            style: TextStyle(color: AppColors.alertText),
+                          );
+                        }
+
+                        final int? reputation = snapshot.data!['reputation'];
+
+                        return Align(
+                          alignment: Alignment.centerLeft,
+                          child: reputation == null
+                              ? Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: const [
+                                    Text(
+                                      'Brak ocen',
+                                      style: TextStyle(
+                                        color: AppColors.textSecondary,
+                                        fontSize: 16,
+                                        fontFamily: 'Itim',
+                                      ),
+                                    ),
+                                    SizedBox(height: 4),
+                                    Text(
+                                      'Reputacja pojawi się, gdy otrzymasz więcej niż 3 oceny transakcji',
+                                      style: TextStyle(
+                                        color: AppColors.textSecondary,
+                                        fontSize: 12,
+                                        fontFamily: 'Itim',
+                                      ),
+                                    ),
+                                  ],
+                                )
+                              : ReputationBar(
+                                  value: reputation,
+                                ),
+                        );
+                      },
                     ),
                   ],
                 ),
