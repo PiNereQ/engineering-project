@@ -11,6 +11,7 @@ import 'package:proj_inz/data/repositories/user_repository.dart';
 import 'package:proj_inz/presentation/screens/report_screen.dart';
 import 'package:proj_inz/presentation/widgets/chat_report_popup.dart';
 import 'package:proj_inz/presentation/widgets/coupon_preview_popup.dart';
+import 'package:proj_inz/presentation/widgets/custom_snack_bar.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_icon_button.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_text_button.dart';
 import 'package:proj_inz/presentation/widgets/reputation_bar.dart';
@@ -764,8 +765,9 @@ class _ChatDetailViewState extends State<ChatDetailView> {
                 },
                 onBlock: () async {
                   if (_isBlocked) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Ten użytkownik jest już zablokowany')),
+                    showCustomSnackBar(
+                      context,
+                      'Ten użytkownik jest już zablokowany',
                     );
                     return;
                   }
@@ -792,12 +794,14 @@ class _ChatDetailViewState extends State<ChatDetailView> {
                       _isBlocked = true;
                     });
 
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Użytkownik został zablokowany')),
+                    showCustomSnackBar(
+                      context,
+                      'Użytkownik został zablokowany',
                     );
                   } catch (e) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Błąd blokowania: $e')),
+                    showCustomSnackBar(
+                      context,
+                      'Błąd podczas blokowania użytkownika',
                     );
                   }
                 },
@@ -814,8 +818,9 @@ class _ChatDetailViewState extends State<ChatDetailView> {
 
   Future<void> _handleSendMessage() async {
     if (_isBlocked) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Nie możesz wysyłać wiadomości do tego użytkownika')),
+      showCustomSnackBar(
+        context,
+        'Nie możesz wysyłać wiadomości do tego użytkownika',
       );
       return;
     }
