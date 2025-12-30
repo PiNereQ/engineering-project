@@ -7,11 +7,13 @@ import 'package:proj_inz/bloc/chat/unread/chat_unread_event.dart';
 import 'package:proj_inz/core/theme.dart';
 import 'package:proj_inz/core/utils/utils.dart';
 import 'package:proj_inz/data/models/conversation_model.dart';
+import 'package:proj_inz/data/models/message_model.dart';
 import 'package:proj_inz/presentation/screens/report_screen.dart';
 import 'package:proj_inz/presentation/widgets/chat_report_popup.dart';
 import 'package:proj_inz/presentation/widgets/coupon_preview_popup.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_icon_button.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_text_button.dart';
+import 'package:proj_inz/presentation/widgets/input/star_rating.dart';
 import 'package:proj_inz/presentation/widgets/reputation_bar.dart';
 import '../widgets/chat_bubble.dart';
 
@@ -622,13 +624,17 @@ class _ChatDetailViewState extends State<ChatDetailView> {
                             final msg = state.messages[index];
                             final currentUserId = FirebaseAuth.instance.currentUser?.uid;
                             final isMine = msg.senderId == currentUserId;
-
-                            return ChatBubble(
+                            if (msg.type == 'user') {
+                              return ChatBubble(
                               text: msg.text,
                               time: _formatTime(msg.timestamp),
                               isMine: isMine,
                               isUnread: !msg.isRead,
                             );
+                            }
+                            if (msg.type == 'system') {
+                              return SystemMessageCard(msg: msg);
+                            }
                           },
                         );
                       }
@@ -773,6 +779,90 @@ class _ChatDetailViewState extends State<ChatDetailView> {
   String _formatTime(DateTime time) {
     // Use helper to format time in local timezone
     return formatTimeLocal(time);
+  }
+}
+
+class SystemMessageCard extends StatelessWidget {
+  const SystemMessageCard({
+    super.key,
+    required this.msg,
+  });
+
+  final Message msg;
+
+  @override
+  Widget build(BuildContext context) {
+    
+    if (msg.text == 'rating_request') {
+      
+    } else {
+      return SizedBox.shrink();
+    }
+    
+
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.all(Radius.circular(16)),
+        border: Border.all(color: AppColors.textPrimary, width: 2),
+        boxShadow: const [
+          BoxShadow(
+            color: AppColors.textPrimary,
+            offset: Offset(4, 4),
+            blurRadius: 0,
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text(
+              "Dziękujemy za użycie kuponu!",
+              style: const TextStyle(
+                fontFamily: 'Itim',
+                fontSize: 20,
+                color: AppColors.textPrimary,
+                fontWeight: FontWeight.bold
+              ),
+            ),
+            SizedBox(height: 8),
+            Text(
+              "Nie zapomnij ocenić sprzedającego, aby pomóc innym użytkownikom.",
+              style: const TextStyle(
+                fontFamily: 'Itim',
+                fontSize: 18,
+                color: AppColors.textPrimary,
+              ),
+              textAlign: TextAlign.justify,
+            ),
+            SizedBox(height: 12),
+            StarRating(
+              startRating: 0,
+              onRatingChanged: (rating) {
+                // TODO: Handle rating change 
+              },
+            ),
+            SizedBox(height: 8),
+            CustomTextButton(label: "Oceń", onTap: () {
+              // TODO: Handle rating submission logic here
+            }),
+            SizedBox(height: 12),
+            Text(
+              "To jest wiadomość systemowa.\nNie odpowiadaj na nią.",
+              style: const TextStyle(
+                fontFamily: 'Itim',
+                fontSize: 14,
+                color: AppColors.textSecondary,
+                fontStyle: FontStyle.italic,
+              ),
+              textAlign: TextAlign.center,
+            )
+          ]
+        ),
+      ),
+    );
   }
 }
 

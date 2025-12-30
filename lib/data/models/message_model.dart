@@ -3,15 +3,18 @@ import 'package:equatable/equatable.dart';
 class Message extends Equatable {
   final String id;
   final String conversationId;
-  final String senderId;
-  final String senderUsername;
+  final String type;
+  final String? senderId;
+  final String? senderUsername;
   final String text;
   final DateTime timestamp;
   final bool isRead;
+  
 
   const Message({
     required this.id,
     required this.conversationId,
+    required this.type,
     required this.senderId,
     required this.senderUsername, 
     required this.text,
@@ -23,6 +26,7 @@ class Message extends Equatable {
   List<Object?> get props => [
         id,
         conversationId,
+        type,
         senderId,
         text,
         timestamp,
@@ -33,8 +37,9 @@ class Message extends Equatable {
     return Message(
       id: json['id'].toString(),
       conversationId: json['conversation_id'].toString(),
-      senderId: json['sender_id'] as String,
-      senderUsername: json['sender_username'] as String,
+      type: json['message_type'] as String,
+      senderId: json['sender_id'],
+      senderUsername: json['sender_username'],
       text: json['content'] as String,
       timestamp: DateTime.parse(json['sent_at'] as String),
       isRead: json['is_read'] == 1 ? true : false, 
@@ -45,6 +50,7 @@ class Message extends Equatable {
     return {
       'id': id,
       'conversationId': conversationId,
+      'type': type,
       'senderId': senderId,
       'text': text,
       'timestamp': timestamp.toIso8601String(),
@@ -55,6 +61,7 @@ class Message extends Equatable {
   Message copyWith({
     String? id,
     String? conversationId,
+    String? type,
     String? senderId,
     String? senderUsername,
     String? text,
@@ -64,6 +71,7 @@ class Message extends Equatable {
     return Message(
       id: id ?? this.id,
       conversationId: conversationId ?? this.conversationId,
+      type: type ?? this.type,
       senderId: senderId ?? this.senderId,
       senderUsername: senderUsername ?? this.senderUsername,
       text: text ?? this.text,
