@@ -6,6 +6,7 @@ class Conversation extends Equatable {
   final double couponDiscount;
   final bool couponDiscountIsPercentage;
   final String couponShopName;
+  final bool isCouponSold;
   final String buyerId;
   final String sellerId;
   final String buyerUsername;
@@ -24,6 +25,7 @@ class Conversation extends Equatable {
     required this.couponDiscount,
     required this.couponDiscountIsPercentage,
     required this.couponShopName,
+    required this.isCouponSold,
     required this.buyerId,
     required this.sellerId,
     required this.buyerUsername,
@@ -58,6 +60,7 @@ class Conversation extends Equatable {
       couponDiscount: double.parse(json['coupon_discount']),
       couponDiscountIsPercentage: json['coupon_discount_is_percentage'] == 1 ? true : false,
       couponShopName: json['coupon_shop_name'] as String,
+      isCouponSold: json['coupon_is_sold'] == 1 ? true : false,
       buyerId: json['buyer_id'] as String,
       sellerId: json['seller_id'] as String,
       buyerUsername: json['buyer_username'] as String,
@@ -98,6 +101,7 @@ class Conversation extends Equatable {
     double? couponDiscount,
     bool? couponDiscountIsPercentage,
     String? couponShopName,
+    bool? isCouponSold,
     String? buyerId,
     String? sellerId,
     String? buyerUsername,
@@ -115,6 +119,7 @@ class Conversation extends Equatable {
       couponDiscount: couponDiscount ?? this.couponDiscount,
       couponDiscountIsPercentage: couponDiscountIsPercentage ?? this.couponDiscountIsPercentage,
       couponShopName: couponShopName ?? this.couponShopName,
+      isCouponSold: isCouponSold ?? this.isCouponSold,
       buyerId: buyerId ?? this.buyerId,
       sellerId: sellerId ?? this.sellerId,
       buyerUsername: buyerUsername ?? this.buyerUsername,

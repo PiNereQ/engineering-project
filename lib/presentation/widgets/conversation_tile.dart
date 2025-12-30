@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:proj_inz/core/theme.dart';
+import 'package:proj_inz/presentation/widgets/dashed_separator.dart';
 
 class ConversationTile extends StatelessWidget {
   final String username;
   final String title;
   final String message;
   final bool isRead;
+  final bool? isCouponSold;
 
   const ConversationTile({
     super.key,
@@ -14,50 +15,48 @@ class ConversationTile extends StatelessWidget {
     required this.title,
     required this.message,
     required this.isRead,
+    this.isCouponSold,
   });
-
-  String _truncateMessage(String text, {int maxChars = 30}) {
-    if (text.length <= maxChars) return text;
-
-    // clipping long messages
-    return '${text.substring(0, maxChars).trimRight()}...';
-  }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          clipBehavior: Clip.antiAlias,
-          decoration: ShapeDecoration(
-            color: isRead ? AppColors.surface : AppColors.background,
-            shape: RoundedRectangleBorder(
-              side: const BorderSide(width: 2),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            shadows: const [
-              BoxShadow(
-                color: AppColors.textPrimary,
-                blurRadius: 0,
-                offset: Offset(4, 4),
-                spreadRadius: 0,
-              )
-            ],
-          ),
-          child: SizedBox(
-            width: 347,
-            height: 115.71,
-            child: Stack(
-              children: [
-                // Avatar
-                Positioned(
-                  left: 0,
-                  top: 22,
-                  child: Container(
-                    width: 71,
-                    height: 71,
+    String messageText = "";
+    if (message == "rating_request_for_buyer") {
+      messageText = "Coupidyn: Oceń sprzedającego!";
+    } else if (message == "rating_request_for_seller") {
+      messageText = "Coupidyn: Oceń kupującego!";
+    } else {
+      messageText = message;
+    }
+    return Container(
+      decoration: ShapeDecoration(
+        color: isRead ? AppColors.surface : AppColors.background,
+        shape: RoundedRectangleBorder(
+          side: const BorderSide(width: 2),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        shadows: const [
+          BoxShadow(
+            color: AppColors.textPrimary,
+            blurRadius: 0,
+            offset: Offset(4, 4),
+            spreadRadius: 0,
+          )
+        ],
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16.0, 10.0, 8.0, 10.0),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Avatar
+                  Container(
+                    width: 64,
+                    height: 64,
                     clipBehavior: Clip.antiAlias,
                     decoration: ShapeDecoration(
                       color: AppColors.surface,
@@ -76,108 +75,79 @@ class ConversationTile extends StatelessWidget {
                     ),
                     child: const Icon(Icons.person, size: 40),
                   ),
-                ),
-
-                // Username
-                Positioned(
-                  left: 94,
-                  top: 14,
-                  child: SizedBox(
-                    width: 186,
-                    child: Text(
-                      username,
-                      style: const TextStyle(
-                        color: AppColors.textPrimary,
-                        fontSize: 20,
-                        fontFamily: 'Itim',
-                        fontWeight: FontWeight.w400,
-                        height: 0.75,
-                      ),
-                    ),
-                  ),
-                ),
-
-                // Title
-                Positioned(
-                  left: 95,
-                  top: 38,
-                  child: SizedBox(
-                    width: 185,
-                    child: Text(
-                      title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      softWrap: false,
-                      style: const TextStyle(
-                        color: AppColors.textPrimary,
-                        fontSize: 20,
-                        fontFamily: 'Itim',
-                        fontWeight: FontWeight.w400,
-                      ),
-                    ),
-                  ),
-                ),
-
-                // Message content
-                Positioned(
-                  left: 95,
-                  top: 67,
-                  child: SizedBox(
-                    width: 250,
-                    height: 36,
-                    child: Text(
-                      _truncateMessage(message),
-                      maxLines: 1,
-                      overflow: TextOverflow.visible, // może być też none – już my tniemy
-                      softWrap: false,
-                      style: TextStyle(
-                        color: isRead ? AppColors.textSecondary : AppColors.textPrimary,
-                        fontSize: 15,
-                        fontFamily: 'Itim',
-                        fontWeight: FontWeight.w400,
-                      ),
-                    ),
-                  ),
-                ),
-
-                // Separator (SVG)
-                Positioned(
-                  left: 370,
-                  top: 0,
-                  child: SizedBox(
-                    width: 5,
-                    height: 112,
-                    child: SvgPicture.asset(
-                      'assets/icons/Separator.svg',
-                      fit: BoxFit.contain,
-                    ),
-                  ),
-                ),
-
-                // Message icon (SVG)
-                Positioned(
-                  left: 400, // Adjust position as necessary
-                  top: 42, // Adjust position as necessary
-                  child: SizedBox(
-                    width: 32,
-                    height: 32,
-                    child: Stack(
+                  
+                  SizedBox(width: 16),
+                  
+                  // Details
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        SvgPicture.asset(
-                          isRead
-                              ? 'assets/icons/chat-outline-rounded.svg'
-                              : 'assets/icons/mark-unread-chat-alt-outline-rounded.svg',
-                          fit: BoxFit.contain,
+                      // Username
+                      Text(
+                        username,
+                        style: const TextStyle(
+                          color: AppColors.textPrimary,
+                          fontSize: 20,
+                          fontFamily: 'Itim',
+                          fontWeight: FontWeight.w400,
+                          height: 0.75,
                         ),
+                      ),
+                      SizedBox(height: 2),
+                      // Title
+                      Text(
+                        title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        softWrap: false,
+                        style: const TextStyle(
+                          color: AppColors.textPrimary,
+                          fontSize: 20,
+                          fontFamily: 'Itim',
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                     SizedBox(height: 4),
+                      // Message content
+                      Text(
+                        messageText,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: isRead ? AppColors.textSecondary : AppColors.textPrimary,
+                          fontSize: 15,
+                          fontFamily: 'Itim',
+                          fontWeight: FontWeight.w400,
+                          height: 0.9
+                        ),
+                      ),
                       ],
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
-        ),
-      ],
+      
+          // Separator
+          DashedSeparator.vertical(length: 115),
+      
+          // Message icon
+          Padding(
+            padding: const EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 10.0),
+            child: Center(
+              child: Icon(
+                size: 32,
+                isRead
+                    ? Icons.chat_outlined
+                    : Icons.mark_unread_chat_alt_outlined,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

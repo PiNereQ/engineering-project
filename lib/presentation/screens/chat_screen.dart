@@ -185,6 +185,7 @@ class _ChatScreenState extends State<ChatScreen> {
                             ),
                             message: c.lastMessage,
                             isRead: c.isReadByCurrentUser,
+                            isCouponSold: c.isCouponSold,
                           ),
                         );
                       },

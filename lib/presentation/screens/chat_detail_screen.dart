@@ -431,9 +431,33 @@ class ChatDetailScreen extends StatelessWidget {
 @override
 Widget build(BuildContext context) {
   final couponRepo = context.read<CouponRepository>();
+  final currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
+
+  // Determine which fetch method to use based on user role and coupon status
+  Future<Coupon?> fetchCoupon() {
+    final isBuyer = currentUserId == buyerId;
+    final isSeller = currentUserId == sellerId;
+
+    if (isBuyer) {
+      // Buyer logic
+      if (initialConversation?.isCouponSold == true) {
+        // Fetch owned coupon
+        return couponRepo.fetchOwnedCouponDetailsById(couponId);
+      } else {
+        // Fetch available coupon
+        return couponRepo.fetchCouponDetailsById(couponId);
+      }
+    } else if (isSeller) {
+      // Seller logic - always fetch listed coupon
+      return couponRepo.fetchListedCouponDetailsById(couponId, currentUserId);
+    } else {
+      // Fallback - fetch available coupon
+      return couponRepo.fetchCouponDetailsById(couponId);
+    }
+  }
 
   return FutureBuilder<Coupon?>(
-    future: couponRepo.fetchCouponDetailsById(couponId),
+    future: fetchCoupon(),
     builder: (context, snapshot) {
       if (snapshot.connectionState == ConnectionState.waiting) {
         return const Scaffold(
