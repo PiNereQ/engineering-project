@@ -23,7 +23,15 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
     try {
       final messages = await chatRepository.getMessages(event.conversationId);
 
-      emit(ChatDetailLoaded(messages));
+      bool? ratingExists;
+      if (event.raterId != null) {
+        ratingExists = await chatRepository.checkIfRatingByBuyerExists(
+          event.raterId!,
+          event.conversationId,
+        );
+      }
+
+      emit(ChatDetailLoaded(messages, ratingExists: ratingExists));
 
       _startAutoRefresh(event.conversationId);
     } catch (e) {
@@ -33,9 +41,13 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
 
   Future<void> _onRefreshMessages(
       RefreshMessages event, Emitter<ChatDetailState> emit) async {
+    if (state is! ChatDetailLoaded) return;
+
+    final currentRatingExists = (state as ChatDetailLoaded).ratingExists;
+
     try {
       final messages = await chatRepository.getMessages(event.conversationId);
-      emit(ChatDetailLoaded(messages));
+      emit(ChatDetailLoaded(messages, ratingExists: currentRatingExists));
     } catch (_) {}
   }
 
@@ -44,7 +56,8 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
     if (state is! ChatDetailLoaded) return;
 
     final currentMessages = (state as ChatDetailLoaded).messages;
-    emit(ChatDetailSending(currentMessages));
+    final currentRatingExists = (state as ChatDetailLoaded).ratingExists;
+    emit(ChatDetailSending(currentMessages, ratingExists: currentRatingExists));
 
     try {
       await chatRepository.sendMessage(
@@ -56,7 +69,7 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
       final updatedMessages =
           await chatRepository.getMessages(event.conversationId);
 
-      emit(ChatDetailLoaded(updatedMessages));
+      emit(ChatDetailLoaded(updatedMessages, ratingExists: currentRatingExists));
     } catch (e) {
       emit(ChatDetailError(e.toString()));
     }

@@ -9,10 +9,12 @@ abstract class ChatDetailEvent extends Equatable {
 
 class LoadMessages extends ChatDetailEvent {
   final String conversationId;
-  const LoadMessages(this.conversationId);
+  final String? raterId;
+
+  const LoadMessages(this.conversationId, {this.raterId});
 
   @override
-  List<Object?> get props => [conversationId];
+  List<Object?> get props => [conversationId, raterId];
 }
 
 class RefreshMessages extends ChatDetailEvent {

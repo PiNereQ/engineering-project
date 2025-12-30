@@ -216,4 +216,17 @@ class ChatRepository {
       rethrow;
     }
   }
+
+  Future<bool> checkIfRatingByBuyerExists(String raterId, String conversationId) async {
+    try {
+      final response = await _api.get(
+        '/ratings/rating-by-buyer-exists/$raterId/$conversationId',
+        useAuthToken: true,
+      );
+      return (response as Map<String, dynamic>)['exists'];
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error checking rating existence from API: $e');
+      rethrow;
+    }
+  }
 }

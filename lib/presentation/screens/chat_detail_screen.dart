@@ -515,7 +515,7 @@ class _ChatDetailViewState extends State<ChatDetailView> {
       context.read<ChatUnreadBloc>().add(CheckUnreadStatus(userId: userId));
 
       context.read<ChatDetailBloc>().add(
-        LoadMessages(_conversation!.id),
+        LoadMessages(_conversation!.id, raterId: widget.buyerId),
       );
     }
   }
@@ -633,8 +633,9 @@ class _ChatDetailViewState extends State<ChatDetailView> {
                             );
                             }
                             if (msg.type == 'system') {
-                              return SystemMessageCard(msg: msg);
+                              return SystemMessageCard(msg: msg, ratingExists: state.ratingExists);
                             }
+                            return const SizedBox();
                           },
                         );
                       }
@@ -786,36 +787,54 @@ class SystemMessageCard extends StatelessWidget {
   const SystemMessageCard({
     super.key,
     required this.msg,
+    this.ratingExists,
   });
 
   final Message msg;
+  final bool? ratingExists;
 
   @override
   Widget build(BuildContext context) {
-    
-    if (msg.text == 'rating_request') {
-      
-    } else {
-      return SizedBox.shrink();
-    }
-    
-
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.all(Radius.circular(16)),
-        border: Border.all(color: AppColors.textPrimary, width: 2),
-        boxShadow: const [
-          BoxShadow(
-            color: AppColors.textPrimary,
-            offset: Offset(4, 4),
-            blurRadius: 0,
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-        child: Column(
+    Widget? contents;
+    if (msg.text == 'rating_request_for_buyer') {
+      if (ratingExists == true) {
+        contents = Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text(
+              "Dziękujemy za użycie kuponu!",
+              style: const TextStyle(
+                fontFamily: 'Itim',
+                fontSize: 20,
+                color: AppColors.textPrimary,
+                fontWeight: FontWeight.bold
+              ),
+            ),
+            SizedBox(height: 8),
+            Text(
+              "Już oceniłeś sprzedającego. Dziękujemy za pomoc innym użytkownikom!",
+              style: const TextStyle(
+                fontFamily: 'Itim',
+                fontSize: 18,
+                color: AppColors.textPrimary,
+              ),
+              textAlign: TextAlign.justify,
+            ),
+            SizedBox(height: 12),
+            Text(
+              "To jest wiadomość systemowa.\nNie odpowiadaj na nią.",
+              style: const TextStyle(
+                fontFamily: 'Itim',
+                fontSize: 14,
+                color: AppColors.textSecondary,
+                fontStyle: FontStyle.italic,
+              ),
+              textAlign: TextAlign.center,
+            )
+          ]
+        );
+      } else {
+        contents = Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Text(
@@ -860,7 +879,29 @@ class SystemMessageCard extends StatelessWidget {
               textAlign: TextAlign.center,
             )
           ]
-        ),
+        );
+      }
+    } else {
+      return SizedBox.shrink();
+    }
+    
+
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.all(Radius.circular(16)),
+        border: Border.all(color: AppColors.textPrimary, width: 2),
+        boxShadow: const [
+          BoxShadow(
+            color: AppColors.textPrimary,
+            offset: Offset(4, 4),
+            blurRadius: 0,
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+        child: contents
       ),
     );
   }
