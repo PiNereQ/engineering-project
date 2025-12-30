@@ -171,4 +171,50 @@ class UserRepository {
       rethrow;
     }
   }
+
+  /// BLOCKING USERS
+  /// PUT /users/:uid/blocks/:blocked_uid
+  Future<void> blockUser({
+    required String userId,
+    required String blockedUserId,
+  }) async {
+    await _api.put(
+      '/users/$userId/blocks/$blockedUserId',
+      useAuthToken: true,
+    );
+  }
+
+  /// DELETE /users/:uid/blocks/:blocked_uid
+  Future<void> unblockUser({
+    required String userId,
+    required String blockedUserId,
+  }) async {
+    await _api.delete(
+      '/users/$userId/blocks/$blockedUserId',
+      useAuthToken: true,
+    );
+  }
+
+  /// GET /users/:uid/blocks
+  Future<List<Map<String, dynamic>>> getBlockedUsers(String userId) async {
+    final resp = await _api.get(
+      '/users/$userId/blocks',
+      useAuthToken: true,
+    );
+
+    return (resp as List).cast<Map<String, dynamic>>();
+  }
+
+  /// GET /users/:uid/blocks/:blocked_uid
+  Future<bool> isBlocked({
+    required String userId,
+    required String otherUserId,
+  }) async {
+    final resp = await _api.get(
+      '/users/$userId/blocks/$otherUserId',
+      useAuthToken: true,
+    );
+
+    return resp is Map && resp['is_blocked'] == true;
+  }
 }

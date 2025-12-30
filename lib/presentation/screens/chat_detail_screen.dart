@@ -7,6 +7,7 @@ import 'package:proj_inz/bloc/chat/unread/chat_unread_event.dart';
 import 'package:proj_inz/core/theme.dart';
 import 'package:proj_inz/core/utils/utils.dart';
 import 'package:proj_inz/data/models/conversation_model.dart';
+import 'package:proj_inz/data/repositories/user_repository.dart';
 import 'package:proj_inz/presentation/screens/report_screen.dart';
 import 'package:proj_inz/presentation/widgets/chat_report_popup.dart';
 import 'package:proj_inz/presentation/widgets/coupon_preview_popup.dart';
@@ -498,12 +499,16 @@ class _ChatDetailViewState extends State<ChatDetailView> {
            ".${d.year}";
   }
 
+  bool _isBlocked = false;
+
   @override
   void initState() {
     super.initState();
     _controller = TextEditingController();
     _conversation = widget.initialConversation;
     _coupon = widget.relatedCoupon;
+
+    _checkBlockStatus();
 
     if (_conversation != null) {
       final repo = context.read<ChatRepository>();
@@ -516,6 +521,42 @@ class _ChatDetailViewState extends State<ChatDetailView> {
         LoadMessages(_conversation!.id),
       );
     }
+  }
+
+  Future<void> _checkBlockStatus() async {
+    final currentUserId = FirebaseAuth.instance.currentUser!.uid;
+    final otherUserId = widget.buyerId == currentUserId
+        ? widget.sellerId
+        : widget.buyerId;
+
+    final repo = context.read<UserRepository>();
+
+    bool blockedByMe = false;
+    bool blockedMe = false;
+
+    try {
+      blockedByMe = await repo.isBlocked(
+        userId: currentUserId,
+        otherUserId: otherUserId,
+      );
+    } catch (_) {
+      blockedByMe = false;
+    }
+
+    try {
+      blockedMe = await repo.isBlocked(
+        userId: otherUserId,
+        otherUserId: currentUserId,
+      );
+    } catch (_) {
+      blockedMe = false;
+    }
+
+    if (!mounted) return;
+
+    setState(() {
+      _isBlocked = blockedByMe || blockedMe;
+    });
   }
 
   @override
@@ -639,10 +680,24 @@ class _ChatDetailViewState extends State<ChatDetailView> {
                 ),
               ),
 
+            if (_isBlocked)
+              Container(
+                padding: const EdgeInsets.all(16),
+                child: const Text(
+                  'Nie możesz wysyłać wiadomości do tego użytkownika.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontFamily: 'Itim',
+                    fontSize: 16,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              )
+            else
               ChatInputBar(
                 controller: _controller,
                 onSend: _handleSendMessage,
-              )
+              ),
             ],
           ),
         ),
@@ -707,9 +762,44 @@ class _ChatDetailViewState extends State<ChatDetailView> {
                     ),
                   );
                 },
-                onBlock: () {
-                  // TODO backend
+                onBlock: () async {
+                  if (_isBlocked) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Ten użytkownik jest już zablokowany')),
+                    );
+                    return;
+                  }
+
                   setState(() => _showPopup = false);
+
+                  final confirmed = await showBlockConfirmDialog(context);
+                  if (confirmed != true) return;
+
+                  final currentUserId = FirebaseAuth.instance.currentUser!.uid;
+                  final otherUserId = widget.buyerId == currentUserId
+                      ? widget.sellerId
+                      : widget.buyerId;
+
+                  try {
+                    await context.read<UserRepository>().blockUser(
+                      userId: currentUserId,
+                      blockedUserId: otherUserId,
+                    );
+
+                    if (!mounted) return;
+
+                    setState(() {
+                      _isBlocked = true;
+                    });
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Użytkownik został zablokowany')),
+                    );
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Błąd blokowania: $e')),
+                    );
+                  }
                 },
                 onClose: () {
                   setState(() => _showPopup = false);
@@ -723,6 +813,13 @@ class _ChatDetailViewState extends State<ChatDetailView> {
 
 
   Future<void> _handleSendMessage() async {
+    if (_isBlocked) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Nie możesz wysyłać wiadomości do tego użytkownika')),
+      );
+      return;
+    }
+
     final text = _controller.text.trim();
     if (text.isEmpty) return;
 
@@ -813,4 +910,37 @@ class _DeletedCouponDialog extends StatelessWidget {
       ],
     );
   }
+}
+
+Future<bool?> showBlockConfirmDialog(BuildContext context) {
+  return showDialog<bool>(
+    context: context,
+    builder: (_) => AlertDialog(
+      backgroundColor: AppColors.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(24),
+        side: const BorderSide(width: 2, color: AppColors.textPrimary),
+      ),
+      title: const Text(
+        'Zablokować użytkownika?',
+        style: TextStyle(fontFamily: 'Itim', fontSize: 22),
+      ),
+      content: const Text(
+        'Nie będziecie mogli wysyłać do siebie wiadomości.\n'
+        'Blokadę możesz cofnąć w ustawieniach profilu.\n\n'
+        'Jeśli użytkownik narusza regulamin, rozważ jego zgłoszenie.',
+        style: TextStyle(fontFamily: 'Itim', fontSize: 16),
+      ),
+      actions: [
+        CustomTextButton.small(
+          label: 'Anuluj',
+          onTap: () => Navigator.pop(context, false),
+        ),
+        CustomTextButton.primarySmall(
+          label: 'Zablokuj',
+          onTap: () => Navigator.pop(context, true),
+        ),
+      ],
+    ),
+  );
 }

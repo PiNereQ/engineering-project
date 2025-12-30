@@ -170,15 +170,39 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 text: 'Blokady',
                 icon: Icons.block_rounded,
               ),
-              _SectionCard(
-                child: const Text(
-                  'Nie masz zablokowanych użytkowników.',
-                  style: TextStyle(
-                    fontFamily: 'Itim',
-                    fontSize: 16,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
+              FutureBuilder<List<Map<String, dynamic>>>(
+                future: context.read<UserRepository>()
+                    .getBlockedUsers(FirebaseAuth.instance.currentUser!.uid),
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return const Text(
+                      'Nie masz zablokowanych użytkowników.',
+                      style: TextStyle(fontFamily: 'Itim', fontSize: 16),
+                    );
+                  }
+
+                  final blocked = snapshot.data!;
+                  return Column(
+                    children: blocked.map((u) {
+                    final userId = u['id'] as String;
+                    final username = u['username'] as String? ?? 'Użytkownik';
+
+                      return ListTile(
+                        title: Text(username),
+                        trailing: TextButton(
+                          child: const Text('Odblokuj'),
+                          onPressed: () async {
+                            await context.read<UserRepository>().unblockUser(
+                              userId: FirebaseAuth.instance.currentUser!.uid,
+                              blockedUserId: userId,
+                            );
+                            setState(() {});
+                          },
+                        ),
+                      );
+                    }).toList(),
+                  );
+                },
               ),
 
               const SizedBox(height: 32),
