@@ -56,3 +56,16 @@ class ApplyCouponOrdering extends CouponListEvent {
 class ReadCouponOrdering extends CouponListEvent {}
 
 class LeaveCouponSortPopUp extends CouponListEvent {}
+
+class ToggleCouponSaved extends CouponListEvent {
+  final String couponId;
+  final bool isSaved;
+
+  const ToggleCouponSaved({
+    required this.couponId,
+    required this.isSaved,
+  });
+
+  @override
+  List<Object> get props => [couponId, isSaved];
+}

@@ -37,25 +37,28 @@ class SavedCouponListScreen extends StatelessWidget {
       create: (context) => SavedCouponListBloc(
         context.read<CouponRepository>(),
       )..add(FetchSavedCoupons(userId: userId)),
-      child: Scaffold(
-        backgroundColor: AppColors.background,
-        body: SafeArea(
-          child: RefreshIndicator(
-            onRefresh: () async {
-              context
-                  .read<SavedCouponListBloc>()
-                  .add(RefreshSavedCoupons(userId: userId));
-            },
-            child: CustomScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              slivers: const [
-                _Toolbar(),
-                _SavedCouponsContent(),
-              ],
+      child: Builder(
+        builder: (context) =>
+        Scaffold(
+          backgroundColor: AppColors.background,
+          body: SafeArea(
+            child: RefreshIndicator(
+              onRefresh: () async {
+                context
+                    .read<SavedCouponListBloc>()
+                    .add(RefreshSavedCoupons(userId: userId));
+              },
+              child: CustomScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                slivers: const [
+                  _Toolbar(),
+                  _SavedCouponsContent(),
+                ],
+              ),
             ),
           ),
         ),
-      ),
+      )
     );
   }
 }

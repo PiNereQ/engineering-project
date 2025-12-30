@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:icon_decoration/icon_decoration.dart';
+import 'package:proj_inz/bloc/coupon_list/coupon_list_bloc.dart';
 
 import 'package:proj_inz/core/utils/utils.dart';
 import 'package:proj_inz/data/models/coupon_model.dart';
@@ -353,8 +355,8 @@ class _CouponCardHorizontalState extends State<CouponCardHorizontal> {
                         debugPrint('Save coupon error: $e');
                       }
                     }
-                  },
-                )
+                  }
+                ),
             ),
           ),
         ],

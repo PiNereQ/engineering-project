@@ -48,6 +48,7 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
     on<ApplyCouponOrdering>(_onApplyCouponOrdering);
     on<ReadCouponOrdering>(_onReadCouponOrdering);
     on<LeaveCouponSortPopUp>(_onLeaveCouponSortPopUp);
+    on<ToggleCouponSaved>(_onToggleCouponSaved);
   }
 
   // helpers to check active filters and ordering
@@ -366,5 +367,34 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
 
   void _onLeaveCouponSortPopUp(LeaveCouponSortPopUp event, Emitter<CouponListState> emit) {
     emit(_previousListState);
+  }
+
+  Future<void> _onToggleCouponSaved(
+    ToggleCouponSaved event,
+    Emitter<CouponListState> emit,
+  ) async {
+    if (state is! CouponListLoadSuccess) return;
+
+    final currentCoupons = List<Coupon>.from(_allCoupons);
+
+    final index = currentCoupons.indexWhere(
+      (c) => c.id == event.couponId,
+    );
+
+    if (index == -1) return;
+
+    currentCoupons[index] =
+        currentCoupons[index].copyWith(isSaved: event.isSaved);
+
+    _allCoupons
+      ..clear()
+      ..addAll(currentCoupons);
+
+    emit(
+      CouponListLoadSuccess(
+        coupons: currentCoupons,
+        hasMore: _hasMore,
+      ),
+    );
   }
 }
