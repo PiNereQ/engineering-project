@@ -15,12 +15,14 @@ import 'package:proj_inz/data/repositories/user_repository.dart';
 import 'package:proj_inz/bloc/shop/shop_bloc.dart';
 import 'package:proj_inz/data/models/shop_model.dart';
 import 'package:proj_inz/data/repositories/shop_repository.dart';
+import 'package:proj_inz/presentation/screens/legal_document_screen.dart';
 import 'package:proj_inz/presentation/widgets/custom_snack_bar.dart';
 import 'package:proj_inz/presentation/widgets/dashed_separator.dart';
 import 'package:proj_inz/presentation/widgets/help/help_button.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_icon_button.dart';
 import 'package:proj_inz/presentation/screens/coupon_image_scan_screen.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/search_button.dart';
+import 'package:proj_inz/presentation/widgets/input/custom_date_picker_dialog.dart';
 import '../widgets/input/text_fields/labeled_text_field.dart';
 import '../widgets/input/text_fields/search_bar.dart';
 import '../widgets/input/buttons/checkbox.dart';
@@ -35,6 +37,9 @@ class AddScreen extends StatefulWidget {
   @override
   State<AddScreen> createState() => _AddScreenState();
 }
+
+const double _dialogWidth = 360;
+const double _dialogMinHeight = 80;
 
 class _AddScreenState extends State<AddScreen> {
   final _formKey = GlobalKey<FormState>();
@@ -64,7 +69,7 @@ class _AddScreenState extends State<AddScreen> {
   bool _userMadeInput = false;
   bool _showMissingValuesTip = false;
   bool _showUsageLocationTip = false;
-
+  
   Future<void> _pickImage(ImageSource source) async {
     try {
       final XFile? image = await _imagePicker.pickImage(source: source);
@@ -364,48 +369,20 @@ class _AddScreenState extends State<AddScreen> {
         if (state is CouponAddSuccess) {
           showDialog(
             context: context,
-            builder:
-                (context) => AlertDialog(
-                  backgroundColor: AppColors.surface,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(24),
-                    side: const BorderSide(
-                      width: 2,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                  title: const Text(
-                    'Sukces',
-                    style: TextStyle(
-                      fontFamily: 'Itim',
-                      fontSize: 22,
-                      fontWeight: FontWeight.w400,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                  content: const Text(
-                    'Kupon został dodany.',
-                    style: TextStyle(
-                      fontFamily: 'Itim',
-                      fontSize: 16,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                  actionsPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
-                  actions: [
-                    CustomTextButton.primarySmall(
-                      label: 'OK',
-                      width: 100,
-                      onTap: () {
-                        Navigator.of(context).pop();
-                        Navigator.of(context).pop();
-                      },
-                    ),
-                  ],
+            builder: (_) => appDialog(
+              title: 'Sukces',
+              content: 'Kupon został dodany.',
+              actions: [
+                CustomTextButton.primarySmall(
+                  label: 'OK',
+                  width: 100,
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    Navigator.of(context).pop();
+                  },
                 ),
+              ],
+            ),
           );
         } else if (state is CouponAddFailure) {
           _focusScopeNode.unfocus();
@@ -587,57 +564,56 @@ class _AddScreenState extends State<AddScreen> {
                                             },
                                           ),
                                           GestureDetector(
-                                            onTap:
-                                                !_hasExpiryDate
-                                                    ? null
-                                                    : () async {
-                                                      DateTime now =
-                                                          DateTime.now();
-                                                      DateTime today = DateTime(
-                                                        now.year,
-                                                        now.month,
-                                                        now.day,
-                                                      );
+                                            onTap: !_hasExpiryDate
+                                                ? null
+                                                : () async {
+                                                    DateTime now = DateTime.now();
+                                                    DateTime today = DateTime(
+                                                      now.year,
+                                                      now.month,
+                                                      now.day,
+                                                    );
 
-                                                      DateTime? pickedDate =
-                                                          await showDatePicker(
-                                                            context: context,
-                                                            initialDate: today,
-                                                            firstDate: today,
-                                                            lastDate: DateTime(
-                                                              2100,
-                                                            ),
-                                                          );
+                                                    final DateTime initialDate =
+                                                        _expiryDateController.text.isNotEmpty
+                                                            ? _expiryDate
+                                                            : today;
 
-                                                      if (pickedDate != null) {
-                                                        setState(() {
-                                                          _expiryDateController
-                                                                  .text =
-                                                              "${pickedDate.day.toString().padLeft(2, '0')}-"
-                                                              "${pickedDate.month.toString().padLeft(2, '0')}-"
-                                                              "${pickedDate.year}";
-                                                          _expiryDate =
-                                                              pickedDate;
-                                                          _userMadeInput = true;
-                                                        });
-                                                      }
-                                                    },
+                                                    final DateTime? pickedDate =
+                                                        await showDialog<DateTime>(
+                                                      context: context,
+                                                      barrierDismissible: true,
+                                                      builder: (context) {
+                                                        return CustomCalendarDatePickerDialog(
+                                                          initialDate: initialDate,
+                                                          firstDate: today,
+                                                          lastDate: DateTime(2100),
+                                                        );
+                                                      },
+                                                    );
+
+                                                    if (pickedDate != null) {
+                                                      setState(() {
+                                                        _expiryDateController.text =
+                                                            "${pickedDate.day.toString().padLeft(2, '0')}-"
+                                                            "${pickedDate.month.toString().padLeft(2, '0')}-"
+                                                            "${pickedDate.year}";
+                                                        _expiryDate = pickedDate;
+                                                        _userMadeInput = true;
+                                                      });
+                                                    }
+                                                  },
                                             child: AbsorbPointer(
                                               child: LabeledTextField(
                                                 label: 'Data ważności',
                                                 placeholder: 'DD-MM-RRRR',
                                                 enabled: _hasExpiryDate,
-                                                width:
-                                                    LabeledTextFieldWidth.half,
+                                                width: LabeledTextFieldWidth.half,
                                                 iconOnLeft: false,
-                                                controller:
-                                                    _expiryDateController,
-                                                keyboardType:
-                                                    TextInputType.datetime,
+                                                controller: _expiryDateController,
+                                                keyboardType: TextInputType.datetime,
                                                 validator: (val) {
-                                                  if (val == null ||
-                                                      val.isEmpty &&
-                                                          _hasExpiryDate) {
+                                                  if ((val == null || val.isEmpty) && _hasExpiryDate) {
                                                     return 'Wymagane';
                                                   }
                                                   return null;
@@ -1292,7 +1268,25 @@ class _AddScreenState extends State<AddScreen> {
                                         ),
                                         const SizedBox(height: 12),
                                       ],
+                                      Row(
+                                        crossAxisAlignment: CrossAxisAlignment.center,
+                                        children: [
+                                          Expanded(
+                                            child: Text(
+                                              'Prowizja serwisu wynosi 5% wartości sprzedanego kuponu. '
+                                              'Kwota prowizji zostanie automatycznie potrącona przy sprzedaży.',
+                                              textAlign: TextAlign.justify,
+                                              style: const TextStyle(
+                                                fontFamily: 'Itim',
+                                                fontSize: 14,
+                                                color: AppColors.textSecondary,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                       // 11. Przycisk dodaj
+                                      const SizedBox(height: 12),
                                       CustomTextButton.primary(
                                         height: 56,
                                         width: double.infinity,
@@ -1397,72 +1391,25 @@ class _AddScreenState extends State<AddScreen> {
                                               isMultipleUse: _isMultipleUse,
                                             );
 
-                                            final confirmed = await showDialog<
-                                              bool
-                                            >(
+                                            final confirmed = await showDialog<bool>(
                                               context: context,
-                                              builder:
-                                                  (context) => AlertDialog(
-                                                    backgroundColor:
-                                                        AppColors.surface,
-                                                    shape: RoundedRectangleBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                            24,
-                                                          ),
-                                                      side: const BorderSide(
-                                                        width: 2,
-                                                        color:
-                                                            AppColors
-                                                                .textPrimary,
-                                                      ),
-                                                    ),
-                                                    title: const Text(
-                                                      'Potwierdzenie',
-                                                      style: TextStyle(
-                                                        fontFamily: 'Itim',
-                                                        fontSize: 22,
-                                                        fontWeight:
-                                                            FontWeight.w400,
-                                                        color:
-                                                            AppColors
-                                                                .textPrimary,
-                                                      ),
-                                                    ),
-                                                    content: const Text(
-                                                      'Czy na pewno chcesz dodać ten kupon?',
-                                                      style: TextStyle(
-                                                        fontFamily: 'Itim',
-                                                        fontSize: 16,
-                                                        color:
-                                                            AppColors
-                                                                .textSecondary,
-                                                      ),
-                                                    ),
-                                                    actionsPadding:
-                                                        const EdgeInsets.symmetric(
-                                                          horizontal: 16,
-                                                          vertical: 12,
-                                                        ),
-                                                    actions: [
-                                                      CustomTextButton.small(
-                                                        label: 'Anuluj',
-                                                        width: 100,
-                                                        onTap:
-                                                            () => Navigator.of(
-                                                              context,
-                                                            ).pop(false),
-                                                      ),
-                                                      CustomTextButton.primarySmall(
-                                                        label: 'Dodaj',
-                                                        width: 100,
-                                                        onTap:
-                                                            () => Navigator.of(
-                                                              context,
-                                                            ).pop(true),
-                                                      ),
-                                                    ],
+                                              builder: (_) => appDialog(
+                                                title: 'Potwierdzenie',
+                                                content: 'Czy na pewno chcesz dodać ten kupon?',
+                                                actions: [
+                                                  CustomTextButton.small(
+                                                    label: 'Anuluj',
+                                                    width: 100,
+                                                    onTap: () => Navigator.of(context).pop(false),
                                                   ),
+                                                  const SizedBox(width: 8),
+                                                  CustomTextButton.primarySmall(
+                                                    label: 'Dodaj',
+                                                    width: 100,
+                                                    onTap: () => Navigator.of(context).pop(true),
+                                                  ),
+                                                ],
+                                              ),
                                             );
 
                                             if (confirmed == true) {
@@ -1478,15 +1425,56 @@ class _AddScreenState extends State<AddScreen> {
                                         },
                                       ),
                                       const SizedBox(height: 12),
-                                      Text(
-                                        'Dodając kupon, akceptujesz postanowienia regulaminu.',
-                                        textAlign: TextAlign.center,
-                                        style: TextStyle(
-                                          color: AppColors.textPrimary,
-                                          fontSize: 14,
-                                          fontFamily: 'Itim',
-                                          fontWeight: FontWeight.w400,
-                                        ),
+                                      Wrap(
+                                        alignment: WrapAlignment.center,
+                                        spacing: 4,
+                                        runSpacing: 2,
+                                        children: [
+                                          const Text(
+                                            'Dodając kupon, akceptujesz',
+                                            style: TextStyle(
+                                              color: AppColors.textPrimary,
+                                              fontSize: 14,
+                                              fontFamily: 'Itim',
+                                            ),
+                                          ),
+                                          _FooterLink(
+                                            label: 'regulamin',
+                                            onTap: () {
+                                              Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (_) => const LegalDocumentScreen(
+                                                    title: 'Regulamin',
+                                                    assetPath: 'assets/legal/regulamin.md',
+                                                  ),
+                                                ),
+                                              );
+                                            },
+                                          ),
+                                          const Text(
+                                            'oraz',
+                                            style: TextStyle(
+                                              color: AppColors.textPrimary,
+                                              fontSize: 14,
+                                              fontFamily: 'Itim',
+                                            ),
+                                          ),
+                                          _FooterLink(
+                                            label: 'politykę prywatności.',
+                                            onTap: () {
+                                              Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (_) => const LegalDocumentScreen(
+                                                    title: 'Polityka prywatności',
+                                                    assetPath: 'assets/legal/polityka_prywatnosci.md',
+                                                  ),
+                                                ),
+                                              );
+                                            },
+                                          ),
+                                        ],
                                       ),
                                     ],
                                   ),
@@ -1530,4 +1518,90 @@ class _HelpBody extends StatelessWidget {
       ),
     );
   }
+}
+
+class _FooterLink extends StatelessWidget {
+  final String label;
+  final VoidCallback onTap;
+
+  const _FooterLink({
+    required this.label,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Text(
+        label,
+        style: const TextStyle(
+          color: AppColors.textPrimary,
+          fontSize: 14,
+          fontFamily: 'Itim',
+          fontWeight: FontWeight.w400,
+          decoration: TextDecoration.underline,
+        ),
+      ),
+    );
+  }
+}
+
+Widget appDialog({
+  required String title,
+  required String content,
+  required List<Widget> actions,
+}) {
+  return Dialog(
+    backgroundColor: AppColors.surface,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(24),
+      side: const BorderSide(width: 2, color: AppColors.textPrimary),
+    ),
+    child: SizedBox(
+      width: _dialogWidth,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(24, 20, 24, 16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                title,
+                textAlign: TextAlign.left,
+                style: const TextStyle(
+                  fontFamily: 'Itim',
+                  fontSize: 22,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              height: _dialogMinHeight,
+              width: double.infinity,
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  content,
+                  textAlign: TextAlign.left,
+                  style: const TextStyle(
+                    fontFamily: 'Itim',
+                    fontSize: 16,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: actions,
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
 }

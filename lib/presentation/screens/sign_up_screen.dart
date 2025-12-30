@@ -205,28 +205,40 @@ class _RegistrationCardState extends State<_RegistrationCard> {
                       ),
                     ],
                   ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      CustomCheckbox(
-                        selected: _termsAccepted,
-                        onTap: () {
-                          setState(() {
-                            _termsAccepted = !_termsAccepted;
-                          });
-                        },
-                        label: "Regulamin",
-                      ),
-                      CustomCheckbox(
-                        selected: _privacyPolicyAccepted,
-                        onTap: () {
-                          setState(() {
-                            _privacyPolicyAccepted = !_privacyPolicyAccepted;
-                          });
-                        },
-                        label: "Polityka prywatności",
-                      ),
-                    ],
+                  SizedBox(
+                    width: double.infinity,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Zapoznałem/am się i akceptuję:',
+                          style: TextStyle(
+                            fontFamily: 'Itim',
+                            fontSize: 18,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        CustomCheckbox(
+                          selected: _termsAccepted,
+                          onTap: () {
+                            setState(() {
+                              _termsAccepted = !_termsAccepted;
+                            });
+                          },
+                          label: "regulamin aplikacji",
+                        ),
+                        CustomCheckbox(
+                          selected: _privacyPolicyAccepted,
+                          onTap: () {
+                            setState(() {
+                              _privacyPolicyAccepted = !_privacyPolicyAccepted;
+                            });
+                          },
+                          label: "politykę prywatności",
+                        ),
+                      ],
+                    ),
                   ),
                   if (_errorMessage != null)
                     Text(

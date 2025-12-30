@@ -36,27 +36,23 @@ class _ReportScreenState extends State<ReportScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isCouponReport = widget.reportedCoupon != null;
 
-    final reasons = isCouponReport
-        ? [
-            "Kod kuponu jest nieprawidłowy",
-            "Termin ważności kuponu minął",
-            "Kupon ma ograniczenia, których nie było w opisie",
-            "Zdjęcie kuponu jest nieczytelne",
-            "Nieodpowiednia nazwa użytkownika sprzedającego",
-            "Nieodpowiedni obraz profilu sprzedającego",
-            "Inne",
-          ]
-        : [
-            "Spam",
-            "Próba oszustwa",
-            "Nękanie, groźby lub obraza",
-            "Nieodpowiednie treści",
-            "Nieodpowiednia nazwa użytkownika",
-            "Nieodpowiedni obraz profilu",
-            "Inne",
-          ];
+    final reasons = const [
+      // kupon
+      "Kod kuponu jest nieprawidłowy",
+      "Termin ważności kuponu minął",
+      "Kupon ma ograniczenia, których nie było w opisie",
+
+      // sprzedający
+      "Próba oszustwa",
+      "Spam",
+      "Nękanie, groźby lub obraza",
+      "Nieodpowiednie treści",
+      "Nieodpowiednia nazwa użytkownika sprzedającego",
+
+      // fallback
+      "Inne",
+    ];
 
     return Scaffold(
       backgroundColor: AppColors.background,
