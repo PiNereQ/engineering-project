@@ -22,6 +22,7 @@ import 'package:proj_inz/presentation/widgets/help/help_button.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_icon_button.dart';
 import 'package:proj_inz/presentation/screens/coupon_image_scan_screen.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/search_button.dart';
+import 'package:proj_inz/presentation/widgets/input/custom_date_picker_dialog.dart';
 import '../widgets/input/text_fields/labeled_text_field.dart';
 import '../widgets/input/text_fields/search_bar.dart';
 import '../widgets/input/buttons/checkbox.dart';
@@ -563,57 +564,56 @@ class _AddScreenState extends State<AddScreen> {
                                             },
                                           ),
                                           GestureDetector(
-                                            onTap:
-                                                !_hasExpiryDate
-                                                    ? null
-                                                    : () async {
-                                                      DateTime now =
-                                                          DateTime.now();
-                                                      DateTime today = DateTime(
-                                                        now.year,
-                                                        now.month,
-                                                        now.day,
-                                                      );
+                                            onTap: !_hasExpiryDate
+                                                ? null
+                                                : () async {
+                                                    DateTime now = DateTime.now();
+                                                    DateTime today = DateTime(
+                                                      now.year,
+                                                      now.month,
+                                                      now.day,
+                                                    );
 
-                                                      DateTime? pickedDate =
-                                                          await showDatePicker(
-                                                            context: context,
-                                                            initialDate: today,
-                                                            firstDate: today,
-                                                            lastDate: DateTime(
-                                                              2100,
-                                                            ),
-                                                          );
+                                                    final DateTime initialDate =
+                                                        _expiryDateController.text.isNotEmpty
+                                                            ? _expiryDate
+                                                            : today;
 
-                                                      if (pickedDate != null) {
-                                                        setState(() {
-                                                          _expiryDateController
-                                                                  .text =
-                                                              "${pickedDate.day.toString().padLeft(2, '0')}-"
-                                                              "${pickedDate.month.toString().padLeft(2, '0')}-"
-                                                              "${pickedDate.year}";
-                                                          _expiryDate =
-                                                              pickedDate;
-                                                          _userMadeInput = true;
-                                                        });
-                                                      }
-                                                    },
+                                                    final DateTime? pickedDate =
+                                                        await showDialog<DateTime>(
+                                                      context: context,
+                                                      barrierDismissible: true,
+                                                      builder: (context) {
+                                                        return CustomCalendarDatePickerDialog(
+                                                          initialDate: initialDate,
+                                                          firstDate: today,
+                                                          lastDate: DateTime(2100),
+                                                        );
+                                                      },
+                                                    );
+
+                                                    if (pickedDate != null) {
+                                                      setState(() {
+                                                        _expiryDateController.text =
+                                                            "${pickedDate.day.toString().padLeft(2, '0')}-"
+                                                            "${pickedDate.month.toString().padLeft(2, '0')}-"
+                                                            "${pickedDate.year}";
+                                                        _expiryDate = pickedDate;
+                                                        _userMadeInput = true;
+                                                      });
+                                                    }
+                                                  },
                                             child: AbsorbPointer(
                                               child: LabeledTextField(
                                                 label: 'Data ważności',
                                                 placeholder: 'DD-MM-RRRR',
                                                 enabled: _hasExpiryDate,
-                                                width:
-                                                    LabeledTextFieldWidth.half,
+                                                width: LabeledTextFieldWidth.half,
                                                 iconOnLeft: false,
-                                                controller:
-                                                    _expiryDateController,
-                                                keyboardType:
-                                                    TextInputType.datetime,
+                                                controller: _expiryDateController,
+                                                keyboardType: TextInputType.datetime,
                                                 validator: (val) {
-                                                  if (val == null ||
-                                                      val.isEmpty &&
-                                                          _hasExpiryDate) {
+                                                  if ((val == null || val.isEmpty) && _hasExpiryDate) {
                                                     return 'Wymagane';
                                                   }
                                                   return null;
@@ -1268,11 +1268,9 @@ class _AddScreenState extends State<AddScreen> {
                                         ),
                                         const SizedBox(height: 12),
                                       ],
-                                      const SizedBox(height: 12),
                                       Row(
                                         crossAxisAlignment: CrossAxisAlignment.center,
                                         children: [
-                                          const SizedBox(width: 8),
                                           Expanded(
                                             child: Text(
                                               'Prowizja serwisu wynosi 5% wartości sprzedanego kuponu. '
