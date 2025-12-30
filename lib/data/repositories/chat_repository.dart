@@ -229,4 +229,35 @@ class ChatRepository {
       rethrow;
     }
   }
+
+  Future<void> submitRating({
+    required String conversationId,
+    required String ratedUserId,
+    required String ratingUserId,
+    required bool ratedUserIsSeller,
+    required int ratingStars,
+    required int ratingValue,
+    String? ratingComment,
+  }) async {
+    final ratingData = {
+      'conversation_id': int.parse(conversationId),
+      'rated_user_id': ratedUserId,
+      'rating_user_id': ratingUserId,
+      'rated_user_is_seller': ratedUserIsSeller,
+      'rating_stars': ratingStars,
+      'rating_value': ratingValue,
+      'rating_comment': ratingComment,
+    };
+
+    try {
+      await _api.post(
+        '/ratings',
+        body: ratingData,
+        useAuthToken: true,
+      );
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error submitting rating via API: $e');
+      rethrow;
+    }
+  }
 }

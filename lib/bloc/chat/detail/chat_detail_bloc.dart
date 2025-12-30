@@ -14,6 +14,7 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
     on<LoadMessages>(_onLoadMessages);
     on<RefreshMessages>(_onRefreshMessages);
     on<SendMessage>(_onSendMessage);
+    on<SubmitRating>(_onSubmitRating);
   }
 
   Future<void> _onLoadMessages(
@@ -70,6 +71,33 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
           await chatRepository.getMessages(event.conversationId);
 
       emit(ChatDetailLoaded(updatedMessages, ratingExists: currentRatingExists));
+    } catch (e) {
+      emit(ChatDetailError(e.toString()));
+    }
+  }
+
+  Future<void> _onSubmitRating(
+      SubmitRating event, Emitter<ChatDetailState> emit) async {
+    if (state is! ChatDetailLoaded) return;
+
+    final currentMessages = (state as ChatDetailLoaded).messages;
+    final currentRatingExists = (state as ChatDetailLoaded).ratingExists;
+    emit(ChatDetailSubmittingRating(currentMessages, ratingExists: currentRatingExists));
+
+    try {
+      await chatRepository.submitRating(
+        conversationId: event.conversationId,
+        ratedUserId: event.ratedUserId,
+        ratingUserId: event.ratingUserId,
+        ratedUserIsSeller: event.ratedUserIsSeller,
+        ratingStars: event.ratingStars,
+        ratingValue: event.ratingValue,
+        ratingComment: event.ratingComment,
+      );
+
+      // After submitting, refresh messages and set ratingExists to true
+      final updatedMessages = await chatRepository.getMessages(event.conversationId);
+      emit(ChatDetailLoaded(updatedMessages, ratingExists: true));
     } catch (e) {
       emit(ChatDetailError(e.toString()));
     }

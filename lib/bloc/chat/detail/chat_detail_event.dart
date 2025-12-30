@@ -39,3 +39,26 @@ class SendMessage extends ChatDetailEvent {
   @override
   List<Object?> get props => [conversationId, text, senderId];
 }
+
+class SubmitRating extends ChatDetailEvent {
+  final String conversationId;
+  final String ratedUserId;
+  final String ratingUserId;
+  final bool ratedUserIsSeller;
+  final int ratingStars;
+  final int ratingValue;
+  final String? ratingComment;
+
+  const SubmitRating({
+    required this.conversationId,
+    required this.ratedUserId,
+    required this.ratingUserId,
+    required this.ratedUserIsSeller,
+    required this.ratingStars,
+    required this.ratingValue,
+    this.ratingComment,
+  });
+
+  @override
+  List<Object?> get props => [conversationId, ratedUserId, ratingUserId, ratedUserIsSeller, ratingStars, ratingValue, ratingComment];
+}

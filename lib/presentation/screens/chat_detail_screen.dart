@@ -628,8 +628,11 @@ class _ChatDetailViewState extends State<ChatDetailView> {
                         return const Center(child: CircularProgressIndicator());
                       }
 
-                      if (state is ChatDetailLoaded) {
-                        if (state.messages.isEmpty) {
+                      if (state is ChatDetailLoaded || state is ChatDetailSubmittingRating) {
+                        final messages = (state as dynamic).messages as List<Message>;
+                        final ratingExists = (state as dynamic).ratingExists as bool?;
+
+                        if (messages.isEmpty) {
                           return const Center(
                             child: Text(
                               "Brak wiadomości. Napisz coś jako pierwszy!",
@@ -641,12 +644,14 @@ class _ChatDetailViewState extends State<ChatDetailView> {
                           );
                         }
 
+                        final conversationId = _conversation!.id;
+
                         return ListView.builder(
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                          itemCount: state.messages.length,
+                          itemCount: messages.length,
                           itemBuilder: (context, index) {
-                            final msg = state.messages[index];
-                            final currentUserId = FirebaseAuth.instance.currentUser?.uid;
+                            final msg = messages[index];
+                            final currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
                             final isMine = msg.senderId == currentUserId;
                             if (msg.type == 'user') {
                               return ChatBubble(
@@ -657,7 +662,14 @@ class _ChatDetailViewState extends State<ChatDetailView> {
                             );
                             }
                             if (msg.type == 'system') {
-                              return SystemMessageCard(msg: msg, ratingExists: state.ratingExists);
+                              return SystemMessageCard(
+                                msg: msg, 
+                                ratingExists: ratingExists,
+                                conversationId: conversationId,
+                                buyerId: widget.buyerId,
+                                sellerId: widget.sellerId,
+                                currentUserId: currentUserId,
+                              );
                             }
                             return const SizedBox();
                           },
@@ -807,21 +819,38 @@ class _ChatDetailViewState extends State<ChatDetailView> {
   }
 }
 
-class SystemMessageCard extends StatelessWidget {
+class SystemMessageCard extends StatefulWidget {
   const SystemMessageCard({
     super.key,
     required this.msg,
     this.ratingExists,
+    required this.conversationId,
+    required this.buyerId,
+    required this.sellerId,
+    required this.currentUserId,
   });
 
   final Message msg;
   final bool? ratingExists;
+  final String conversationId;
+  final String buyerId;
+  final String sellerId;
+  final String currentUserId;
+
+  @override
+  State<SystemMessageCard> createState() => _SystemMessageCardState();
+}
+
+class _SystemMessageCardState extends State<SystemMessageCard> {
+  int _ratingStars = 0;
+  String? _ratingComment;
+  String? _errorText;
 
   @override
   Widget build(BuildContext context) {
     Widget? contents;
-    if (msg.text == 'rating_request_for_buyer') {
-      if (ratingExists == true) {
+    if (widget.msg.text == 'rating_request_for_buyer') {
+      if (widget.ratingExists == true) {
         contents = Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
@@ -884,13 +913,50 @@ class SystemMessageCard extends StatelessWidget {
             StarRating(
               startRating: 0,
               onRatingChanged: (rating) {
-                // TODO: Handle rating change 
+                setState(() {
+                  _ratingStars = rating;
+                });
               },
             ),
+            if (_errorText != null) ...[
+              SizedBox(height: 8),
+              Text(
+                _errorText!,
+                style: const TextStyle(
+                  fontFamily: 'Itim',
+                  fontSize: 14,
+                  color: AppColors.alertText,
+                ),
+              ),
+            ],
             SizedBox(height: 8),
-            CustomTextButton(label: "Oceń", onTap: () {
-              // TODO: Handle rating submission logic here
-            }),
+            CustomTextButton(
+              label: "Oceń", 
+              onTap: () {
+                setState(() {
+                  _errorText = null;
+                });
+                if (_ratingStars > 0) {
+                  final ratedUserId = widget.sellerId;
+                  final ratingUserId = widget.currentUserId;
+                  final ratedUserIsSeller = true;
+                  final ratingValue = _calculateRatingValue(_ratingStars);
+                  context.read<ChatDetailBloc>().add(SubmitRating(
+                    conversationId: widget.conversationId,
+                    ratedUserId: ratedUserId,
+                    ratingUserId: ratingUserId,
+                    ratedUserIsSeller: ratedUserIsSeller,
+                    ratingStars: _ratingStars,
+                    ratingValue: ratingValue,
+                    ratingComment: _ratingComment,
+                  ));
+                } else {
+                  setState(() {
+                    _errorText = "Wybierz od 1 do 5 gwiazdek.";
+                  });
+                }
+              },
+            ),
             SizedBox(height: 12),
             Text(
               "To jest wiadomość systemowa.\nNie odpowiadaj na nią.",
@@ -928,6 +994,25 @@ class SystemMessageCard extends StatelessWidget {
         child: contents
       ),
     );
+  }
+}
+
+_calculateRatingValue(int stars) {
+  // Convert stars (1-5) to rating value (0-100)
+  // Leaving this as a switch in case of future changes
+  switch (stars) {
+    case 1:
+      return 0;
+    case 2:
+      return 25;
+    case 3:
+      return 50;
+    case 4:
+      return 75;
+    case 5:
+      return 100;
+    default:
+      return 0;
   }
 }
 

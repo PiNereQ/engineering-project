@@ -30,6 +30,16 @@ class ChatDetailSending extends ChatDetailState {
   List<Object?> get props => [messages, ratingExists];
 }
 
+class ChatDetailSubmittingRating extends ChatDetailState {
+  final List<Message> messages;
+  final bool? ratingExists;
+
+  const ChatDetailSubmittingRating(this.messages, {this.ratingExists});
+
+  @override
+  List<Object?> get props => [messages, ratingExists];
+}
+
 class ChatDetailError extends ChatDetailState {
   final String message;
 
