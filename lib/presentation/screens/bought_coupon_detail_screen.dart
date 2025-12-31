@@ -766,10 +766,13 @@ class _SellerDetails extends StatelessWidget {
                           final chatRepo = context.read<ChatRepository>();
 
                           // check for existing conversation
+                          final currentUserId = buyerId;
+
                           final existing = await chatRepo.findExistingConversation(
                             couponId: couponId,
                             buyerId: buyerId,
                             sellerId: sellerId,
+                            currentUserId: currentUserId,
                           );
 
                           if (!context.mounted) return;

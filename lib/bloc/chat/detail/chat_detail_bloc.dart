@@ -22,7 +22,7 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
     emit(ChatDetailLoading());
 
     try {
-      final messages = await chatRepository.getMessages(event.conversationId);
+      final messages = await chatRepository.getMessages(event.conversationId, event.currentUserId);
 
       bool? ratingExists;
       if (event.raterId != null && event.currentUserId == event.raterId) {
@@ -34,7 +34,7 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
 
       emit(ChatDetailLoaded(messages, ratingExists: ratingExists));
 
-      _startAutoRefresh(event.conversationId);
+      _startAutoRefresh(event.conversationId, event.currentUserId);
     } catch (e) {
       emit(ChatDetailError(e.toString()));
     }
@@ -47,7 +47,7 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
     final currentRatingExists = (state as ChatDetailLoaded).ratingExists;
 
     try {
-      final messages = await chatRepository.getMessages(event.conversationId);
+      final messages = await chatRepository.getMessages(event.conversationId, event.currentUserId);
       emit(ChatDetailLoaded(messages, ratingExists: currentRatingExists));
     } catch (_) {}
   }
@@ -68,7 +68,7 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
       );
 
       final updatedMessages =
-          await chatRepository.getMessages(event.conversationId);
+          await chatRepository.getMessages(event.conversationId, event.senderId);
 
       emit(ChatDetailLoaded(updatedMessages, ratingExists: currentRatingExists));
     } catch (e) {
@@ -96,18 +96,18 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
       );
 
       // After submitting, refresh messages and set ratingExists to true
-      final updatedMessages = await chatRepository.getMessages(event.conversationId);
+      final updatedMessages = await chatRepository.getMessages(event.conversationId, event.ratingUserId);
       emit(ChatDetailLoaded(updatedMessages, ratingExists: true));
     } catch (e) {
       emit(ChatDetailError(e.toString()));
     }
   }
 
-  void _startAutoRefresh(String conversationId) {
+  void _startAutoRefresh(String conversationId, String currentUserId) {
     _refreshTimer?.cancel();
     _refreshTimer = Timer.periodic(
       const Duration(seconds: 3),
-      (_) => add(RefreshMessages(conversationId)),
+      (_) => add(RefreshMessages(conversationId, currentUserId)),
     );
   }
 
