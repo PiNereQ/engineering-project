@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:proj_inz/data/models/message_model.dart';
 import 'package:proj_inz/data/models/conversation_model.dart';
@@ -59,6 +60,7 @@ class ChatRepository {
   /// [couponId] - The coupon's ID.
   /// [buyerId] - The buyer's user ID.
   /// [sellerId] - The seller's user ID.
+  /// [currentUserId] - The ID of the current user.
   ///
   /// Returns the [Conversation] if it exists, or null otherwise.
   /// Throws on API/network errors.
@@ -66,14 +68,16 @@ class ChatRepository {
     required String couponId,
     required String buyerId,
     required String sellerId,
+    required String currentUserId,
   }) async {
     try {
       final response = await _api.get(
         '/chat/conversations/exists',
         queryParameters: {
-          'couponId': couponId,
-          'buyerId': buyerId,
-          'sellerId': sellerId,
+          'coupon_id': couponId,
+          'buyer_id': buyerId,
+          'seller_id': sellerId,
+          'user_id': currentUserId,
         },
         useAuthToken: true,
       );
@@ -100,8 +104,9 @@ class ChatRepository {
     required String couponId,
     required String buyerId,
     required String sellerId,
+    required String currentUserId,
   }) async {
-    final existing = await findExistingConversation(couponId: couponId, buyerId: buyerId, sellerId: sellerId);
+    final existing = await findExistingConversation(couponId: couponId, buyerId: buyerId, sellerId: sellerId, currentUserId: currentUserId);
     if (existing != null) {
       return existing;
     }
@@ -129,13 +134,19 @@ class ChatRepository {
   /// (GET /chat/conversations/{id}/messages)
   ///
   /// [conversationId] - The ID of the conversation.
+  /// [userId]
   ///
   /// Returns a list of [Message] objects.
   /// Throws on API/network errors.
-  Future<List<Message>> getMessages(String conversationId) async {
+  Future<List<Message>> getMessages(String conversationId, String userId) async {
     try {
-      final response = await _api.get('/chat/conversations/$conversationId/messages', useAuthToken: true);
-
+    final response = await _api.get(
+      '/chat/conversations/$conversationId/messages',
+      queryParameters: {
+        'user_id': userId,
+      },
+      useAuthToken: true,
+    );
       return (response as List).map((data) {
         return Message.fromJson(data as Map<String, dynamic>);
     }).toList();

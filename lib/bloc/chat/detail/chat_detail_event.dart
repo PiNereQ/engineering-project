@@ -20,7 +20,8 @@ class LoadMessages extends ChatDetailEvent {
 
 class RefreshMessages extends ChatDetailEvent {
   final String conversationId;
-  const RefreshMessages(this.conversationId);
+  final String currentUserId;
+  const RefreshMessages(this.conversationId, this.currentUserId);
 
   @override
   List<Object?> get props => [conversationId];

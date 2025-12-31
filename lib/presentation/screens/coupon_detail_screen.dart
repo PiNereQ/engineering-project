@@ -645,10 +645,13 @@ class _SellerDetails extends StatelessWidget {
                             final chatRepo = context.read<ChatRepository>();
 
                             // check if conversation already exists
+                            final currentUserId = FirebaseAuth.instance.currentUser!.uid;
+
                             final existing = await chatRepo.findExistingConversation(
                               couponId: couponId,
                               buyerId: buyerId,
                               sellerId: sellerId,
+                              currentUserId: currentUserId,
                             );
 
                             if (!context.mounted) return;
