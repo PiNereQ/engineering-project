@@ -1578,11 +1578,12 @@ Widget appDialog({
               ),
             ),
             const SizedBox(height: 12),
-            SizedBox(
-              height: _dialogMinHeight,
-              width: double.infinity,
-              child: Align(
-                alignment: Alignment.centerLeft,
+            ConstrainedBox(
+              constraints: const BoxConstraints(
+                minHeight: _dialogMinHeight,
+              ),
+              child: SizedBox(
+                width: double.infinity,
                 child: Text(
                   content,
                   textAlign: TextAlign.left,
