@@ -24,24 +24,39 @@ import 'package:proj_inz/presentation/widgets/input/buttons/custom_text_button.d
 import 'package:proj_inz/presentation/widgets/reputation_bar.dart';
 import 'package:proj_inz/data/repositories/payment_repository.dart';
 
-class CouponDetailsScreen extends StatelessWidget {
+class CouponDetailsScreen extends StatefulWidget {
   final Coupon coupon;
   const CouponDetailsScreen({super.key, required this.coupon});
+
+  @override
+  State<CouponDetailsScreen> createState() => _CouponDetailsScreenState();
+}
+
+class _CouponDetailsScreenState extends State<CouponDetailsScreen> {
+  late bool isSaved;
+  final CouponRepository _couponRepo = CouponRepository();
+
+  @override
+  void initState() {
+    super.initState();
+    isSaved = widget.coupon.isSaved ?? false;
+  }
 
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
         BlocProvider(
-          create:
-              (context) =>
-                  CouponBloc.withCoupon(coupon),
+          create: (_) => CouponBloc.withCoupon(widget.coupon),
         ),
-        BlocProvider(create: (_) => PaymentBloc(
-          paymentRepository: PaymentRepository(),
-        )),
         BlocProvider(
-          create: (context) => CouponListBloc(context.read<CouponRepository>()),
+          create: (_) => PaymentBloc(
+            paymentRepository: PaymentRepository(),
+          ),
+        ),
+        BlocProvider(
+          create: (context) =>
+              CouponListBloc(context.read<CouponRepository>()),
         ),
       ],
       child: Scaffold(
@@ -54,97 +69,83 @@ class CouponDetailsScreen extends StatelessWidget {
                 SizedBox(
                   width: double.infinity,
                   child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       CustomIconButton(
                         icon: SvgPicture.asset('assets/icons/back.svg'),
-                        onTap: () {
-                          Navigator.of(context).pop();
-                        },
+                        onTap: () => Navigator.of(context).pop(true),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 16,),
+                const SizedBox(height: 16),
                 BlocBuilder<CouponBloc, CouponState>(
                   builder: (context, state) {
                     if (state is CouponLoadInProgress) {
-                      return const Center(child: CircularProgressIndicator());
-                    } else if (state is CouponLoadSuccess) {
-                      return SingleChildScrollView(
-                        child: Column(
-                          children: [
-                            if (state.coupon.isSold == true) ...[
-                              Container(
-                                width: double.infinity,
-                                padding: const EdgeInsets.all(16),
-                                clipBehavior: Clip.antiAlias,
-                                decoration: ShapeDecoration(
-                                  color: AppColors.surface,
-                                  shape: RoundedRectangleBorder(
-                                    side: const BorderSide(width: 2),
-                                    borderRadius: BorderRadius.circular(24),
+                      return const Center(
+                        child: CircularProgressIndicator(),
+                      );
+                    }
+
+                    if (state is CouponLoadSuccess) {
+                      return Column(
+                        children: [
+                          _CouponDetails(
+                            coupon: state.coupon,
+                            isSaved: isSaved,
+                            onToggleSaved: () async {
+                              try {
+                                if (isSaved) {
+                                  await _couponRepo.removeCouponFromSaved(
+                                    couponId: state.coupon.id,
+                                    userId: '',
+                                  );
+                                } else {
+                                  await _couponRepo.addCouponToSaved(
+                                    couponId: state.coupon.id,
+                                    userId: '',
+                                  );
+                                }
+
+                                setState(() {
+                                  isSaved = !isSaved;
+                                });
+
+                                context.read<CouponListBloc>().add(
+                                  ToggleCouponSaved(
+                                    couponId: state.coupon.id,
+                                    isSaved: isSaved,
                                   ),
-                                  shadows: const [
-                                    BoxShadow(
-                                      color: AppColors.textPrimary,
-                                      blurRadius: 0,
-                                      offset: Offset(4, 4),
-                                      spreadRadius: 0,
-                                    )
-                                  ],
-                                ),
-                                child: const Row(
-                                  children: [
-                                    Icon(
-                                      Icons.report_outlined,
-                                      color: AppColors.alertText,
-                                      size: 32,
-                                      ),
-                                    SizedBox(width: 16,),
-                                    Text(
-                                      "Oferta sprzedaży tego kuponu\nzostała zakończona.",
-                                      style: TextStyle(
-                                      color: AppColors.alertText,
-                                      fontSize: 18,
-                                      fontFamily: 'Itim',
-                                      fontWeight: FontWeight.w400,
-                                      height: 1.2,
-                                      ),
-                                    ),
-                                  ],
-                                )
-                              ),
-                              const SizedBox(height: 24,)
-                            ],
-                            _CouponDetails(coupon: state.coupon,),
-                            const SizedBox(height: 24),
-                            _SellerDetails(
-                              sellerId: state.coupon.sellerId!,
-                              sellerUsername: state.coupon.sellerUsername.toString(),
-                              sellerReputation: state.coupon.sellerReputation,
-                              sellerJoinDate: state.coupon.sellerJoinDate ?? DateTime(1970, 1, 1),
-                            ),
-                          ],
-                        ),
-                      );
-                    }
-                    else if (state is CouponLoadFailure) {
-                      if (kDebugMode) debugPrint(state.message);
-                      return Expanded(
-                        child: Center(
-                          child: ErrorCard(
-                            text: "Przykro nam, wystąpił błąd w trakcie ładowania tego kuponu.",
-                            errorString: state.message,
-                            icon: const Icon(Icons.sentiment_dissatisfied),
+                                );
+                              } catch (e) {
+                                debugPrint('Save coupon error: $e');
+                              }
+                            },
                           ),
-                        ),
+                          const SizedBox(height: 24),
+                          _SellerDetails(
+                            sellerId: state.coupon.sellerId!,
+                            sellerUsername:
+                                state.coupon.sellerUsername.toString(),
+                            sellerReputation: state.coupon.sellerReputation,
+                            sellerJoinDate:
+                                state.coupon.sellerJoinDate ??
+                                    DateTime(1970, 1, 1),
+                          ),
+                        ],
                       );
                     }
+
+                    if (state is CouponLoadFailure) {
+                      return ErrorCard(
+                        text:
+                            "Przykro nam, wystąpił błąd w trakcie ładowania tego kuponu.",
+                        errorString: state.message,
+                        icon: const Icon(Icons.sentiment_dissatisfied),
+                      );
+                    }
+
                     return const SizedBox();
-                  }
+                  },
                 ),
               ],
             ),
@@ -156,9 +157,16 @@ class CouponDetailsScreen extends StatelessWidget {
 }
 
 class _CouponDetails extends StatelessWidget {
-  const _CouponDetails({required this.coupon});
+  const _CouponDetails({
+    required this.coupon,
+    required this.isSaved,
+    required this.onToggleSaved,
+  });
 
   final Coupon coupon;
+  final bool isSaved;
+  final VoidCallback onToggleSaved;
+
 
   @override
   Widget build(BuildContext context) {
@@ -517,7 +525,10 @@ class _CouponDetails extends StatelessWidget {
                         );
                       },
                     ),
-                    CustomFollowButton(onTap: () {})
+                    CustomFollowButton(
+                      isPressed: isSaved,
+                      onTap: onToggleSaved,
+                    ),
                   ],
                 ),
               ),

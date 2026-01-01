@@ -176,13 +176,18 @@ class _CouponCardHorizontalState extends State<CouponCardHorizontal> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder:
-                        (_) =>
-                            widget.isBought
-                                ? BoughtCouponDetailsScreen(couponId: couponId)
-                                : CouponDetailsScreen(coupon: coupon),
+                    builder: (_) => BlocProvider.value(
+                      value: context.read<CouponListBloc>(),
+                      child: CouponDetailsScreen(
+                        coupon: coupon.copyWith(isSaved: isSaved),
+                      ),
+                    ),
                   ),
-                );
+                ).then((shouldRefresh) {
+                  if (shouldRefresh == true) {
+                    context.read<CouponListBloc>().add(RefreshCoupons());
+                  }
+                });
               },
               child: Container(
                 color: Colors.transparent, // To make the entire area tappable
