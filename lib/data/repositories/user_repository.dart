@@ -231,4 +231,45 @@ class UserRepository {
     return resp is Map && resp['is_blocked'] == true;
   }
 
+  /// GET /users/:uid/sold-coupons-amount
+  Future<int> getSoldCouponsAmount(String uid) async {
+    try {
+      final resp = await _api.get(
+        '/users/$uid/sold-coupons-amount',
+        useAuthToken: true,
+      );
+
+      if (resp is Map && resp['sold_coupons_amount'] != null) {
+        return resp['sold_coupons_amount'] as int;
+      }
+
+      return 0;
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('Error fetching sold coupons amount: $e');
+      }
+      return 0;
+    }
+  }
+
+  /// GET /users/:uid/purchased-coupons-amount
+  Future<int> getPurchasedCouponsAmount(String uid) async {
+    try {
+      final resp = await _api.get(
+        '/users/$uid/purchased-coupons-amount',
+        useAuthToken: true,
+      );
+
+      if (resp is Map && resp['purchased_coupons_amount'] != null) {
+        return resp['purchased_coupons_amount'] as int;
+      }
+
+      return 0;
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('Error fetching purchased coupons amount: $e');
+      }
+      return 0;
+    }
+  }
 }

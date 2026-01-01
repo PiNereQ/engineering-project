@@ -23,6 +23,7 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
+  late Future<_AccountStatsData> _accountStatsFuture;
   late Future<Map<String, dynamic>?> _profileFuture;
 
   @override
@@ -34,8 +35,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void _fetchProfile() {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
+
+    final repo = context.read<UserRepository>();
+
     setState(() {
-      _profileFuture = context.read<UserRepository>().getUserProfile(user.uid);
+      _accountStatsFuture = Future.wait([
+        repo.getUserProfile(user.uid),
+        repo.getSoldCouponsAmount(user.uid),
+        repo.getPurchasedCouponsAmount(user.uid),
+      ]).then((results) {
+        return _AccountStatsData(
+          profile: results[0] as Map<String, dynamic>,
+          sold: results[1] as int,
+          purchased: results[2] as int,
+        );
+      });
     });
   }
 
@@ -66,8 +80,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 icon: Icons.person_outline,
               ),
 
-              FutureBuilder<Map<String, dynamic>?>(
-                future: _profileFuture,
+              FutureBuilder<_AccountStatsData>(
+                future: _accountStatsFuture,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator());
@@ -83,7 +97,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     );
                   }
 
-                  final user = snapshot.data!;
+                  final data = snapshot.data!;
+                  final user = data.profile;
                   final bool hasPhoneNumber = FirebaseAuth.instance.currentUser!.phoneNumber?.isNotEmpty ?? false;
                   if (kDebugMode) print(FirebaseAuth.instance.currentUser?.phoneNumber);
 
@@ -132,11 +147,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           child: DashedSeparator(),
                         ),
 
-                        const Row(
+                        Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            _StatItem(label: 'Kupionych kuponów', value: '0'),
-                            _StatItem(label: 'Sprzedanych kuponów', value: '0'),
+                            _StatItem(
+                              label: 'Kupionych kuponów',
+                              value: data.purchased.toString(),
+                            ),
+                            _StatItem(
+                              label: 'Sprzedanych kuponów',
+                              value: data.sold.toString(),
+                            ),
                           ],
                         ),
                       ],
@@ -758,4 +779,16 @@ Future<bool?> showUnblockConfirmDialog(
       ],
     ),
   );
+}
+
+class _AccountStatsData {
+  final Map<String, dynamic> profile;
+  final int sold;
+  final int purchased;
+
+  _AccountStatsData({
+    required this.profile,
+    required this.sold,
+    required this.purchased,
+  });
 }
