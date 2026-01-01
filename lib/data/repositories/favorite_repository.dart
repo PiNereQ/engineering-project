@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:proj_inz/data/api/api_client.dart';
+import 'package:proj_inz/data/models/category_model.dart';
 
 class FavoriteRepository {
   final ApiClient _api;
@@ -68,4 +69,23 @@ class FavoriteRepository {
       useAuthToken: true,
     );
   }
+  
+  Future<List<Category>> getFavoriteCategories() async {
+    final response = await _api.get(
+      '/shops/categories/favorites/$_userId',
+      useAuthToken: true,
+    );
+
+    final List data = response as List;
+
+    return data
+        .map(
+          (e) => Category(
+            id: e['id'].toString(),
+            name: e['name'] as String,
+          ),
+        )
+        .toList();
+  }
+
 }

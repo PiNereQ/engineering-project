@@ -367,8 +367,8 @@ class CategoryCard extends StatelessWidget {
               const SizedBox(width: 8),
               BlocBuilder<FavoriteBloc, FavoriteState>(
                 builder: (context, state) {
-                  final isFav =
-                      state.favoriteCategoryIds.contains(category.id);
+                  final isFav = state.favoriteCategories
+                      .any((c) => c.id == category.id);
 
                   return CustomFollowButton.small(
                     isHeart: true,

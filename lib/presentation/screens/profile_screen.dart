@@ -10,6 +10,7 @@ import 'package:proj_inz/data/repositories/user_repository.dart';
 import 'package:proj_inz/data/repositories/wallet_repository.dart';
 import 'package:proj_inz/presentation/screens/bought_coupon_list_screen.dart';
 import 'package:proj_inz/presentation/screens/debug_screen.dart';
+import 'package:proj_inz/presentation/screens/favorites_screen.dart';
 import 'package:proj_inz/presentation/screens/listed_coupon_list_screen.dart';
 import 'package:proj_inz/presentation/screens/saved_coupon_list_screen.dart';
 import 'package:proj_inz/presentation/screens/settings_screen.dart';
@@ -368,7 +369,14 @@ Widget build(BuildContext context) {
                     CustomTextButton(
                       width: double.infinity,
                       label: 'Ulubione',
-                      onTap: () {},
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const FavoritesScreen(),
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ),

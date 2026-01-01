@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'favorite_event.dart';
 import 'favorite_state.dart';
@@ -20,12 +19,12 @@ class FavoriteBloc extends Bloc<FavoriteEvent, FavoriteState> {
     emit(state.copyWith(loading: true));
 
     final shops = await repository.getFavoriteShopIds();
-    final categories = await repository.getFavoriteCategoryIds();
+    final categories = await repository.getFavoriteCategories();
 
     emit(
       state.copyWith(
         favoriteShopIds: shops.toSet(),
-        favoriteCategoryIds: categories.toSet(),
+        favoriteCategories: categories,
         loading: false,
       ),
     );
@@ -55,21 +54,23 @@ class FavoriteBloc extends Bloc<FavoriteEvent, FavoriteState> {
     ToggleCategoryFavorite event,
     Emitter<FavoriteState> emit,
   ) async {
-    final isFav =
-        state.favoriteCategoryIds.contains(event.categoryId);
+    final isFav = state.favoriteCategories
+        .any((c) => c.id == event.categoryId);
 
     if (isFav) {
       await repository.removeCategoryFromFavorites(event.categoryId);
-      final updated =
-          Set<String>.from(state.favoriteCategoryIds)
-            ..remove(event.categoryId);
-      emit(state.copyWith(favoriteCategoryIds: updated));
+      emit(
+        state.copyWith(
+          favoriteCategories: state.favoriteCategories
+              .where((c) => c.id != event.categoryId)
+              .toList(),
+        ),
+      );
     } else {
       await repository.addCategoryToFavorites(event.categoryId);
-      final updated =
-          Set<String>.from(state.favoriteCategoryIds)
-            ..add(event.categoryId);
-      emit(state.copyWith(favoriteCategoryIds: updated));
+
+      final categories = await repository.getFavoriteCategories();
+      emit(state.copyWith(favoriteCategories: categories));
     }
   }
 }

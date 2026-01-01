@@ -1,29 +1,31 @@
+import 'package:proj_inz/data/models/category_model.dart';
+
 class FavoriteState {
   final Set<String> favoriteShopIds;
-  final Set<String> favoriteCategoryIds;
+  final List<Category> favoriteCategories;
   final bool loading;
 
   const FavoriteState({
     required this.favoriteShopIds,
-    required this.favoriteCategoryIds,
+    required this.favoriteCategories,
     required this.loading,
   });
 
   factory FavoriteState.initial() => const FavoriteState(
         favoriteShopIds: {},
-        favoriteCategoryIds: {},
+        favoriteCategories: [],
         loading: true,
       );
 
   FavoriteState copyWith({
     Set<String>? favoriteShopIds,
-    Set<String>? favoriteCategoryIds,
+    List<Category>? favoriteCategories,
     bool? loading,
   }) {
     return FavoriteState(
       favoriteShopIds: favoriteShopIds ?? this.favoriteShopIds,
-      favoriteCategoryIds:
-          favoriteCategoryIds ?? this.favoriteCategoryIds,
+      favoriteCategories:
+          favoriteCategories ?? this.favoriteCategories,
       loading: loading ?? this.loading,
     );
   }
