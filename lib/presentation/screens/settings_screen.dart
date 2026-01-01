@@ -109,15 +109,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           label: 'Numer telefonu',
                           value: hasPhoneNumber ? 'Potwierdzony' : 'Niepotwierdzony',
                           trailing: !hasPhoneNumber
-                              ? _InlineAction(
-                                  text: 'Potwierdź',
+                              ? CustomTextButton.small(
+                                  label: 'Potwierdź',
                                   onTap: () async {
                                     await Navigator.of(context).push(
                                       MaterialPageRoute(
                                         builder: (context) => BlocProvider<NumberVerificationBloc>.value(
-                                          value: context.read<NumberVerificationBloc>()..add(
-                                            NumberVerificationFormShownAfterRegistration(),
-                                          ),
+                                          value: context.read<NumberVerificationBloc>()
+                                            ..add(NumberVerificationFormShownAfterRegistration()),
                                           child: const PhoneNumberConfirmationScreen(),
                                         ),
                                       ),
@@ -372,28 +371,6 @@ class _KeyValueRow extends StatelessWidget {
         ),
         if (trailing != null) trailing!,
       ],
-    );
-  }
-}
-
-class _InlineAction extends StatelessWidget {
-  final String text;
-  final VoidCallback? onTap;
-  const _InlineAction({required this.text, required this.onTap});
-  
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Text(
-        text,
-        style: const TextStyle(
-          fontFamily: 'Itim',
-          fontSize: 16,
-          color: AppColors.primaryButton,
-        ),
-      )
     );
   }
 }
