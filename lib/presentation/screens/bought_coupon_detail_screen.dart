@@ -10,6 +10,7 @@ import 'package:proj_inz/data/models/coupon_model.dart';
 import 'package:proj_inz/data/repositories/chat_repository.dart';
 import 'package:proj_inz/data/repositories/coupon_repository.dart';
 import 'package:proj_inz/data/repositories/user_repository.dart';
+import 'package:proj_inz/presentation/screens/add_screen.dart';
 import 'package:proj_inz/presentation/screens/chat_detail_screen.dart';
 import 'package:proj_inz/presentation/widgets/custom_snack_bar.dart';
 import 'package:proj_inz/presentation/widgets/dashed_separator.dart';
@@ -580,69 +581,31 @@ class _CouponDetails extends StatelessWidget {
 
     return showDialog(
       context: context,
-      builder: (context) {
-        return Dialog(
-          child: Container(
-            decoration: ShapeDecoration(
-              color: AppColors.surface,
-              shape: RoundedRectangleBorder(
-                side: const BorderSide(width: 2),
-                borderRadius: BorderRadius.circular(24),
-              ),
-              shadows: const [
-                BoxShadow(
-                  color: AppColors.textPrimary,
-                  blurRadius: 0,
-                  offset: Offset(4, 4),
-                  spreadRadius: 0,
-                ),
-              ],
-            ),
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text(
-                  'Ta akcja jest nieodwracalna. Gdy oznaczysz kupon jako wykorzystany poprosimy Cię o ocenę sprzedającego.',
-                  style: TextStyle(
-                    color: AppColors.textPrimary,
-                    fontFamily: 'Itim',
-                    fontSize: 16,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 24),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  mainAxisSize: MainAxisSize.max,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    CustomTextButton(
-                      label: 'Anuluj',
-                      onTap: () => Navigator.of(context).pop(),
-                    ),
-                    CustomTextButton(
-                      label: 'OK',
-                      icon:
-                          bloc.state is OwnedCouponMarkAsUsedInProgress
-                              ? const CircularProgressIndicator(
-                                color: AppColors.textPrimary,
-                              )
-                              : null,
-                      onTap: () {
-                        if (bloc.state is! OwnedCouponMarkAsUsedInProgress) {
-                          bloc.add(MarkCouponAsUsed());
-                          Navigator.of(context).pop();
-                        }
-                      },
-                    ),
-                  ],
-                ),
-              ],
-            ),
+      builder: (_) => appDialog(
+        title: 'Potwierdzenie',
+        content:
+            'Ta akcja jest nieodwracalna.\n\n'
+            'Po oznaczeniu kuponu jako wykorzystanego '
+            'poprosimy Cię o ocenę sprzedającego.',
+        actions: [
+          CustomTextButton.small(
+            label: 'Anuluj',
+            width: 100,
+            onTap: () => Navigator.of(context).pop(),
           ),
-        );
-      },
+          const SizedBox(width: 8),
+          CustomTextButton.primarySmall(
+            label: bloc.state is OwnedCouponMarkAsUsedInProgress ? '...' : 'OK',
+            width: 100,
+            onTap: () {
+              if (bloc.state is! OwnedCouponMarkAsUsedInProgress) {
+                bloc.add(MarkCouponAsUsed());
+                Navigator.of(context).pop();
+              }
+            },
+          ),
+        ],
+      ),
     );
   }
 }

@@ -181,131 +181,133 @@ class _AddScreenState extends State<AddScreen> {
                   ),
                 ]
               ),
-              content: SizedBox(
-                width: 400,
-                child: BlocBuilder<ShopBloc, ShopState>(
-                  builder: (blocContext, state) {
-                    return Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      spacing: 8,
-                      children: [
-                        SearchBarWide(
-                          hintText: 'Wyszukaj sklep...',
-                          controller: TextEditingController(text: localQuery),
-                          onSubmitted: (query) {
-                            blocContext.read<ShopBloc>().add(
-                              SearchShopsByName(query),
-                            );
-                            setState(() {
-                              _shopSearchQuery = query;
-                            });
-                          },
-                        ),
-                        if (state is ShopLoading &&
-                            _shopSearchQuery != null &&
-                            _shopSearchQuery!.isNotEmpty)
-                          Center(
-                            child: const CircularProgressIndicator(
-                              color: AppColors.textPrimary,
+              content: Padding(
+                padding: EdgeInsets.only(
+                  bottom: MediaQuery.of(context).viewInsets.bottom,
+                ),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxHeight: MediaQuery.of(context).size.height * 0.6,
+                  ),
+                  child: SizedBox(
+                    width: 400,
+                    child: BlocBuilder<ShopBloc, ShopState>(
+                      builder: (blocContext, state) {
+                        return Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            SearchBarWide(
+                              hintText: 'Wyszukaj sklep',
+                              controller: TextEditingController(text: localQuery),
+                              onSubmitted: (query) {
+                                blocContext.read<ShopBloc>().add(
+                                  SearchShopsByName(query),
+                                );
+                                setState(() {
+                                  _shopSearchQuery = query;
+                                });
+                              },
                             ),
-                          ),
-                        if (state is ShopLoaded) Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                          child: Divider(
-                            color: AppColors.textPrimary,
-                          ),
-                        ),
-                        if (state is ShopLoaded)
-                          if (state.shops.isEmpty)
-                            Center(
-                              child: Padding(
-                                padding: EdgeInsets.symmetric(vertical: 24),
-                                child: Text(
-                                  'Nie znaleziono sklepów.',
-                                  style: TextStyle(
-                                    fontFamily: 'Itim',
-                                    fontSize: 18,
-                                    color: AppColors.textSecondary,
+
+                            if (state is ShopLoading &&
+                                _shopSearchQuery != null &&
+                                _shopSearchQuery!.isNotEmpty)
+                              const Padding(
+                                padding: EdgeInsets.symmetric(vertical: 16),
+                                child: Center(
+                                  child: CircularProgressIndicator(
+                                    color: AppColors.textPrimary,
                                   ),
                                 ),
                               ),
-                            )
-                          else
-                            SingleChildScrollView(
-                              child: Column(
-                                spacing: 8,
-                                children: [
-                                  ...[
-                                    ...state.shops.map(
-                                      (shop) => Container(
-                                        decoration: BoxDecoration(
-                                        color: AppColors.surface,
-                                        border: Border.all(
-                                          color:
-                                              _selectedShop?.id != shop.id
-                                                  ? AppColors.textPrimary
-                                                  : AppColors.textSecondary,
-                                          width: 2,
-                                        ),
-                                        borderRadius: BorderRadius.circular(
-                                          100,
-                                        ),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color:
-                                                _selectedShop?.id != shop.id
-                                                    ? AppColors.textPrimary
-                                                    : AppColors.textSecondary,
-                                            offset: const Offset(2, 2),
-                                            blurRadius: 0,
-                                            spreadRadius: 0,
-                                          ),
-                                        ],
+
+                            if (state is ShopLoaded) ...[
+                              const SizedBox(height: 8),
+
+                              if (state.shops.isEmpty)
+                                const Padding(
+                                  padding: EdgeInsets.symmetric(vertical: 24),
+                                  child: Center(
+                                    child: Text(
+                                      'Nie znaleziono sklepów.',
+                                      style: TextStyle(
+                                        fontFamily: 'Itim',
+                                        fontSize: 18,
+                                        color: AppColors.textSecondary,
                                       ),
-                                      child: ListTile(
-                                        title: Text(
-                                          shop.name,
-                                          style: TextStyle(
-                                            fontFamily: 'Itim',
-                                            fontSize: 18,
-                                            color:
-                                                _selectedShop?.id != shop.id
-                                                    ? AppColors.textPrimary
-                                                    : AppColors.textSecondary,
+                                    ),
+                                  ),
+                                )
+                              else
+                                Flexible(
+                                  child: ListView.separated(
+                                    padding: const EdgeInsets.fromLTRB(4, 4, 8, 12),
+                                    shrinkWrap: true,
+                                    itemCount: state.shops.length,
+                                    separatorBuilder: (_, __) =>
+                                        const SizedBox(height: 8),
+                                    itemBuilder: (context, index) {
+                                      final shop = state.shops[index];
+
+                                      return Container(
+                                        decoration: BoxDecoration(
+                                          color: AppColors.surface,
+                                          border: Border.all(
+                                            color: _selectedShop?.id != shop.id
+                                                ? AppColors.textPrimary
+                                                : AppColors.textSecondary,
+                                            width: 2,
                                           ),
-                                        ),
-                                        trailing: Icon(
-                                          _selectedShop?.id == shop.id
-                                              ? Icons.check_circle_outline
-                                              : Icons.arrow_forward_outlined,
-                                          color:
-                                              _selectedShop?.id != shop.id
+                                          borderRadius: BorderRadius.circular(100),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: _selectedShop?.id != shop.id
                                                   ? AppColors.textPrimary
                                                   : AppColors.textSecondary,
+                                              offset: const Offset(2, 2),
+                                              blurRadius: 0,
+                                            ),
+                                          ],
                                         ),
-                                        onTap: () {
-                                          if (_selectedShop?.id != shop.id) {
+                                        child: ListTile(
+                                          title: Text(
+                                            shop.name,
+                                            style: TextStyle(
+                                              fontFamily: 'Itim',
+                                              fontSize: 18,
+                                              color: _selectedShop?.id != shop.id
+                                                  ? AppColors.textPrimary
+                                                  : AppColors.textSecondary,
+                                            ),
+                                          ),
+                                          trailing: Icon(
+                                            _selectedShop?.id == shop.id
+                                                ? Icons.check_circle_outline
+                                                : Icons.arrow_forward_outlined,
+                                            color: _selectedShop?.id != shop.id
+                                                ? AppColors.textPrimary
+                                                : AppColors.textSecondary,
+                                          ),
+                                          onTap: () {
                                             setState(() {
                                               _shopSearchQuery = null;
                                               _selectedShop = shop;
                                               _userMadeInput = true;
                                             });
                                             Navigator.of(dialogContext).pop();
-                                          }
-                                        },
-                                      ),
-                                    ),
+                                          },
+                                        ),
+                                      );
+                                    },
                                   ),
-                              ],
-                              if (state is ShopError)
-                                const Text("Błąd podczas ładowania sklepów."),
-                                                        ],
-                                                      ),
-                            ),
-                      ],
-                    );
-                  },
+                                ),
+                            ],
+                          ],
+                        );
+                      },
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -1578,11 +1580,12 @@ Widget appDialog({
               ),
             ),
             const SizedBox(height: 12),
-            SizedBox(
-              height: _dialogMinHeight,
-              width: double.infinity,
-              child: Align(
-                alignment: Alignment.centerLeft,
+            ConstrainedBox(
+              constraints: const BoxConstraints(
+                minHeight: _dialogMinHeight,
+              ),
+              child: SizedBox(
+                width: double.infinity,
                 child: Text(
                   content,
                   textAlign: TextAlign.left,
