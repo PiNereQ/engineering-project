@@ -468,12 +468,9 @@ class _CouponDetails extends StatelessWidget {
               DashedSeparator(),
               Padding(
                 padding: const EdgeInsets.all(16.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.max,
-                  spacing: 16,
-                  children: [
-                    CustomTextButton.primary(
+                child: SizedBox(
+                  width: double.infinity,
+                  child: CustomTextButton.primary(
                       label: 'Kup teraz',
                       onTap: () async {
                         if (kDebugMode) {
@@ -517,8 +514,6 @@ class _CouponDetails extends StatelessWidget {
                         );
                       },
                     ),
-                    CustomFollowButton(onTap: () {})
-                  ],
                 ),
               ),
             ],      
