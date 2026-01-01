@@ -1,0 +1,685 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
+import 'package:proj_inz/bloc/saved_coupon_list/saved_coupon_list_bloc.dart';
+import 'package:proj_inz/core/theme.dart';
+import 'package:proj_inz/data/repositories/coupon_repository.dart';
+import 'package:proj_inz/presentation/widgets/coupon_card.dart';
+import 'package:proj_inz/presentation/widgets/input/buttons/checkbox.dart';
+import 'package:proj_inz/presentation/widgets/input/buttons/custom_icon_button.dart';
+import 'package:proj_inz/presentation/widgets/input/buttons/custom_text_button.dart';
+import 'package:proj_inz/presentation/widgets/input/buttons/radio_button.dart';
+import 'package:proj_inz/presentation/widgets/input/text_fields/labeled_text_field.dart';
+import 'package:proj_inz/core/utils/text_formatters.dart';
+
+enum SavedCouponsOrdering {
+  creationDateAsc,
+  creationDateDesc,
+  priceAsc,
+  priceDesc,
+  reputationAsc,
+  reputationDesc,
+  expiryDateAsc,
+  expiryDateDesc,
+}
+
+
+class SavedCouponListScreen extends StatelessWidget {
+  const SavedCouponListScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
+
+    return BlocProvider(
+      create: (context) => SavedCouponListBloc(
+        context.read<CouponRepository>(),
+      )..add(FetchSavedCoupons(userId: userId)),
+      child: Builder(
+        builder: (context) =>
+        Scaffold(
+          backgroundColor: AppColors.background,
+          body: SafeArea(
+            child: RefreshIndicator(
+              onRefresh: () async {
+                context
+                    .read<SavedCouponListBloc>()
+                    .add(RefreshSavedCoupons(userId: userId));
+              },
+              child: CustomScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                slivers: const [
+                  _Toolbar(),
+                  _SavedCouponsContent(),
+                ],
+              ),
+            ),
+          ),
+        ),
+      )
+    );
+  }
+}
+
+class _SavedCouponsContent extends StatelessWidget {
+  const _SavedCouponsContent();
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<SavedCouponListBloc, SavedCouponListState>(
+      builder: (context, state) {
+        if (state is SavedCouponListLoadInProgress ||
+            state is SavedCouponListInitial) {
+          return const SliverFillRemaining(
+            child: Center(
+              child: CircularProgressIndicator(color: AppColors.textPrimary),
+            ),
+          );
+        }
+
+        if (state is SavedCouponListLoadEmpty) {
+          return const SliverFillRemaining(
+            child: Center(
+              child: Text(
+                'Nie masz zapisanych kuponów.',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontFamily: 'Itim',
+                  color: AppColors.textPrimary,
+                ),
+              ),
+            ),
+          );
+        }
+
+        if (state is SavedCouponListLoadFailure) {
+          return SliverFillRemaining(
+            child: Center(child: Text(state.message)),
+          );
+        }
+
+        if (state is SavedCouponListLoadSuccess) {
+          return SliverPadding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            sliver: SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  final coupon = state.coupons[index];
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: CouponCardHorizontal(coupon: coupon),
+                  );
+                },
+                childCount: state.coupons.length,
+              ),
+            ),
+          );
+        }
+
+        return const SliverFillRemaining();
+      },
+    );
+  }
+}
+
+class _Toolbar extends StatelessWidget {
+  const _Toolbar();
+
+  @override
+  Widget build(BuildContext context) {
+    return SliverAppBar(
+      floating: true,
+      snap: true,
+      automaticallyImplyLeading: false,
+      backgroundColor: Colors.transparent,
+      surfaceTintColor: Colors.transparent,
+      elevation: 0,
+      flexibleSpace: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 24, 16, 16),
+        child: Container(
+          decoration: ShapeDecoration(
+            color: AppColors.surface,
+            shape: RoundedRectangleBorder(
+              side: const BorderSide(width: 2),
+              borderRadius: BorderRadius.circular(24),
+            ),
+            shadows: const [
+              BoxShadow(
+                color: AppColors.textPrimary,
+                blurRadius: 0,
+                offset: Offset(4, 4),
+              ),
+            ],
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              CustomIconButton(
+                icon: SvgPicture.asset('assets/icons/back.svg'),
+                onTap: () => Navigator.of(context).pop(),
+              ),
+              Row(
+                children: [
+                  CustomTextButton.small(
+                    label: 'Filtruj',
+                    icon: const Icon(Icons.filter_alt),
+                    onTap: () => showDialog(
+                      context: context,
+                      barrierColor: AppColors.popupOverlay,
+                      builder: (_) => const _SavedCouponFilterDialog(),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  CustomTextButton.small(
+                    label: 'Sortuj',
+                    icon: const Icon(Icons.sort),
+                    onTap: () => showDialog(
+                      context: context,
+                      barrierColor: AppColors.popupOverlay,
+                      builder: (_) => const _SavedCouponSortDialog(),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+      toolbarHeight: 126,
+    );
+  }
+}
+
+class _SavedCouponFilterDialog extends StatefulWidget {
+  const _SavedCouponFilterDialog();
+
+  @override
+  State<_SavedCouponFilterDialog> createState() => _SavedCouponFilterDialogState();
+}
+
+class _SavedCouponFilterDialogState extends State<_SavedCouponFilterDialog> {
+  TextEditingController minPriceController = TextEditingController();
+  TextEditingController maxPriceController = TextEditingController();
+
+  bool reductionIsPercentage = true;
+  bool reductionIsFixed = true;
+  double minReputation = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+        color: Colors.transparent,
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                SizedBox(
+                  width: double.infinity,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      CustomIconButton(
+                        icon: SvgPicture.asset('assets/icons/back.svg'),
+                        onTap: () {
+                          Navigator.of(context).pop();
+                        }
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16,),
+                Container(
+                  decoration: ShapeDecoration(
+                    color: AppColors.surface,
+                    shape: RoundedRectangleBorder(
+                      side: const BorderSide(width: 2),
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                    shadows: const [
+                      BoxShadow(
+                        color: AppColors.textPrimary,
+                        blurRadius: 0,
+                        offset: Offset(4, 4),
+                        spreadRadius: 0,
+                      ),
+                    ],
+                  ),
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    spacing: 18,
+                    children: [
+                        const Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          'Filtry',
+                          style: TextStyle(
+                          color: AppColors.textPrimary,
+                          fontSize: 24,
+                          fontFamily: 'Itim',
+                          fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                        ),
+                        const Divider(
+                        color: AppColors.textPrimary,
+                        thickness: 2,
+                        height: 2,
+                        ),
+                
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          spacing: 8,
+                          children: [
+                            Column( // Typy
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Text(
+                                      'Typ kuponu',
+                                      style: TextStyle(
+                                          color: AppColors.textPrimary,
+                                          fontSize: 20,
+                                          fontFamily: 'Itim',
+                                          fontWeight: FontWeight.w400,
+                                      ),
+                                  )
+                                ),
+                                CustomCheckbox(
+                                  selected: reductionIsPercentage,
+                                  onTap:
+                                      () => setState(
+                                        () => reductionIsPercentage = !reductionIsPercentage,
+                                      ),
+                                  label: 'rabat -%',
+                                ),
+                                CustomCheckbox(
+                                  selected: reductionIsFixed,
+                                  onTap: () => setState(() => reductionIsFixed = !reductionIsFixed),
+                                  label: 'rabat -zł',
+                                ),
+                              ],
+                            ),
+
+                            const SizedBox(height: 10), 
+
+                            Column( // Cena
+                              children: [
+                                const Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Text(
+                                      'Cena',
+                                      style: TextStyle(
+                                          color: AppColors.textPrimary,
+                                          fontSize: 20,
+                                          fontFamily: 'Itim',
+                                          fontWeight: FontWeight.w400,
+                                      ),
+                                  )
+                                ),
+                                Wrap(
+                                  spacing: 16,
+                                  runSpacing: 16,
+                                  children: [
+                                    LabeledTextField(
+                                      label: 'od',
+                                      placeholder: '0',
+                                      width: LabeledTextFieldWidth.half,
+                                      controller: minPriceController,
+                                      keyboardType: TextInputType.number,
+                                      inputFormatters: [PriceFormatter()],
+                                      suffix: const Text('zł'),
+                                    ),
+                                    LabeledTextField(
+                                      label: 'do',
+                                      placeholder: 'bez limitu',
+                                      width: LabeledTextFieldWidth.half,
+                                      controller: maxPriceController,
+                                      keyboardType: TextInputType.number,
+                                      inputFormatters: [PriceFormatter()],
+                                      suffix: const Text('zł'),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+
+                            const SizedBox(height: 20),
+
+                            Column( // Reputacja
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Min. reputacja sprzedającego',
+                                  style: TextStyle(
+                                    color: AppColors.textPrimary,
+                                    fontSize: 20,
+                                    fontFamily: 'Itim',
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: Slider(
+                                        value: minReputation,
+                                        min: 0,
+                                        max: 100,
+                                        divisions: 20,
+                                        activeColor: AppColors.primaryButton,
+                                        inactiveColor: AppColors.secondaryButton,
+                                        label: minReputation.round().toString(),
+                                        onChanged: (v) {
+                                          setState(() {
+                                            minReputation = v;
+                                          });
+                                        },
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Container(
+                                      width: 44,
+                                      alignment: Alignment.center,
+                                      padding: const EdgeInsets.symmetric(vertical: 6),
+                                      decoration: ShapeDecoration(
+                                        color: AppColors.surface,
+                                        shape: RoundedRectangleBorder(
+                                          side: const BorderSide(width: 2),
+                                          borderRadius: BorderRadius.circular(12),
+                                        ),
+                                        shadows: const [
+                                          BoxShadow(
+                                            color: AppColors.textPrimary,
+                                            blurRadius: 0,
+                                            offset: Offset(2, 2),
+                                          ),
+                                        ],
+                                      ),
+                                      child: Text(
+                                        minReputation.round().toString(),
+                                        style: const TextStyle(
+                                          fontFamily: 'Itim',
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            )
+                          ],
+                        ),
+                      ),
+                      
+                
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            CustomTextButton(
+                              label: 'Wyczyść',
+                              icon: const Icon(Icons.delete_outline),
+                              onTap: () {
+                                Navigator.of(context).pop();
+                              //  context.read<CouponListBloc>().add(ClearCouponFilters());
+                              },
+                            ),
+                            CustomTextButton.primary(
+                              label: 'Zastosuj',
+                              icon: const Icon(Icons.check),
+                              onTap: () {
+                                Navigator.of(context).pop();
+                              //  context.read<CouponListBloc>().add(
+                              //    ApplyCouponFilters(
+                              //      reductionIsFixed: reductionIsFixed,
+                              //      reductionIsPercentage: reductionIsPercentage,
+                              //      minPrice: minPriceController.text.isEmpty ? null : double.tryParse(minPriceController.text.replaceAll(',', '.'),),
+                              //      maxPrice: maxPriceController.text.isEmpty ? null : double.tryParse(maxPriceController.text.replaceAll(',', '.')),
+                              //     minReputation: minReputation.toInt(),
+                              //    ),
+                              //  );
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+  }
+}
+
+class _SavedCouponSortDialog extends StatefulWidget {
+  const _SavedCouponSortDialog();
+
+  @override
+  State<_SavedCouponSortDialog> createState() => _SavedCouponSortDialogState();
+}
+
+class _SavedCouponSortDialogState extends State<_SavedCouponSortDialog> {
+
+  SavedCouponsOrdering ordering = SavedCouponsOrdering.creationDateDesc;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+        color: Colors.transparent,
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                SizedBox(
+                  width: double.infinity,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      CustomIconButton(
+                        icon: SvgPicture.asset('assets/icons/back.svg'),
+                        onTap: () {
+                          Navigator.of(context).pop();
+                        }
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16,),
+                Container(
+                  decoration: ShapeDecoration(
+                    color: AppColors.surface,
+                    shape: RoundedRectangleBorder(
+                      side: const BorderSide(width: 2),
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                    shadows: const [
+                      BoxShadow(
+                        color: AppColors.textPrimary,
+                        blurRadius: 0,
+                        offset: Offset(4, 4),
+                        spreadRadius: 0,
+                      ),
+                    ],
+                  ),
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    spacing: 18,
+                    children: [
+                        const Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          'Sortowanie',
+                          style: TextStyle(
+                          color: AppColors.textPrimary,
+                          fontSize: 24,
+                          fontFamily: 'Itim',
+                          fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                        ),
+                        const Divider(
+                        color: AppColors.textPrimary,
+                        thickness: 2,
+                        height: 2,
+                        ),
+                
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          spacing: 8,
+                          children: [
+                            Column( // Data dodania 
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Text(
+                                      'Data dodania',
+                                      style: TextStyle(
+                                          color: AppColors.textPrimary,
+                                          fontSize: 20,
+                                          fontFamily: 'Itim',
+                                          fontWeight: FontWeight.w400,
+                                      ),
+                                  )
+                                ),
+                                CustomRadioButton(
+                                  label: 'od najnowszych',
+                                  selected: (ordering == SavedCouponsOrdering.creationDateDesc),
+                                  onTap: () => setState(() {ordering = SavedCouponsOrdering.creationDateDesc;}),
+                                ),
+                                CustomRadioButton(
+                                  label: 'od najstarszych',
+                                  selected: (ordering == SavedCouponsOrdering.creationDateAsc),
+                                  onTap: () => setState(() {ordering = SavedCouponsOrdering.creationDateAsc;}),
+                                )
+                              ],
+                            ),
+                            Column( // Cena
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Text(
+                                      'Cena',
+                                      style: TextStyle(
+                                          color: AppColors.textPrimary,
+                                          fontSize: 20,
+                                          fontFamily: 'Itim',
+                                          fontWeight: FontWeight.w400,
+                                      ),
+                                  )
+                                ),
+                                CustomRadioButton(
+                                  label: 'od najniższej',
+                                  selected: (ordering == SavedCouponsOrdering.priceAsc),
+                                  onTap: () => setState(() {ordering = SavedCouponsOrdering.priceAsc;}),
+                                ),
+                                CustomRadioButton(
+                                  label: 'od najwyższej',
+                                  selected: (ordering == SavedCouponsOrdering.priceDesc),
+                                  onTap: () => setState(() {ordering = SavedCouponsOrdering.priceDesc;}),
+                                )
+                              ],
+                            ),
+                            Column( // Reputacja
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Text(
+                                      'Reputacja sprzedającego',
+                                      style: TextStyle(
+                                          color: AppColors.textPrimary,
+                                          fontSize: 20,
+                                          fontFamily: 'Itim',
+                                          fontWeight: FontWeight.w400,
+                                      ),
+                                  )
+                                ),
+                                CustomRadioButton(
+                                  label: 'od najniższej',
+                                  selected: (ordering == SavedCouponsOrdering.reputationAsc),
+                                  onTap: () => setState(() {ordering = SavedCouponsOrdering.reputationAsc;}),
+                                ),
+                                CustomRadioButton(
+                                  label: 'od najwyższej',
+                                  selected: (ordering == SavedCouponsOrdering.reputationDesc),
+                                  onTap: () => setState(() {ordering = SavedCouponsOrdering.reputationDesc;}),
+                                )
+                              ],
+                            ),
+                            Column( // Data ważności
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Text(
+                                      'Data ważności',
+                                      style: TextStyle(
+                                          color: AppColors.textPrimary,
+                                          fontSize: 20,
+                                          fontFamily: 'Itim',
+                                          fontWeight: FontWeight.w400,
+                                      ),
+                                  )
+                                ),
+                                CustomRadioButton(
+                                  label: 'od najbliższej',
+                                  selected: (ordering == SavedCouponsOrdering.expiryDateAsc),
+                                  onTap: () => setState(() {ordering = SavedCouponsOrdering.expiryDateAsc;}),
+                                ),
+                                CustomRadioButton(
+                                  label: 'od najdalszej',
+                                  selected: (ordering == SavedCouponsOrdering.expiryDateDesc),
+                                  onTap: () => setState(() {ordering = SavedCouponsOrdering.expiryDateDesc;}),
+                                )
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            CustomTextButton.primary(
+                              label: 'Zastosuj',
+                              icon: const Icon(Icons.check),
+                              onTap: () {                    
+                                Navigator.of(context).pop(); // TODO: BACKEND
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+  }
+}
