@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:proj_inz/bloc/favorite/favorite_bloc.dart';
+import 'package:proj_inz/bloc/favorite/favorite_event.dart';
+import 'package:proj_inz/bloc/favorite/favorite_state.dart';
 import 'package:proj_inz/bloc/search_shops_categories/search_shops_categories_bloc.dart';
 import 'package:proj_inz/bloc/coupon_list/coupon_list_bloc.dart';
 import 'package:proj_inz/core/theme.dart';
@@ -270,11 +273,21 @@ class ShopCard extends StatelessWidget {
                 },
               ),
               const SizedBox(width: 8),
-              CustomFollowButton.small(
-                onTap: () {
-                  debugPrint("Clicked favorite for shop: ${shop.name}");
+              BlocBuilder<FavoriteBloc, FavoriteState>(
+                builder: (context, state) {
+                  final isFav =
+                      state.favoriteShopIds.contains(shop.id);
+
+                  return CustomFollowButton.small(
+                    isHeart: true,
+                    isPressed: isFav,
+                    onTap: () {
+                      context
+                          .read<FavoriteBloc>()
+                          .add(ToggleShopFavorite(shop.id));
+                    },
+                  );
                 },
-                isHeart: true,
               ),
             ],
           ),
@@ -352,11 +365,21 @@ class CategoryCard extends StatelessWidget {
                 },
               ),
               const SizedBox(width: 8),
-              CustomFollowButton.small(
-                onTap: () {
-                  debugPrint("Clicked favorite for category: ${category.name}");
+              BlocBuilder<FavoriteBloc, FavoriteState>(
+                builder: (context, state) {
+                  final isFav =
+                      state.favoriteCategoryIds.contains(category.id);
+
+                  return CustomFollowButton.small(
+                    isHeart: true,
+                    isPressed: isFav,
+                    onTap: () {
+                      context.read<FavoriteBloc>().add(
+                        ToggleCategoryFavorite(category.id),
+                      );
+                    },
+                  );
                 },
-                isHeart: true,
               ),
             ],
           ),

@@ -193,6 +193,7 @@ class ApiClient {
     );
     
     if (resp.statusCode >= 200 && resp.statusCode < 300) {
+      if (resp.body.isEmpty) return null;
       return jsonDecode(resp.body);
     }
     if (resp.statusCode == 400) {
