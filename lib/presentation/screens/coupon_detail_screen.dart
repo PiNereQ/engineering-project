@@ -54,10 +54,6 @@ class _CouponDetailsScreenState extends State<CouponDetailsScreen> {
             paymentRepository: PaymentRepository(),
           ),
         ),
-        BlocProvider(
-          create: (context) =>
-              CouponListBloc(context.read<CouponRepository>()),
-        ),
       ],
       child: Scaffold(
         backgroundColor: AppColors.background,
