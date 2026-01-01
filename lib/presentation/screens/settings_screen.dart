@@ -358,14 +358,29 @@ class _KeyValueRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Expanded(
-          child: Text(
-            '$label: $value',
-            style: const TextStyle(
-              fontFamily: 'Itim',
-              fontSize: 18,
-              color: AppColors.textPrimary,
+          child: RichText(
+            text: TextSpan(
+              style: const TextStyle(
+                fontFamily: 'Itim',
+                fontSize: 18,
+              ),
+              children: [
+                TextSpan(
+                  text: '$label: ',
+                  style: const TextStyle(
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                TextSpan(
+                  text: value,
+                  style: const TextStyle(
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+              ],
             ),
           ),
         ),
