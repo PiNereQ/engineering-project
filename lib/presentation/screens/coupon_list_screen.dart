@@ -90,13 +90,19 @@ class _CouponListScreenContentState extends State<_CouponListScreenContent> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final bloc = context.read<CouponListBloc>();
-    final state = bloc.state;
-    // Only fetch if the state is initial (not loaded yet) and debug flag is off
-    if (state is CouponListInitial && !stopCouponLoading) {
-      final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
-      bloc.add(FetchCoupons(shopId: widget.selectedShopId, categoryId: widget.selectedCategoryId, userId: userId));
-    }
+
+    if (stopCouponLoading) return;
+
+    final userId = FirebaseAuth.instance.currentUser?.uid;
+    if (userId == null) return;
+
+    context.read<CouponListBloc>().add(
+      FetchCoupons(
+        shopId: widget.selectedShopId,
+        categoryId: widget.selectedCategoryId,
+        userId: userId,
+      ),
+    );
   }
 
   @override
