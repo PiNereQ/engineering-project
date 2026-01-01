@@ -106,8 +106,8 @@ class CouponRepository {
         if (categoryId != null && shopId == null) 'category_id': categoryId,
         if (reductionIsPercentage != null && !reductionIsFixed!) 'type': 'percent',
         if (reductionIsFixed != null && !reductionIsPercentage!) 'type': 'flat',
-        if (minPrice != null) 'min_price': minPrice.toString(),
-        if (maxPrice != null) 'max_price': maxPrice.toString(),
+        if (minPrice != null) 'min_price': (minPrice * 100).toString(), // convert to grosze
+        if (maxPrice != null) 'max_price': (maxPrice * 100).toString(), // convert to grosze
         if (minReputation != null) 'min_rep': minReputation.toString(),
         if (sort != null) 'sort': sort,
       };
