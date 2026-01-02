@@ -27,7 +27,7 @@ class _ProfilePicturePickerScreenState
   late int selectedAvatarId;
   bool isSaving = false;
 
-  final List<int> avatars = List.generate(14, (i) => i);
+  final List<int> avatars = List.generate(15, (i) => i);
 
   @override
   void initState() {
