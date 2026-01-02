@@ -12,32 +12,35 @@ class ChatDetailLoading extends ChatDetailState {}
 
 class ChatDetailLoaded extends ChatDetailState {
   final List<Message> messages;
-  final bool? ratingExists;
+  final bool? buyerRatingExists;
+  final bool? sellerRatingExists;
 
-  const ChatDetailLoaded(this.messages, {this.ratingExists});
+  const ChatDetailLoaded(this.messages, {this.buyerRatingExists, this.sellerRatingExists});
 
   @override
-  List<Object?> get props => [messages, ratingExists];
+  List<Object?> get props => [messages, buyerRatingExists, sellerRatingExists];
 }
 
 class ChatDetailSending extends ChatDetailState {
   final List<Message> messages;
-  final bool? ratingExists;
+  final bool? buyerRatingExists;
+  final bool? sellerRatingExists;
 
-  const ChatDetailSending(this.messages, {this.ratingExists});
+  const ChatDetailSending(this.messages, {this.buyerRatingExists, this.sellerRatingExists});
 
   @override
-  List<Object?> get props => [messages, ratingExists];
+  List<Object?> get props => [messages, buyerRatingExists, sellerRatingExists];
 }
 
 class ChatDetailSubmittingRating extends ChatDetailState {
   final List<Message> messages;
-  final bool? ratingExists;
+  final bool? buyerRatingExists;
+  final bool? sellerRatingExists;
 
-  const ChatDetailSubmittingRating(this.messages, {this.ratingExists});
+  const ChatDetailSubmittingRating(this.messages, {this.buyerRatingExists, this.sellerRatingExists});
 
   @override
-  List<Object?> get props => [messages, ratingExists];
+  List<Object?> get props => [messages, buyerRatingExists, sellerRatingExists];
 }
 
 class ChatDetailError extends ChatDetailState {

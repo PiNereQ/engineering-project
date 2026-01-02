@@ -11,11 +11,13 @@ class LoadMessages extends ChatDetailEvent {
   final String conversationId;
   final String? raterId;
   final String currentUserId;
+  final String buyerId;
+  final String sellerId;
 
-  const LoadMessages(this.conversationId, this.currentUserId, {this.raterId});
+  const LoadMessages(this.conversationId, this.currentUserId, {this.raterId, required this.buyerId, required this.sellerId});
 
   @override
-  List<Object?> get props => [conversationId, raterId, currentUserId];
+  List<Object?> get props => [conversationId, raterId, currentUserId, buyerId, sellerId];
 }
 
 class RefreshMessages extends ChatDetailEvent {
