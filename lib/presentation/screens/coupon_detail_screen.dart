@@ -15,6 +15,7 @@ import 'package:proj_inz/presentation/screens/bought_coupon_detail_screen.dart';
 import 'package:proj_inz/bloc/number_verification/number_verification_bloc.dart'; // ignore: unused_import do not remove, needed for navigation to phone number confirmation screen
 import 'package:proj_inz/presentation/screens/phone_number_confirmation_screen.dart'; // ignore: unused_import do not remove, needed for navigation to phone number confirmation screen
 import 'package:proj_inz/presentation/screens/chat_detail_screen.dart';
+import 'package:proj_inz/presentation/widgets/avatar_view.dart';
 import 'package:proj_inz/presentation/widgets/custom_snack_bar.dart';
 import 'package:proj_inz/presentation/widgets/dashed_separator.dart';
 import 'package:proj_inz/presentation/widgets/error_card.dart';
@@ -126,6 +127,7 @@ class CouponDetailsScreen extends StatelessWidget {
                               sellerUsername: state.coupon.sellerUsername.toString(),
                               sellerReputation: state.coupon.sellerReputation,
                               sellerJoinDate: state.coupon.sellerJoinDate ?? DateTime(1970, 1, 1),
+                              sellerProfilePicture: state.coupon.sellerProfilePicture,
                             ),
                           ],
                         ),
@@ -530,12 +532,14 @@ class _SellerDetails extends StatelessWidget {
     required this.sellerUsername,
     required this.sellerReputation,
     required this.sellerJoinDate,
+    required this.sellerProfilePicture,
   });
 
   final String sellerId;
   final String sellerUsername;
   final int? sellerReputation;
   final DateTime sellerJoinDate;
+  final int? sellerProfilePicture;
 
   @override
   Widget build(BuildContext context) {
@@ -580,7 +584,10 @@ class _SellerDetails extends StatelessWidget {
           Row(
             spacing: 16,
             children: [
-              const CircleAvatar(radius: 35),
+              AvatarView(
+                avatarId: sellerProfilePicture,
+                size: 70,
+              ),
               Expanded(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,

@@ -272,4 +272,26 @@ class UserRepository {
       return 0;
     }
   }
+
+  /// PATCH /users/:uid/change-profile-picture
+  Future<void> changeProfilePicture({
+    required String userId,
+    required int profilePictureId,
+  }) async {
+    try {
+      await _api.patch(
+        '/users/$userId/change-profile-picture',
+        body: {
+          'profile_picture_id': profilePictureId,
+        },
+        useAuthToken: true,
+      );
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('Error changing profile picture: $e');
+      }
+      rethrow;
+    }
+  }
+
 }

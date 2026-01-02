@@ -12,6 +12,7 @@ import 'package:proj_inz/data/repositories/coupon_repository.dart';
 import 'package:proj_inz/data/repositories/user_repository.dart';
 import 'package:proj_inz/presentation/screens/add_screen.dart';
 import 'package:proj_inz/presentation/screens/chat_detail_screen.dart';
+import 'package:proj_inz/presentation/widgets/avatar_view.dart';
 import 'package:proj_inz/presentation/widgets/custom_snack_bar.dart';
 import 'package:proj_inz/presentation/widgets/dashed_separator.dart';
 import 'package:proj_inz/presentation/widgets/error_card.dart';
@@ -121,6 +122,7 @@ class BoughtCouponDetailsScreen extends StatelessWidget {
                                     sellerReputation: state.coupon.sellerReputation,
                                     sellerJoinDate: state.coupon.sellerJoinDate ?? DateTime(1970, 1, 1),
                                     couponId: state.coupon.id,
+                                    sellerProfilePicture: state.coupon.sellerProfilePicture,
                                   ),
                                 ],
                               );
@@ -619,6 +621,7 @@ class _SellerDetails extends StatelessWidget {
     required this.sellerReputation,
     required this.sellerJoinDate,
     required this.couponId,
+    required this.sellerProfilePicture,
   });
 
   final String sellerId;
@@ -626,6 +629,7 @@ class _SellerDetails extends StatelessWidget {
   final int? sellerReputation;
   final DateTime sellerJoinDate;
   final String couponId;
+  final int? sellerProfilePicture;
 
   @override
   Widget build(BuildContext context) {
@@ -670,8 +674,9 @@ class _SellerDetails extends StatelessWidget {
           Row(
             spacing: 16,
             children: [
-              const CircleAvatar(
-                radius: 35,
+              AvatarView(
+                avatarId: sellerProfilePicture,
+                size: 70,
               ),
               Expanded(
                 child: Column(

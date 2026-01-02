@@ -10,6 +10,7 @@ import 'package:proj_inz/data/models/conversation_model.dart';
 import 'package:proj_inz/data/models/message_model.dart';
 import 'package:proj_inz/data/repositories/user_repository.dart';
 import 'package:proj_inz/presentation/screens/report_screen.dart';
+import 'package:proj_inz/presentation/widgets/avatar_view.dart';
 import 'package:proj_inz/presentation/widgets/chat_report_popup.dart';
 import 'package:proj_inz/presentation/widgets/coupon_preview_popup.dart';
 import 'package:proj_inz/presentation/widgets/custom_snack_bar.dart';
@@ -34,6 +35,7 @@ class ChatHeader extends StatelessWidget {
   final bool isCouponDeleted;
   final VoidCallback onBack;
   final VoidCallback onReport;
+  final int? avatarId;
 
   const ChatHeader({
     super.key,
@@ -44,6 +46,7 @@ class ChatHeader extends StatelessWidget {
     required this.isCouponDeleted,
     required this.onBack,
     required this.onReport,
+    required this.avatarId,
   });
 
   @override
@@ -127,26 +130,10 @@ class ChatHeader extends StatelessWidget {
           // user info - avatar, username, reputation, join date
           Row(
             children: [
-              Container(
-                width: 54,
-                height: 54,
-                decoration: ShapeDecoration(
-                  color: AppColors.surface,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(100),
-                    side: const BorderSide(width: 2, color: AppColors.textPrimary),
-                  ),
-                  shadows: const [
-                    BoxShadow(
-                      color: AppColors.textPrimary,
-                      offset: Offset(3, 3),
-                      blurRadius: 0,
-                    )
-                  ],
-                ),
-                child: const Icon(Icons.person, size: 30),
+              AvatarView(
+                avatarId: avatarId,
+                size: 54,
               ),
-
               const SizedBox(width: 12),
 
               Column(
@@ -443,6 +430,9 @@ class _ChatDetailViewState extends State<ChatDetailView> {
 
   bool get _isChatBlocked => _blockedByMe || _blockedMe;
 
+  int? _getOtherAvatarId(Map<String, dynamic>? profile) {
+    return profile?['profile_picture'] as int?;
+  }
 
   @override
   void initState() {
@@ -543,6 +533,7 @@ class _ChatDetailViewState extends State<ChatDetailView> {
                       joinDate: otherJoinDate,
           
                       isCouponDeleted: _isCouponDeleted,
+                      avatarId: _getOtherAvatarId(snap.data),
                       onBack: () => Navigator.pop(context),
                       onReport: () => setState(() => _showPopup = true),
                     );

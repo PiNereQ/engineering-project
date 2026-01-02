@@ -6,6 +6,7 @@ import 'package:proj_inz/bloc/number_verification/number_verification_bloc.dart'
 import 'package:proj_inz/core/theme.dart';
 import 'package:proj_inz/presentation/screens/phone_number_confirmation_screen.dart';
 import 'package:proj_inz/presentation/screens/legal_document_screen.dart';
+import 'package:proj_inz/presentation/screens/profile_picture_picker_screen.dart';
 import 'package:proj_inz/presentation/screens/sign_in_screen.dart';
 import 'package:proj_inz/presentation/widgets/dashed_separator.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_icon_button.dart';
@@ -121,11 +122,38 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               : '—',
                         ),
                         _KeyValueRow(
+                          label: 'Zdjęcie profilowe',
+                          value: ' ',
+                          trailing: CustomTextButton.small(
+                            label: 'Zmień',
+                            width: 100,
+                            onTap: () async {
+                              final profile = user;
+                              final currentAvatar = profile['profile_picture'] ?? 0;
+
+                              final result = await Navigator.push<int>(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => ProfilePicturePickerScreen(
+                                    currentAvatarId: currentAvatar,
+                                  ),
+                                ),
+                              );
+
+                              if (result != null) {
+                                _fetchProfile();
+                                Navigator.pop(context, true);
+                              }
+                            },
+                          ),
+                        ),
+                        _KeyValueRow(
                           label: 'Numer telefonu',
                           value: hasPhoneNumber ? 'Potwierdzony' : 'Niepotwierdzony',
                           trailing: !hasPhoneNumber
                               ? CustomTextButton.small(
                                   label: 'Potwierdź',
+                                  width: 100,
                                   onTap: () async {
                                     await Navigator.of(context).push(
                                       MaterialPageRoute(
