@@ -67,6 +67,7 @@ flutter:
     - assets/icons/ # to prevent Android crashes remember to ALWAYS use the full local path like this: 'assets/icons/<filename>' 
     - assets/logo/
     - assets/legal/
+    - assets/avatars/
   uses-material-design: true
   fonts:
     - family: Itim
