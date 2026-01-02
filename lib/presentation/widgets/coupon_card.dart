@@ -17,10 +17,15 @@ class CouponCardHorizontal extends StatefulWidget {
   final Coupon coupon;
   final bool isBought;
 
+  final bool enableNavigation;
+  final bool showSaveButton;
+
   const CouponCardHorizontal._({
     super.key,
     required this.coupon,
     this.isBought = false,
+    this.enableNavigation = true,
+    this.showSaveButton = true,   
   });
 
   factory CouponCardHorizontal({Key? key, required Coupon coupon}) {
@@ -29,6 +34,10 @@ class CouponCardHorizontal extends StatefulWidget {
 
   factory CouponCardHorizontal.bought({Key? key, required Coupon coupon}) {
     return CouponCardHorizontal._(key: key, coupon: coupon, isBought: true);
+  }
+
+  factory CouponCardHorizontal.preview({Key? key, required Coupon coupon}) {
+    return CouponCardHorizontal._(key: key, coupon: coupon, enableNavigation: false, showSaveButton: false);
   }
 
   @override
@@ -167,7 +176,7 @@ class _CouponCardHorizontalState extends State<CouponCardHorizontal> {
         children: [
           Expanded(
             child: GestureDetector(
-              onTap: () {
+              onTap: widget.enableNavigation ? () {
                 if (kDebugMode) {
                   print('Tapping coupon: id=${coupon.id}');
                 }
@@ -183,7 +192,8 @@ class _CouponCardHorizontalState extends State<CouponCardHorizontal> {
                                 : CouponDetailsScreen(coupon: coupon),
                   ),
                 );
-              },
+              }
+              : null,
               child: Container(
                 color: Colors.transparent, // To make the entire area tappable
                 child: Row(
@@ -324,41 +334,43 @@ class _CouponCardHorizontalState extends State<CouponCardHorizontal> {
               ),
             ),
           ),
-          DashedSeparator.vertical(length: 146),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(4, 10, 16, 10),
-            child: Center(
-              child: widget.isBought
-              ? const Icon(Icons.check_rounded, size: 36)
-                : CustomFollowButton.small(
-                  isPressed: isSaved,
-                  onTap: () async {
-                    try {
-                      if (isSaved) {
-                        await _repo.removeCouponFromSaved(
-                          couponId: coupon.id,
-                          userId: '',
-                        );
-                      } else {
-                        await _repo.addCouponToSaved(
-                          couponId: coupon.id,
-                          userId: '',
-                        );
-                      }
+          if (widget.showSaveButton) ...[
+            DashedSeparator.vertical(length: 146),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(4, 10, 16, 10),
+              child: Center(
+                child: widget.isBought
+                    ? const Icon(Icons.check_rounded, size: 36)
+                    : CustomFollowButton.small(
+                        isPressed: isSaved,
+                        onTap: () async {
+                          try {
+                            if (isSaved) {
+                              await _repo.removeCouponFromSaved(
+                                couponId: coupon.id,
+                                userId: '',
+                              );
+                            } else {
+                              await _repo.addCouponToSaved(
+                                couponId: coupon.id,
+                                userId: '',
+                              );
+                            }
 
-                      if (!mounted) return;
-                      setState(() {
-                        isSaved = !isSaved;
-                      });
-                    } catch (e) {
-                      if (kDebugMode) {
-                        debugPrint('Save coupon error: $e');
-                      }
-                    }
-                  }
-                ),
+                            if (!mounted) return;
+                            setState(() {
+                              isSaved = !isSaved;
+                            });
+                          } catch (e) {
+                            if (kDebugMode) {
+                              debugPrint('Save coupon error: $e');
+                            }
+                          }
+                        },
+                      ),
+              ),
             ),
-          ),
+          ]
         ],
       ),
     );
