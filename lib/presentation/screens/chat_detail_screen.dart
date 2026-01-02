@@ -431,15 +431,6 @@ class _ChatDetailViewState extends State<ChatDetailView> {
   bool get _isChatBlocked => _blockedByMe || _blockedMe;
 
   int? _getOtherAvatarId(Map<String, dynamic>? profile) {
-    if (_conversation != null) {
-      final currentUserId = FirebaseAuth.instance.currentUser?.uid;
-      if (currentUserId == null) return null;
-
-      return _conversation!.buyerId == currentUserId
-          ? _conversation!.sellerProfilePicture
-          : _conversation!.buyerProfilePicture;
-    }
-
     return profile?['profile_picture'] as int?;
   }
 
