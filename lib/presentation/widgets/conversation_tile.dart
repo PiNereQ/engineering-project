@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:proj_inz/core/theme.dart';
+import 'package:proj_inz/presentation/widgets/avatar_view.dart';
 import 'package:proj_inz/presentation/widgets/dashed_separator.dart';
 
 class ConversationTile extends StatelessWidget {
@@ -9,6 +10,7 @@ class ConversationTile extends StatelessWidget {
   final String messageType;
   final bool isRead;
   final bool? isCouponSold;
+  final int? avatarId;
 
   const ConversationTile({
     super.key,
@@ -18,6 +20,7 @@ class ConversationTile extends StatelessWidget {
     required this.messageType,
     required this.isRead,
     this.isCouponSold,
+    required this.avatarId,
   });
 
   @override
@@ -60,26 +63,9 @@ class ConversationTile extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   // Avatar
-                  Container(
-                    width: 64,
-                    height: 64,
-                    clipBehavior: Clip.antiAlias,
-                    decoration: ShapeDecoration(
-                      color: AppColors.surface,
-                      shape: RoundedRectangleBorder(
-                        side: const BorderSide(width: 2),
-                        borderRadius: BorderRadius.circular(1000),
-                      ),
-                      shadows: const [
-                        BoxShadow(
-                          color: AppColors.textPrimary,
-                          blurRadius: 0,
-                          offset: Offset(4, 4),
-                          spreadRadius: 0,
-                        )
-                      ],
-                    ),
-                    child: const Icon(Icons.person, size: 40),
+                  AvatarView(
+                    avatarId: avatarId,
+                    size: 64,
                   ),
                   
                   SizedBox(width: 16),

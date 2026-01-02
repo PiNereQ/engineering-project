@@ -16,6 +16,8 @@ class Conversation extends Equatable {
   final DateTime lastMessageTime;
   final bool isReadByBuyer;
   final bool isReadBySeller;
+  final int? buyerProfilePicture;
+  final int? sellerProfilePicture;
 
   // this field should not be saved to backend
   final bool isReadByCurrentUser;
@@ -36,6 +38,8 @@ class Conversation extends Equatable {
     required this.lastMessageTime,
     required this.isReadByBuyer,
     required this.isReadBySeller,
+    this.buyerProfilePicture,
+    this.sellerProfilePicture,
 
     // this field should not be saved to backend
     // chatrepository will set it based on current user
@@ -53,6 +57,8 @@ class Conversation extends Equatable {
         lastMessageTime,
         isReadByBuyer,
         isReadBySeller,
+        buyerProfilePicture,
+        sellerProfilePicture,
         isReadByCurrentUser,
       ];
 
@@ -75,6 +81,8 @@ class Conversation extends Equatable {
         : DateTime.fromMillisecondsSinceEpoch(0),
       isReadByBuyer: json['is_read_by_buyer'] == 1 ? true : false,
       isReadBySeller: json['is_read_by_seller'] == 1 ? true : false,
+      buyerProfilePicture: json['buyer_profile_picture'],
+      sellerProfilePicture: json['seller_profile_picture'],
 
       // is calculated in repository
       isReadByCurrentUser: true, 

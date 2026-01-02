@@ -187,6 +187,7 @@ class _ChatScreenState extends State<ChatScreen> {
                             messageType: c.lastMessageType,
                             isRead: c.isReadByCurrentUser,
                             isCouponSold: c.isCouponSold,
+                            avatarId: _getAvatarId(c),
                           ),
                         );
                       },
@@ -212,4 +213,14 @@ class _ChatScreenState extends State<ChatScreen> {
     // if current user is buyer, show seller username
     return user.uid == c.buyerId ? c.sellerUsername : c.buyerUsername;
   }
+
+  int? _getAvatarId(Conversation c) {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return null;
+
+    return user.uid == c.buyerId
+        ? c.sellerProfilePicture
+        : c.buyerProfilePicture;
+  }
+
 }
