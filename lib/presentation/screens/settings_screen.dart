@@ -126,6 +126,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           value: ' ',
                           trailing: CustomTextButton.small(
                             label: 'Zmień',
+                            width: 100,
                             onTap: () async {
                               final profile = user;
                               final currentAvatar = profile['profile_picture'] ?? 0;
@@ -141,6 +142,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
                               if (result != null) {
                                 _fetchProfile();
+                                Navigator.pop(context, true);
                               }
                             },
                           ),
@@ -151,6 +153,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           trailing: !hasPhoneNumber
                               ? CustomTextButton.small(
                                   label: 'Potwierdź',
+                                  width: 100,
                                   onTap: () async {
                                     await Navigator.of(context).push(
                                       MaterialPageRoute(

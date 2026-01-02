@@ -63,6 +63,15 @@ class ProfileScreen extends StatefulWidget {
       }
     }
 
+    void _reloadProfile() {
+      final userRepo = context.read<UserRepository>();
+      final userId = FirebaseAuth.instance.currentUser!.uid;
+
+      setState(() {
+        _profileFuture = userRepo.getUserProfile(userId);
+      });
+    }
+
 
 @override
 Widget build(BuildContext context) {
@@ -96,7 +105,21 @@ Widget build(BuildContext context) {
                     FutureBuilder<Map<String, dynamic>?>(
                       future: _profileFuture,
                       builder: (context, snapshot) {
-                        final avatarId = snapshot.data?['profile_picture'] ?? 0;
+                        if (snapshot.connectionState == ConnectionState.waiting) {
+                          return CircleAvatar(
+                            radius: 36,
+                            backgroundColor: AppColors.surface,
+                          );
+                        }
+
+                        if (!snapshot.hasData) {
+                          return AvatarView(
+                            avatarId: 0,
+                            size: 72,
+                          );
+                        }
+
+                        final avatarId = snapshot.data!['profile_picture'] ?? 0;
 
                         return AvatarView(
                           avatarId: avatarId,
@@ -394,13 +417,17 @@ Widget build(BuildContext context) {
                     Expanded(
                       child: CustomTextButton(
                         label: 'Ustawienia',
-                        onTap: () {
-                          Navigator.push(
+                        onTap: () async {
+                          final result = await Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (_) => const SettingsScreen(),
                             ),
                           );
+
+                          if (result == true) {
+                            _reloadProfile();
+                          }
                         },
                       ),
                     ),
