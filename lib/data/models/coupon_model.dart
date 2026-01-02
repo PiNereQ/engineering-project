@@ -23,6 +23,8 @@ class Coupon extends Equatable {
 
   final DateTime listingDate;
   final bool isSold;
+
+  final int? sellerProfilePicture;
   
   // specific fields
   //                                 | Available to me | Listed by me | Bought by me |
@@ -64,6 +66,7 @@ class Coupon extends Equatable {
     this.purchaseDate,
     this.transactionId,
     this.code,
+    this.sellerProfilePicture,
   }); 
 
   /// Create Coupon from API JSON response
@@ -93,6 +96,7 @@ class Coupon extends Equatable {
         : null,
       isSold: !parseBool(json['is_active']),
       listingDate: DateTime.parse(json['listing_date']),
+      sellerProfilePicture: json['seller_profile_picture'],
     );
   }
 
@@ -150,7 +154,8 @@ class Coupon extends Equatable {
       isUsed: parseBool(json['is_used']),
       purchaseDate: DateTime.parse(json['purchase_date']),
       transactionId: json['transaction_id']?.toString(),
-      code: json['code']?.toString()
+      code: json['code']?.toString(),
+      sellerProfilePicture: json['seller_profile_picture'],
     );
   }
 
@@ -182,6 +187,7 @@ class Coupon extends Equatable {
     isUsed,
     purchaseDate,
     code,
+    sellerProfilePicture,
   ];
 
   Coupon copyWith({
@@ -209,6 +215,8 @@ class Coupon extends Equatable {
     bool? isUsed,
     DateTime? purchaseDate,
     String? code,
+    int? sellerProfilePicture,
+    
   }) {
     return Coupon(
       id: id ?? this.id,
@@ -235,6 +243,7 @@ class Coupon extends Equatable {
       isUsed: isUsed ?? this.isUsed,
       purchaseDate: purchaseDate ?? this.purchaseDate,
       code: code ?? this.code,
+      sellerProfilePicture: sellerProfilePicture ?? this.sellerProfilePicture,
     );
   }
 }
