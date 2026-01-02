@@ -322,7 +322,7 @@ class _CouponTile extends StatelessWidget {
 
         const SizedBox(height: 12),
 
-        CouponCardHorizontal(coupon: coupon),
+        CouponCardHorizontal.preview(coupon: coupon),
       ],
     );
   }
