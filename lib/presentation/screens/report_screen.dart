@@ -3,6 +3,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:proj_inz/core/theme.dart';
 import 'package:proj_inz/core/utils/utils.dart';
 import 'package:proj_inz/data/models/coupon_model.dart';
+import 'package:proj_inz/data/repositories/report_repository.dart';
 import 'package:proj_inz/data/repositories/user_repository.dart';
 import 'package:proj_inz/presentation/widgets/coupon_card.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_icon_button.dart';
@@ -26,6 +27,30 @@ class ReportScreen extends StatefulWidget {
 }
 
 class _ReportScreenState extends State<ReportScreen> {
+    
+  String _mapReasonToBackend(String reason) {
+    switch (reason) {
+      case "Kod kuponu jest nieprawidłowy":
+        return "invalid_coupon_code";
+      case "Termin ważności kuponu minął":
+        return "expired_coupon";
+      case "Kupon ma ograniczenia, których nie było w opisie":
+        return "misleading_coupon";
+      case "Próba oszustwa":
+        return "scam_attempt";
+      case "Spam":
+        return "spam";
+      case "Nękanie, groźby lub obraza":
+        return "harassment";
+      case "Nieodpowiednie treści":
+        return "inappropriate_content";
+      case "Nieodpowiednia nazwa użytkownika sprzedającego":
+        return "inappropriate_username";
+      default:
+        return "other";
+    }
+  }
+
   Future<Map<String, dynamic>?>? _userFuture;
 
   String? selectedReason;
@@ -206,19 +231,39 @@ class _ReportScreenState extends State<ReportScreen> {
                   icon: const Icon(Icons.send, color: AppColors.textPrimary, size: 20),
                   width: 220,
                   height: 56,
-                  onTap: () {
-                    FocusScope.of(context).unfocus();
+                    onTap: () async {
+                      FocusScope.of(context).unfocus();
 
-                    if (selectedReason == null) {
-                      setState(() {
-                        showMissingReasonTip = true;
-                      });
-                      return;
-                    }
+                      if (selectedReason == null) {
+                        setState(() {
+                          showMissingReasonTip = true;
+                        });
+                        return;
+                      }
 
-                    // TODO backend
-                    Navigator.pop(context);
-                  },
+                      try {
+                        await ReportRepository().createReport(
+                          reportedUserId: widget.reportedUserId,
+                          couponId: widget.reportedCoupon?.id?.toString(),
+                          reportReason: _mapReasonToBackend(selectedReason!),
+                          reportDetails: descriptionController.text.trim(),
+                        );
+
+                        if (!mounted) return;
+
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Zgłoszenie zostało wysłane')),
+                        );
+
+                        Navigator.pop(context);
+                      } catch (e) {
+                        if (!mounted) return;
+
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Błąd wysyłania zgłoszenia: $e')),
+                        );
+                      }
+                    },
                 ),
               ),
             ],
