@@ -7,52 +7,37 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(
-        children: [
-          // Light yellow background with icon grid
-          Container(
-            color: const Color(0xFFFFF1D1), // Light yellow
-            child: GridView.count(
-              crossAxisCount: 8,
-              childAspectRatio: 1.0,
-              physics: const NeverScrollableScrollPhysics(),
-              children: List.generate(
-                160, // 8 columns × 20 rows
-                (index) => Opacity(
-                  opacity: 0.15,
-                  child: Image.asset('assets/logo/coupidyn.png'),
+      backgroundColor: AppColors.background,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: const [
+              Text(
+                "Hej!\nTo jest ekran główny.",
+                style: TextStyle(
+                  fontFamily: 'Itim',
+                  fontSize: 36,
                 ),
               ),
-            ),
-          ), SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "Hej!\nTo jest ekran główny.",
-                  style: TextStyle(fontFamily: 'Itim', fontSize: 36),
-                  textAlign: TextAlign.start,
-                ),
-                _PlaceholderContainer(),
-                SizedBox(height: 16),
-                _PlaceholderContainer(),
-                SizedBox(height: 16),
-                _PlaceholderContainer(),
-                SizedBox(height: 16),
-                _PlaceholderContainer(),
-                SizedBox(height: 16),
-                _PlaceholderContainer(),
-                SizedBox(height: 16),
-                _PlaceholderContainer(),
-                SizedBox(height: 66), // padding for navbar
-              ],
-            ),
+              SizedBox(height: 16),
+              _PlaceholderContainer(),
+              SizedBox(height: 16),
+              _PlaceholderContainer(),
+              SizedBox(height: 16),
+              _PlaceholderContainer(),
+              SizedBox(height: 16),
+              _PlaceholderContainer(),
+              SizedBox(height: 16),
+              _PlaceholderContainer(),
+              SizedBox(height: 16),
+              _PlaceholderContainer(),
+              SizedBox(height: 66), // padding for navbar
+            ],
           ),
-        ),]
         ),
+      ),
     );
   }
 }
