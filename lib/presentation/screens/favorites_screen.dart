@@ -71,12 +71,9 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                           child: FutureBuilder<Shop>(
                             future: shopRepo.fetchShopById(shopId),
                             builder: (context, snapshot) {
-                              if (!snapshot.hasData) {
-                                return const Padding(
-                                  padding: EdgeInsets.symmetric(vertical: 8),
-                                  child: LinearProgressIndicator(),
-                                );
-                              }
+                            if (!snapshot.hasData) {
+                              return const SizedBox(height: 86);
+                            }
                               return _ShopTile(shop: snapshot.data!);
                             },
                           ),
