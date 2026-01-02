@@ -6,6 +6,7 @@ import 'package:proj_inz/data/models/coupon_model.dart';
 import 'package:proj_inz/data/repositories/report_repository.dart';
 import 'package:proj_inz/data/repositories/user_repository.dart';
 import 'package:proj_inz/presentation/screens/add_screen.dart';
+import 'package:proj_inz/presentation/widgets/avatar_view.dart';
 import 'package:proj_inz/presentation/widgets/coupon_card.dart';
 import 'package:proj_inz/presentation/widgets/custom_snack_bar.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_icon_button.dart';
@@ -135,6 +136,7 @@ class _ReportScreenState extends State<ReportScreen> {
 
                   final data = snap.data!;
                   final int? reputation = data['reputation'] as int?;
+                  final int? profilePicture = data['profile_picture'] as int?;
                   final createdAtRaw = data['created_at'];
 
                   final joinDate = createdAtRaw == null
@@ -145,6 +147,7 @@ class _ReportScreenState extends State<ReportScreen> {
                     username: widget.reportedUsername,
                     reputation: reputation,
                     joinDate: joinDate,
+                    profilePicture: profilePicture,
                   );
                 },
               ),
@@ -332,11 +335,13 @@ class _UserTile extends StatelessWidget {
   final String username;
   final int? reputation;
   final DateTime joinDate;
+  final int? profilePicture;
 
   const _UserTile({
     required this.username,
     required this.reputation,
     required this.joinDate,
+    required this.profilePicture,
   });
 
   @override
@@ -368,7 +373,10 @@ class _UserTile extends StatelessWidget {
 
           Row(
             children: [
-              const CircleAvatar(radius: 30),
+              AvatarView(
+                avatarId: profilePicture,
+                size: 60,
+              ),
               const SizedBox(width: 16),
 
               Expanded(
