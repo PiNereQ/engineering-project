@@ -4,8 +4,10 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:proj_inz/bloc/saved_coupon_list/saved_coupon_list_bloc.dart';
+import 'package:proj_inz/core/app_flags.dart';
 import 'package:proj_inz/core/theme.dart';
 import 'package:proj_inz/data/repositories/coupon_repository.dart';
+import 'package:proj_inz/main.dart';
 import 'package:proj_inz/presentation/widgets/coupon_card.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/checkbox.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_icon_button.dart';
@@ -26,18 +28,46 @@ enum SavedCouponsOrdering {
 }
 
 
-class SavedCouponListScreen extends StatelessWidget {
+class SavedCouponListScreen extends StatefulWidget {
   const SavedCouponListScreen({super.key});
+
+  @override
+  State<SavedCouponListScreen> createState() => _SavedCouponListScreenState();
+}
+
+class _SavedCouponListScreenState extends State<SavedCouponListScreen> with RouteAware {
+  
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    routeObserver.subscribe(this, ModalRoute.of(context)! as PageRoute);
+  }
+
+  @override
+  void dispose() {
+    routeObserver.unsubscribe(this);
+    super.dispose();
+  }
+  
+  @override
+  void didPopNext() {
+    if (!AppFlags.couponBought) return;
+
+    AppFlags.couponBought = false;
+
+    final userId = FirebaseAuth.instance.currentUser?.uid;
+    if (userId == null) return;
+
+    context
+        .read<SavedCouponListBloc>()
+        .add(RefreshSavedCoupons(userId: userId));
+  }
 
   @override
   Widget build(BuildContext context) {
     final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
 
-    return BlocProvider(
-      create: (context) => SavedCouponListBloc(
-        context.read<CouponRepository>(),
-      )..add(FetchSavedCoupons(userId: userId)),
-      child: Builder(
+    return Builder(
         builder: (context) =>
         Scaffold(
           backgroundColor: AppColors.background,
@@ -58,8 +88,7 @@ class SavedCouponListScreen extends StatelessWidget {
             ),
           ),
         ),
-      )
-    );
+      );
   }
 }
 
