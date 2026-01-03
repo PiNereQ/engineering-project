@@ -5,7 +5,9 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:proj_inz/bloc/owned_coupon_list/owned_coupon_list_bloc.dart';
 import 'package:proj_inz/core/app_flags.dart';
+import 'package:proj_inz/core/errors/error_messages.dart';
 import 'package:proj_inz/core/theme.dart';
+import 'package:proj_inz/core/utils/error_mapper.dart';
 import 'package:proj_inz/data/models/coupon_model.dart';
 import 'package:proj_inz/data/repositories/coupon_repository.dart';
 import 'package:proj_inz/main.dart';
@@ -171,17 +173,20 @@ class _BoughtCouponListScreenState extends State<BoughtCouponListScreen> with Ro
       );
     } else if (state is OwnedCouponListLoadFailure) {
       if (kDebugMode) debugPrint(state.message);
+      final type = mapErrorToType(state.message);
+      final userMessage = couponListErrorMessage(type);
+
       return SliverFillRemaining(
         child: Center(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: ErrorCard(
-              text: "Przykro nam, wystąpił błąd w trakcie ładowania Twoich kuponów.",
+              icon: const Icon(Icons.sentiment_dissatisfied_rounded),
+              text: userMessage,
               errorString: state.message,
-              icon: const Icon(Icons.sentiment_dissatisfied),
             ),
           ),
-        ),
+        ),  
       );
     }
     return const SliverFillRemaining();

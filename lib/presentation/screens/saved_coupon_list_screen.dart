@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -5,10 +6,13 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:proj_inz/bloc/saved_coupon_list/saved_coupon_list_bloc.dart';
 import 'package:proj_inz/core/app_flags.dart';
+import 'package:proj_inz/core/errors/error_messages.dart';
 import 'package:proj_inz/core/theme.dart';
+import 'package:proj_inz/core/utils/error_mapper.dart';
 import 'package:proj_inz/data/repositories/coupon_repository.dart';
 import 'package:proj_inz/main.dart';
 import 'package:proj_inz/presentation/widgets/coupon_card.dart';
+import 'package:proj_inz/presentation/widgets/error_card.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/checkbox.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_icon_button.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_text_button.dart';
@@ -139,8 +143,21 @@ class _SavedCouponsContent extends StatelessWidget {
         }
 
         if (state is SavedCouponListLoadFailure) {
+          if (kDebugMode) debugPrint(state.message);
+          final type = mapErrorToType(state.message);
+          final userMessage = couponListErrorMessage(type);
+
           return SliverFillRemaining(
-            child: Center(child: Text(state.message)),
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: ErrorCard(
+                  icon: const Icon(Icons.sentiment_dissatisfied_rounded),
+                  text: userMessage,
+                  errorString: state.message,
+                ),
+              ),
+            ),  
           );
         }
 
