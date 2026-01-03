@@ -471,7 +471,7 @@ class _CouponDetails extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               spacing: 12,
               children: [
-                CustomTextButton(
+                CustomTextButton.primary(
                   label: 'Wyświetl kod kuponu',
                   icon: Icon(Icons.qr_code_rounded),
                   onTap: () => _showCodeDialog(context, code),
