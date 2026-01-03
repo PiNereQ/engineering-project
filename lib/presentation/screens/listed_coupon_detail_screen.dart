@@ -438,7 +438,9 @@ class _CouponDetails extends StatelessWidget {
           ),
         ),
         content: const Text(
-          'Czy na pewno chcesz usunąć ten kupon?\nKupon zniknie z listy dostępnych i z Twoich wystawionych.',
+        'Czy na pewno chcesz usunąć ten kupon?\n\n'
+        'Zostanie trwale usunięty z Twoich wystawionych '
+        'oraz przestanie być widoczny dla innych użytkowników.',
           style: TextStyle(
             fontFamily: 'Itim',
             fontSize: 16,
