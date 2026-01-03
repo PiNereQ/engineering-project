@@ -590,9 +590,10 @@ class _CouponDetails extends StatelessWidget {
       builder: (_) => appDialog(
         title: 'Potwierdzenie',
         content:
-            'Ta akcja jest nieodwracalna.\n\n'
-            'Po oznaczeniu kuponu jako wykorzystanego '
-            'poprosimy Cię o ocenę sprzedającego.',
+            'Oznaczasz kupon jako wykorzystany.\n\n'
+            'Kupon pozostanie widoczny w zakładce "Kupione".\n'
+            'Po potwierdzeniu Ty i sprzedający będziecie mogli '
+            'ocenić transakcję - oceny wpływają na reputację.',
         actions: [
           CustomTextButton.small(
             label: 'Anuluj',
