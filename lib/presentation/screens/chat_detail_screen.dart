@@ -570,7 +570,7 @@ class _ChatDetailViewState extends State<ChatDetailView> {
                         if (state is ChatDetailError) {
                           return Center(
                             child: Text(
-                              "Błąd ładowania wiadomości: ${state.message}",
+                              state.message,
                               style: const TextStyle(
                                 fontFamily: 'Itim',
                                 fontSize: 16,
