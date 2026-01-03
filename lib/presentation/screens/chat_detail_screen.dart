@@ -130,10 +130,17 @@ class ChatHeader extends StatelessWidget {
           // user info - avatar, username, reputation, join date
           Row(
             children: [
-              AvatarView(
-                avatarId: avatarId,
-                size: 54,
-              ),
+              if (avatarId == null)
+                CircleAvatar(
+                  radius: 27,
+                  backgroundColor: AppColors.background,
+                )
+              else
+                AvatarView(
+                  avatarId: avatarId,
+                  size: 54,
+                ),
+
               const SizedBox(width: 12),
 
               Column(
@@ -503,6 +510,8 @@ class _ChatDetailViewState extends State<ChatDetailView> {
                 child: FutureBuilder<Map<String, dynamic>?>(
                   future: _otherProfileFuture,
                   builder: (context, snap) {
+                    final isLoading = snap.connectionState == ConnectionState.waiting;
+                    final avatarId = isLoading ? null : _getOtherAvatarId(snap.data);                    
                     final otherRep = snap.data?['reputation'] as int?;
                     final otherJoinRaw = snap.data?['created_at'];
                     final otherJoinDate = otherJoinRaw == null
@@ -533,7 +542,7 @@ class _ChatDetailViewState extends State<ChatDetailView> {
                       joinDate: otherJoinDate,
           
                       isCouponDeleted: _isCouponDeleted,
-                      avatarId: _getOtherAvatarId(snap.data),
+                      avatarId: avatarId,
                       onBack: () => Navigator.pop(context),
                       onReport: () => setState(() => _showPopup = true),
                     );
