@@ -6,10 +6,13 @@ import 'package:proj_inz/bloc/chat/list/chat_list_event.dart';
 import 'package:proj_inz/bloc/chat/list/chat_list_state.dart';
 import 'package:proj_inz/bloc/chat/unread/chat_unread_bloc.dart';
 import 'package:proj_inz/bloc/chat/unread/chat_unread_event.dart';
+import 'package:proj_inz/core/errors/error_messages.dart';
 import 'package:proj_inz/core/theme.dart';
+import 'package:proj_inz/core/utils/error_mapper.dart';
 import 'package:proj_inz/core/utils/utils.dart';
 import 'package:proj_inz/data/models/conversation_model.dart';
 import 'package:proj_inz/presentation/widgets/conversation_tile.dart';
+import 'package:proj_inz/presentation/widgets/error_card.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_text_button.dart';
 
 import 'chat_detail_screen.dart';
@@ -125,8 +128,24 @@ class _ChatScreenState extends State<ChatScreen> {
                 }
 
                 if (state is ChatListError) {
+                  final type = mapErrorToType(state.message);
+                  final userMessage = chatErrorMessage(type);
+
                   return SliverFillRemaining(
-                    child: Center(child: Text('Błąd: ${state.message}')),
+                    hasScrollBody: false,
+                    child: Center(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        child: ErrorCard(
+                          icon: const Icon(
+                            Icons.chat_bubble_outline_rounded,
+                            color: AppColors.textPrimary,
+                          ),
+                          text: userMessage,
+                          errorString: state.message,
+                        ),
+                      ),
+                    ),
                   );
                 }
 

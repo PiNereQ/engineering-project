@@ -12,6 +12,9 @@ import 'package:proj_inz/bloc/search_shops_categories/search_shops_categories_st
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:proj_inz/presentation/screens/coupon_list_screen.dart';
+import 'package:proj_inz/presentation/widgets/error_card.dart';
+import 'package:proj_inz/core/utils/error_mapper.dart';
+import 'package:proj_inz/core/errors/error_messages.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_text_button.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_follow_button.dart';
 
@@ -192,9 +195,25 @@ class SearchResultsScreen extends StatelessWidget {
                       }),
                     ],
                   );
-                } else if (state is SearchError) {
-                  return Center(child: Text('Błąd: ${state.message}'));
-                }
+                  } else if (state is SearchError) {
+                    final type = mapErrorToType(state.message);
+                    final userMessage = searchErrorMessage(type);
+
+                    return Center(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        child: ErrorCard(
+                          icon: const Icon(
+                            Icons.search_off_rounded,
+                            color: AppColors.textPrimary,
+                            size: 28,
+                          ),
+                          text: 'Nie udało się załadować wyników wyszukiwania.',
+                          errorString: userMessage,
+                        ),
+                      ),
+                    );
+                  }
                 return const Center(child: Text('Wpisz zapytanie'));
               },
             ),

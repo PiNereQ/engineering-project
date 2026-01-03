@@ -4,7 +4,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:proj_inz/core/app_flags.dart';
+import 'package:proj_inz/core/errors/error_messages.dart';
 import 'package:proj_inz/core/theme.dart';
+import 'package:proj_inz/core/utils/error_mapper.dart';
 import 'package:proj_inz/data/repositories/coupon_repository.dart';
 
 import 'package:proj_inz/bloc/listed_coupon_list/listed_coupon_list_bloc.dart';
@@ -156,15 +158,20 @@ class _ListedCouponListScreenState extends State<ListedCouponListScreen> with Ro
 
     if (state is ListedCouponListLoadFailure) {
       if (kDebugMode) debugPrint(state.message);
+      final type = mapErrorToType(state.message);
+      final userMessage = couponListErrorMessage(type);
+
       return SliverFillRemaining(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: ErrorCard(
-            text: "Przykro nam, wystąpił błąd w trakcie ładowania kuponów.",
-            errorString: state.message,
-            icon: const Icon(Icons.error),
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: ErrorCard(
+              icon: const Icon(Icons.sentiment_dissatisfied_rounded),
+              text: userMessage,
+              errorString: state.message,
+            ),
           ),
-        ),
+        ),  
       );
     }
 

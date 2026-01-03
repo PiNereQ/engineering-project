@@ -21,10 +21,10 @@ final class CouponAddInProgress extends CouponAddState {
 final class CouponAddSuccess extends CouponAddState {}
 
 final class CouponAddFailure extends CouponAddState {
-  final String message;
+  final Object error;
 
-  const CouponAddFailure({required this.message});
+  const CouponAddFailure({required this.error});
 
   @override
-  List<Object> get props => [message];
+  List<Object> get props => [error];
 }
