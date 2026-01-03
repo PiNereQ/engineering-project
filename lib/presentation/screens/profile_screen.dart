@@ -3,8 +3,12 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:proj_inz/bloc/auth/auth_bloc.dart';
+import 'package:proj_inz/bloc/listed_coupon_list/listed_coupon_list_bloc.dart';
+import 'package:proj_inz/bloc/listed_coupon_list/listed_coupon_list_event.dart';
+import 'package:proj_inz/bloc/owned_coupon_list/owned_coupon_list_bloc.dart';
 import 'package:proj_inz/core/theme.dart';
 import 'package:proj_inz/core/utils/utils.dart';
+import 'package:proj_inz/data/repositories/coupon_repository.dart';
 import 'package:proj_inz/data/repositories/user_repository.dart';
 import 'package:proj_inz/data/repositories/wallet_repository.dart';
 import 'package:proj_inz/presentation/screens/bought_coupon_list_screen.dart';
@@ -335,8 +339,16 @@ Widget build(BuildContext context) {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (_) =>
-                                      const BoughtCouponListScreen(),
+                                  builder: (_) => BlocProvider(
+                                    create: (context) => OwnedCouponListBloc(
+                                      context.read<CouponRepository>(),
+                                    )..add(
+                                      FetchCoupons(
+                                        userId: FirebaseAuth.instance.currentUser!.uid,
+                                      ),
+                                    ),
+                                    child: const BoughtCouponListScreen(),
+                                  ),
                                 ),
                               );
                             },
@@ -349,8 +361,16 @@ Widget build(BuildContext context) {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (_) =>
-                                      const ListedCouponListScreen(),
+                                  builder: (_) => BlocProvider(
+                                    create: (context) => ListedCouponListBloc(
+                                      context.read<CouponRepository>(),
+                                    )..add(
+                                      FetchListedCoupons(
+                                        userId: FirebaseAuth.instance.currentUser!.uid,
+                                      ),
+                                    ),
+                                    child: const ListedCouponListScreen(),
+                                  ),
                                 ),
                               );
                             },
