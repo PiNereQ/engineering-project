@@ -125,6 +125,8 @@ class Conversation extends Equatable {
     bool? isReadByBuyer,
     bool? isReadBySeller,
     bool? isReadByCurrentUser,
+    int? buyerProfilePicture,
+    int? sellerProfilePicture,
   }) {
     return Conversation(
       id: id ?? this.id,
@@ -145,7 +147,10 @@ class Conversation extends Equatable {
       isReadBySeller: isReadBySeller ?? this.isReadBySeller,
 
       isReadByCurrentUser:
-          isReadByCurrentUser ?? this.isReadByCurrentUser, 
+          isReadByCurrentUser ?? this.isReadByCurrentUser,
+
+      buyerProfilePicture: buyerProfilePicture ?? this.buyerProfilePicture,
+      sellerProfilePicture: sellerProfilePicture ?? this.sellerProfilePicture,
     );
   }
 }
