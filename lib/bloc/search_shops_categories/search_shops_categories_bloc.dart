@@ -1,9 +1,12 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'search_shops_categories_event.dart';
-import 'search_shops_categories_state.dart';
+import 'package:equatable/equatable.dart';
 import 'package:proj_inz/data/models/shop_model.dart';
 import 'package:proj_inz/data/repositories/shop_repository.dart';
 import 'package:proj_inz/data/repositories/category_repository.dart';
+import 'package:proj_inz/data/models/category_model.dart';
+
+part 'search_shops_categories_event.dart';
+part 'search_shops_categories_state.dart';
 
 class SearchBloc extends Bloc<SearchEvent, SearchState> {
   final ShopRepository shopRepository;
