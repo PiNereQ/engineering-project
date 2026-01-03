@@ -477,13 +477,17 @@ class _CouponDetails extends StatelessWidget {
                   onTap: () => _showCodeDialog(context, code),
                 ),
                 isUsed
-                ? Text(
-                    'Ten kupon został już wykorzystany.',
-                    style: TextStyle(
-                      color: AppColors.textSecondary,
-                      fontSize: 16,
-                      fontFamily: 'Itim',
-                      fontWeight: FontWeight.w400,
+                ? Align(
+                    alignment: Alignment.center,
+                    child: Text(
+                      'Ten kupon został już przez Ciebie wykorzystany.',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 16,
+                        fontFamily: 'Itim',
+                        fontWeight: FontWeight.w400,
+                      ),
                     ),
                   )
                 : CustomTextButton(
