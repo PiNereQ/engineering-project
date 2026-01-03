@@ -127,13 +127,30 @@ class _ChatScreenState extends State<ChatScreen> {
                     final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
                     context.read<ChatUnreadBloc>().add(CheckUnreadStatus(userId: userId));
                     if (state.conversations.isEmpty) {
-                      return const Center(
-                        child: Text(
-                          'Brak rozmów',
-                          style: TextStyle(
-                            fontFamily: 'Itim',
-                            fontSize: 16,
-                            color: AppColors.textSecondary,
+                      return Center(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                isBuying
+                                    ? "Nie masz jeszcze konwersacji.\n"
+                                      "Aby rozpocząć rozmowę, wejdź w szczegóły kuponu "
+                                      "i wybierz \"Zapytaj o ten kupon\"."
+                                    : "Nie masz jeszcze konwersacji.\n"
+                                      "Gdy ktoś zapyta o Twój kupon, "
+                                      "rozmowa pojawi się tutaj.",
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: AppColors.textPrimary,
+                                  fontSize: 18,
+                                  fontFamily: 'Itim',
+                                  fontWeight: FontWeight.w400,
+                                  height: 1.3,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       );

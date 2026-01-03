@@ -127,16 +127,27 @@ class _ListedCouponListScreenState extends State<ListedCouponListScreen> with Ro
 
     if (state is ListedCouponListLoadEmpty) {
       return const SliverFillRemaining(
+        hasScrollBody: false,
         child: Center(
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: 24),
-            child: Text(
-              "Nie masz żadnych wystawionych kuponów.",
-              style: TextStyle(
-                fontSize: 18,
-                fontFamily: 'Itim',
-                color: AppColors.textPrimary,
-              ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  "Nie masz jeszcze wystawionych kuponów.\n"
+                  "Aby dodać nowy kupon na sprzedaż, "
+                  "przejdź do zakładki \"Dodaj\".",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 18,
+                    fontFamily: 'Itim',
+                    fontWeight: FontWeight.w400,
+                    height: 1.3,
+                  ),
+                ),
+              ],
             ),
           ),
         ),

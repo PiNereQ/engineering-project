@@ -218,7 +218,7 @@ class _CouponListScreenContentState extends State<_CouponListScreenContent> with
                         padding: EdgeInsets.symmetric(horizontal: 24),
                         child: Text(
                           "Nie znaleźliśmy kuponów pasujących do wybranych filtrów...",
-                          textAlign: TextAlign.left,
+                          textAlign: TextAlign.center,
                           style: TextStyle(
                             color: AppColors.textPrimary,
                             fontSize: 18,
