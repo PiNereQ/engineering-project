@@ -6,6 +6,7 @@ import 'package:proj_inz/bloc/number_verification/number_verification_bloc.dart'
 import 'package:proj_inz/core/theme.dart';
 import 'package:proj_inz/presentation/screens/phone_number_confirmation_screen.dart';
 import 'package:proj_inz/presentation/screens/legal_document_screen.dart';
+import 'package:proj_inz/presentation/screens/profile_picture_picker_screen.dart';
 import 'package:proj_inz/presentation/screens/sign_in_screen.dart';
 import 'package:proj_inz/presentation/widgets/dashed_separator.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_icon_button.dart';
@@ -23,6 +24,7 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
+  late Future<_AccountStatsData> _accountStatsFuture;
   late Future<Map<String, dynamic>?> _profileFuture;
 
   @override
@@ -34,8 +36,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void _fetchProfile() {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
+
+    final repo = context.read<UserRepository>();
+
     setState(() {
-      _profileFuture = context.read<UserRepository>().getUserProfile(user.uid);
+      _accountStatsFuture = Future.wait([
+        repo.getUserProfile(user.uid),
+        repo.getSoldCouponsAmount(user.uid),
+        repo.getPurchasedCouponsAmount(user.uid),
+      ]).then((results) {
+        return _AccountStatsData(
+          profile: results[0] as Map<String, dynamic>,
+          sold: results[1] as int,
+          purchased: results[2] as int,
+        );
+      });
     });
   }
 
@@ -66,8 +81,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 icon: Icons.person_outline,
               ),
 
-              FutureBuilder<Map<String, dynamic>?>(
-                future: _profileFuture,
+              FutureBuilder<_AccountStatsData>(
+                future: _accountStatsFuture,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator());
@@ -83,7 +98,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     );
                   }
 
-                  final user = snapshot.data!;
+                  final data = snapshot.data!;
+                  final user = data.profile;
                   final bool hasPhoneNumber = FirebaseAuth.instance.currentUser!.phoneNumber?.isNotEmpty ?? false;
                   if (kDebugMode) print(FirebaseAuth.instance.currentUser?.phoneNumber);
 
@@ -106,18 +122,44 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               : '—',
                         ),
                         _KeyValueRow(
+                          label: 'Zdjęcie profilowe',
+                          value: ' ',
+                          trailing: CustomTextButton.small(
+                            label: 'Zmień',
+                            width: 100,
+                            onTap: () async {
+                              final profile = user;
+                              final currentAvatar = profile['profile_picture'] ?? 0;
+
+                              final result = await Navigator.push<int>(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => ProfilePicturePickerScreen(
+                                    currentAvatarId: currentAvatar,
+                                  ),
+                                ),
+                              );
+
+                              if (result != null) {
+                                _fetchProfile();
+                                Navigator.pop(context, true);
+                              }
+                            },
+                          ),
+                        ),
+                        _KeyValueRow(
                           label: 'Numer telefonu',
                           value: hasPhoneNumber ? 'Potwierdzony' : 'Niepotwierdzony',
                           trailing: !hasPhoneNumber
-                              ? _InlineAction(
-                                  text: 'Potwierdź',
+                              ? CustomTextButton.small(
+                                  label: 'Potwierdź',
+                                  width: 100,
                                   onTap: () async {
                                     await Navigator.of(context).push(
                                       MaterialPageRoute(
                                         builder: (context) => BlocProvider<NumberVerificationBloc>.value(
-                                          value: context.read<NumberVerificationBloc>()..add(
-                                            NumberVerificationFormShownAfterRegistration(),
-                                          ),
+                                          value: context.read<NumberVerificationBloc>()
+                                            ..add(NumberVerificationFormShownAfterRegistration()),
                                           child: const PhoneNumberConfirmationScreen(),
                                         ),
                                       ),
@@ -133,11 +175,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           child: DashedSeparator(),
                         ),
 
-                        const Row(
+                        Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            _StatItem(label: 'Kupionych kuponów', value: '0'),
-                            _StatItem(label: 'Sprzedanych kuponów', value: '0'),
+                            _StatItem(
+                              label: 'Kupionych kuponów',
+                              value: data.purchased.toString(),
+                            ),
+                            _StatItem(
+                              label: 'Sprzedanych kuponów',
+                              value: data.sold.toString(),
+                            ),
                           ],
                         ),
                       ],
@@ -359,41 +407,34 @@ class _KeyValueRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Expanded(
-          child: Text(
-            '$label: $value',
-            style: const TextStyle(
-              fontFamily: 'Itim',
-              fontSize: 18,
-              color: AppColors.textPrimary,
+          child: RichText(
+            text: TextSpan(
+              style: const TextStyle(
+                fontFamily: 'Itim',
+                fontSize: 18,
+              ),
+              children: [
+                TextSpan(
+                  text: '$label: ',
+                  style: const TextStyle(
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                TextSpan(
+                  text: value,
+                  style: const TextStyle(
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+              ],
             ),
           ),
         ),
         if (trailing != null) trailing!,
       ],
-    );
-  }
-}
-
-class _InlineAction extends StatelessWidget {
-  final String text;
-  final VoidCallback? onTap;
-  const _InlineAction({required this.text, required this.onTap});
-  
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Text(
-        text,
-        style: const TextStyle(
-          fontFamily: 'Itim',
-          fontSize: 16,
-          color: AppColors.primaryButton,
-        ),
-      )
     );
   }
 }
@@ -766,4 +807,16 @@ Future<bool?> showUnblockConfirmDialog(
       ],
     ),
   );
+}
+
+class _AccountStatsData {
+  final Map<String, dynamic> profile;
+  final int sold;
+  final int purchased;
+
+  _AccountStatsData({
+    required this.profile,
+    required this.sold,
+    required this.purchased,
+  });
 }

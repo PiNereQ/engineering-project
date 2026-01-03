@@ -10,7 +10,9 @@ import 'package:proj_inz/data/models/coupon_model.dart';
 import 'package:proj_inz/data/repositories/chat_repository.dart';
 import 'package:proj_inz/data/repositories/coupon_repository.dart';
 import 'package:proj_inz/data/repositories/user_repository.dart';
+import 'package:proj_inz/presentation/screens/add_screen.dart';
 import 'package:proj_inz/presentation/screens/chat_detail_screen.dart';
+import 'package:proj_inz/presentation/widgets/avatar_view.dart';
 import 'package:proj_inz/presentation/widgets/custom_snack_bar.dart';
 import 'package:proj_inz/presentation/widgets/dashed_separator.dart';
 import 'package:proj_inz/presentation/widgets/error_card.dart';
@@ -120,6 +122,7 @@ class BoughtCouponDetailsScreen extends StatelessWidget {
                                     sellerReputation: state.coupon.sellerReputation,
                                     sellerJoinDate: state.coupon.sellerJoinDate ?? DateTime(1970, 1, 1),
                                     couponId: state.coupon.id,
+                                    sellerProfilePicture: state.coupon.sellerProfilePicture,
                                   ),
                                 ],
                               );
@@ -580,69 +583,31 @@ class _CouponDetails extends StatelessWidget {
 
     return showDialog(
       context: context,
-      builder: (context) {
-        return Dialog(
-          child: Container(
-            decoration: ShapeDecoration(
-              color: AppColors.surface,
-              shape: RoundedRectangleBorder(
-                side: const BorderSide(width: 2),
-                borderRadius: BorderRadius.circular(24),
-              ),
-              shadows: const [
-                BoxShadow(
-                  color: AppColors.textPrimary,
-                  blurRadius: 0,
-                  offset: Offset(4, 4),
-                  spreadRadius: 0,
-                ),
-              ],
-            ),
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text(
-                  'Ta akcja jest nieodwracalna. Gdy oznaczysz kupon jako wykorzystany poprosimy Cię o ocenę sprzedającego.',
-                  style: TextStyle(
-                    color: AppColors.textPrimary,
-                    fontFamily: 'Itim',
-                    fontSize: 16,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 24),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  mainAxisSize: MainAxisSize.max,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    CustomTextButton(
-                      label: 'Anuluj',
-                      onTap: () => Navigator.of(context).pop(),
-                    ),
-                    CustomTextButton(
-                      label: 'OK',
-                      icon:
-                          bloc.state is OwnedCouponMarkAsUsedInProgress
-                              ? const CircularProgressIndicator(
-                                color: AppColors.textPrimary,
-                              )
-                              : null,
-                      onTap: () {
-                        if (bloc.state is! OwnedCouponMarkAsUsedInProgress) {
-                          bloc.add(MarkCouponAsUsed());
-                          Navigator.of(context).pop();
-                        }
-                      },
-                    ),
-                  ],
-                ),
-              ],
-            ),
+      builder: (_) => appDialog(
+        title: 'Potwierdzenie',
+        content:
+            'Ta akcja jest nieodwracalna.\n\n'
+            'Po oznaczeniu kuponu jako wykorzystanego '
+            'poprosimy Cię o ocenę sprzedającego.',
+        actions: [
+          CustomTextButton.small(
+            label: 'Anuluj',
+            width: 100,
+            onTap: () => Navigator.of(context).pop(),
           ),
-        );
-      },
+          const SizedBox(width: 8),
+          CustomTextButton.primarySmall(
+            label: bloc.state is OwnedCouponMarkAsUsedInProgress ? '...' : 'OK',
+            width: 100,
+            onTap: () {
+              if (bloc.state is! OwnedCouponMarkAsUsedInProgress) {
+                bloc.add(MarkCouponAsUsed());
+                Navigator.of(context).pop();
+              }
+            },
+          ),
+        ],
+      ),
     );
   }
 }
@@ -656,6 +621,7 @@ class _SellerDetails extends StatelessWidget {
     required this.sellerReputation,
     required this.sellerJoinDate,
     required this.couponId,
+    required this.sellerProfilePicture,
   });
 
   final String sellerId;
@@ -663,6 +629,7 @@ class _SellerDetails extends StatelessWidget {
   final int? sellerReputation;
   final DateTime sellerJoinDate;
   final String couponId;
+  final int? sellerProfilePicture;
 
   @override
   Widget build(BuildContext context) {
@@ -704,15 +671,18 @@ class _SellerDetails extends StatelessWidget {
               ),
             ),
           ),
+          const SizedBox(height: 4),
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             spacing: 16,
             children: [
-              const CircleAvatar(
-                radius: 35,
+              AvatarView(
+                avatarId: sellerProfilePicture,
+                size: 70,
               ),
               Expanded(
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   spacing: 8,
                   children: [
@@ -753,7 +723,7 @@ class _SellerDetails extends StatelessWidget {
                         height: 0.75,
                       ),
                     ),
-                    SizedBox(height: 16),
+                    SizedBox(height: 8),
                     Center(
                       child: CustomTextButton.primary(
                         label: "Zapytaj o ten kupon",

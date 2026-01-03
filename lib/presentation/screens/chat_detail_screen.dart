@@ -10,6 +10,7 @@ import 'package:proj_inz/data/models/conversation_model.dart';
 import 'package:proj_inz/data/models/message_model.dart';
 import 'package:proj_inz/data/repositories/user_repository.dart';
 import 'package:proj_inz/presentation/screens/report_screen.dart';
+import 'package:proj_inz/presentation/widgets/avatar_view.dart';
 import 'package:proj_inz/presentation/widgets/chat_report_popup.dart';
 import 'package:proj_inz/presentation/widgets/coupon_preview_popup.dart';
 import 'package:proj_inz/presentation/widgets/custom_snack_bar.dart';
@@ -34,6 +35,7 @@ class ChatHeader extends StatelessWidget {
   final bool isCouponDeleted;
   final VoidCallback onBack;
   final VoidCallback onReport;
+  final int? avatarId;
 
   const ChatHeader({
     super.key,
@@ -44,6 +46,7 @@ class ChatHeader extends StatelessWidget {
     required this.isCouponDeleted,
     required this.onBack,
     required this.onReport,
+    required this.avatarId,
   });
 
   @override
@@ -127,25 +130,16 @@ class ChatHeader extends StatelessWidget {
           // user info - avatar, username, reputation, join date
           Row(
             children: [
-              Container(
-                width: 54,
-                height: 54,
-                decoration: ShapeDecoration(
-                  color: AppColors.surface,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(100),
-                    side: const BorderSide(width: 2, color: AppColors.textPrimary),
-                  ),
-                  shadows: const [
-                    BoxShadow(
-                      color: AppColors.textPrimary,
-                      offset: Offset(3, 3),
-                      blurRadius: 0,
-                    )
-                  ],
+              if (avatarId == null)
+                CircleAvatar(
+                  radius: 27,
+                  backgroundColor: AppColors.background,
+                )
+              else
+                AvatarView(
+                  avatarId: avatarId,
+                  size: 54,
                 ),
-                child: const Icon(Icons.person, size: 30),
-              ),
 
               const SizedBox(width: 12),
 
@@ -443,6 +437,9 @@ class _ChatDetailViewState extends State<ChatDetailView> {
 
   bool get _isChatBlocked => _blockedByMe || _blockedMe;
 
+  int? _getOtherAvatarId(Map<String, dynamic>? profile) {
+    return profile?['profile_picture'] as int?;
+  }
 
   @override
   void initState() {
@@ -462,7 +459,7 @@ class _ChatDetailViewState extends State<ChatDetailView> {
       context.read<ChatUnreadBloc>().add(CheckUnreadStatus(userId: userId));
 
       context.read<ChatDetailBloc>().add(
-        LoadMessages(_conversation!.id, userId, raterId: widget.buyerId),
+        LoadMessages(_conversation!.id, userId, raterId: widget.buyerId, buyerId: widget.buyerId, sellerId: widget.sellerId),
       );
     }
   }
@@ -513,6 +510,8 @@ class _ChatDetailViewState extends State<ChatDetailView> {
                 child: FutureBuilder<Map<String, dynamic>?>(
                   future: _otherProfileFuture,
                   builder: (context, snap) {
+                    final isLoading = snap.connectionState == ConnectionState.waiting;
+                    final avatarId = isLoading ? null : _getOtherAvatarId(snap.data);                    
                     final otherRep = snap.data?['reputation'] as int?;
                     final otherJoinRaw = snap.data?['created_at'];
                     final otherJoinDate = otherJoinRaw == null
@@ -543,6 +542,7 @@ class _ChatDetailViewState extends State<ChatDetailView> {
                       joinDate: otherJoinDate,
           
                       isCouponDeleted: _isCouponDeleted,
+                      avatarId: avatarId,
                       onBack: () => Navigator.pop(context),
                       onReport: () => setState(() => _showPopup = true),
                     );
@@ -587,7 +587,8 @@ class _ChatDetailViewState extends State<ChatDetailView> {
           
                         if (state is ChatDetailLoaded || state is ChatDetailSubmittingRating) {
                           final messages = (state as dynamic).messages as List<Message>;
-                          final ratingExists = (state as dynamic).ratingExists as bool?;
+                          final buyerRatingExists = (state as dynamic).buyerRatingExists as bool?;
+                          final sellerRatingExists = (state as dynamic).sellerRatingExists as bool?;
           
                           if (messages.isEmpty) {
                             return const Center(
@@ -621,7 +622,8 @@ class _ChatDetailViewState extends State<ChatDetailView> {
                               if (msg.type == 'system') {
                                 return SystemMessageCard(
                                   msg: msg, 
-                                  ratingExists: ratingExists,
+                                  buyerRatingExists: buyerRatingExists,
+                                  sellerRatingExists: sellerRatingExists,
                                   conversationId: conversationId,
                                   buyerId: widget.buyerId,
                                   sellerId: widget.sellerId,
@@ -793,7 +795,7 @@ class _ChatDetailViewState extends State<ChatDetailView> {
     );
 
     context.read<ChatDetailBloc>().add(
-      LoadMessages(convId, currentUserId),
+      LoadMessages(convId, currentUserId, buyerId: widget.buyerId, sellerId: widget.sellerId),
     );
 
     _controller.clear();
@@ -840,7 +842,8 @@ class SystemMessageCard extends StatefulWidget {
   const SystemMessageCard({
     super.key,
     required this.msg,
-    this.ratingExists,
+    this.buyerRatingExists,
+    this.sellerRatingExists,
     required this.conversationId,
     required this.buyerId,
     required this.sellerId,
@@ -848,7 +851,8 @@ class SystemMessageCard extends StatefulWidget {
   });
 
   final Message msg;
-  final bool? ratingExists;
+  final bool? buyerRatingExists;
+  final bool? sellerRatingExists;
   final String conversationId;
   final String buyerId;
   final String sellerId;
@@ -866,8 +870,9 @@ class _SystemMessageCardState extends State<SystemMessageCard> {
   @override
   Widget build(BuildContext context) {
     Widget? contents;
+    final ratingExists = widget.msg.text == 'rating_request_for_buyer' ? widget.buyerRatingExists : widget.sellerRatingExists;
     if (widget.msg.text == 'rating_request_for_buyer') {
-      if (widget.ratingExists == true) {
+      if (ratingExists == true) {
         contents = Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
@@ -989,7 +994,7 @@ class _SystemMessageCardState extends State<SystemMessageCard> {
         );
       }
     } else if (widget.msg.text == 'rating_request_for_seller') {
-      if (widget.ratingExists == true) {
+      if (ratingExists == true) {
         contents = Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [

@@ -40,7 +40,7 @@ class ReputationBar extends StatelessWidget {
         final barWidth = availableWidth * factor;
 
         final barWidget = SizedBox(
-          width: barWidth + 4,
+          width: availableWidth + 4,
           height: height + 4,
           child: Stack(
             children: [
@@ -49,12 +49,23 @@ class ReputationBar extends StatelessWidget {
                 top: 4,
                 left: 0,
                 child: Container(
-                  width: barWidth,
+                  width: availableWidth,
                   height: height,
                   decoration: BoxDecoration(
                     color: AppColors.textPrimary,
                     borderRadius: BorderRadius.circular(height),
                   ),
+                ),
+              ),
+
+              // container for bar
+              Container(
+                width: availableWidth,
+                height: height,
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(height),
+                  border: Border.all(width: 2),
                 ),
               ),
 

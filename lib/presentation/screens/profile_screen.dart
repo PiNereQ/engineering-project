@@ -2,18 +2,23 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:proj_inz/bloc/auth/auth_bloc.dart';
+import 'package:proj_inz/bloc/listed_coupon_list/listed_coupon_list_bloc.dart';
+import 'package:proj_inz/bloc/listed_coupon_list/listed_coupon_list_event.dart';
+import 'package:proj_inz/bloc/owned_coupon_list/owned_coupon_list_bloc.dart';
 import 'package:proj_inz/core/theme.dart';
 import 'package:proj_inz/core/utils/utils.dart';
+import 'package:proj_inz/data/repositories/coupon_repository.dart';
 import 'package:proj_inz/data/repositories/user_repository.dart';
 import 'package:proj_inz/data/repositories/wallet_repository.dart';
 import 'package:proj_inz/presentation/screens/bought_coupon_list_screen.dart';
 import 'package:proj_inz/presentation/screens/debug_screen.dart';
+import 'package:proj_inz/presentation/screens/favorites_screen.dart';
 import 'package:proj_inz/presentation/screens/listed_coupon_list_screen.dart';
 import 'package:proj_inz/presentation/screens/saved_coupon_list_screen.dart';
 import 'package:proj_inz/presentation/screens/settings_screen.dart';
 import 'package:proj_inz/presentation/screens/sign_in_screen.dart';
+import 'package:proj_inz/presentation/widgets/avatar_view.dart';
 import 'package:proj_inz/presentation/widgets/custom_snack_bar.dart';
 import 'package:proj_inz/presentation/widgets/dashed_separator.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_text_button.dart';
@@ -62,6 +67,15 @@ class ProfileScreen extends StatefulWidget {
       }
     }
 
+    void _reloadProfile() {
+      final userRepo = context.read<UserRepository>();
+      final userId = FirebaseAuth.instance.currentUser!.uid;
+
+      setState(() {
+        _profileFuture = userRepo.getUserProfile(userId);
+      });
+    }
+
 
 @override
 Widget build(BuildContext context) {
@@ -92,14 +106,30 @@ Widget build(BuildContext context) {
                 Row(
                   spacing: 12,
                   children: [
-                    CircleAvatar(
-                      radius: 36,
-                      backgroundColor: Colors.transparent,
-                      child: SvgPicture.asset(
-                        'assets/icons/Awatar.svg',
-                        width: 100,
-                        height: 100,
-                      ),
+                    FutureBuilder<Map<String, dynamic>?>(
+                      future: _profileFuture,
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState == ConnectionState.waiting) {
+                          return CircleAvatar(
+                            radius: 36,
+                            backgroundColor: AppColors.surface,
+                          );
+                        }
+
+                        if (!snapshot.hasData) {
+                          return AvatarView(
+                            avatarId: 0,
+                            size: 72,
+                          );
+                        }
+
+                        final avatarId = snapshot.data!['profile_picture'] ?? 0;
+
+                        return AvatarView(
+                          avatarId: avatarId,
+                          size: 72,
+                        );
+                      },
                     ),
                     FutureBuilder<Map<String, dynamic>?>(
                       future: _profileFuture,
@@ -309,8 +339,16 @@ Widget build(BuildContext context) {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (_) =>
-                                      const BoughtCouponListScreen(),
+                                  builder: (_) => BlocProvider(
+                                    create: (context) => OwnedCouponListBloc(
+                                      context.read<CouponRepository>(),
+                                    )..add(
+                                      FetchCoupons(
+                                        userId: FirebaseAuth.instance.currentUser!.uid,
+                                      ),
+                                    ),
+                                    child: const BoughtCouponListScreen(),
+                                  ),
                                 ),
                               );
                             },
@@ -323,8 +361,16 @@ Widget build(BuildContext context) {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (_) =>
-                                      const ListedCouponListScreen(),
+                                  builder: (_) => BlocProvider(
+                                    create: (context) => ListedCouponListBloc(
+                                      context.read<CouponRepository>(),
+                                    )..add(
+                                      FetchListedCoupons(
+                                        userId: FirebaseAuth.instance.currentUser!.uid,
+                                      ),
+                                    ),
+                                    child: const ListedCouponListScreen(),
+                                  ),
                                 ),
                               );
                             },
@@ -368,7 +414,14 @@ Widget build(BuildContext context) {
                     CustomTextButton(
                       width: double.infinity,
                       label: 'Ulubione',
-                      onTap: () {},
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const FavoritesScreen(),
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ),
@@ -384,13 +437,17 @@ Widget build(BuildContext context) {
                     Expanded(
                       child: CustomTextButton(
                         label: 'Ustawienia',
-                        onTap: () {
-                          Navigator.push(
+                        onTap: () async {
+                          final result = await Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (_) => const SettingsScreen(),
                             ),
                           );
+
+                          if (result == true) {
+                            _reloadProfile();
+                          }
                         },
                       ),
                     ),

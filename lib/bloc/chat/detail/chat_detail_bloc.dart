@@ -24,15 +24,24 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
     try {
       final messages = await chatRepository.getMessages(event.conversationId, event.currentUserId);
 
-      bool? ratingExists;
-      if (event.raterId != null && event.currentUserId == event.raterId) {
-        ratingExists = await chatRepository.checkIfRatingByBuyerExists(
-          event.raterId!,
+      bool? buyerRatingExists;
+      bool? sellerRatingExists;
+
+      if (event.currentUserId == event.buyerId) {
+        // User is buyer, check if buyer has rated
+        buyerRatingExists = await chatRepository.checkIfRatingByBuyerExists(
+          event.currentUserId,
+          event.conversationId,
+        );
+      } else if (event.currentUserId == event.sellerId) {
+        // User is seller, check if seller has rated
+        sellerRatingExists = await chatRepository.checkIfRatingBySellerExists(
+          event.currentUserId,
           event.conversationId,
         );
       }
 
-      emit(ChatDetailLoaded(messages, ratingExists: ratingExists));
+      emit(ChatDetailLoaded(messages, buyerRatingExists: buyerRatingExists, sellerRatingExists: sellerRatingExists));
 
       _startAutoRefresh(event.conversationId, event.currentUserId);
     } catch (e) {
@@ -44,11 +53,12 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
       RefreshMessages event, Emitter<ChatDetailState> emit) async {
     if (state is! ChatDetailLoaded) return;
 
-    final currentRatingExists = (state as ChatDetailLoaded).ratingExists;
+    final currentBuyerRatingExists = (state as ChatDetailLoaded).buyerRatingExists;
+    final currentSellerRatingExists = (state as ChatDetailLoaded).sellerRatingExists;
 
     try {
       final messages = await chatRepository.getMessages(event.conversationId, event.currentUserId);
-      emit(ChatDetailLoaded(messages, ratingExists: currentRatingExists));
+      emit(ChatDetailLoaded(messages, buyerRatingExists: currentBuyerRatingExists, sellerRatingExists: currentSellerRatingExists));
     } catch (_) {}
   }
 
@@ -57,8 +67,9 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
     if (state is! ChatDetailLoaded) return;
 
     final currentMessages = (state as ChatDetailLoaded).messages;
-    final currentRatingExists = (state as ChatDetailLoaded).ratingExists;
-    emit(ChatDetailSending(currentMessages, ratingExists: currentRatingExists));
+    final currentBuyerRatingExists = (state as ChatDetailLoaded).buyerRatingExists;
+    final currentSellerRatingExists = (state as ChatDetailLoaded).sellerRatingExists;
+    emit(ChatDetailSending(currentMessages, buyerRatingExists: currentBuyerRatingExists, sellerRatingExists: currentSellerRatingExists));
 
     try {
       await chatRepository.sendMessage(
@@ -70,7 +81,7 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
       final updatedMessages =
           await chatRepository.getMessages(event.conversationId, event.senderId);
 
-      emit(ChatDetailLoaded(updatedMessages, ratingExists: currentRatingExists));
+      emit(ChatDetailLoaded(updatedMessages, buyerRatingExists: currentBuyerRatingExists, sellerRatingExists: currentSellerRatingExists));
     } catch (e) {
       emit(ChatDetailError(e.toString()));
     }
@@ -81,8 +92,9 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
     if (state is! ChatDetailLoaded) return;
 
     final currentMessages = (state as ChatDetailLoaded).messages;
-    final currentRatingExists = (state as ChatDetailLoaded).ratingExists;
-    emit(ChatDetailSubmittingRating(currentMessages, ratingExists: currentRatingExists));
+    final currentBuyerRatingExists = (state as ChatDetailLoaded).buyerRatingExists;
+    final currentSellerRatingExists = (state as ChatDetailLoaded).sellerRatingExists;
+    emit(ChatDetailSubmittingRating(currentMessages, buyerRatingExists: currentBuyerRatingExists, sellerRatingExists: currentSellerRatingExists));
 
     try {
       await chatRepository.submitRating(
@@ -95,9 +107,11 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
         ratingComment: event.ratingComment,
       );
 
-      // After submitting, refresh messages and set ratingExists to true
+      // After submitting, refresh messages and set the appropriate ratingExists to true
       final updatedMessages = await chatRepository.getMessages(event.conversationId, event.ratingUserId);
-      emit(ChatDetailLoaded(updatedMessages, ratingExists: true));
+      final newBuyerRatingExists = event.ratedUserIsSeller ? true : currentBuyerRatingExists;
+      final newSellerRatingExists = !event.ratedUserIsSeller ? true : currentSellerRatingExists;
+      emit(ChatDetailLoaded(updatedMessages, buyerRatingExists: newBuyerRatingExists, sellerRatingExists: newSellerRatingExists));
     } catch (e) {
       emit(ChatDetailError(e.toString()));
     }

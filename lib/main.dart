@@ -8,11 +8,14 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:proj_inz/bloc/auth/auth_bloc.dart';
 import 'package:proj_inz/bloc/chat/unread/chat_unread_bloc.dart';
+import 'package:proj_inz/bloc/favorite/favorite_bloc.dart';
+import 'package:proj_inz/bloc/favorite/favorite_event.dart';
 import 'package:proj_inz/bloc/number_verification/number_verification_bloc.dart';
 import 'package:proj_inz/core/theme.dart';
 import 'package:proj_inz/data/repositories/auth_repository.dart';
 import 'package:proj_inz/data/repositories/category_repository.dart';
 import 'package:proj_inz/data/repositories/coupon_repository.dart';
+import 'package:proj_inz/data/repositories/favorite_repository.dart';
 import 'package:proj_inz/data/repositories/shop_repository.dart';
 import 'package:proj_inz/data/repositories/user_repository.dart';
 import 'package:proj_inz/presentation/screens/sign_in_screen.dart';
@@ -21,6 +24,7 @@ import 'package:proj_inz/data/repositories/chat_repository.dart';
 import 'package:proj_inz/bloc/chat/list/chat_list_bloc.dart';
 import 'firebase_options.dart';
 
+final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
 
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
@@ -102,6 +106,7 @@ class MainApp extends StatelessWidget {
         RepositoryProvider(create: (_) => ShopRepository()),
         RepositoryProvider(create: (_) => CategoryRepository()),
         RepositoryProvider(create: (_) => ChatRepository()),
+        RepositoryProvider(create: (_) => FavoriteRepository()),
       ],
       child: MultiBlocProvider(
         providers: [
@@ -125,10 +130,15 @@ class MainApp extends StatelessWidget {
             create: (context) =>
                 ChatUnreadBloc(chatRepository: context.read<ChatRepository>()),
           ),
+          BlocProvider(
+            create: (context) => 
+                FavoriteBloc(context.read<FavoriteRepository>(),)..add(LoadFavorites()),
+          ),
         ],
         child: MaterialApp(
           title: 'Flutter Demo',
           theme: ThemeData(primarySwatch: Colors.blue),
+          navigatorObservers: [routeObserver],
           home: StreamBuilder<User?>(
             stream: FirebaseAuth.instance.authStateChanges(),
             builder: (context, snapshot) {
