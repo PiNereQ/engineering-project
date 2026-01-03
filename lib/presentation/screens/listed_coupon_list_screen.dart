@@ -3,12 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:proj_inz/core/app_flags.dart';
 import 'package:proj_inz/core/theme.dart';
 import 'package:proj_inz/data/repositories/coupon_repository.dart';
 
 import 'package:proj_inz/bloc/listed_coupon_list/listed_coupon_list_bloc.dart';
 import 'package:proj_inz/bloc/listed_coupon_list/listed_coupon_list_event.dart';
 import 'package:proj_inz/bloc/listed_coupon_list/listed_coupon_list_state.dart';
+import 'package:proj_inz/main.dart';
 
 import 'package:proj_inz/presentation/widgets/error_card.dart';
 import 'package:proj_inz/presentation/widgets/listed_coupon_card.dart';
@@ -25,14 +27,30 @@ class ListedCouponListScreen extends StatefulWidget {
   State<ListedCouponListScreen> createState() => _ListedCouponListScreenState();
 }
 
-class _ListedCouponListScreenState extends State<ListedCouponListScreen> {
+class _ListedCouponListScreenState extends State<ListedCouponListScreen> with RouteAware {
   final ScrollController _scrollController = ScrollController();
   bool _listenerAdded = false;
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    routeObserver.subscribe(this, ModalRoute.of(context)! as PageRoute);
+  }
+
+  @override
   void dispose() {
+    routeObserver.unsubscribe(this);
     _scrollController.dispose();
     super.dispose();
+  }
+  
+  @override
+  void didPopNext() {
+    if (!AppFlags.listedCouponDeleted) return;
+
+    AppFlags.listedCouponDeleted = false;
+
+    context.read<ListedCouponListBloc>().add(RefreshListedCoupons());
   }
 
   void _setupListener(BuildContext context) {
@@ -47,10 +65,7 @@ class _ListedCouponListScreenState extends State<ListedCouponListScreen> {
   @override
   Widget build(BuildContext context) {
     final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
-    return BlocProvider(
-      create: (context) => ListedCouponListBloc(context.read<CouponRepository>())
-        ..add(FetchListedCoupons(userId: userId)),
-      child: BlocBuilder<ListedCouponListBloc, ListedCouponListState>(
+    return BlocBuilder<ListedCouponListBloc, ListedCouponListState>(
         builder: (context, state) {
           if (!_listenerAdded) {
             _setupListener(context);
@@ -76,8 +91,7 @@ class _ListedCouponListScreenState extends State<ListedCouponListScreen> {
             ),
           );
         },
-      ),
-    );
+      );
   }
 
   Widget _listContent(ListedCouponListState state) {

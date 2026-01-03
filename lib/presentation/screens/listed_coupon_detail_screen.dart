@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:proj_inz/bloc/listed_coupon/listed_coupon_bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:proj_inz/core/app_flags.dart';
 import 'package:proj_inz/core/theme.dart';
 import 'package:proj_inz/core/utils/utils.dart';
 import 'package:proj_inz/data/models/coupon_model.dart';
@@ -464,6 +465,8 @@ class _CouponDetails extends StatelessWidget {
                 await context
                     .read<CouponRepository>()
                     .deactivateListedCoupon(coupon.id);
+                    
+                AppFlags.listedCouponDeleted = true;    
 
                 if (context.mounted) {
                   showCustomSnackBar(
