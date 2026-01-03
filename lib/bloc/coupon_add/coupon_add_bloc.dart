@@ -14,10 +14,10 @@ class CouponAddBloc extends Bloc<CouponAddEvent, CouponAddState> {
       emit(const CouponAddInProgress());
 
       try {
-        couponRepository.postCouponOffer(event.offer);
+        await couponRepository.postCouponOffer(event.offer);
         emit(CouponAddSuccess());
       } catch (e) {
-        emit(CouponAddFailure(message: e.toString()));
+        emit(CouponAddFailure(error: e));
       }
     });
   }

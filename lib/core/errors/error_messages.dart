@@ -44,3 +44,18 @@ String searchErrorMessage(AppErrorType type) {
       return 'Nie udało się załadować wyników wyszukiwania.';
   }
 }
+
+String addCouponErrorMessage(AppErrorType type) {
+  switch (type) {
+    case AppErrorType.noConnection:
+      return 'Brak połączenia z internetem. Nie udało się dodać kuponu.';
+    case AppErrorType.timeout:
+      return 'Dodawanie kuponu trwa zbyt długo. Spróbuj ponownie.';
+    case AppErrorType.notFound:
+      return 'Nie udało się dodać kuponu.';
+    case AppErrorType.serverError:
+      return 'Wystąpił błąd serwera podczas dodawania kuponu.';
+    case AppErrorType.unknown:
+      return 'Nie udało się dodać kuponu.';
+  }
+}

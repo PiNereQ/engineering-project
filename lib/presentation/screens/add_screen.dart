@@ -8,7 +8,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:icon_decoration/icon_decoration.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:proj_inz/bloc/coupon_add/coupon_add_bloc.dart';
+import 'package:proj_inz/core/errors/error_messages.dart';
 import 'package:proj_inz/core/theme.dart';
+import 'package:proj_inz/core/utils/error_mapper.dart';
 import 'package:proj_inz/core/utils/text_formatters.dart';
 import 'package:proj_inz/data/models/coupon_offer_model.dart';
 import 'package:proj_inz/data/repositories/user_repository.dart';
@@ -388,7 +390,11 @@ class _AddScreenState extends State<AddScreen> {
           );
         } else if (state is CouponAddFailure) {
           _focusScopeNode.unfocus();
-          showCustomSnackBar(context, state.message);
+
+          final type = mapErrorToType(state.error);
+          final userMessage = addCouponErrorMessage(type);
+
+          showCustomSnackBar(context, userMessage);
         }
       },
       child: Scaffold(
@@ -1330,11 +1336,11 @@ class _AddScreenState extends State<AddScreen> {
                                                         'User',
                                                   );
                                             } catch (e) {
+                                              final type = mapErrorToType(e);
+                                              final message = addCouponErrorMessage(type);
+
                                               if (mounted) {
-                                                showCustomSnackBar(
-                                                  context,
-                                                  'Błąd synchronizacji użytkownika: $e',
-                                                );
+                                                showCustomSnackBar(context, message);
                                               }
                                               return;
                                             }
