@@ -6,6 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:proj_inz/bloc/coupon/coupon_bloc.dart';
 import 'package:proj_inz/bloc/coupon_list/coupon_list_bloc.dart';
 import 'package:proj_inz/bloc/payment/payment_bloc.dart';
+import 'package:proj_inz/core/app_flags.dart';
 import 'package:proj_inz/core/theme.dart';
 import 'package:proj_inz/core/utils/utils.dart';
 import 'package:proj_inz/data/models/coupon_model.dart';
@@ -269,6 +270,9 @@ class _CouponDetails extends StatelessWidget {
           Navigator.of(context, rootNavigator: true).pop();
           showCustomSnackBar(context, 'Płatność zakończona sukcesem!');
           final userId = FirebaseAuth.instance.currentUser?.uid;
+
+          AppFlags.couponBought = true;
+          
           if (context.mounted && userId != null) {
 
             Navigator.of(context).pushReplacement(
@@ -276,7 +280,6 @@ class _CouponDetails extends StatelessWidget {
               builder: (context) => BoughtCouponDetailsScreen(couponId: coupon.id),
               ),
             );
-            context.read<CouponListBloc>().add(RefreshCoupons()); // TODO: add listener for success state so the refresh is run after backend change
           }
           
         } else if (state is PaymentFailure) {
