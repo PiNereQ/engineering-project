@@ -671,7 +671,9 @@ class _SellerDetails extends StatelessWidget {
               ),
             ),
           ),
+          const SizedBox(height: 4),
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             spacing: 16,
             children: [
               AvatarView(
@@ -680,7 +682,7 @@ class _SellerDetails extends StatelessWidget {
               ),
               Expanded(
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   spacing: 8,
                   children: [
@@ -721,7 +723,7 @@ class _SellerDetails extends StatelessWidget {
                         height: 0.75,
                       ),
                     ),
-                    SizedBox(height: 16),
+                    SizedBox(height: 8),
                     Center(
                       child: CustomTextButton.primary(
                         label: "Zapytaj o ten kupon",
