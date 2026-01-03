@@ -137,7 +137,7 @@ class MainApp extends StatelessWidget {
         ],
         child: MaterialApp(
           title: 'Flutter Demo',
-          theme: ThemeData(primarySwatch: Colors.blue),
+          theme: appTheme,
           navigatorObservers: [routeObserver],
           home: StreamBuilder<User?>(
             stream: FirebaseAuth.instance.authStateChanges(),

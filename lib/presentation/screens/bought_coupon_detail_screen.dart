@@ -471,19 +471,23 @@ class _CouponDetails extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               spacing: 12,
               children: [
-                CustomTextButton(
+                CustomTextButton.primary(
                   label: 'Wyświetl kod kuponu',
                   icon: Icon(Icons.qr_code_rounded),
                   onTap: () => _showCodeDialog(context, code),
                 ),
                 isUsed
-                ? Text(
-                    'Ten kupon został już wykorzystany.',
-                    style: TextStyle(
-                      color: AppColors.textSecondary,
-                      fontSize: 16,
-                      fontFamily: 'Itim',
-                      fontWeight: FontWeight.w400,
+                ? Align(
+                    alignment: Alignment.center,
+                    child: Text(
+                      'Ten kupon został już przez Ciebie wykorzystany.',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 16,
+                        fontFamily: 'Itim',
+                        fontWeight: FontWeight.w400,
+                      ),
                     ),
                   )
                 : CustomTextButton(
@@ -586,9 +590,10 @@ class _CouponDetails extends StatelessWidget {
       builder: (_) => appDialog(
         title: 'Potwierdzenie',
         content:
-            'Ta akcja jest nieodwracalna.\n\n'
-            'Po oznaczeniu kuponu jako wykorzystanego '
-            'poprosimy Cię o ocenę sprzedającego.',
+            'Oznaczasz kupon jako wykorzystany.\n\n'
+            'Kupon pozostanie widoczny w zakładce "Kupione".\n'
+            'Po potwierdzeniu Ty i sprzedający będziecie mogli '
+            'ocenić transakcję - oceny wpływają na reputację.',
         actions: [
           CustomTextButton.small(
             label: 'Anuluj',

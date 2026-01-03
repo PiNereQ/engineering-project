@@ -19,3 +19,43 @@ class AppColors {
   static const notificationDot = Color(0xFFFF405F); // notification badge
   static const checkIcon = Color(0xFFD88170); // checkbox/radio icons
 }
+
+  ThemeData appTheme = ThemeData(
+    scaffoldBackgroundColor: AppColors.background,
+
+    // material colors
+    colorScheme: ColorScheme.light(
+      primary: AppColors.primaryButton,
+      secondary: AppColors.primaryButton,
+      surface: AppColors.surface,
+      onPrimary: AppColors.textPrimary,
+      onSurface: AppColors.textPrimary,
+    ),
+
+    // text
+    textSelectionTheme: const TextSelectionThemeData(
+      cursorColor: AppColors.primaryButton,
+      selectionColor: AppColors.primaryButton,
+      selectionHandleColor: AppColors.primaryButton,
+    ),
+
+    // progressy
+    progressIndicatorTheme: const ProgressIndicatorThemeData(
+      color: AppColors.primaryButton,
+    ),
+
+    // snackbars
+    snackBarTheme: const SnackBarThemeData(
+      backgroundColor: AppColors.surface,
+      contentTextStyle: TextStyle(
+        fontFamily: 'Itim',
+        fontSize: 16,
+        color: AppColors.textPrimary,
+      ),
+    ),
+
+    // (focus, ripple, etc)
+    focusColor: AppColors.primaryButton,
+    highlightColor: AppColors.primaryButton.withValues(alpha: 0.12),
+    splashColor: AppColors.primaryButton.withValues(alpha: 0.12),
+  );

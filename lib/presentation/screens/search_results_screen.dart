@@ -118,12 +118,25 @@ class SearchResultsScreen extends StatelessWidget {
 
                   if (shops.isEmpty && categories.isEmpty) {
                     return const Center(
-                      child: Text(
-                        'Brak wyników',
-                        style: TextStyle(
-                          fontFamily: 'Itim',
-                          fontSize: 18,
-                          fontWeight: FontWeight.w400,
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 24),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              "Nie znaleźliśmy wyników dla tego hasła.\n"
+                              "Sprawdź pisownię "
+                              "lub spróbuj wyszukać inny sklep albo kategorię.",
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontFamily: 'Itim',
+                                fontSize: 18,
+                                fontWeight: FontWeight.w400,
+                                height: 1.3,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     );

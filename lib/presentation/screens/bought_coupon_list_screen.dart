@@ -145,19 +145,26 @@ class _BoughtCouponListScreenState extends State<BoughtCouponListScreen> with Ro
       );
     } else if (state is OwnedCouponListLoadEmpty) {
       return const SliverFillRemaining(
+        hasScrollBody: false,
         child: Center(
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: 24),
-            child: Text(
-              "Nie posiadasz jeszcze żadnych kuponów.",
-              textAlign: TextAlign.left,
-              style: TextStyle(
-                color: AppColors.textPrimary,
-                fontSize: 18,
-                fontFamily: 'Itim',
-                fontWeight: FontWeight.w400,
-              ),
-              softWrap: true,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  "Nie masz jeszcze kupionych kuponów.\n"
+                  "Sprawdź dostępne oferty w zakładce \"Kupony\".",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 18,
+                    fontFamily: 'Itim',
+                    fontWeight: FontWeight.w400,
+                    height: 1.3,
+                  ),
+                ),
+              ],
             ),
           ),
         ),

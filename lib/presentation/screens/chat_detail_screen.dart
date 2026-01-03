@@ -283,7 +283,7 @@ class ChatInputBar extends StatelessWidget {
           const SizedBox(width: 12),
 
           CustomIconButton(
-            icon: const Icon(Icons.send, color: AppColors.textPrimary),
+            icon: const Icon(Icons.send_rounded, color: AppColors.textPrimary),
             onTap: onSend,
           ),
         ],
@@ -570,7 +570,7 @@ class _ChatDetailViewState extends State<ChatDetailView> {
                         if (state is ChatDetailError) {
                           return Center(
                             child: Text(
-                              "Błąd ładowania wiadomości: ${state.message}",
+                              state.message,
                               style: const TextStyle(
                                 fontFamily: 'Itim',
                                 fontSize: 16,
@@ -605,10 +605,11 @@ class _ChatDetailViewState extends State<ChatDetailView> {
                           final conversationId = _conversation!.id;
           
                           return ListView.builder(
+                            reverse: true,
                             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                             itemCount: messages.length,
                             itemBuilder: (context, index) {
-                              final msg = messages[index];
+                              final msg = messages[messages.length - 1 - index];
                               final currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
                               final isMine = msg.senderId == currentUserId;
                               if (msg.type == 'user') {

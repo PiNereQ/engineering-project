@@ -110,13 +110,28 @@ class _SavedCouponsContent extends StatelessWidget {
 
         if (state is SavedCouponListLoadEmpty) {
           return const SliverFillRemaining(
+            hasScrollBody: false,
             child: Center(
-              child: Text(
-                'Nie masz zapisanych kuponów.',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontFamily: 'Itim',
-                  color: AppColors.textPrimary,
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      "Nie masz jeszcze zapisanych kuponów.\n"
+                      "Aby zapisać kupon na później, "
+                      "przejdź do zakładki \"Kupony\" "
+                      "i kliknij ikonę zapisu przy ofercie.",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 18,
+                        fontFamily: 'Itim',
+                        fontWeight: FontWeight.w400,
+                        height: 1.3,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
