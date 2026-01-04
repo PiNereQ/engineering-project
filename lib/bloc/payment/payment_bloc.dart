@@ -54,8 +54,22 @@ debugPrint('Payment sheet presented with data: $paymentIntentData and couponId: 
           emit(PaymentFailure(error: "Błąd Stripe: ${e.error.message}"));
         }
       } catch (e) {
-        emit(PaymentFailure(error: "Błąd płatności: ${e.toString()}"));
+        emit(PaymentFailure(error: _mapPaymentError(e)));
       }
     });
+  }
+
+  String _mapPaymentError(Object error) {
+    final message = error.toString();
+
+    if (message.contains('Coupon is not available for purchase')) {
+      return 'Ten kupon może nie być już dostępny.\nSpróbuj ponownie za chwilę.';
+    }
+
+    if (message.contains('400')) {
+      return 'Nie udało się rozpocząć płatności. Spróbuj ponownie.';
+    }
+
+    return 'Wystąpił błąd podczas płatności. Spróbuj ponownie.';
   }
 }

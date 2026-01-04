@@ -39,9 +39,15 @@ void registerFCMHandlers({required BuildContext context}) async {
     final title = message.notification?.title ?? 'Nowa wiadomość';
     final body = message.notification?.body ?? '';
     if (context.mounted) {
+      print('Foreground message received: ${message.messageId}');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('$title: $body')),
       );
+      // Refresh unread status
+      final userId = FirebaseAuth.instance.currentUser?.uid;
+      if (userId != null) {
+        context.read<ChatUnreadBloc>().add(CheckUnreadStatus(userId: userId));
+      }
     }
   });
 
@@ -137,7 +143,7 @@ class MainApp extends StatelessWidget {
         ],
         child: MaterialApp(
           title: 'Flutter Demo',
-          theme: ThemeData(primarySwatch: Colors.blue),
+          theme: appTheme,
           navigatorObservers: [routeObserver],
           home: StreamBuilder<User?>(
             stream: FirebaseAuth.instance.authStateChanges(),

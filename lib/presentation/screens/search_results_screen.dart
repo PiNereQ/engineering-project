@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:proj_inz/bloc/favorite/favorite_bloc.dart';
 import 'package:proj_inz/bloc/favorite/favorite_event.dart';
@@ -8,32 +9,89 @@ import 'package:proj_inz/core/theme.dart';
 import 'package:proj_inz/data/models/category_model.dart';
 import 'package:proj_inz/data/models/shop_model.dart';
 import 'package:proj_inz/data/repositories/coupon_repository.dart';
-import 'package:proj_inz/bloc/search_shops_categories/search_shops_categories_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:proj_inz/presentation/screens/coupon_list_screen.dart';
-import 'package:proj_inz/presentation/widgets/input/buttons/custom_text_button.dart';
+import 'package:proj_inz/presentation/widgets/error_card.dart';
+import 'package:proj_inz/core/utils/error_mapper.dart';
+import 'package:proj_inz/core/errors/error_messages.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_follow_button.dart';
+import 'package:proj_inz/presentation/widgets/input/buttons/custom_text_button.dart';
+import 'package:proj_inz/presentation/widgets/input/text_fields/search_bar.dart';
 
-class SearchResultsScreen extends StatelessWidget {
-  final String query;
+class SearchResultsScreen extends StatefulWidget {
+  final String? initialQuery;
 
-  const SearchResultsScreen({super.key, required this.query});
+  const SearchResultsScreen({super.key, this.initialQuery});
+
+  @override
+  State<SearchResultsScreen> createState() => _SearchResultsScreenState();
+}
+
+class _SearchResultsScreenState extends State<SearchResultsScreen> {
+  late TextEditingController _searchController;
+  late FocusNode _searchFocusNode;
+  Timer? _debounceTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController = TextEditingController(text: widget.initialQuery ?? '');
+    _searchFocusNode = FocusNode();
+    if (widget.initialQuery != null && widget.initialQuery!.isNotEmpty) {
+      _performSearch(widget.initialQuery!);
+    }
+    // Focus the search bar after the widget is built
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _searchFocusNode.requestFocus();
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _searchFocusNode.dispose();
+    _debounceTimer?.cancel();
+    super.dispose();
+  }
+
+  void _onSearchChanged(String query) {
+    _debounceTimer?.cancel();
+    _debounceTimer = Timer(const Duration(milliseconds: 500), () {
+      _performSearch(query);
+    });
+  }
+
+  void _performSearch(String query) {
+    if (query.isNotEmpty) {
+      context.read<SearchBloc>().add(SearchQuerySubmitted(query));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(80),
-        child: Padding(
-          padding: const EdgeInsets.only(top: 20),
-          child: AppBar(
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            automaticallyImplyLeading: false,
-            title: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 16),
+      body: SafeArea(
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(width: 2, color: AppColors.textPrimary),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.textPrimary,
+                      blurRadius: 0,
+                      offset: Offset(3, 3),
+                      spreadRadius: 0,
+                    )
+                  ],
+                ),
                 child: Row(
                   children: [
                     // przycisk wstecz
@@ -64,129 +122,125 @@ class SearchResultsScreen extends StatelessWidget {
                     const SizedBox(width: 16),
                     // search bar
                     Expanded(
-                      child: Container(
-                        height: 48,
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                        clipBehavior: Clip.antiAlias,
-                        decoration: ShapeDecoration(
-                          color: AppColors.surface,
-                          shape: RoundedRectangleBorder(
-                            side: const BorderSide(width: 2),
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          shadows: const [
-                            BoxShadow(
-                              color: AppColors.textPrimary,
-                              blurRadius: 0,
-                              offset: Offset(4, 4),
-                              spreadRadius: 0,
-                            ),
-                          ],
-                        ),
-                        child: Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            'Wyniki dla hasła: $query',
-                            style: const TextStyle(
-                              color: AppColors.textPrimary,
-                              fontSize: 18,
-                              fontFamily: 'Itim',
-                              fontWeight: FontWeight.w400,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
+                      child: SearchBarWide(
+                        hintText: 'Wyszukaj sklep lub kategorię',
+                        controller: _searchController,
+                        focusNode: _searchFocusNode,
+                        onChanged: _onSearchChanged,
+                        onSubmitted: (query) => _performSearch(query),
                       ),
                     ),
                   ],
                 ),
               ),
             ),
-        ),
-      ),
-      body: Column(
-        children: [
-        // lista wynikow
-          Expanded(
-            child: BlocBuilder<SearchBloc, SearchState>(
-              builder: (context, state) {
-                if (state is SearchLoading) {
-                  return const Center(child: CircularProgressIndicator());
-                } else if (state is SearchLoaded) {
-                  final shops = state.matchedShops;
-                  final categories = state.matchedCategories;
+          // lista wynikow
+            Expanded(
+              child: BlocBuilder<SearchBloc, SearchState>(
+                builder: (context, state) {
+                  if (state is SearchLoading) {
+                    return const Center(child: CircularProgressIndicator());
+                  } else if (state is SearchLoaded) {
+                    final shops = state.matchedShops;
+                    final categories = state.matchedCategories;
+              
+                    if (shops.isEmpty && categories.isEmpty) {
+                      return const Center(
+                        child: Text(
+                          'Brak wyników',
+                          style: TextStyle(
+                            fontFamily: 'Itim',
+                            fontSize: 18,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                      );
+                    }
+              
+                    return ListView(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      children: [
+                        if (categories.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            child: Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: AppColors.surface,
+                                border: Border.all(width: 2, color: AppColors.textPrimary),
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: const [
+                                  BoxShadow(
+                                    color: AppColors.textPrimary,
+                                    blurRadius: 0,
+                                    offset: Offset(4, 4),
+                                    spreadRadius: 0,
+                                  ),
+                                ],
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'Dopasowane kategorie:',
+                                    style: TextStyle(
+                                      fontFamily: 'Itim',
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Column(
+                                    children: categories.map((category) {
+                                      return CategoryCard(category: category);
+                                    }).toList(),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        const SizedBox(height: 8),
+              
+                        ...shops.map((item) {
+              
+                          return ShopCard(shop: item);
+                        }),
+                      ],
+                    );
+                  } else if (state is SearchError) {
+                    final type = mapErrorToType(state.message);
+                    final userMessage = searchErrorMessage(type);
 
-                  if (shops.isEmpty && categories.isEmpty) {
-                    return const Center(
-                      child: Text(
-                        'Brak wyników',
-                        style: TextStyle(
-                          fontFamily: 'Itim',
-                          fontSize: 18,
-                          fontWeight: FontWeight.w400,
+                    return Center(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        child: ErrorCard(
+                          icon: const Icon(
+                            Icons.search_off_rounded,
+                            color: AppColors.textPrimary,
+                            size: 28,
+                          ),
+                          text: 'Nie udało się załadować wyników wyszukiwania.',
+                          errorString: userMessage,
                         ),
                       ),
                     );
                   }
-
-                  return ListView(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    children: [
-                      if (categories.isNotEmpty)
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                          child: Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: AppColors.surface,
-                              border: Border.all(width: 2, color: AppColors.textPrimary),
-                              borderRadius: BorderRadius.circular(16),
-                              boxShadow: const [
-                                BoxShadow(
-                                  color: AppColors.textPrimary,
-                                  blurRadius: 0,
-                                  offset: Offset(4, 4),
-                                  spreadRadius: 0,
-                                ),
-                              ],
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  'Dopasowane kategorie:',
-                                  style: TextStyle(
-                                    fontFamily: 'Itim',
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                Column(
-                                  children: categories.map((category) {
-                                    return CategoryCard(category: category);
-                                  }).toList(),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      const SizedBox(height: 8),
-
-                      ...shops.map((item) {
-
-                        return ShopCard(shop: item);
-                      }),
-                    ],
+                  return Center(
+                    child: const Text(
+                      'Wpisz coś, aby rozpocząć wyszukiwanie',
+                      style: TextStyle(
+                        fontFamily: 'Itim',
+                        fontSize: 18,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
                   );
-                } else if (state is SearchError) {
-                  return Center(child: Text('Błąd: ${state.message}'));
-                }
-                return const Center(child: Text('Wpisz zapytanie'));
-              },
+                },
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

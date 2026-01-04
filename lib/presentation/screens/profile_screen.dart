@@ -3,12 +3,16 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:proj_inz/bloc/auth/auth_bloc.dart';
+import 'package:proj_inz/bloc/favorite/favorite_bloc.dart';
+import 'package:proj_inz/bloc/favorite/favorite_event.dart';
 import 'package:proj_inz/bloc/listed_coupon_list/listed_coupon_list_bloc.dart';
 import 'package:proj_inz/bloc/listed_coupon_list/listed_coupon_list_event.dart';
 import 'package:proj_inz/bloc/owned_coupon_list/owned_coupon_list_bloc.dart';
+import 'package:proj_inz/bloc/saved_coupon_list/saved_coupon_list_bloc.dart';
 import 'package:proj_inz/core/theme.dart';
 import 'package:proj_inz/core/utils/utils.dart';
 import 'package:proj_inz/data/repositories/coupon_repository.dart';
+import 'package:proj_inz/data/repositories/favorite_repository.dart';
 import 'package:proj_inz/data/repositories/user_repository.dart';
 import 'package:proj_inz/data/repositories/wallet_repository.dart';
 import 'package:proj_inz/presentation/screens/bought_coupon_list_screen.dart';
@@ -383,11 +387,19 @@ Widget build(BuildContext context) {
                       label: 'Zapisane',
                       onTap: () {
                         Navigator.push(
-                          context, 
+                          context,
                           MaterialPageRoute(
-                            builder: (_) => 
-                              const SavedCouponListScreen()
-                          )
+                            builder: (_) => BlocProvider(
+                              create: (context) => SavedCouponListBloc(
+                                context.read<CouponRepository>(),
+                              )..add(
+                                  FetchSavedCoupons(
+                                    userId: FirebaseAuth.instance.currentUser!.uid,
+                                  ),
+                                ),
+                              child: const SavedCouponListScreen(),
+                            ),
+                          ),
                         );
                       },
                     ),
@@ -418,7 +430,12 @@ Widget build(BuildContext context) {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => const FavoritesScreen(),
+                            builder: (_) => BlocProvider(
+                              create: (context) => FavoriteBloc(
+                                context.read<FavoriteRepository>(),
+                              )..add(LoadFavorites()),
+                              child: const FavoritesScreen(),
+                            ),
                           ),
                         );
                       },

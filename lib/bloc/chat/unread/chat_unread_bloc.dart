@@ -1,7 +1,8 @@
+import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:proj_inz/data/repositories/chat_repository.dart';
-import 'chat_unread_event.dart';
-import 'chat_unread_state.dart';
+part 'chat_unread_event.dart';
+part 'chat_unread_state.dart';
 
 class ChatUnreadBloc extends Bloc<ChatUnreadEvent, ChatUnreadState> {
   final ChatRepository chatRepository;

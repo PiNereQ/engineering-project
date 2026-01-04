@@ -1,4 +1,4 @@
-import 'package:equatable/equatable.dart';
+part of 'chat_unread_bloc.dart';
 
 abstract class ChatUnreadEvent extends Equatable {
   const ChatUnreadEvent();

@@ -5,7 +5,7 @@ void showCustomSnackBar(BuildContext context, String message) {
   final snackBar = SnackBar(
     backgroundColor: Colors.transparent,
     elevation: 0,
-    duration:const  Duration(milliseconds: 1500),
+    duration:const  Duration(milliseconds: 2500),
     content: _CustomSnackBarContent(message: message,),
   );
 

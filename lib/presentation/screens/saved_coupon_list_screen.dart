@@ -1,12 +1,18 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:proj_inz/bloc/saved_coupon_list/saved_coupon_list_bloc.dart';
+import 'package:proj_inz/core/app_flags.dart';
+import 'package:proj_inz/core/errors/error_messages.dart';
 import 'package:proj_inz/core/theme.dart';
+import 'package:proj_inz/core/utils/error_mapper.dart';
 import 'package:proj_inz/data/repositories/coupon_repository.dart';
+import 'package:proj_inz/main.dart';
 import 'package:proj_inz/presentation/widgets/coupon_card.dart';
+import 'package:proj_inz/presentation/widgets/error_card.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/checkbox.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_icon_button.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_text_button.dart';
@@ -26,18 +32,46 @@ enum SavedCouponsOrdering {
 }
 
 
-class SavedCouponListScreen extends StatelessWidget {
+class SavedCouponListScreen extends StatefulWidget {
   const SavedCouponListScreen({super.key});
+
+  @override
+  State<SavedCouponListScreen> createState() => _SavedCouponListScreenState();
+}
+
+class _SavedCouponListScreenState extends State<SavedCouponListScreen> with RouteAware {
+  
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    routeObserver.subscribe(this, ModalRoute.of(context)! as PageRoute);
+  }
+
+  @override
+  void dispose() {
+    routeObserver.unsubscribe(this);
+    super.dispose();
+  }
+  
+  @override
+  void didPopNext() {
+    if (!AppFlags.couponBought) return;
+
+    AppFlags.couponBought = false;
+
+    final userId = FirebaseAuth.instance.currentUser?.uid;
+    if (userId == null) return;
+
+    context
+        .read<SavedCouponListBloc>()
+        .add(RefreshSavedCoupons(userId: userId));
+  }
 
   @override
   Widget build(BuildContext context) {
     final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
 
-    return BlocProvider(
-      create: (context) => SavedCouponListBloc(
-        context.read<CouponRepository>(),
-      )..add(FetchSavedCoupons(userId: userId)),
-      child: Builder(
+    return Builder(
         builder: (context) =>
         Scaffold(
           backgroundColor: AppColors.background,
@@ -58,8 +92,7 @@ class SavedCouponListScreen extends StatelessWidget {
             ),
           ),
         ),
-      )
-    );
+      );
   }
 }
 
@@ -81,13 +114,28 @@ class _SavedCouponsContent extends StatelessWidget {
 
         if (state is SavedCouponListLoadEmpty) {
           return const SliverFillRemaining(
+            hasScrollBody: false,
             child: Center(
-              child: Text(
-                'Nie masz zapisanych kuponów.',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontFamily: 'Itim',
-                  color: AppColors.textPrimary,
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      "Nie masz jeszcze zapisanych kuponów.\n"
+                      "Aby zapisać kupon na później, "
+                      "przejdź do zakładki \"Kupony\" "
+                      "i kliknij ikonę zapisu przy ofercie.",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 18,
+                        fontFamily: 'Itim',
+                        fontWeight: FontWeight.w400,
+                        height: 1.3,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -95,8 +143,21 @@ class _SavedCouponsContent extends StatelessWidget {
         }
 
         if (state is SavedCouponListLoadFailure) {
+          if (kDebugMode) debugPrint(state.message);
+          final type = mapErrorToType(state.message);
+          final userMessage = couponListErrorMessage(type);
+
           return SliverFillRemaining(
-            child: Center(child: Text(state.message)),
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: ErrorCard(
+                  icon: const Icon(Icons.sentiment_dissatisfied_rounded),
+                  text: userMessage,
+                  errorString: state.message,
+                ),
+              ),
+            ),  
           );
         }
 

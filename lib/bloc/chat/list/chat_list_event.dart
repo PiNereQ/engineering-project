@@ -1,4 +1,4 @@
-import 'package:equatable/equatable.dart';
+part of 'chat_list_bloc.dart';
 
 abstract class ChatListEvent extends Equatable {
   const ChatListEvent();
@@ -7,19 +7,10 @@ abstract class ChatListEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-class LoadBuyingConversations extends ChatListEvent {
+class LoadConversations extends ChatListEvent {
   final String userId;
   
-  const LoadBuyingConversations({required this.userId});
-  
-  @override
-  List<Object?> get props => [userId];
-}
-
-class LoadSellingConversations extends ChatListEvent {
-  final String userId;
-  
-  const LoadSellingConversations({required this.userId});
+  const LoadConversations({required this.userId});
   
   @override
   List<Object?> get props => [userId];

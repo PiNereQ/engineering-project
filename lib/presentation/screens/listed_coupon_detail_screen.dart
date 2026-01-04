@@ -397,8 +397,9 @@ class _CouponDetails extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       spacing: 12,
                       children: [
-                        CustomTextButton(
-                          label: 'Wyświetl kod kuponu',
+                      CustomTextButton.primary(
+                        label: 'Wyświetl kod kuponu',
+                        icon: Icon(Icons.qr_code_rounded),
                           onTap: () {
                             _showCodeDialog(context, coupon.code!);
                           },
@@ -438,7 +439,9 @@ class _CouponDetails extends StatelessWidget {
           ),
         ),
         content: const Text(
-          'Czy na pewno chcesz usunąć ten kupon?\nKupon zniknie z listy dostępnych i z Twoich wystawionych.',
+        'Czy na pewno chcesz usunąć ten kupon?\n\n'
+        'Zostanie trwale usunięty z Twoich wystawionych '
+        'oraz przestanie być widoczny dla innych użytkowników.',
           style: TextStyle(
             fontFamily: 'Itim',
             fontSize: 16,
