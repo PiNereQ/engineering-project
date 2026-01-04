@@ -15,6 +15,7 @@ import 'package:proj_inz/presentation/widgets/input/buttons/custom_text_button.d
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:proj_inz/data/repositories/user_repository.dart';
 import 'package:proj_inz/presentation/widgets/input/text_fields/labeled_text_field.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -52,6 +53,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
         );
       });
     });
+  }
+  
+  Future<void> _openExternalLink(String url) async {
+    final uri = Uri.parse(url);
+
+    if (!await launchUrl(
+      uri,
+      mode: LaunchMode.externalApplication,
+    )) {
+      throw Exception('Nie udało się otworzyć linku: $url');
+    }
   }
 
   @override
@@ -300,7 +312,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ),
                       ),
                     ),),
-                    _NavRow(label: 'Dokumentacja użytkownika', onTap: () {  },),
+                    _NavRow(
+                      label: 'Dokumentacja użytkownika',
+                      onTap: () {
+                        _openExternalLink(
+                          'https://coupidyn.gitbook.io/coupidyn-docs/Vv2gDoSrmgHhy14Slye0/',
+                        );
+                      },
+                    ),
                   ],
                 ),
               ),
