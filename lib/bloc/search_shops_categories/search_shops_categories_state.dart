@@ -1,6 +1,4 @@
-import 'package:equatable/equatable.dart';
-import 'package:proj_inz/data/models/category_model.dart';
-import 'package:proj_inz/data/models/shop_model.dart';
+part of 'search_shops_categories_bloc.dart';
 
 abstract class SearchState extends Equatable {
   @override

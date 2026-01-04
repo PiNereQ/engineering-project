@@ -6,7 +6,9 @@ class SearchBarWide extends StatelessWidget {
   final double fontSize;
   final String hintText;
   final TextEditingController? controller;
+  final FocusNode? focusNode;
   final ValueChanged<String>? onSubmitted;
+  final ValueChanged<String>? onChanged;
 
   const SearchBarWide({
     super.key,
@@ -14,7 +16,9 @@ class SearchBarWide extends StatelessWidget {
     this.fontSize = 18,
     this.hintText = 'Wyszukaj...',
     this.controller,
+    this.focusNode,
     this.onSubmitted,
+    this.onChanged,
   });
 
   @override
@@ -43,6 +47,7 @@ class SearchBarWide extends StatelessWidget {
           Expanded(
             child: TextField(
               controller: controller,
+              focusNode: focusNode,
               style: TextStyle(
                 fontSize: fontSize,
                 fontFamily: 'Itim',
@@ -56,6 +61,7 @@ class SearchBarWide extends StatelessWidget {
                 contentPadding: const EdgeInsets.symmetric(vertical: 5),
               ),
               onSubmitted: onSubmitted,
+              onChanged: onChanged,
               textInputAction: TextInputAction.search,
             ),
           ),

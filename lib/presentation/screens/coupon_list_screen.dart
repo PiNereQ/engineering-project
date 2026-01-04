@@ -6,7 +6,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 import 'package:proj_inz/bloc/coupon_list/coupon_list_bloc.dart';
 import 'package:proj_inz/bloc/search_shops_categories/search_shops_categories_bloc.dart';
-import 'package:proj_inz/bloc/search_shops_categories/search_shops_categories_event.dart';
+
 import 'package:proj_inz/core/app_flags.dart';
 import 'package:proj_inz/core/errors/error_messages.dart';
 import 'package:proj_inz/core/theme.dart';
@@ -24,7 +24,7 @@ import 'package:proj_inz/presentation/widgets/input/buttons/custom_icon_button.d
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_text_button.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/radio_button.dart';
 import 'package:proj_inz/presentation/widgets/input/text_fields/labeled_text_field.dart';
-import 'package:proj_inz/presentation/widgets/input/text_fields/search_bar.dart';
+import 'package:proj_inz/presentation/widgets/input/buttons/search_button.dart';
 
 // Local debugging flags
 bool stopCouponLoading = false; // Default to false
@@ -388,16 +388,15 @@ Widget build(BuildContext context) {
                     ],
                   )
                 else
-                  SearchBarWide(
-                    hintText: 'Wyszukaj sklep lub kategorię',
-                    onSubmitted: (query) {
+                  SearchButtonWide(
+                    label: 'Wyszukaj sklep lub kategorię',
+                    onTap: () {
                       final searchBloc = context.read<SearchBloc>();
-                      searchBloc.add(SearchQuerySubmitted(query));
                       Navigator.of(context).push(
                         MaterialPageRoute(
                           builder: (context) => BlocProvider.value(
                             value: searchBloc,
-                            child: SearchResultsScreen(query: query),
+                            child: SearchResultsScreen(),
                           ),
                         ),
                       );
