@@ -8,7 +8,6 @@ import 'package:proj_inz/bloc/navbar/navbar_state.dart';
 import 'package:proj_inz/bloc/number_verification/number_verification_bloc.dart';
 import 'package:proj_inz/bloc/chat/unread/chat_unread_bloc.dart';
 import 'package:proj_inz/bloc/chat/list/chat_list_bloc.dart';
-import 'package:proj_inz/bloc/chat/list/chat_list_event.dart';
 import 'package:proj_inz/data/repositories/coupon_repository.dart';
 import 'package:proj_inz/data/repositories/user_repository.dart';
 import 'package:proj_inz/presentation/screens/chat_screen.dart';
@@ -46,7 +45,7 @@ class _MainScreenState extends State<MainScreen> {
     _fcmRepository = FcmRepository(userRepository: context.read<UserRepository>());
     Future.microtask(() async {
       final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
-      if (mounted) context.read<ChatListBloc>().add(LoadBuyingConversations(userId: userId));
+      if (mounted) context.read<ChatListBloc>().add(LoadConversations(userId: userId));
       if (mounted) context.read<ChatUnreadBloc>().add(CheckUnreadStatus(userId: userId));
       if (userId.isNotEmpty) {
         await _requestPermission();

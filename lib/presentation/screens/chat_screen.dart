@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:proj_inz/bloc/chat/list/chat_list_bloc.dart';
-import 'package:proj_inz/bloc/chat/list/chat_list_event.dart';
-import 'package:proj_inz/bloc/chat/list/chat_list_state.dart';
 import 'package:proj_inz/bloc/chat/unread/chat_unread_bloc.dart';
 
 import 'package:proj_inz/core/errors/error_messages.dart';
@@ -34,18 +32,18 @@ class _ChatScreenState extends State<ChatScreen> {
   void initState() {
     super.initState();
     final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
-    context.read<ChatListBloc>().add(LoadSellingConversations(userId: userId));
-    context.read<ChatListBloc>().add(LoadBuyingConversations(userId: userId));
+    context.read<ChatListBloc>().add(LoadConversations(userId: userId));
   }
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<ChatListBloc, ChatListState>(
       builder: (context, state) {
-        if (state is ChatListLoaded && isBuying) {
-          buyingUnreadCount = state.conversations.where((c) => !c.isReadByCurrentUser).length;
-        } else if (state is ChatListLoaded && !isBuying) {
-          sellingUnreadCount = state.conversations.where((c) => !c.isReadByCurrentUser).length;
+        List<Conversation> currentConversations = [];
+        if (state is ChatListLoaded) {
+          buyingUnreadCount = state.buyingConversations.where((c) => !c.isReadByCurrentUser).length;
+          sellingUnreadCount = state.sellingConversations.where((c) => !c.isReadByCurrentUser).length;
+          currentConversations = isBuying ? state.buyingConversations : state.sellingConversations;
         }
         return Scaffold(
           backgroundColor: AppColors.background,
@@ -84,10 +82,6 @@ class _ChatScreenState extends State<ChatScreen> {
                                   onTap: () {
                                     if (!isBuying) {
                                       setState(() => isBuying = true);
-                                      final userId =
-                                          FirebaseAuth.instance.currentUser?.uid ?? '';
-                                      context.read<ChatListBloc>().add(
-                                          LoadBuyingConversations(userId: userId));
                                     }
                                   },
                                 ),
@@ -112,10 +106,6 @@ class _ChatScreenState extends State<ChatScreen> {
                                   onTap: () {
                                     if (isBuying) {
                                       setState(() => isBuying = false);
-                                      final userId =
-                                          FirebaseAuth.instance.currentUser?.uid ?? '';
-                                      context.read<ChatListBloc>().add(
-                                          LoadSellingConversations(userId: userId));
                                     }
                                   },
                                 ),
@@ -149,7 +139,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   ),
                 ]
                 else if (state is ChatListLoaded) ...[
-                  if (state.conversations.isEmpty) ...[
+                  if (currentConversations.isEmpty) ...[
                     SliverFillRemaining(
                       hasScrollBody: false,
                       child: Center(
@@ -181,7 +171,7 @@ class _ChatScreenState extends State<ChatScreen> {
                         SliverList(
                           delegate: SliverChildBuilderDelegate(
                             (context, index) {
-                              final c = state.conversations[index];
+                              final c = currentConversations[index];
 
                               return Padding(
                                 padding: const EdgeInsets.fromLTRB(16, 6, 16, 6),
@@ -197,10 +187,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                       final userId =
                                           FirebaseAuth.instance.currentUser?.uid ?? '';
                                       context.read<ChatListBloc>().add(
-                                            isBuying
-                                                ? LoadBuyingConversations(userId: userId)
-                                                : LoadSellingConversations(userId: userId),
-                                          );
+                                          LoadConversations(userId: userId));
                                     });
                                   },
                                   child: ConversationTile(
@@ -220,7 +207,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                 ),
                               );
                             },
-                            childCount: state.conversations.length,
+                            childCount: currentConversations.length,
                           ),
                         ),
                         const SliverToBoxAdapter(

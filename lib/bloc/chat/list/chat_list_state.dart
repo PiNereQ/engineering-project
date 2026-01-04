@@ -1,5 +1,5 @@
-import 'package:equatable/equatable.dart';
-import 'package:proj_inz/data/models/conversation_model.dart';
+
+part of 'chat_list_bloc.dart';
 
 abstract class ChatListState extends Equatable {
   const ChatListState();
@@ -13,12 +13,16 @@ class ChatListInitial extends ChatListState {}
 class ChatListLoading extends ChatListState {}
 
 class ChatListLoaded extends ChatListState {
-  final List<Conversation> conversations;
+  final List<Conversation> buyingConversations;
+  final List<Conversation> sellingConversations;
 
-  const ChatListLoaded(this.conversations);
+  const ChatListLoaded({
+    required this.buyingConversations,
+    required this.sellingConversations,
+  });
 
   @override
-  List<Object?> get props => [conversations];
+  List<Object?> get props => [buyingConversations, sellingConversations];
 }
 
 class ChatListError extends ChatListState {
