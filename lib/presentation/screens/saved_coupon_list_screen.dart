@@ -108,6 +108,9 @@ class _SavedCouponsContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<SavedCouponListBloc, SavedCouponListState>(
+      buildWhen: (previous, current) {
+        return !(current is SavedCouponFilterRead || current is SavedCouponOrderingRead);
+      },
       builder: (context, state) {
         if (state is SavedCouponListLoadInProgress && (state.coupons == null || state.coupons!.isEmpty)) {
           return const SliverFillRemaining(
