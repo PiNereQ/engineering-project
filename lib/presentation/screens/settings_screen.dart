@@ -26,7 +26,6 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   late Future<_AccountStatsData> _accountStatsFuture;
-  late Future<Map<String, dynamic>?> _profileFuture;
 
   @override
   void initState() {
@@ -213,14 +212,72 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 text: 'Powiadomienia',
                 icon: Icons.notifications_none,
               ),
-              _SectionCard(
-                child: Column(
-                  children: [
-                    const _SwitchRow(label: 'Wiadomości (Czat)'),
-                    const _SwitchRow(label: 'Zmiana statusu kuponu'),
-                    const _SwitchRow(label: 'Kupony rekomendowane'),
-                  ],
-                ),
+              FutureBuilder<_AccountStatsData>(
+                future: _accountStatsFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const _SectionCard(
+                      child: Center(child: CircularProgressIndicator()),
+                    );
+                  }
+
+                  if (!snapshot.hasData) {
+                    return const _SectionCard(
+                      child: Text('Nie udało się załadować ustawień powiadomień'),
+                    );
+                  }
+
+                  final profile = snapshot.data!.profile;
+                  bool chatDisabled = (profile['chat_notifications_disabled'] as int? ?? 0) == 1;
+                  bool couponDisabled = (profile['coupon_notifications_disabled'] as int? ?? 0) == 1;
+
+                  return _SectionCard(
+                    child: Column(
+                      children: [
+                        _NotificationSwitchRow(
+                          label: 'Wiadomości (Czat)',
+                          initialValue: !chatDisabled,
+                          onChanged: (enabled) async {
+                            final userId = FirebaseAuth.instance.currentUser!.uid;
+                            try {
+                              await context.read<UserRepository>().applyFcmPreferences(
+                                userId,
+                                chatNotificationsDisabled: !enabled,
+                                couponNotificationsDisabled: couponDisabled,
+                              );
+                            } catch (e) {
+                              if (kDebugMode) {
+                                print('Error updating chat notification preference: $e');
+                              }
+                            } finally {
+                              chatDisabled = !enabled;
+                            }
+                          },
+                        ),
+                        _NotificationSwitchRow(
+                          label: 'Zmiana statusu kuponu',
+                          initialValue: !couponDisabled,
+                          onChanged: (enabled) async {
+                            final userId = FirebaseAuth.instance.currentUser!.uid;
+                            try {
+                              await context.read<UserRepository>().applyFcmPreferences(
+                                userId,
+                                chatNotificationsDisabled: chatDisabled,
+                                couponNotificationsDisabled: !enabled,
+                              );
+                            } catch (e) {
+                              if (kDebugMode) {
+                                print('Error updating coupon notification preference: $e');
+                              }
+                            } finally {
+                              couponDisabled = !enabled;
+                            }
+                          },
+                        ),
+                      ],
+                    ),
+                  );
+                },
               ),
 
               const SizedBox(height: 32),
@@ -488,16 +545,29 @@ class _StatItem extends StatelessWidget {
   }
 }
 
-  class _SwitchRow extends StatefulWidget {
+  class _NotificationSwitchRow extends StatefulWidget {
     final String label;
-    const _SwitchRow({required this.label});
+    final bool initialValue;
+    final Future<void> Function(bool) onChanged;
+
+    const _NotificationSwitchRow({
+      required this.label,
+      required this.initialValue,
+      required this.onChanged,
+    });
 
     @override
-    State<_SwitchRow> createState() => _SwitchRowState();
+    State<_NotificationSwitchRow> createState() => _NotificationSwitchRowState();
   }
 
-  class _SwitchRowState extends State<_SwitchRow> {
-    bool value = true;
+  class _NotificationSwitchRowState extends State<_NotificationSwitchRow> {
+    late bool value;
+
+    @override
+    void initState() {
+      super.initState();
+      value = widget.initialValue;
+    }
 
     @override
     Widget build(BuildContext context) {
@@ -515,7 +585,20 @@ class _StatItem extends StatelessWidget {
             ),
             CustomSwitch(
               value: value,
-              onChanged: (v) => setState(() => value = v),
+              onChanged: (v) async {
+                setState(() => value = v);
+                try {
+                  await widget.onChanged(v);
+                } catch (e) {
+                  // Revert on error
+                  setState(() => value = !v);
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Nie udało się zmienić ustawienia')),
+                    );
+                  }
+                }
+              },
             ),
           ],
         ),
