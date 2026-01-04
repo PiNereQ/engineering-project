@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:proj_inz/presentation/widgets/input/buttons/custom_text_button.dart';
 import 'package:proj_inz/core/theme.dart';
 
 class ErrorCard extends StatelessWidget {
@@ -66,27 +65,6 @@ class ErrorCard extends StatelessWidget {
                 ),
               ),
             ],
-          ),
-          const SizedBox(height: 16),
-          CustomTextButton.small(
-            label: 'Kopiuj komunikat błędu',
-            icon: const Icon(Icons.copy_rounded),
-            onTap: () async {
-              await Clipboard.setData(ClipboardData(text: errorString));
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Skopiowano komunikat do schowka'),
-                  ),
-                );
-              }
-            },
-          ),
-          const SizedBox(height: 8),
-          CustomTextButton.small(
-            label: 'Zgłoś problem',
-            icon: const Icon(Icons.send_rounded),
-            onTap: () {}, // TODO: reporting
           ),
         ],
       ),

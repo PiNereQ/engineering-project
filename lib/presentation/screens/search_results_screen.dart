@@ -12,6 +12,9 @@ import 'package:proj_inz/data/repositories/coupon_repository.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:proj_inz/presentation/screens/coupon_list_screen.dart';
+import 'package:proj_inz/presentation/widgets/error_card.dart';
+import 'package:proj_inz/core/utils/error_mapper.dart';
+import 'package:proj_inz/core/errors/error_messages.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_follow_button.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_text_button.dart';
 import 'package:proj_inz/presentation/widgets/input/text_fields/search_bar.dart';
@@ -205,13 +208,20 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
                       ],
                     );
                   } else if (state is SearchError) {
+                    final type = mapErrorToType(state.message);
+                    final userMessage = searchErrorMessage(type);
+
                     return Center(
-                      child: Text(
-                        'Błąd: ${state.message}',
-                        style: TextStyle(
-                          fontFamily: 'Itim',
-                          fontSize: 18,
-                          fontWeight: FontWeight.w400,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        child: ErrorCard(
+                          icon: const Icon(
+                            Icons.search_off_rounded,
+                            color: AppColors.textPrimary,
+                            size: 28,
+                          ),
+                          text: 'Nie udało się załadować wyników wyszukiwania.',
+                          errorString: userMessage,
                         ),
                       ),
                     );

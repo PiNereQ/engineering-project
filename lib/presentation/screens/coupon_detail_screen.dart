@@ -6,6 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:proj_inz/bloc/coupon/coupon_bloc.dart';
 import 'package:proj_inz/bloc/coupon_list/coupon_list_bloc.dart';
 import 'package:proj_inz/bloc/payment/payment_bloc.dart';
+import 'package:proj_inz/core/app_flags.dart';
 import 'package:proj_inz/core/theme.dart';
 import 'package:proj_inz/core/utils/utils.dart';
 import 'package:proj_inz/data/models/coupon_model.dart';
@@ -19,7 +20,6 @@ import 'package:proj_inz/presentation/widgets/avatar_view.dart';
 import 'package:proj_inz/presentation/widgets/custom_snack_bar.dart';
 import 'package:proj_inz/presentation/widgets/dashed_separator.dart';
 import 'package:proj_inz/presentation/widgets/error_card.dart';
-import 'package:proj_inz/presentation/widgets/input/buttons/custom_follow_button.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_icon_button.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/custom_text_button.dart';
 import 'package:proj_inz/presentation/widgets/reputation_bar.dart';
@@ -270,6 +270,9 @@ class _CouponDetails extends StatelessWidget {
           Navigator.of(context, rootNavigator: true).pop();
           showCustomSnackBar(context, 'Płatność zakończona sukcesem!');
           final userId = FirebaseAuth.instance.currentUser?.uid;
+
+          AppFlags.couponBought = true;
+          
           if (context.mounted && userId != null) {
 
             Navigator.of(context).pushReplacement(
@@ -277,7 +280,6 @@ class _CouponDetails extends StatelessWidget {
               builder: (context) => BoughtCouponDetailsScreen(couponId: coupon.id),
               ),
             );
-            context.read<CouponListBloc>().add(RefreshCoupons()); // TODO: add listener for success state so the refresh is run after backend change
           }
           
         } else if (state is PaymentFailure) {
@@ -581,7 +583,9 @@ class _SellerDetails extends StatelessWidget {
               ),
             ),
           ),
+          const SizedBox(height: 4),
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             spacing: 16,
             children: [
               AvatarView(
@@ -590,7 +594,7 @@ class _SellerDetails extends StatelessWidget {
               ),
               Expanded(
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   spacing: 8,
                   children: [
@@ -631,7 +635,7 @@ class _SellerDetails extends StatelessWidget {
                         height: 0.75,
                       ),
                     ),
-                    SizedBox(height: 16),
+                    SizedBox(height: 8),
                     Center(
                       child: CustomTextButton.primary(
                         label: "Zapytaj o ten kupon",

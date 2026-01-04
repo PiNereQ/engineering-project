@@ -130,10 +130,17 @@ class ChatHeader extends StatelessWidget {
           // user info - avatar, username, reputation, join date
           Row(
             children: [
-              AvatarView(
-                avatarId: avatarId,
-                size: 54,
-              ),
+              if (avatarId == null)
+                CircleAvatar(
+                  radius: 27,
+                  backgroundColor: AppColors.background,
+                )
+              else
+                AvatarView(
+                  avatarId: avatarId,
+                  size: 54,
+                ),
+
               const SizedBox(width: 12),
 
               Column(
@@ -276,7 +283,7 @@ class ChatInputBar extends StatelessWidget {
           const SizedBox(width: 12),
 
           CustomIconButton(
-            icon: const Icon(Icons.send, color: AppColors.textPrimary),
+            icon: const Icon(Icons.send_rounded, color: AppColors.textPrimary),
             onTap: onSend,
           ),
         ],
@@ -503,6 +510,8 @@ class _ChatDetailViewState extends State<ChatDetailView> {
                 child: FutureBuilder<Map<String, dynamic>?>(
                   future: _otherProfileFuture,
                   builder: (context, snap) {
+                    final isLoading = snap.connectionState == ConnectionState.waiting;
+                    final avatarId = isLoading ? null : _getOtherAvatarId(snap.data);                    
                     final otherRep = snap.data?['reputation'] as int?;
                     final otherJoinRaw = snap.data?['created_at'];
                     final otherJoinDate = otherJoinRaw == null
@@ -533,7 +542,7 @@ class _ChatDetailViewState extends State<ChatDetailView> {
                       joinDate: otherJoinDate,
           
                       isCouponDeleted: _isCouponDeleted,
-                      avatarId: _getOtherAvatarId(snap.data),
+                      avatarId: avatarId,
                       onBack: () => Navigator.pop(context),
                       onReport: () => setState(() => _showPopup = true),
                     );
@@ -561,7 +570,7 @@ class _ChatDetailViewState extends State<ChatDetailView> {
                         if (state is ChatDetailError) {
                           return Center(
                             child: Text(
-                              "Błąd ładowania wiadomości: ${state.message}",
+                              state.message,
                               style: const TextStyle(
                                 fontFamily: 'Itim',
                                 fontSize: 16,
@@ -596,10 +605,11 @@ class _ChatDetailViewState extends State<ChatDetailView> {
                           final conversationId = _conversation!.id;
           
                           return ListView.builder(
+                            reverse: true,
                             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                             itemCount: messages.length,
                             itemBuilder: (context, index) {
-                              final msg = messages[index];
+                              final msg = messages[messages.length - 1 - index];
                               final currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
                               final isMine = msg.senderId == currentUserId;
                               if (msg.type == 'user') {

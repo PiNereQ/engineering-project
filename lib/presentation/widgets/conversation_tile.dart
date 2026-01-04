@@ -39,7 +39,12 @@ class ConversationTile extends StatelessWidget {
     }
     return Container(
       decoration: ShapeDecoration(
-        color: isRead ? AppColors.surface : AppColors.background,
+      color: isRead
+          ? AppColors.surface
+          : Color.alphaBlend(
+              AppColors.background.withOpacity(0.7),
+              AppColors.surface,
+            ),
         shape: RoundedRectangleBorder(
           side: const BorderSide(width: 2),
           borderRadius: BorderRadius.circular(16),
@@ -79,11 +84,11 @@ class ConversationTile extends StatelessWidget {
                       // Username
                       Text(
                         username,
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: AppColors.textPrimary,
                           fontSize: 20,
                           fontFamily: 'Itim',
-                          fontWeight: FontWeight.w400,
+                          fontWeight: isRead ? FontWeight.w400 : FontWeight.w600,
                           height: 0.75,
                         ),
                       ),
@@ -94,11 +99,11 @@ class ConversationTile extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         softWrap: false,
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: AppColors.textPrimary,
                           fontSize: 20,
                           fontFamily: 'Itim',
-                          fontWeight: FontWeight.w400,
+                          fontWeight: isRead ? FontWeight.w400 : FontWeight.w500,
                         ),
                       ),
                      SizedBox(height: 4),

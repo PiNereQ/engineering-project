@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:proj_inz/bloc/listed_coupon/listed_coupon_bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:proj_inz/core/app_flags.dart';
 import 'package:proj_inz/core/theme.dart';
 import 'package:proj_inz/core/utils/utils.dart';
 import 'package:proj_inz/data/models/coupon_model.dart';
@@ -396,8 +397,9 @@ class _CouponDetails extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       spacing: 12,
                       children: [
-                        CustomTextButton(
-                          label: 'Wyświetl kod kuponu',
+                      CustomTextButton.primary(
+                        label: 'Wyświetl kod kuponu',
+                        icon: Icon(Icons.qr_code_rounded),
                           onTap: () {
                             _showCodeDialog(context, coupon.code!);
                           },
@@ -437,7 +439,9 @@ class _CouponDetails extends StatelessWidget {
           ),
         ),
         content: const Text(
-          'Czy na pewno chcesz usunąć ten kupon?\nKupon zniknie z listy dostępnych i z Twoich wystawionych.',
+        'Czy na pewno chcesz usunąć ten kupon?\n\n'
+        'Zostanie trwale usunięty z Twoich wystawionych '
+        'oraz przestanie być widoczny dla innych użytkowników.',
           style: TextStyle(
             fontFamily: 'Itim',
             fontSize: 16,
@@ -464,6 +468,8 @@ class _CouponDetails extends StatelessWidget {
                 await context
                     .read<CouponRepository>()
                     .deactivateListedCoupon(coupon.id);
+                    
+                AppFlags.listedCouponDeleted = true;    
 
                 if (context.mounted) {
                   showCustomSnackBar(

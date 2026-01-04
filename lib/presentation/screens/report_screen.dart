@@ -233,7 +233,7 @@ class _ReportScreenState extends State<ReportScreen> {
               Center(
                 child: CustomTextButton.primary(
                   label: "Wyślij zgłoszenie",
-                  icon: const Icon(Icons.send, color: AppColors.textPrimary, size: 20),
+                  icon: const Icon(Icons.send_rounded, color: AppColors.textPrimary, size: 20),
                   width: 220,
                   height: 56,
                   onTap: () async {
@@ -250,7 +250,8 @@ class _ReportScreenState extends State<ReportScreen> {
                       context: context,
                       builder: (_) => appDialog(
                         title: 'Potwierdzenie',
-                        content: 'Czy na pewno chcesz wysłać to zgłoszenie? Trafi ono do moderatora i zostanie zweryfikowane.',
+                        content: 'Czy na pewno chcesz wysłać to zgłoszenie?\n\n'
+                        'Trafi ono do moderatora i zostanie zweryfikowane.',
                         actions: [
                           CustomTextButton.small(
                             label: 'Anuluj',

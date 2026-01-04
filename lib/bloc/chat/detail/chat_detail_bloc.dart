@@ -45,7 +45,7 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
 
       _startAutoRefresh(event.conversationId, event.currentUserId);
     } catch (e) {
-      emit(ChatDetailError(e.toString()));
+      emit(ChatDetailError(_mapChatErrorToMessage(e)));
     }
   }
 
@@ -83,7 +83,7 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
 
       emit(ChatDetailLoaded(updatedMessages, buyerRatingExists: currentBuyerRatingExists, sellerRatingExists: currentSellerRatingExists));
     } catch (e) {
-      emit(ChatDetailError(e.toString()));
+      emit(ChatDetailError(_mapChatErrorToMessage(e)));
     }
   }
 
@@ -113,7 +113,7 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
       final newSellerRatingExists = !event.ratedUserIsSeller ? true : currentSellerRatingExists;
       emit(ChatDetailLoaded(updatedMessages, buyerRatingExists: newBuyerRatingExists, sellerRatingExists: newSellerRatingExists));
     } catch (e) {
-      emit(ChatDetailError(e.toString()));
+      emit(ChatDetailError(_mapChatErrorToMessage(e)));
     }
   }
 
@@ -129,5 +129,21 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
   Future<void> close() {
     _refreshTimer?.cancel();
     return super.close();
+  }
+
+  String _mapChatErrorToMessage(Object error) {
+    final msg = error.toString().toLowerCase();
+
+    if (msg.contains('connection closed') ||
+        msg.contains('clientexception') ||
+        msg.contains('socket')) {
+      return 'Nie udało się połączyć z serwerem. Spróbuj ponownie.';
+    }
+
+    if (msg.contains('timeout')) {
+      return 'Przekroczono czas oczekiwania na odpowiedź.';
+    }
+
+    return 'Wystąpił błąd podczas ładowania rozmowy.';
   }
 }

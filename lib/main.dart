@@ -24,6 +24,7 @@ import 'package:proj_inz/data/repositories/chat_repository.dart';
 import 'package:proj_inz/bloc/chat/list/chat_list_bloc.dart';
 import 'firebase_options.dart';
 
+final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
 
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
@@ -136,7 +137,8 @@ class MainApp extends StatelessWidget {
         ],
         child: MaterialApp(
           title: 'Flutter Demo',
-          theme: ThemeData(primarySwatch: Colors.blue),
+          theme: appTheme,
+          navigatorObservers: [routeObserver],
           home: StreamBuilder<User?>(
             stream: FirebaseAuth.instance.authStateChanges(),
             builder: (context, snapshot) {

@@ -1,5 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:proj_inz/core/app_flags.dart';
 import 'package:proj_inz/data/models/coupon_model.dart';
 import 'package:proj_inz/data/repositories/coupon_repository.dart';
 
@@ -28,6 +29,7 @@ class OwnedCouponBloc extends Bloc<OwnedCouponEvent, OwnedCouponState> {
         print('Marking coupon as used: $couponId');
         emit(OwnedCouponMarkAsUsedInProgress());
         await couponRepository.markOwnedCouponAsUsed(couponId);
+        AppFlags.ownedCouponUsed = true;
         // Optionally, refetch the details or update state
         final coupon = await couponRepository.fetchOwnedCouponDetailsById(couponId);
         _currentCoupon = coupon;

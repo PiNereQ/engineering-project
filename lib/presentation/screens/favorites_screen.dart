@@ -25,6 +25,12 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   bool showShops = true;
 
   @override
+  void initState() {
+    super.initState();
+    context.read<FavoriteBloc>().add(LoadFavorites());
+  }
+  
+  @override
   Widget build(BuildContext context) {
     final shopRepo = context.read<ShopRepository>();
 
@@ -56,7 +62,10 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                   if (state.favoriteShopIds.isEmpty) {
                     return const SliverFillRemaining(
                       child: _EmptyFavoritesState(
-                        text: 'Nie masz jeszcze ulubionych sklepów',
+                        text:
+                            "Nie masz jeszcze ulubionych sklepów.\n"
+                            "Możesz dodać je, wyszukując sklep "
+                            "w zakładce \"Kupony\" i klikając ikonę serca.",
                       ),
                     );
                   }
@@ -88,7 +97,10 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                 if (state.favoriteCategories.isEmpty) {
                   return const SliverFillRemaining(
                     child: _EmptyFavoritesState(
-                      text: 'Nie masz jeszcze ulubionych kategorii',
+                      text:
+                          "Nie masz jeszcze ulubionych kategorii.\n"
+                          "Możesz dodać je, wyszukując kategorię "
+                          "w zakładce \"Kupony\" i klikając ikonę serca.",
                     ),
                   );
                 }
@@ -401,15 +413,22 @@ class _EmptyFavoritesState extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Text(
-          text,
-          textAlign: TextAlign.center,
-          style: const TextStyle(
-            fontFamily: 'Itim',
-            fontSize: 18,
-            color: AppColors.textSecondary,
-          ),
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              text,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontFamily: 'Itim',
+                fontSize: 18,
+                color: AppColors.textPrimary,
+                fontWeight: FontWeight.w400,
+                height: 1.3,
+              ),
+            ),
+          ],
         ),
       ),
     );
