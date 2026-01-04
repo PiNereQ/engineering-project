@@ -9,7 +9,6 @@ import 'package:proj_inz/core/app_flags.dart';
 import 'package:proj_inz/core/errors/error_messages.dart';
 import 'package:proj_inz/core/theme.dart';
 import 'package:proj_inz/core/utils/error_mapper.dart';
-import 'package:proj_inz/data/repositories/coupon_repository.dart';
 import 'package:proj_inz/main.dart';
 import 'package:proj_inz/presentation/widgets/coupon_card.dart';
 import 'package:proj_inz/presentation/widgets/error_card.dart';
@@ -20,18 +19,6 @@ import 'package:proj_inz/presentation/widgets/input/buttons/radio_button.dart';
 import 'package:proj_inz/presentation/widgets/input/text_fields/labeled_text_field.dart';
 import 'package:proj_inz/core/utils/text_formatters.dart';
 
-enum SavedCouponsOrdering {
-  creationDateAsc,
-  creationDateDesc,
-  priceAsc,
-  priceDesc,
-  reputationAsc,
-  reputationDesc,
-  expiryDateAsc,
-  expiryDateDesc,
-}
-
-
 class SavedCouponListScreen extends StatefulWidget {
   const SavedCouponListScreen({super.key});
 
@@ -40,6 +27,8 @@ class SavedCouponListScreen extends StatefulWidget {
 }
 
 class _SavedCouponListScreenState extends State<SavedCouponListScreen> with RouteAware {
+  final ScrollController _scrollController = ScrollController();
+  bool _listenerAdded = false;
   
   @override
   void didChangeDependencies() {
@@ -50,6 +39,7 @@ class _SavedCouponListScreenState extends State<SavedCouponListScreen> with Rout
   @override
   void dispose() {
     routeObserver.unsubscribe(this);
+    _scrollController.dispose();
     super.dispose();
   }
   
@@ -67,13 +57,27 @@ class _SavedCouponListScreenState extends State<SavedCouponListScreen> with Rout
         .add(RefreshSavedCoupons(userId: userId));
   }
 
+  void _setupListener(BuildContext context) {
+    _scrollController.addListener(() {
+      if (_scrollController.position.pixels >=
+          _scrollController.position.maxScrollExtent - 150) {
+        context.read<SavedCouponListBloc>().add(FetchMoreSavedCoupons());
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
 
-    return Builder(
-        builder: (context) =>
-        Scaffold(
+    return BlocBuilder<SavedCouponListBloc, SavedCouponListState>(
+      builder: (context, state) {
+        if (!_listenerAdded) {
+          _setupListener(context);
+          _listenerAdded = true;
+        }
+
+        return Scaffold(
           backgroundColor: AppColors.background,
           body: SafeArea(
             child: RefreshIndicator(
@@ -83,6 +87,7 @@ class _SavedCouponListScreenState extends State<SavedCouponListScreen> with Rout
                     .add(RefreshSavedCoupons(userId: userId));
               },
               child: CustomScrollView(
+                controller: _scrollController,
                 physics: const AlwaysScrollableScrollPhysics(),
                 slivers: const [
                   _Toolbar(),
@@ -91,8 +96,9 @@ class _SavedCouponListScreenState extends State<SavedCouponListScreen> with Rout
               ),
             ),
           ),
-        ),
-      );
+        );
+      },
+    );
   }
 }
 
@@ -103,8 +109,7 @@ class _SavedCouponsContent extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<SavedCouponListBloc, SavedCouponListState>(
       builder: (context, state) {
-        if (state is SavedCouponListLoadInProgress ||
-            state is SavedCouponListInitial) {
+        if (state is SavedCouponListLoadInProgress && (state.coupons == null || state.coupons!.isEmpty)) {
           return const SliverFillRemaining(
             child: Center(
               child: CircularProgressIndicator(color: AppColors.textPrimary),
@@ -161,19 +166,21 @@ class _SavedCouponsContent extends StatelessWidget {
           );
         }
 
-        if (state is SavedCouponListLoadSuccess) {
+        if (state is SavedCouponListLoadSuccess || (state is SavedCouponListLoadInProgress && state.coupons != null)) {
+          final coupons = state is SavedCouponListLoadSuccess ? state.coupons : (state as SavedCouponListLoadInProgress).coupons!;
+          
           return SliverPadding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
             sliver: SliverList(
               delegate: SliverChildBuilderDelegate(
                 (context, index) {
-                  final coupon = state.coupons[index];
+                  final coupon = coupons[index];
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 16),
                     child: CouponCardHorizontal(coupon: coupon),
                   );
                 },
-                childCount: state.coupons.length,
+                childCount: coupons.length,
               ),
             ),
           );
@@ -230,7 +237,10 @@ class _Toolbar extends StatelessWidget {
                     onTap: () => showDialog(
                       context: context,
                       barrierColor: AppColors.popupOverlay,
-                      builder: (_) => const _SavedCouponFilterDialog(),
+                      builder: (_) => BlocProvider.value(
+                        value: context.read<SavedCouponListBloc>(),
+                        child: const _SavedCouponFilterDialog(),
+                      ),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -240,7 +250,10 @@ class _Toolbar extends StatelessWidget {
                     onTap: () => showDialog(
                       context: context,
                       barrierColor: AppColors.popupOverlay,
-                      builder: (_) => const _SavedCouponSortDialog(),
+                      builder: (_) => BlocProvider.value(
+                        value: context.read<SavedCouponListBloc>(),
+                        child: const _SavedCouponSortDialog(),
+                      ),
                     ),
                   ),
                 ],
@@ -267,11 +280,48 @@ class _SavedCouponFilterDialogState extends State<_SavedCouponFilterDialog> {
 
   bool reductionIsPercentage = true;
   bool reductionIsFixed = true;
+  String? shopId;
   double minReputation = 0;
 
   @override
+  void initState() {
+    super.initState();
+    // Read current filter state
+    context.read<SavedCouponListBloc>().add(ReadSavedCouponFilters());
+  }
+
+  @override
+  void dispose() {
+    minPriceController.dispose();
+    maxPriceController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Material(
+    return BlocListener<SavedCouponListBloc, SavedCouponListState>(
+      listener: (context, state) {
+        if (state is SavedCouponFilterRead) {
+          setState(() {
+            reductionIsPercentage = state.reductionIsPercentage ?? true;
+            reductionIsFixed = state.reductionIsFixed ?? true;
+            shopId = state.shopId;
+            minReputation = state.minReputation ?? 0;
+          });
+          // Set price controller values
+          if (state.minPrice != null) {
+            minPriceController.text = state.minPrice!.toStringAsFixed(2);
+          } else {
+            minPriceController.clear();
+          }
+          if (state.maxPrice != null) {
+            maxPriceController.text = state.maxPrice!.toStringAsFixed(2);
+          } else {
+            maxPriceController.clear();
+          }
+        }
+      },
+      child: Material(
         color: Colors.transparent,
         child: SingleChildScrollView(
           child: Padding(
@@ -371,7 +421,7 @@ class _SavedCouponFilterDialogState extends State<_SavedCouponFilterDialog> {
                               ],
                             ),
 
-                            const SizedBox(height: 10), 
+                            const SizedBox(height: 10),
 
                             Column( // Cena
                               children: [
@@ -477,7 +527,7 @@ class _SavedCouponFilterDialogState extends State<_SavedCouponFilterDialog> {
                                   ],
                                 ),
                               ],
-                            )
+                            ),
                           ],
                         ),
                       ),
@@ -493,7 +543,7 @@ class _SavedCouponFilterDialogState extends State<_SavedCouponFilterDialog> {
                               icon: const Icon(Icons.delete_outline),
                               onTap: () {
                                 Navigator.of(context).pop();
-                              //  context.read<CouponListBloc>().add(ClearCouponFilters());
+                                context.read<SavedCouponListBloc>().add(ClearSavedCouponFilters());
                               },
                             ),
                             CustomTextButton.primary(
@@ -501,15 +551,16 @@ class _SavedCouponFilterDialogState extends State<_SavedCouponFilterDialog> {
                               icon: const Icon(Icons.check),
                               onTap: () {
                                 Navigator.of(context).pop();
-                              //  context.read<CouponListBloc>().add(
-                              //    ApplyCouponFilters(
-                              //      reductionIsFixed: reductionIsFixed,
-                              //      reductionIsPercentage: reductionIsPercentage,
-                              //      minPrice: minPriceController.text.isEmpty ? null : double.tryParse(minPriceController.text.replaceAll(',', '.'),),
-                              //      maxPrice: maxPriceController.text.isEmpty ? null : double.tryParse(maxPriceController.text.replaceAll(',', '.')),
-                              //     minReputation: minReputation.toInt(),
-                              //    ),
-                              //  );
+                                context.read<SavedCouponListBloc>().add(
+                                  ApplySavedCouponFilters(
+                                    reductionIsFixed: reductionIsFixed,
+                                    reductionIsPercentage: reductionIsPercentage,
+                                    shopId: shopId,
+                                    minPrice: minPriceController.text.isEmpty ? null : double.tryParse(minPriceController.text.replaceAll(',', '.')),
+                                    maxPrice: maxPriceController.text.isEmpty ? null : double.tryParse(maxPriceController.text.replaceAll(',', '.')),
+                                    minReputation: minReputation.round().toDouble(),
+                                  ),
+                                );
                               },
                             ),
                           ],
@@ -522,7 +573,8 @@ class _SavedCouponFilterDialogState extends State<_SavedCouponFilterDialog> {
             ),
           ),
         ),
-      );
+      ),
+    );
   }
 }
 
@@ -535,11 +587,26 @@ class _SavedCouponSortDialog extends StatefulWidget {
 
 class _SavedCouponSortDialogState extends State<_SavedCouponSortDialog> {
 
-  SavedCouponsOrdering ordering = SavedCouponsOrdering.creationDateDesc;
+  SavedCouponsOrdering ordering = SavedCouponsOrdering.saveDateDesc;
+
+  @override
+  void initState() {
+    super.initState();
+    // Read current ordering state
+    context.read<SavedCouponListBloc>().add(ReadSavedCouponOrdering());
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Material(
+    return BlocListener<SavedCouponListBloc, SavedCouponListState>(
+      listener: (context, state) {
+        if (state is SavedCouponOrderingRead) {
+          setState(() {
+            ordering = state.ordering;
+          });
+        }
+      },
+      child: Material(
         color: Colors.transparent,
         child: SingleChildScrollView(
           child: Padding(
@@ -608,7 +675,37 @@ class _SavedCouponSortDialogState extends State<_SavedCouponSortDialog> {
                           mainAxisSize: MainAxisSize.min,
                           spacing: 8,
                           children: [
-                            Column( // Data dodania 
+                            Column( // Data zapisania
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Text(
+                                      'Data zapisania',
+                                      style: TextStyle(
+                                          color: AppColors.textPrimary,
+                                          fontSize: 20,
+                                          fontFamily: 'Itim',
+                                          fontWeight: FontWeight.w400,
+                                      ),
+                                  )
+                                ),
+                                CustomRadioButton(
+                                  label: 'od najnowszych',
+                                  selected: (ordering == SavedCouponsOrdering.saveDateDesc),
+                                  onTap: () => setState(() {ordering = SavedCouponsOrdering.saveDateDesc;}),
+                                ),
+                                CustomRadioButton(
+                                  label: 'od najstarszych',
+                                  selected: (ordering == SavedCouponsOrdering.saveDateAsc),
+                                  onTap: () => setState(() {ordering = SavedCouponsOrdering.saveDateAsc;}),
+                                )
+                              ],
+                            ),
+
+                            const SizedBox(height: 10),
+
+                            Column( // Data dodania
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 const Align(
@@ -728,7 +825,8 @@ class _SavedCouponSortDialogState extends State<_SavedCouponSortDialog> {
                               label: 'Zastosuj',
                               icon: const Icon(Icons.check),
                               onTap: () {                    
-                                Navigator.of(context).pop(); // TODO: BACKEND
+                                Navigator.of(context).pop();
+                                context.read<SavedCouponListBloc>().add(ApplySavedCouponOrdering(ordering));
                               },
                             ),
                           ],
@@ -741,6 +839,7 @@ class _SavedCouponSortDialogState extends State<_SavedCouponSortDialog> {
             ),
           ),
         ),
-      );
+      ),
+    );
   }
 }
