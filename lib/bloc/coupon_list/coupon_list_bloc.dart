@@ -263,7 +263,7 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
     _cursor = null;
     _hasMore = true;
     if (_userId != null) {
-      add(FetchCoupons(userId: _userId!));
+      add(FetchCoupons(userId: _userId!, shopId: _shopId, categoryId: _categoryId));
     }
   }
 
@@ -322,7 +322,7 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
     ));
 
     if (_userId != null) {
-      add(FetchCoupons(userId: _userId!, shopId: _shopId));
+      add(FetchCoupons(userId: _userId!, shopId: _shopId, categoryId: _categoryId));
     }
 
     emit(CouponListMetaState(
@@ -352,7 +352,7 @@ class CouponListBloc extends Bloc<CouponListEvent, CouponListState> {
     emit(CouponListOrderingApplySuccess(_ordering));
 
     if (_userId != null) {
-      add(FetchCoupons(userId: _userId!));
+      add(FetchCoupons(userId: _userId!, shopId: _shopId, categoryId: _categoryId));
     }
 
     emit(CouponListMetaState(
