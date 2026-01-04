@@ -25,6 +25,12 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   bool showShops = true;
 
   @override
+  void initState() {
+    super.initState();
+    context.read<FavoriteBloc>().add(LoadFavorites());
+  }
+  
+  @override
   Widget build(BuildContext context) {
     final shopRepo = context.read<ShopRepository>();
 
