@@ -294,4 +294,26 @@ class UserRepository {
     }
   }
 
+  /// Apply FCM notification preferences (PUT /users/apply-fcm-preferences/{user_id})
+  Future<void> applyFcmPreferences(
+    String userId, {
+    required bool chatNotificationsDisabled,
+    required bool couponNotificationsDisabled,
+  }) async {
+    try {
+      await _api.put(
+        '/users/apply-fcm-preferences/$userId',
+        body: {
+          'chat_notifications_disabled': chatNotificationsDisabled,
+          'coupon_notifications_disabled': couponNotificationsDisabled,
+        },
+        useAuthToken: true,
+      );
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('Error applying FCM preferences: $e');
+      }
+      rethrow;
+    }
+  }
 }
