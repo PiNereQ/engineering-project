@@ -7,7 +7,6 @@ import 'package:proj_inz/bloc/navbar/navbar_bloc.dart';
 import 'package:proj_inz/bloc/navbar/navbar_state.dart';
 import 'package:proj_inz/bloc/number_verification/number_verification_bloc.dart';
 import 'package:proj_inz/bloc/chat/unread/chat_unread_bloc.dart';
-import 'package:proj_inz/bloc/chat/unread/chat_unread_event.dart';
 import 'package:proj_inz/bloc/chat/list/chat_list_bloc.dart';
 import 'package:proj_inz/bloc/chat/list/chat_list_event.dart';
 import 'package:proj_inz/data/repositories/coupon_repository.dart';

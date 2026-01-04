@@ -1,4 +1,5 @@
-import 'package:equatable/equatable.dart';
+
+part of 'chat_unread_bloc.dart';
 
 class ChatUnreadState extends Equatable {
   final bool hasUnread;

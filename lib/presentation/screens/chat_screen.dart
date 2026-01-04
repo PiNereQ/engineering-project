@@ -5,8 +5,9 @@ import 'package:proj_inz/bloc/chat/list/chat_list_bloc.dart';
 import 'package:proj_inz/bloc/chat/list/chat_list_event.dart';
 import 'package:proj_inz/bloc/chat/list/chat_list_state.dart';
 import 'package:proj_inz/bloc/chat/unread/chat_unread_bloc.dart';
-import 'package:proj_inz/bloc/chat/unread/chat_unread_event.dart';
+
 import 'package:proj_inz/core/errors/error_messages.dart';
+
 import 'package:proj_inz/core/theme.dart';
 import 'package:proj_inz/core/utils/error_mapper.dart';
 import 'package:proj_inz/core/utils/utils.dart';
