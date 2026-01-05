@@ -140,17 +140,7 @@ class _ShopTile extends StatelessWidget {
 
         return InkWell(
           borderRadius: BorderRadius.circular(16),
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => CouponListScreen(
-                  selectedShopId: shop.id,
-                  searchShopName: shop.name,
-                ),
-              ),
-            );
-          },
+          onTap: null,
           child: Container(
             height: 70,
             margin: const EdgeInsets.symmetric(vertical: 8),
@@ -242,17 +232,7 @@ class _CategoryTile extends StatelessWidget {
 
         return InkWell(
           borderRadius: BorderRadius.circular(16),
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => CouponListScreen(
-                  selectedCategoryId: category.id,
-                  searchCategoryName: category.name,
-                ),
-              ),
-            );
-          },
+          onTap: null,
           child: Container(
             margin: const EdgeInsets.symmetric(vertical: 6),
             padding: const EdgeInsets.all(12),
