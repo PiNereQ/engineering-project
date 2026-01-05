@@ -72,7 +72,7 @@ class _PhoneNumberConfirmationScreenState extends State<PhoneNumberConfirmationS
                                           is NumberVerificationAfterRegistrationInitial)
                                       ? state.phoneNumber
                                       : null,
-                              errorMessage: state is NumberSubmitFailure ? (state as NumberSubmitFailure).message : null,
+                              errorMessage: state is NumberSubmitFailure ? state.message : null,
                             )
                             : _ConfirmationCodeStep(
                               isLoading: state is NumberVerificationInProgress,
