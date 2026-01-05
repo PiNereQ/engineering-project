@@ -480,20 +480,20 @@ Widget build(BuildContext context) {
                   ],
                 ),
 
-                if (kDebugMode)
-                  CustomTextButton(
-                    width: double.infinity,
-                    label: 'Debug',
-                    icon: const Icon(Icons.developer_mode_rounded),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const DebugScreen(),
-                        ),
-                      );
-                    },
-                  ),
+                // if (kDebugMode)
+                //   CustomTextButton(
+                //     width: double.infinity,
+                //     label: 'Debug',
+                //     icon: const Icon(Icons.developer_mode_rounded),
+                //     onTap: () {
+                //       Navigator.push(
+                //         context,
+                //         MaterialPageRoute(
+                //           builder: (_) => const DebugScreen(),
+                //         ),
+                //       );
+                //     },
+                //   ),
 
                 const SizedBox(height: 64),
               ],

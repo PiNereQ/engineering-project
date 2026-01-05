@@ -840,21 +840,21 @@ class _AddScreenState extends State<AddScreen> {
                                             CrossAxisAlignment.center,
                                         children: [
                                           Icon(
-                                            Icons.priority_high_rounded,
+                                            Icons.info_outline,
                                             size: 24,
                                             color: AppColors.textSecondary,
                                           ),
                                           const SizedBox(width: 12),
                                           const Expanded(
                                             child: Text(
-                                              'Możesz dodać zdjęcie, aby zeskanować z niego kod kuponu (w formie tekstu, kodu kreskowego lub kodu QR).',
+                                              'Dodaj zdjęcie, aby zeskanować z niego kod kuponu (z tekstu, kodu kreskowego lub kodu QR). Nie będziemy przechowywać Twojego zdjęcia.',
                                               style: TextStyle(
                                                 color: AppColors.textSecondary,
                                                 fontSize: 14,
                                                 fontFamily: 'Itim',
                                                 fontWeight: FontWeight.w400,
                                               ),
-                                              maxLines: 3,
+                                              maxLines: 4,
                                               overflow: TextOverflow.ellipsis,
                                             ),
                                           ),
@@ -1671,14 +1671,14 @@ class _HelpBody extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8.0),
       child: Text(
-        '''1. Upewnij się, że kupon, który chcesz dodać nie jest przypisany do Twojego emaila/konta w danym sklepie i inny użytkownik może z niego skorzystać.\n
-2. Wybierz sklep, w którym chcesz dodać kupon.\n
+        '''1. Upewnij się, że kupon, który chcesz dodać nie jest przypisany do Twojego emaila / konta / karty lojalnościowej w danym sklepie i inny użytkownik może z niego skorzystać.\n
+2. Wybierz sklep, w którym chcesz dodać kupon. Jeśli nie mamy takiego sklepu, możesz go zaproponować.\n
 3. Wpisz cenę, za którą chcesz wystawić kupon na sprzedaż.\n
 4. Jeżeli kupon ma datę wygaśnięcia - wpisz ją. Niektóre kupony są bezterminowe - jeżeli Twój kupon taki jest, zaznacz "Kupon nie ma daty ważności".\n
 5. Wpisz kod kuponu dokładnie tak, jak jest on podany na Twoim kuponie (uwzględniając wielkość liter). Możesz zeskanować kod, dodając jego zdjęcie. Zweryfikuj poprawność dodanego kodu.\n
 6. Wybierz typ kuponu - czy jest to rabat procentowy czy na stałą kwotę, a następnie wpisz wartość rabatu.\n
 7. Zaznacz, gdzie można wykorzystać kupon - w sklepach stacjonarnych, w sklepie internetowym lub w obu miejscach.\n
-8. Określ, czy kupon ma jakieś ograniczenia (np. wyłączone produkty lub kategorie). Jeśli tak, wymień je w polu "Opis".\n
+8. Określ, czy kupon ma jakieś ograniczenia (np. wyłączone produkty lub kategorie). Jeśli tak, obowiązkowo wymień je w polu "Opis".\n
 9. Po uzupełnieniu wszystkich wymaganych pól, kliknij przycisk "Dodaj", aby dodać kupon do systemu.''',
         style: TextStyle(fontFamily: 'Itim', fontSize: 18),
         textAlign: TextAlign.justify,

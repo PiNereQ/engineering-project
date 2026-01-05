@@ -954,7 +954,7 @@ class _MapScreenViewState extends State<_MapScreenView>
                               )
                               : Text(
                                 totalShops == 0
-                                    ? 'Nie znaleźliśmy sklepów z dostępnymi kuponów w tym obszarze.'
+                                    ? 'Nie znaleźliśmy sklepów z dostępnymi kuponami w tym obszarze.'
                                     : totalShops == 1
                                     ? 'W tym obszarze znaleźliśmy 1 sklep z dostępnymi kuponami.'
                                     : totalShops <= 4
