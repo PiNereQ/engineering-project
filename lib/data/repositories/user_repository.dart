@@ -136,14 +136,21 @@ class UserRepository {
   /// GET /users/is_phone_number_used?phone_number=...
   Future<bool> isPhoneNumberUsed(String phoneNumber) async {
     try {
-      final resp = await _api.get('/users/is-phone-number-used', queryParameters: {'phone_number': phoneNumber});
+      final resp = await _api.get(
+        '/users/is-phone-number-used',
+        queryParameters: {
+          'user_id': FirebaseAuth.instance.currentUser?.uid ?? '',
+          'phone_number': phoneNumber
+        },
+        useAuthToken: true,
+      );
       if (resp is Map && resp.containsKey('is_used')) {
         return resp['is_used'] == true;
       }
-      return false;
+      throw Exception('Invalid response format');
     } catch (e) {
       if (kDebugMode) debugPrint('Error checking phone number: $e');
-      return false;
+      rethrow;
     }
   }
 

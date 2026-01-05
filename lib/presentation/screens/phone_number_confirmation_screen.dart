@@ -61,8 +61,23 @@ class _PhoneNumberConfirmationScreenState extends State<PhoneNumberConfirmationS
                             state is NumberVerificationAfterRegistrationInitial ||
                             state is NumberSubmitInProgress ||
                             state is NumberSubmitFailure)
-                        ? _PhoneNumberStepCard(isLoading: state is NumberSubmitInProgress, isDuringRegistration: _isDuringRegistration, initialPhoneNumber: (state is NumberVerificationDuringRegistrationInitial) ? state.phoneNumber : (state is NumberVerificationAfterRegistrationInitial) ? state.phoneNumber : null,)
-                        : _ConfirmationCodeStep(isLoading: state is NumberVerificationInProgress, isDuringRegistration: _isDuringRegistration),
+                            ? _PhoneNumberStepCard(
+                              isLoading: state is NumberSubmitInProgress,
+                              isDuringRegistration: _isDuringRegistration,
+                              initialPhoneNumber:
+                                  (state
+                                          is NumberVerificationDuringRegistrationInitial)
+                                      ? state.phoneNumber
+                                      : (state
+                                          is NumberVerificationAfterRegistrationInitial)
+                                      ? state.phoneNumber
+                                      : null,
+                              errorMessage: state is NumberSubmitFailure ? (state as NumberSubmitFailure).message : null,
+                            )
+                            : _ConfirmationCodeStep(
+                              isLoading: state is NumberVerificationInProgress,
+                              isDuringRegistration: _isDuringRegistration,
+                            ),
                   ),
                 ),
               );
@@ -78,11 +93,13 @@ class _PhoneNumberStepCard extends StatefulWidget {
   final bool isLoading;
   final bool isDuringRegistration;
   final String? initialPhoneNumber;
+  final String? errorMessage;
 
   const _PhoneNumberStepCard({
     required this.isLoading,
     required this.isDuringRegistration,
     this.initialPhoneNumber,
+    this.errorMessage,
   });
 
   @override
@@ -99,6 +116,17 @@ class _PhoneNumberStepCardState extends State<_PhoneNumberStepCard> {
   void initState() {
     super.initState();
     _phoneNumberController = TextEditingController(text: widget.initialPhoneNumber ?? '');
+    _errorMessage = widget.errorMessage;
+  }
+
+  @override
+  void didUpdateWidget(covariant _PhoneNumberStepCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.errorMessage != oldWidget.errorMessage) {
+      setState(() {
+        _errorMessage = widget.errorMessage;
+      });
+    }
   }
 
   void _handleSkip() {
@@ -125,7 +153,6 @@ class _PhoneNumberStepCardState extends State<_PhoneNumberStepCard> {
   Widget build(BuildContext context) {
     final textAfterRegistration = 'Abyś mogła/mógł kupować i sprzedawać kupony potrzebujemy od Ciebie numer telefonu w celach weryfikacji. \n\n Podaj go, a prześlemy Tobie SMSem kod. Numer telefonu zostanie przypisany do konta. ';
     final textDuringRegistration = 'Abyś mogła/mógł kupować i sprzedawać kupony potrzebujemy od Ciebie numer telefonu w celach weryfikacji. Możesz na razie pominąć ten krok.\n\n Podaj go, a prześlemy Tobie SMSem kod. Numer telefonu zostanie przypisany do konta. ';
-
     return Container(
       decoration: ShapeDecoration(
         color: AppColors.surface,
