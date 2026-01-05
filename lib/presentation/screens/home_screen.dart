@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:proj_inz/bloc/dashboard/dashboard_bloc.dart';
+import 'package:proj_inz/core/errors/error_messages.dart';
 import 'package:proj_inz/core/theme.dart';
+import 'package:proj_inz/core/utils/error_mapper.dart';
 import 'package:proj_inz/data/models/coupon_model.dart';
 import 'package:proj_inz/data/models/dashboard_model.dart';
 import 'package:proj_inz/data/repositories/dashboard_repository.dart';
 import 'package:proj_inz/presentation/widgets/coupon_card.dart';
+import 'package:proj_inz/presentation/widgets/error_card.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -40,26 +43,23 @@ class _HomeScreenContent extends StatelessWidget {
             }
 
             if (state is DashboardError) {
+              final type = mapErrorToType(state.message);
+
+              final userMessage = couponListErrorMessage(type);
+
               return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'Błąd ładowania',
-                      style: const TextStyle(
-                        fontFamily: 'Itim',
-                        fontSize: 20,
-                        color: AppColors.textPrimary,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ErrorCard(
+                        icon: const Icon(Icons.sentiment_dissatisfied_rounded),
+                        text: userMessage,
+                        errorString: state.message,
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    TextButton(
-                      onPressed: () {
-                        context.read<DashboardBloc>().add(FetchDashboard());
-                      },
-                      child: const Text('Spróbuj ponownie'),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               );
             }
@@ -93,16 +93,34 @@ class _HomeScreenContent extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            "Wybrane specjalnie dla Ciebie!",
-                            style: TextStyle(fontFamily: 'Itim', fontSize: 36),
+                          const Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: const [
+                              Text(
+                                "Wybrane dla Ciebie!",
+                                style: TextStyle(
+                                  fontFamily: 'Itim',
+                                  fontSize: 34,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              SizedBox(height: 4),
+                              Text(
+                                "Kupony dopasowane do Twoich zainteresowań",
+                                style: TextStyle(
+                                  fontFamily: 'Itim',
+                                  fontSize: 16,
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                            ],
                           ),
                           const SizedBox(height: 24),
 
                           // Section 1: Favourite Category Coupons
                           if (dashboard.favouriteCategory != null &&
                               dashboard.favouriteCategory!.coupons.isNotEmpty) ...[
-                            _DashboardSection(
+                            DashboardBox(
                               title: 'Ulubiona kategoria: ${dashboard.favouriteCategory!.category.name}',
                               child: _CouponHorizontalList(
                                 coupons: dashboard.favouriteCategory!.coupons.take(10).toList(),
@@ -113,7 +131,7 @@ class _HomeScreenContent extends StatelessWidget {
 
                           // Section 2: All Favourite Categories Coupons
                           if (dashboard.allFavouriteCategoriesCoupons.isNotEmpty) ...[
-                            _DashboardSection(
+                            DashboardBox(
                               title: 'Kupony z ulubionych kategorii',
                               child: _CouponHorizontalList(
                                 coupons: dashboard.allFavouriteCategoriesCoupons.take(10).toList(),
@@ -125,7 +143,7 @@ class _HomeScreenContent extends StatelessWidget {
                           // Section 3: Favourite Shop Coupons
                           if (dashboard.favouriteShop != null &&
                               dashboard.favouriteShop!.coupons.isNotEmpty) ...[
-                            _DashboardSection(
+                            DashboardBox(
                               title: 'Ulubiony sklep: ${dashboard.favouriteShop!.shop.name}',
                               child: _CouponHorizontalList(
                                 coupons: dashboard.favouriteShop!.coupons.take(10).toList(),
@@ -136,7 +154,7 @@ class _HomeScreenContent extends StatelessWidget {
 
                           // Section 4: All Favourite Shops Coupons
                           if (dashboard.allFavouriteShopsCoupons.isNotEmpty) ...[
-                            _DashboardSection(
+                            DashboardBox(
                               title: 'Kupony z ulubionych sklepów',
                               child: _CouponHorizontalList(
                                 coupons: dashboard.allFavouriteShopsCoupons.take(10).toList(),
@@ -147,7 +165,7 @@ class _HomeScreenContent extends StatelessWidget {
 
                           // Section 5: Top Recommended Coupons
                           if (dashboard.topRecommendedCoupons.isNotEmpty) ...[
-                            _DashboardSection(
+                            DashboardBox(
                               title: 'Polecane dla Ciebie',
                               child: _RecommendedCouponHorizontalList(
                                 coupons: dashboard.topRecommendedCoupons.take(10).toList(),
@@ -155,7 +173,7 @@ class _HomeScreenContent extends StatelessWidget {
                             ),
                           ],
 
-                          const SizedBox(height: 66), // padding for navbar
+                          const SizedBox(height: 80), // padding for navbar
                         ],
                       ),
                     ),
@@ -225,6 +243,7 @@ class _CouponHorizontalList extends StatelessWidget {
         padding: const EdgeInsets.only(bottom: 4.0),
         child: Row(
           children: [
+            const SizedBox(width: 12),
             ...coupons.map(
               (coupon) => Padding(
                 padding: const EdgeInsets.only(right: 10),
@@ -252,6 +271,7 @@ class _RecommendedCouponHorizontalList extends StatelessWidget {
         padding: const EdgeInsets.only(bottom: 4.0),
         child: Row(
           children: [
+            const SizedBox(width: 12),
             ...coupons.map(
               (dashboardCoupon) => Padding(
                 padding: const EdgeInsets.only(right: 10),
@@ -260,6 +280,51 @@ class _RecommendedCouponHorizontalList extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class DashboardBox extends StatelessWidget {
+  final String title;
+  final Widget child;
+
+  const DashboardBox({
+    super.key,
+    required this.title,
+    required this.child,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        border: Border.all(color: AppColors.textPrimary, width: 2),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: const [
+          BoxShadow(color: Colors.black, offset: Offset(2, 2)),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
+            child: Text(
+              title,
+              style: const TextStyle(
+                fontFamily: 'Itim',
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary,
+              ),
+            ),
+          ),
+          child,
+          const SizedBox(height: 12),
+        ],
       ),
     );
   }
