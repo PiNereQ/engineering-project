@@ -16,3 +16,13 @@ class SearchShopsByName extends ShopEvent {
 }
 
 class LoadShops extends ShopEvent {}
+
+class SuggestShop extends ShopEvent {
+  final String name;
+  final String details;
+
+  const SuggestShop(this.name, this.details);
+
+  @override
+  List<Object> get props => [name, details];
+}

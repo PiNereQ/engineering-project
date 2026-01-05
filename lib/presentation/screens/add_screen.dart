@@ -25,6 +25,7 @@ import 'package:proj_inz/presentation/widgets/input/buttons/custom_icon_button.d
 import 'package:proj_inz/presentation/screens/coupon_image_scan_screen.dart';
 import 'package:proj_inz/presentation/widgets/input/buttons/search_button.dart';
 import 'package:proj_inz/presentation/widgets/input/custom_date_picker_dialog.dart';
+import 'package:proj_inz/presentation/widgets/input/text_fields/custom_text_field.dart';
 import '../widgets/input/text_fields/labeled_text_field.dart';
 import '../widgets/input/text_fields/search_bar.dart';
 import '../widgets/input/buttons/checkbox.dart';
@@ -200,7 +201,7 @@ class _AddScreenState extends State<AddScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             SearchBarWide(
-                              hintText: 'Wyszukaj sklep',
+                              hintText: 'Wpisz nazwę',
                               controller: TextEditingController(text: localQuery),
                               onSubmitted: (query) {
                                 blocContext.read<ShopBloc>().add(
@@ -228,16 +229,39 @@ class _AddScreenState extends State<AddScreen> {
                               const SizedBox(height: 8),
 
                               if (state.shops.isEmpty)
-                                const Padding(
+                                Padding(
                                   padding: EdgeInsets.symmetric(vertical: 24),
                                   child: Center(
-                                    child: Text(
-                                      'Nie znaleziono sklepów.',
-                                      style: TextStyle(
-                                        fontFamily: 'Itim',
-                                        fontSize: 18,
-                                        color: AppColors.textSecondary,
-                                      ),
+                                    child: Column(
+                                      spacing: 16,
+                                      children: [
+                                        Text(
+                                          'Nie znaleziono sklepów.',
+                                          style: TextStyle(
+                                            fontFamily: 'Itim',
+                                            fontSize: 18,
+                                            color: AppColors.textPrimary,
+                                          ),
+                                        ),
+                                        CustomTextButton.small(
+                                          label: 'Nie widzę swojego sklepu',
+                                          onTap: () {
+                                            setState(() {
+                                              _shopSearchQuery = null;
+                                              _selectedShop = Shop(
+                                                id: "0",
+                                                name: 'Inny sklep',
+                                                bgColor: AppColors.surface,
+                                                nameColor:
+                                                    AppColors.textPrimary,
+                                                categoryIds: [],
+                                              );
+                                              _userMadeInput = true;
+                                            });
+                                            Navigator.of(dialogContext).pop();
+                                          },
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 )
@@ -308,6 +332,97 @@ class _AddScreenState extends State<AddScreen> {
                           ],
                         );
                       },
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      );
+    }
+
+    Future<void> showShopSuggestDialog(BuildContext parentContext) async {
+      await showDialog(
+        context: context,
+        builder: (dialogContext) {
+          TextEditingController shopNameController = TextEditingController();
+          TextEditingController shopDetailsController = TextEditingController();
+          return BlocProvider(
+            create: (context) => ShopBloc(context.read<ShopRepository>()),
+            child: BlocListener<ShopBloc, ShopState>(
+              listener: (context, state) {
+                if (state is ShopSuggestionSuccess) {
+                  showCustomSnackBar(context, "Propozycja sklepu została wysłana.");
+                  Navigator.of(dialogContext).pop();
+                } else if (state is ShopSuggestionFailure) {
+                  showCustomSnackBar(context, state.message);
+                }
+              },
+              child: AlertDialog(
+                backgroundColor: AppColors.surface,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(24),
+                  side: const BorderSide(width: 2, color: AppColors.textPrimary),
+                ),
+                title: Row(
+                  spacing: 8,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'Zaproponuj sklep',
+                        style: TextStyle(
+                          fontFamily: 'Itim',
+                          fontSize: 20,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                    ),
+                    CustomIconButton.small(
+                      icon: Icon(Icons.close),
+                      onTap: () {
+                        setState(() {
+                          _shopSearchQuery = null;
+                        });
+                        Navigator.of(dialogContext).pop();
+                      },
+                    ),
+                  ]
+                ),
+                content: Padding(
+                  padding: EdgeInsets.only(
+                    bottom: MediaQuery.of(context).viewInsets.bottom,
+                  ),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxHeight: MediaQuery.of(context).size.height * 0.6,
+                    ),
+                    child: SizedBox(
+                      width: 400,
+                      child: BlocBuilder<ShopBloc, ShopState>(
+                        builder: (blocContext, state) {
+                          return Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            spacing: 16,
+                            children: [
+                              LabeledTextField(label: "Nazwa sklepu", controller: shopNameController),
+                              LabeledTextField(label: "Informacje o sklepie (opcjonalne)", controller: shopDetailsController, iconOnLeft: false, maxLines: 4),
+                              if (state is ShopLoading)
+                                const CircularProgressIndicator(color: AppColors.textPrimary)
+                              else
+                                CustomTextButton(label: "Zaproponuj", onTap: () {
+                                  blocContext.read<ShopBloc>().add(
+                                    SuggestShop(
+                                      shopNameController.text,
+                                      shopDetailsController.text,
+                                    ),
+                                  );
+                                }),
+                            ],
+                          );
+                        },
+                      ),
                     ),
                   ),
                 ),
@@ -515,11 +630,34 @@ class _AddScreenState extends State<AddScreen> {
                                                     color: AppColors.textPrimary,
                                                   ),
                                                 ),
+                                                
                                               ],
                                             ),
                                           ),
                                         ),
+                                        if (_selectedShop!.id == "0") ...[
+                                        Padding(
+                                          padding: const EdgeInsets.only(left: 8.0),
+                                          child: GestureDetector(
+                                            onTap: () => showShopSuggestDialog(
+                                              context,
+                                            ),
+                                            child: Text(
+                                              "Zaproponuj sklep",
+                                              style: const TextStyle(
+                                                color: AppColors.textPrimary,
+                                                fontSize: 16,
+                                                fontFamily: 'Itim',
+                                                fontWeight: FontWeight.w400,
+                                                decoration:
+                                                    TextDecoration.underline,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
                                       ],
+                                      ],
+                                      
                                       const SizedBox(height: 18),
                                       // Cena i Data waznosci
                                       Wrap(

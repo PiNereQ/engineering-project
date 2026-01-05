@@ -7,6 +7,8 @@ abstract class ShopState extends Equatable {
   List<Object> get props => [];
 }
 
+class ShopInitial extends ShopState {}
+
 class ShopLoading extends ShopState {}
 
 class ShopLoaded extends ShopState {
@@ -22,6 +24,17 @@ class ShopError extends ShopState {
   final String message;
 
   const ShopError(this.message);
+
+  @override
+  List<Object> get props => [message];
+}
+
+class ShopSuggestionSuccess extends ShopState {}
+
+class ShopSuggestionFailure extends ShopState {
+  final String message;
+
+  const ShopSuggestionFailure(this.message);
 
   @override
   List<Object> get props => [message];

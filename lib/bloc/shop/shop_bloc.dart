@@ -9,7 +9,7 @@ part 'shop_state.dart';
 class ShopBloc extends Bloc<ShopEvent, ShopState> {
   final ShopRepository shopRepository;
 
-  ShopBloc(this.shopRepository) : super(ShopLoading()) {
+  ShopBloc(this.shopRepository) : super(ShopInitial()) {
     on<LoadShops>((event, emit) async {
       emit(ShopLoading());
       try {
@@ -27,6 +27,16 @@ class ShopBloc extends Bloc<ShopEvent, ShopState> {
         emit(ShopLoaded(shops));
       } catch (_) {
         emit(ShopError("Nie udało się wyszukać sklepów."));
+      }
+    });
+
+    on<SuggestShop>((event, emit) async {
+      try {
+        emit(ShopLoading());
+        await shopRepository.suggestShop(event.name, event.details);
+        emit(ShopSuggestionSuccess());
+      } catch (_) {
+        emit(ShopSuggestionFailure("Nie udało się zaproponować sklepu."));
       }
     });
   }

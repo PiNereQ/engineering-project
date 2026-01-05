@@ -1,4 +1,6 @@
- import 'package:flutter/foundation.dart';
+ import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:proj_inz/core/utils/utils.dart';
 import 'package:proj_inz/data/models/shop_model.dart';
 import 'package:proj_inz/data/api/api_client.dart';
@@ -84,6 +86,20 @@ class ShopRepository {
       return shops;
     } catch (e) {
       if (kDebugMode) debugPrint('Error searching shops: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> suggestShop(String name, String details) async {
+    try {
+      await _api.post(
+        '/shops/suggest',
+        queryParameters: {"user_id": FirebaseAuth.instance.currentUser?.uid ?? ''},
+        body: {'shop_name': name, 'additional_info': details},
+        useAuthToken: true
+      );
+    } catch (e) {
+      if (kDebugMode) debugPrint('Error suggesting shop: $e');
       rethrow;
     }
   }
