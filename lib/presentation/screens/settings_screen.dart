@@ -373,7 +373,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       label: 'Dokumentacja użytkownika',
                       onTap: () {
                         _openExternalLink(
-                          'https://coupidyn.gitbook.io/coupidyn-docs/Vv2gDoSrmgHhy14Slye0/',
+                          'https://docs.coupidyn.pl/',
                         );
                       },
                     ),
