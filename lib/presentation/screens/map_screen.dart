@@ -538,6 +538,8 @@ class _MapScreenViewState extends State<_MapScreenView>
                 )
                 .toList();
 
+        final totalShops = clusteredLocations.fold(0, (sum, cluster) => sum + cluster.items.length);
+
         final markers = <Marker>[];
 
         for (final cluster in clusteredLocations) {
@@ -951,13 +953,13 @@ class _MapScreenViewState extends State<_MapScreenView>
                                         : searchInCurrentView,
                               )
                               : Text(
-                                markers.isEmpty
+                                totalShops == 0
                                     ? 'Nie znaleźliśmy sklepów z dostępnymi kuponów w tym obszarze.'
-                                    : markers.length == 1
+                                    : totalShops == 1
                                     ? 'W tym obszarze znaleźliśmy 1 sklep z dostępnymi kuponami.'
-                                    : markers.length <= 4
-                                    ? 'W tym obszarze znaleźliśmy ${markers.length} sklepy z dostępnymi kuponami.'
-                                    : 'W tym obszarze znaleźliśmy ${markers.length} sklepów z dostępnymi kuponami.',
+                                    : totalShops <= 4
+                                    ? 'W tym obszarze znaleźliśmy $totalShops sklepy z dostępnymi kuponami.'
+                                    : 'W tym obszarze znaleźliśmy $totalShops sklepów z dostępnymi kuponami.',
                                 style: TextStyle(
                                   fontFamily: 'Itim',
                                   fontSize: 16,

@@ -104,8 +104,8 @@ class CouponRepository {
         if (cursor != null) 'cursor_id': cursor['id']!.toString(),
         if (shopId != null) 'shop_id': shopId,
         if (categoryId != null && shopId == null) 'category_id': categoryId,
-        if (reductionIsPercentage != null && !reductionIsFixed!) 'type': 'percent',
-        if (reductionIsFixed != null && !reductionIsPercentage!) 'type': 'flat',
+        if (reductionIsPercentage != null &&  reductionIsPercentage && !(reductionIsFixed ?? false)) 'type': 'percent',
+        if (reductionIsFixed != null && reductionIsFixed && !(reductionIsPercentage ?? false)) 'type': 'flat',
         if (minPrice != null) 'min_price': (minPrice * 100).toString(), // convert to grosze
         if (maxPrice != null) 'max_price': (maxPrice * 100).toString(), // convert to grosze
         if (minReputation != null) 'min_rep': minReputation.toString(),
@@ -170,8 +170,8 @@ class CouponRepository {
         if (cursor != null) 'cursor_value': cursor['value']!.toString(),
         if (cursor != null) 'cursor_id': cursor['id']!.toString(),
         'owner_id': userId,
-        if (reductionIsPercentage != null && !reductionIsFixed!) 'type': 'percent',
-        if (reductionIsFixed != null && !reductionIsPercentage!) 'type': 'flat',
+        if (reductionIsPercentage != null &&  reductionIsPercentage && !(reductionIsFixed ?? false)) 'type': 'percent',
+        if (reductionIsFixed != null && reductionIsFixed && !(reductionIsPercentage ?? false)) 'type': 'flat',
         if (showUsed != null && !showUnused!) 'used': 'yes',
         if (showUnused != null && !showUsed!) 'used': 'no',
         if (shopId != null) 'shop_id': shopId,
@@ -234,8 +234,8 @@ class CouponRepository {
         if (cursor != null) 'cursor_value': cursor['value']!.toString(),
         if (cursor != null) 'cursor_id': cursor['id']!.toString(),
         'seller_id': userId,
-        if (reductionIsPercentage != null && !reductionIsFixed!) 'type': 'percent',
-        if (reductionIsFixed != null && !reductionIsPercentage!) 'type': 'flat',
+        if (reductionIsPercentage != null &&  reductionIsPercentage && !(reductionIsFixed ?? false)) 'type': 'percent',
+        if (reductionIsFixed != null && reductionIsFixed && !(reductionIsPercentage ?? false)) 'type': 'flat',
         if (showActive != null && !showSold!) 'status': 'active',
         if (showSold != null && !showActive!) 'status': 'sold',
         if (shopId != null) 'shop_id': shopId,
@@ -280,26 +280,6 @@ class CouponRepository {
 
   // SAVED COUPON METHODS =======================
 
-  /// Fetch user's saved coupons (GET /coupons/saved?seller_id={userId})
-  Future<List<Coupon>> fetchSavedCouponsFromApi(String userId) async {
-    try {
-      final response = await _api.get(
-        '/coupons/saved',
-        useAuthToken: true
-      );
-    if (response is List) {
-      return response
-          .map((e) => Coupon.availableToMeFromJson(e)?.copyWith(isSaved: true))
-          .whereType<Coupon>()
-          .toList();
-    }
-      return [];
-    } catch (e) {
-      if (kDebugMode) debugPrint('Error fetching saved coupons from API: $e');
-      rethrow;
-    }
-  }
-
   /// Fetch saved coupons with pagination and filters (GET /coupons/saved)
   Future<PaginatedListedCouponsResult> fetchSavedCouponsPaginated({
     required int limit,
@@ -307,9 +287,10 @@ class CouponRepository {
     required String userId,
     bool? reductionIsPercentage,
     bool? reductionIsFixed,
-    bool? showActive,
-    bool? showSold,
     String? shopId,
+    double? minPrice,
+    double? maxPrice,
+    double? minReputation,
     String? sort,
     String? status,
   }) async {
@@ -318,13 +299,14 @@ class CouponRepository {
         'limit': limit.toString(),
         if (cursor != null) 'cursor_value': cursor['value']!.toString(),
         if (cursor != null) 'cursor_id': cursor['id']!.toString(),
-        if (reductionIsPercentage != null && reductionIsPercentage) 'type': 'percent',
-        if (reductionIsFixed != null && reductionIsFixed) 'type': 'flat',
-        if (showActive != null && showActive) 'status': 'active',
-        if (showSold != null && showSold) 'status': 'sold',
+        if (reductionIsPercentage != null &&  reductionIsPercentage && !(reductionIsFixed ?? false)) 'type': 'percent',
+        if (reductionIsFixed != null && reductionIsFixed && !(reductionIsPercentage ?? false)) 'type': 'flat',
         if (shopId != null) 'shop_id': shopId,
+        if (minPrice != null) 'min_price': (minPrice * 100).toString(), // convert to grosze
+        if (maxPrice != null) 'max_price': (maxPrice * 100).toString(), // convert to grosze
+        if (minReputation != null) 'min_rep': minReputation.toString(),
         if (sort != null) 'sort': sort,
-        if (status != null) 'status': status,
+        if (status != null) 'status': status
       };
 
       final response = await _api.get(
@@ -333,7 +315,7 @@ class CouponRepository {
         useAuthToken: true,
       );
       if (response['data'] is List) {
-        final coupons = response['data'].map((data) => Coupon.listedByMeFromJson(data));
+        final coupons = response['data'].map((data) => Coupon.availableToMeFromJson(data));
         final cur = response['nextCursor'] != null ? Map<String, dynamic>.from(response['nextCursor']) : null;
         return PaginatedListedCouponsResult(
           coupons: coupons.whereType<Coupon>().toList(),
