@@ -11,6 +11,16 @@ class DashboardInitial extends DashboardState {}
 
 class DashboardLoading extends DashboardState {}
 
+/// State when refreshing - keeps old data visible while loading
+class DashboardRefreshing extends DashboardState {
+  final Dashboard dashboard;
+
+  const DashboardRefreshing(this.dashboard);
+
+  @override
+  List<Object?> get props => [dashboard];
+}
+
 class DashboardLoaded extends DashboardState {
   final Dashboard dashboard;
 

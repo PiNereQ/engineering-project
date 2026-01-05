@@ -1,15 +1,139 @@
 import 'dart:ui';
 
 import 'package:equatable/equatable.dart';
+import 'package:proj_inz/core/utils/utils.dart';
 import 'package:proj_inz/data/models/coupon_model.dart';
 
+/// Category info for dashboard
+class DashboardCategory extends Equatable {
+  final String id;
+  final String name;
+  final Color nameColor;
+  final Color bgColor;
+
+  const DashboardCategory({
+    required this.id,
+    required this.name,
+    required this.nameColor,
+    required this.bgColor,
+  });
+
+  factory DashboardCategory.fromJson(Map<String, dynamic> json) {
+    return DashboardCategory(
+      id: json['id']?.toString() ?? '',
+      name: json['name'] as String? ?? '',
+      nameColor: parseColor(json['name_color']?.toString()),
+      bgColor: parseColor(json['bg_color']?.toString()),
+    );
+  }
+
+  @override
+  List<Object?> get props => [id, name, nameColor, bgColor];
+}
+
+/// Shop info for dashboard
+class DashboardShop extends Equatable {
+  final String id;
+  final String name;
+  final Color nameColor;
+  final Color bgColor;
+
+  const DashboardShop({
+    required this.id,
+    required this.name,
+    required this.nameColor,
+    required this.bgColor,
+  });
+
+  factory DashboardShop.fromJson(Map<String, dynamic> json) {
+    return DashboardShop(
+      id: json['id']?.toString() ?? '',
+      name: json['name'] as String? ?? '',
+      nameColor: parseColor(json['name_color']?.toString()),
+      bgColor: parseColor(json['bg_color']?.toString()),
+    );
+  }
+
+  @override
+  List<Object?> get props => [id, name, nameColor, bgColor];
+}
+
+/// Favourite category section with category info and coupons
+class FavouriteCategorySection extends Equatable {
+  final DashboardCategory category;
+  final List<Coupon> coupons;
+
+  const FavouriteCategorySection({
+    required this.category,
+    required this.coupons,
+  });
+
+  factory FavouriteCategorySection.fromJson(Map<String, dynamic> json) {
+    final categoryJson = json['category'] as Map<String, dynamic>?;
+    final couponsJson = json['coupons'] as List<dynamic>? ?? [];
+
+    return FavouriteCategorySection(
+      category: categoryJson != null
+          ? DashboardCategory.fromJson(categoryJson)
+          : const DashboardCategory(
+              id: '',
+              name: '',
+              nameColor: Color(0xFF000000),
+              bgColor: Color(0xFFFFFFFF),
+            ),
+      coupons: couponsJson
+          .map((e) => Coupon.availableToMeFromJson(e as Map<String, dynamic>))
+          .toList(),
+    );
+  }
+
+  @override
+  List<Object?> get props => [category, coupons];
+}
+
+/// Favourite shop section with shop info and coupons
+class FavouriteShopSection extends Equatable {
+  final DashboardShop shop;
+  final List<Coupon> coupons;
+
+  const FavouriteShopSection({
+    required this.shop,
+    required this.coupons,
+  });
+
+  factory FavouriteShopSection.fromJson(Map<String, dynamic> json) {
+    final shopJson = json['shop'] as Map<String, dynamic>?;
+    final couponsJson = json['coupons'] as List<dynamic>? ?? [];
+
+    return FavouriteShopSection(
+      shop: shopJson != null
+          ? DashboardShop.fromJson(shopJson)
+          : const DashboardShop(
+              id: '',
+              name: '',
+              nameColor: Color(0xFF000000),
+              bgColor: Color(0xFFFFFFFF),
+            ),
+      coupons: couponsJson
+          .map((e) => Coupon.availableToMeFromJson(e as Map<String, dynamic>))
+          .toList(),
+    );
+  }
+
+  @override
+  List<Object?> get props => [shop, coupons];
+}
+
+/// Recommended coupon from the recommendation engine
 class DashboardCoupon extends Equatable {
   final int couponId;
   final String code;
   final String description;
   final int listingPrice;
   final double discount;
+  final bool isDiscountPercentage;
   final List<String> categories;
+  final DashboardShop shop;
   final DashboardSeller seller;
   final DashboardScores scores;
   final String explanation;
@@ -22,7 +146,9 @@ class DashboardCoupon extends Equatable {
     required this.description,
     required this.listingPrice,
     required this.discount,
+    required this.isDiscountPercentage,
     required this.categories,
+    required this.shop,
     required this.seller,
     required this.scores,
     required this.explanation,
@@ -31,27 +157,36 @@ class DashboardCoupon extends Equatable {
   });
 
   factory DashboardCoupon.fromJson(Map<String, dynamic> json) {
+    final shopJson = json['shop'] as Map<String, dynamic>?;
+    
     return DashboardCoupon(
       couponId: json['couponId'] as int,
       code: json['code'] as String? ?? '',
       description: json['description'] as String? ?? '',
       listingPrice: json['listingPrice'] as int? ?? 0,
       discount: double.tryParse(json['discount']?.toString() ?? '0') ?? 0.0,
-      categories:
-          (json['categories'] as List<dynamic>?)
+      isDiscountPercentage: json['is_discount_percentage'] == 1 || json['is_discount_percentage'] == true,
+      categories: (json['categories'] as List<dynamic>?)
               ?.map((e) => e.toString())
               .toList() ??
           [],
+      shop: shopJson != null
+          ? DashboardShop.fromJson(shopJson)
+          : const DashboardShop(
+              id: '',
+              name: 'Kupon',
+              nameColor: Color(0xFF000000),
+              bgColor: Color(0xFFFFFFFF),
+            ),
       seller: DashboardSeller.fromJson(json['seller'] as Map<String, dynamic>),
       scores: DashboardScores.fromJson(json['scores'] as Map<String, dynamic>),
       explanation: json['explanation'] as String? ?? '',
       shoppingChannel: ShoppingChannel.fromJson(
         json['shoppingChannel'] as Map<String, dynamic>,
       ),
-      expiryDate:
-          json['expiryDate'] != null
-              ? DateTime.tryParse(json['expiryDate'] as String)
-              : null,
+      expiryDate: json['expiryDate'] != null
+          ? DateTime.tryParse(json['expiryDate'] as String)
+          : null,
     );
   }
 
@@ -60,17 +195,17 @@ class DashboardCoupon extends Equatable {
     return Coupon(
       id: couponId.toString(),
       reduction: discount,
-      reductionIsPercentage: true,
+      reductionIsPercentage: isDiscountPercentage,
       price: listingPrice,
       hasLimits: description.isNotEmpty,
       worksOnline: shoppingChannel.online,
       worksInStore: shoppingChannel.inStore,
       expiryDate: expiryDate,
       description: description,
-      shopId: '',
-      shopName: categories.isNotEmpty ? categories.first : 'Kupon',
-      shopNameColor: const Color(0xFF000000),
-      shopBgColor: const Color(0xFFFFFFFF),
+      shopId: shop.id,
+      shopName: shop.name,
+      shopNameColor: shop.nameColor,
+      shopBgColor: shop.bgColor,
       listingDate: DateTime.now(),
       isSold: false,
       sellerId: seller.id,
@@ -82,18 +217,20 @@ class DashboardCoupon extends Equatable {
 
   @override
   List<Object?> get props => [
-    couponId,
-    code,
-    description,
-    listingPrice,
-    discount,
-    categories,
-    seller,
-    scores,
-    explanation,
-    shoppingChannel,
-    expiryDate,
-  ];
+        couponId,
+        code,
+        description,
+        listingPrice,
+        discount,
+        isDiscountPercentage,
+        categories,
+        shop,
+        seller,
+        scores,
+        explanation,
+        shoppingChannel,
+        expiryDate,
+      ];
 }
 
 class DashboardSeller extends Equatable {
@@ -149,12 +286,12 @@ class DashboardScores extends Equatable {
 
   @override
   List<Object?> get props => [
-    contentBased,
-    collaborative,
-    sellerReputation,
-    popularity,
-    finalScore,
-  ];
+        contentBased,
+        collaborative,
+        sellerReputation,
+        popularity,
+        finalScore,
+      ];
 }
 
 class ShoppingChannel extends Equatable {
@@ -174,95 +311,46 @@ class ShoppingChannel extends Equatable {
   List<Object?> get props => [online, inStore];
 }
 
-class FavouriteCategory extends Equatable {
-  final String id;
-  final String name;
-  final int count;
-
-  const FavouriteCategory({
-    required this.id,
-    required this.name,
-    required this.count,
-  });
-
-  factory FavouriteCategory.fromJson(Map<String, dynamic> json) {
-    return FavouriteCategory(
-      id: json['id']?.toString() ?? '',
-      name: json['name'] as String? ?? '',
-      count: json['count'] as int? ?? 0,
-    );
-  }
-
-  @override
-  List<Object?> get props => [id, name, count];
-}
-
-class FavouriteShop extends Equatable {
-  final String id;
-  final String name;
-  final int count;
-
-  const FavouriteShop({
-    required this.id,
-    required this.name,
-    required this.count,
-  });
-
-  factory FavouriteShop.fromJson(Map<String, dynamic> json) {
-    return FavouriteShop(
-      id: json['id']?.toString() ?? '',
-      name: json['name'] as String? ?? '',
-      count: json['count'] as int? ?? 0,
-    );
-  }
-
-  @override
-  List<Object?> get props => [id, name, count];
-}
-
+/// Main dashboard model
 class Dashboard extends Equatable {
-  final FavouriteCategory? favouriteCategory;
-  final List<FavouriteCategory> allFavouriteCategories;
-  final FavouriteShop? favouriteShop;
-  final List<FavouriteShop> allFavouriteShops;
+  final FavouriteCategorySection? favouriteCategory;
+  final List<Coupon> allFavouriteCategoriesCoupons;
+  final FavouriteShopSection? favouriteShop;
+  final List<Coupon> allFavouriteShopsCoupons;
   final List<DashboardCoupon> topRecommendedCoupons;
 
   const Dashboard({
     this.favouriteCategory,
-    required this.allFavouriteCategories,
+    required this.allFavouriteCategoriesCoupons,
     this.favouriteShop,
-    required this.allFavouriteShops,
+    required this.allFavouriteShopsCoupons,
     required this.topRecommendedCoupons,
   });
 
   factory Dashboard.fromJson(Map<String, dynamic> json) {
     return Dashboard(
-      favouriteCategory:
-          json['favouriteCategory'] != null
-              ? FavouriteCategory.fromJson(
-                json['favouriteCategory'] as Map<String, dynamic>,
-              )
-              : null,
-      allFavouriteCategories:
+      favouriteCategory: json['favouriteCategory'] != null
+          ? FavouriteCategorySection.fromJson(
+              json['favouriteCategory'] as Map<String, dynamic>,
+            )
+          : null,
+      allFavouriteCategoriesCoupons:
           (json['allFavouriteCategories'] as List<dynamic>?)
+                  ?.map((e) =>
+                      Coupon.availableToMeFromJson(e as Map<String, dynamic>))
+                  .toList() ??
+              [],
+      favouriteShop: json['favouriteShop'] != null
+          ? FavouriteShopSection.fromJson(
+              json['favouriteShop'] as Map<String, dynamic>,
+            )
+          : null,
+      allFavouriteShopsCoupons: (json['allFavouriteShops'] as List<dynamic>?)
               ?.map(
-                (e) => FavouriteCategory.fromJson(e as Map<String, dynamic>),
-              )
+                  (e) => Coupon.availableToMeFromJson(e as Map<String, dynamic>))
               .toList() ??
           [],
-      favouriteShop:
-          json['favouriteShop'] != null
-              ? FavouriteShop.fromJson(
-                json['favouriteShop'] as Map<String, dynamic>,
-              )
-              : null,
-      allFavouriteShops:
-          (json['allFavouriteShops'] as List<dynamic>?)
-              ?.map((e) => FavouriteShop.fromJson(e as Map<String, dynamic>))
-              .toList() ??
-          [],
-      topRecommendedCoupons:
-          (json['topRecommendedCoupons'] as List<dynamic>?)
+      topRecommendedCoupons: (json['topRecommendedCoupons'] as List<dynamic>?)
               ?.map((e) => DashboardCoupon.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],
@@ -271,10 +359,10 @@ class Dashboard extends Equatable {
 
   @override
   List<Object?> get props => [
-    favouriteCategory,
-    allFavouriteCategories,
-    favouriteShop,
-    allFavouriteShops,
-    topRecommendedCoupons,
-  ];
+        favouriteCategory,
+        allFavouriteCategoriesCoupons,
+        favouriteShop,
+        allFavouriteShopsCoupons,
+        topRecommendedCoupons,
+      ];
 }

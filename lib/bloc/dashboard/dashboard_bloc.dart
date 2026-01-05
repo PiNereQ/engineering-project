@@ -35,6 +35,16 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
     RefreshDashboard event,
     Emitter<DashboardState> emit,
   ) async {
+    // Keep old data visible while refreshing
+    final currentState = state;
+    if (currentState is DashboardLoaded) {
+      emit(DashboardRefreshing(currentState.dashboard));
+    } else if (currentState is DashboardRefreshing) {
+      // Already refreshing, don't emit again
+    } else {
+      emit(DashboardLoading());
+    }
+    
     try {
       final dashboard = await dashboardRepository.fetchDashboard();
       emit(DashboardLoaded(dashboard));
