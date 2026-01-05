@@ -7,7 +7,7 @@ import 'package:proj_inz/data/models/shop_location_model.dart';
 class MapRepository {
   final ApiClient _api;
 
-  MapRepository({ApiClient? api}) : _api = api ?? ApiClient(baseUrl: 'http://49.13.155.21:8000');
+  MapRepository({ApiClient? api}) : _api = api ?? ApiClient(baseUrl: 'https://coupidyn.pl:8443');
 
   /// Fetch locations within specific bounds from API (GET /shops/locations?latS=&lngW=&latN=&lngE=)
   Future<List<ShopLocation>> fetchLocationsInBounds(LatLngBounds bounds) async {

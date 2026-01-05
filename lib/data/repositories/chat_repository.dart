@@ -10,7 +10,7 @@ import 'package:proj_inz/data/api/api_client.dart';
 /// creating new conversations, retrieving messages, sending messages, and marking conversations as read.
 class ChatRepository {
   final ApiClient _api;
-  ChatRepository({ApiClient? api}) : _api = api ?? ApiClient(baseUrl: 'http://49.13.155.21:8000');
+  ChatRepository({ApiClient? api}) : _api = api ?? ApiClient(baseUrl: 'https://coupidyn.pl:8443');
 
   /// Fetches all chat conversations for the current user.
   /// (GET /chat/conversations?role={buyer|seller}&user={userId})

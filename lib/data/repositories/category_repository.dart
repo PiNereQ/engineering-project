@@ -7,7 +7,7 @@ import 'package:proj_inz/data/api/api_client.dart';
 class CategoryRepository {
   final ApiClient _api;
 
-  CategoryRepository({ApiClient? api}) : _api = api ?? ApiClient(baseUrl: 'http://49.13.155.21:8000');
+  CategoryRepository({ApiClient? api}) : _api = api ?? ApiClient(baseUrl: 'https://coupidyn.pl:8443');
 
   /// Search categories by name (GET /shops/categories/search?query=)
   Future<List<Category>> searchCategoriesByName(String query) async {

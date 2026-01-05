@@ -5,7 +5,7 @@ class PaymentRepository {
   final ApiClient _api;
 
   PaymentRepository({ApiClient? api}) 
-      : _api = api ?? ApiClient(baseUrl: 'http://49.13.155.21:8000');
+      : _api = api ?? ApiClient(baseUrl: 'https://coupidyn.pl:8443');
 
   /// Create payment intent via API (POST /payments/create-payment-intent)
   /// Returns a map with both clientSecret and paymentIntentId

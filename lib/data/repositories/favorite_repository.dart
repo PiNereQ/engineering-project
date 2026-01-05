@@ -6,7 +6,7 @@ class FavoriteRepository {
   final ApiClient _api;
 
   FavoriteRepository({ApiClient? api})
-      : _api = api ?? ApiClient(baseUrl: 'http://49.13.155.21:8000');
+      : _api = api ?? ApiClient(baseUrl: 'https://coupidyn.pl:8443');
 
   String get _userId {
     final uid = FirebaseAuth.instance.currentUser?.uid;

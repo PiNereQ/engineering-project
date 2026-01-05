@@ -9,7 +9,7 @@ class ShopRepository {
   final ApiClient _api;
   final _shopCache = <String, Shop>{};
 
-  ShopRepository({ApiClient? api}) : _api = api ?? ApiClient(baseUrl: 'http://49.13.155.21:8000');
+  ShopRepository({ApiClient? api}) : _api = api ?? ApiClient(baseUrl: 'https://coupidyn.pl:8443');
 
   /// Fetch shop by ID from API (GET /shops/{id})
   Future<Shop> fetchShopById(String shopId) async {

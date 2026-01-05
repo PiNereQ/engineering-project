@@ -28,7 +28,7 @@ class CouponRepository {
 
   UserRepository userRepository = UserRepository();
 
-  CouponRepository({ApiClient? api}) : _api = api ?? ApiClient(baseUrl: 'http://49.13.155.21:8000');
+  CouponRepository({ApiClient? api}) : _api = api ?? ApiClient(baseUrl: 'https://coupidyn.pl:8443');
 
   // ============ API-BASED METHODS ============
 

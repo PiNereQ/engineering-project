@@ -5,7 +5,7 @@ import 'package:proj_inz/data/api/api_client.dart';
 class UserRepository {
   final ApiClient _api;
 
-  UserRepository({ApiClient? api}) : _api = api ?? ApiClient(baseUrl: 'http://49.13.155.21:8000');
+  UserRepository({ApiClient? api}) : _api = api ?? ApiClient(baseUrl: 'https://coupidyn.pl:8443');
 
   /// Create user profile via API (POST /users)
   Future<void> createUserProfile({
