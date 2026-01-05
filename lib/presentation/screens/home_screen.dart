@@ -167,7 +167,7 @@ class _HomeScreenContent extends StatelessWidget {
                           if (dashboard.topRecommendedCoupons.isNotEmpty) ...[
                             DashboardBox(
                               title: 'Polecane dla Ciebie',
-                              child: _RecommendedCouponHorizontalList(
+                              child: _CouponHorizontalList(
                                 coupons: dashboard.topRecommendedCoupons.take(10).toList(),
                               ),
                             ),
@@ -248,34 +248,6 @@ class _CouponHorizontalList extends StatelessWidget {
               (coupon) => Padding(
                 padding: const EdgeInsets.only(right: 10),
                 child: CouponCardVertical(coupon: coupon),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// Horizontal scrollable list for DashboardCoupon objects (recommendation format)
-class _RecommendedCouponHorizontalList extends StatelessWidget {
-  final List<DashboardCoupon> coupons;
-
-  const _RecommendedCouponHorizontalList({required this.coupons});
-
-  @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Padding(
-        padding: const EdgeInsets.only(bottom: 4.0),
-        child: Row(
-          children: [
-            const SizedBox(width: 12),
-            ...coupons.map(
-              (dashboardCoupon) => Padding(
-                padding: const EdgeInsets.only(right: 10),
-                child: CouponCardVertical(coupon: dashboardCoupon.toCoupon()),
               ),
             ),
           ],
