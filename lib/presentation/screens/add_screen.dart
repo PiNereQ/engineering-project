@@ -348,6 +348,7 @@ class _AddScreenState extends State<AddScreen> {
         builder: (dialogContext) {
           TextEditingController shopNameController = TextEditingController();
           TextEditingController shopDetailsController = TextEditingController();
+          final GlobalKey<FormState> suggestFormKey = GlobalKey<FormState>();
           return BlocProvider(
             create: (context) => ShopBloc(context.read<ShopRepository>()),
             child: BlocListener<ShopBloc, ShopState>(
@@ -399,29 +400,49 @@ class _AddScreenState extends State<AddScreen> {
                     ),
                     child: SizedBox(
                       width: 400,
-                      child: BlocBuilder<ShopBloc, ShopState>(
-                        builder: (blocContext, state) {
-                          return Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            spacing: 16,
-                            children: [
-                              LabeledTextField(label: "Nazwa sklepu", controller: shopNameController),
-                              LabeledTextField(label: "Informacje o sklepie (opcjonalne)", controller: shopDetailsController, iconOnLeft: false, maxLines: 4),
-                              if (state is ShopLoading)
-                                const CircularProgressIndicator(color: AppColors.textPrimary)
-                              else
-                                CustomTextButton(label: "Zaproponuj", onTap: () {
-                                  blocContext.read<ShopBloc>().add(
-                                    SuggestShop(
-                                      shopNameController.text,
-                                      shopDetailsController.text,
-                                    ),
-                                  );
-                                }),
-                            ],
-                          );
-                        },
+                      child: Form(
+                        key: suggestFormKey,
+                        child: BlocBuilder<ShopBloc, ShopState>(
+                          builder: (blocContext, state) {
+                            return Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              spacing: 16,
+                              children: [
+                                LabeledTextField(
+                                  label: "Nazwa sklepu",
+                                  controller: shopNameController,
+                                  validator: (value) {
+                                    if (value == null || value.isEmpty) {
+                                      return 'Nazwa sklepu jest wymagana';
+                                    }
+                                    return null;
+                                  },
+                                ),
+                                LabeledTextField(
+                                  label: "Informacje o sklepie (opcjonalne)",
+                                  controller: shopDetailsController,
+                                  iconOnLeft: false,
+                                  maxLines: 4,
+                                  maxLength: 200,
+                                ),
+                                if (state is ShopLoading)
+                                  const CircularProgressIndicator(color: AppColors.textPrimary)
+                                else
+                                  CustomTextButton(label: "Zaproponuj", onTap: () {
+                                    if (suggestFormKey.currentState?.validate() ?? false) {
+                                      blocContext.read<ShopBloc>().add(
+                                        SuggestShop(
+                                          shopNameController.text,
+                                          shopDetailsController.text,
+                                        ),
+                                      );
+                                    }
+                                  }),
+                              ],
+                            );
+                          },
+                        ),
                       ),
                     ),
                   ),
