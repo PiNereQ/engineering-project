@@ -129,12 +129,6 @@ class NumberVerificationBloc extends Bloc<NumberVerificationEvent, NumberVerific
         // Link the credential to the current user
         await FirebaseAuth.instance.currentUser!.linkWithCredential(credential);
 
-        // Add phone number to user in API
-        final user = FirebaseAuth.instance.currentUser;
-        if (user != null && user.phoneNumber != null) {
-          await userRepository.addPhoneNumberToUser(uid: user.uid, phoneNumber: user.phoneNumber!);
-        }
-
         emit(NumberVerificationSuccess());
       } catch (e) {
         emit(NumberVerificationFailure());
