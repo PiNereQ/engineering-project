@@ -150,7 +150,7 @@ class UserRepository {
   /// Register FCM token for user (PUT /users/register-fcm-token/:user_id)
   Future<void> registerFcmToken({required String userId, required String token}) async {
     try {
-      await _api.put('/users/register-fcm-token/$userId', body: {'fcm_token': token});
+      await _api.put('/users/register-fcm-token/$userId', body: {'fcm_token': token}, useAuthToken: true);
       if (kDebugMode) debugPrint('Registered FCM token for user $userId');
     } catch (e) {
       if (kDebugMode) debugPrint('Error registering FCM token: $e');
