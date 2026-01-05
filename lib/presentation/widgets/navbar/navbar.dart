@@ -74,25 +74,22 @@ class Navbar extends StatelessWidget {
                           final user = FirebaseAuth.instance.currentUser;
                           final phone = user?.phoneNumber ?? "";
                           if (phone.isEmpty) {
-                            if (kDebugMode) {
-                              print('########################\nAAAAAAA! User phone number is not verified. Normally, we would navigate to the phone number confirmation screen here.\nHowever, for testing purposes, this navigation is currently commented out.\n########################');
-                              showCustomSnackBar(context, 'Numer telefonu niezweryfikowany. Docelowo nastąpi przekierowanie do ekranu weryfikacji numeru telefonu. Patrz komentarze w kodzie.');
-                            }
-                            // TODO: VERY IMPORTANT. uncomment before release
-                            // the code below opens the phone number confirmation screen if the user has not verified their phone number
-                            // for now this is commented out to facilitate testing without phone verification
+                            // if (kDebugMode) {
+                            //   print('########################\nAAAAAAA! User phone number is not verified. Normally, we would navigate to the phone number confirmation screen here.\nHowever, for testing purposes, this navigation is currently commented out.\n########################');
+                            //   showCustomSnackBar(context, 'Numer telefonu niezweryfikowany. Docelowo nastąpi przekierowanie do ekranu weryfikacji numeru telefonu. Patrz komentarze w kodzie.');
+                            // }
 
-                            // await Navigator.push(
-                            //   context,
-                            //   MaterialPageRoute(
-                            //     builder: (context) => BlocProvider.value(
-                            //       value: context.read<NumberVerificationBloc>()..add(NumberVerificationFormShownAfterRegistration()),
-                            //       child: const PhoneNumberConfirmationScreen(),
-                            //     ),
-                            //   ),
-                            // );
-                            // // If phone number is still not verified, do not proceed
-                            // if ((FirebaseAuth.instance.currentUser?.phoneNumber ?? "").isEmpty) return;
+                            await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => BlocProvider.value(
+                                  value: context.read<NumberVerificationBloc>()..add(NumberVerificationFormShownAfterRegistration()),
+                                  child: const PhoneNumberConfirmationScreen(),
+                                ),
+                              ),
+                            );
+                            // If phone number is still not verified, do not proceed
+                            if ((FirebaseAuth.instance.currentUser?.phoneNumber ?? "").isEmpty) return;
                           }
                           Navigator.push(
                           context,
