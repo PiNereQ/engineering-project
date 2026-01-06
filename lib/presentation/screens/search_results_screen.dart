@@ -36,6 +36,7 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
   @override
   void initState() {
     super.initState();
+    context.read<FavoriteBloc>().add(LoadFavorites());
     _searchController = TextEditingController(text: widget.initialQuery ?? '');
     _searchFocusNode = FocusNode();
     if (widget.initialQuery != null && widget.initialQuery!.isNotEmpty) {
