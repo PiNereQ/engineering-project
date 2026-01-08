@@ -44,7 +44,7 @@ The project is built using **Flutter** and follows a client-server architecture.
 - [User documentation](https://docs.coupidyn.pl/)
 - [Usability testing reports](https://drive.google.com/file/d/1ASlNIBqGX1gLm-2Fd2XFkjWLOPNGeEgx/view?usp=drive_link)
 - [UI Usability Study Results](https://drive.google.com/file/d/1wyhGIIExBQTiZ6KUuYQIxvzlhS1wNOWz/view?usp=drive_link)
-- Technical documentation TBA
+- [Technical documentation](https://drive.google.com/file/d/1AdizV5Ap6VwgAsxr5OBbGEVRFBULk0Cl/view?usp=drive_link)
 - Promotional materials (social media) TBA
 
 ---
@@ -52,3 +52,4 @@ The project is built using **Flutter** and follows a client-server architecture.
 ### 👨‍🎓 Project Type
 
 Engineering thesis project.
+
